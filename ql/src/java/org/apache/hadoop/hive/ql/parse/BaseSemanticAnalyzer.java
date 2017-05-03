@@ -46,7 +46,9 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -88,6 +90,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 /**
  * BaseSemanticAnalyzer.
@@ -627,127 +630,175 @@ public abstract class BaseSemanticAnalyzer {
    * Get the list of FieldSchema out of the ASTNode.
    */
   public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
-    return getColumns(ast, lowerCase, new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>());
+    return getColumns(ast, lowerCase, new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>(),
+            new ArrayList<SQLUniqueConstraint>(), new ArrayList<SQLNotNullConstraint>());
   }
 
-  static class PKInfo {
-   public String colName;
-   public String constraintName;
-   public boolean rely;
+  private static class ConstraintInfo {
+    final String colName;
+    final String constraintName;
+    final boolean enable;
+    final boolean validate;
+    final boolean rely;
 
-   public PKInfo(String colName, String constraintName, boolean rely) {
-     this.colName = colName;
-     this.constraintName = constraintName;
-     this.rely = rely;
-   }
+    ConstraintInfo(String colName, String constraintName,
+        boolean enable, boolean validate, boolean rely) {
+      this.colName = colName;
+      this.constraintName = constraintName;
+      this.enable = enable;
+      this.validate = validate;
+      this.rely = rely;
+    }
   }
 
   /**
-   * Get the primary keys from the AST and populate the pkInfos with the required
+   * Process the primary keys from the ast node and populate the SQLPrimaryKey list.
+   */
+  protected static void processPrimaryKeys(String databaseName, String tableName,
+      ASTNode child, List<SQLPrimaryKey> primaryKeys) throws SemanticException {
+    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, primaryKeyInfos);
+    constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
+  }
+
+  protected static void processPrimaryKeys(String databaseName, String tableName,
+      ASTNode child, List<String> columnNames, List<SQLPrimaryKey> primaryKeys)
+          throws SemanticException {
+    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, columnNames, primaryKeyInfos);
+    constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
+  }
+
+  private static void constraintInfosToPrimaryKeys(String databaseName, String tableName,
+          List<ConstraintInfo> primaryKeyInfos, List<SQLPrimaryKey> primaryKeys) {
+    int i = 1;
+    for (ConstraintInfo primaryKeyInfo : primaryKeyInfos) {
+      primaryKeys.add(new SQLPrimaryKey(databaseName, tableName, primaryKeyInfo.colName,
+              i++, primaryKeyInfo.constraintName, primaryKeyInfo.enable,
+              primaryKeyInfo.validate, primaryKeyInfo.rely));
+    }
+  }
+
+  /**
+   * Process the unique constraints from the ast node and populate the SQLUniqueConstraint list.
+   */
+  protected static void processUniqueConstraints(String databaseName, String tableName,
+      ASTNode child, List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
+    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, uniqueInfos);
+    constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
+  }
+
+  protected static void processUniqueConstraints(String databaseName, String tableName,
+      ASTNode child, List<String> columnNames, List<SQLUniqueConstraint> uniqueConstraints)
+          throws SemanticException {
+    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, columnNames, uniqueInfos);
+    constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
+  }
+
+  private static void constraintInfosToUniqueConstraints(String databaseName, String tableName,
+          List<ConstraintInfo> uniqueInfos, List<SQLUniqueConstraint> uniqueConstraints) {
+    int i = 1;
+    for (ConstraintInfo uniqueInfo : uniqueInfos) {
+      uniqueConstraints.add(new SQLUniqueConstraint(databaseName, tableName, uniqueInfo.colName,
+              i++, uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
+    }
+  }
+
+  protected static void processNotNullConstraints(String databaseName, String tableName,
+      ASTNode child, List<String> columnNames, List<SQLNotNullConstraint> notNullConstraints)
+          throws SemanticException {
+    List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, columnNames, notNullInfos);
+    constraintInfosToNotNullConstraints(databaseName, tableName, notNullInfos, notNullConstraints);
+  }
+
+  private static void constraintInfosToNotNullConstraints(String databaseName, String tableName,
+          List<ConstraintInfo> notNullInfos, List<SQLNotNullConstraint> notNullConstraints) {
+    for (ConstraintInfo notNullInfo : notNullInfos) {
+      notNullConstraints.add(new SQLNotNullConstraint(databaseName, tableName, notNullInfo.colName,
+              notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate, notNullInfo.rely));
+    }
+  }
+
+  /**
+   * Get the constraint from the AST and populate the cstrInfos with the required
    * information.
-   * @param child  The node with primary key token
-   * @param pkInfos Primary Key information structure
+   * @param child  The node with the constraint token
+   * @param cstrInfos Constraint information
    * @throws SemanticException
    */
-  private static void processPrimaryKeyInfos(
-    ASTNode child, List<PKInfo> pkInfos) throws SemanticException {
-    if (child.getChildCount() < 4) {
-      throw new SemanticException(ErrorMsg.INVALID_PK_SYNTAX.getMsg());
+  private static void generateConstraintInfos(ASTNode child,
+      List<ConstraintInfo> cstrInfos) throws SemanticException {
+    ImmutableList.Builder<String> columnNames = ImmutableList.builder();
+    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
+      Tree columnName = child.getChild(0).getChild(j);
+      checkColumnName(columnName.getText());
+      columnNames.add(unescapeIdentifier(columnName.getText().toLowerCase()));
     }
+    generateConstraintInfos(child, columnNames.build(), cstrInfos);
+  }
+
+  /**
+   * Get the constraint from the AST and populate the cstrInfos with the required
+   * information.
+   * @param child  The node with the constraint token
+   * @param columnNames The name of the columns for the primary key
+   * @param cstrInfos Constraint information
+   * @throws SemanticException
+   */
+  private static void generateConstraintInfos(ASTNode child, List<String> columnNames,
+      List<ConstraintInfo> cstrInfos) throws SemanticException {
     // The ANTLR grammar looks like :
     // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
-    //  enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    // -> ^(TOK_PRIMARY_KEY $pkCols $idfr $relySpec $enableSpec $validateSpec)
-    // when the user specifies the constraint name (i.e. child.getChildCount() == 5)
+    //  constraintOptsCreate?
+    // -> ^(TOK_PRIMARY_KEY $pkCols $idfr constraintOptsCreate?)
+    // when the user specifies the constraint name.
     // 2.  KW_PRIMARY KW_KEY columnParenthesesList
-    // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
-    // -> ^(TOK_PRIMARY_KEY columnParenthesesList $relySpec $enableSpec $validateSpec)
-    // when the user does not specify the constraint name (i.e. child.getChildCount() == 4)
-    boolean userSpecifiedConstraintName = child.getChildCount() == 5;
-    int relyIndex =  child.getChildCount() == 5 ? 2 : 1;
-    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
-     Tree grandChild = child.getChild(0).getChild(j);
-     boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
-     boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
-     boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
-     if (enable) {
-       throw new SemanticException(
-         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
-     }
-     if (validate) {
-       throw new SemanticException(
-         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
-     }
-      checkColumnName(grandChild.getText());
-     pkInfos.add(
-       new PKInfo(
-         unescapeIdentifier(grandChild.getText().toLowerCase()),
-         (userSpecifiedConstraintName ?
-         unescapeIdentifier(child.getChild(1).getText().toLowerCase()) : null),
-         rely));
-    }
-  }
-
-  /**
-   * Process the primary keys from the pkInfos structure and populate the SQLPrimaryKey list
-   * @param parent Parent of the primary key token node
-   * @param pkInfos primary key information
-   * @param primaryKeys SQLPrimaryKey list
-   * @param nametoFS Mapping from column name to field schema for the current table
-   * @throws SemanticException
-   */
-  private static void processPrimaryKeys(ASTNode parent, List<PKInfo> pkInfos,
-    List<SQLPrimaryKey> primaryKeys, Map<String, FieldSchema> nametoFS) throws SemanticException {
-    int cnt = 1;
-    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-
-    for (int i = 0; i < pkInfos.size(); i++) {
-      String pk = pkInfos.get(i).colName;
-      if (nametoFS.containsKey(pk)) {
-        SQLPrimaryKey currPrimaryKey = new SQLPrimaryKey(
-          qualifiedTabName[0], qualifiedTabName[1], pk, cnt++, pkInfos.get(i).constraintName,
-          false, false, pkInfos.get(i).rely);
-        primaryKeys.add(currPrimaryKey);
-      } else {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(pk));
+    // constraintOptsCreate?
+    // -> ^(TOK_PRIMARY_KEY columnParenthesesList constraintOptsCreate?)
+    // when the user does not specify the constraint name.
+    // Default values
+    String constraintName = null;
+    boolean enable = true;
+    boolean validate = true;
+    boolean rely = false;
+    for (int i = 0; i < child.getChildCount(); i++) {
+      ASTNode grandChild = (ASTNode) child.getChild(i);
+      int type = grandChild.getToken().getType();
+      if (type == HiveParser.TOK_CONSTRAINT_NAME) {
+        constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
+      } else if (type == HiveParser.TOK_ENABLE) {
+        enable = true;
+        // validate is true by default if we enable the constraint
+        validate = true;
+      } else if (type == HiveParser.TOK_DISABLE) {
+        enable = false;
+        // validate is false by default if we disable the constraint
+        validate = false;
+      } else if (type == HiveParser.TOK_VALIDATE) {
+        validate = true;
+      } else if (type == HiveParser.TOK_NOVALIDATE) {
+        validate = false;
+      } else if (type == HiveParser.TOK_RELY) {
+        rely = true;
       }
     }
-  }
+    if (enable) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE feature not supported yet. "
+              + "Please use DISABLE instead."));
+    }
+    if (validate) {
+      throw new SemanticException(
+        ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("VALIDATE feature not supported yet. "
+              + "Please use NOVALIDATE instead."));
+    }
 
-  /**
-   * Process the primary keys from the ast nodes and populate the SQLPrimaryKey list.
-   * As of now, this is used by 'alter table add constraint' command. We expect constraint
-   * name to be user specified.
-   * @param parent Parent of the primary key token node
-   * @param child Child of the primary key token node containing the primary key columns details
-   * @param primaryKeys SQLPrimaryKey list to be populated by this function
-   * @throws SemanticException
-   */
-  protected static void processPrimaryKeys(ASTNode parent, ASTNode child, List<SQLPrimaryKey> primaryKeys)
-    throws SemanticException {
-    int relyIndex = 2;
-    int cnt = 1;
-    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
-     Tree grandChild = child.getChild(0).getChild(j);
-     boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
-     boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
-     boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
-     if (enable) {
-       throw new SemanticException(
-         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
-     }
-     if (validate) {
-       throw new SemanticException(
-         ErrorMsg.INVALID_PK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
-     }
-     primaryKeys.add(
-       new SQLPrimaryKey(
-         qualifiedTabName[0], qualifiedTabName[1],
-         unescapeIdentifier(grandChild.getText().toLowerCase()),
-         cnt++,
-         unescapeIdentifier(child.getChild(1).getText().toLowerCase()), false, false,
-         rely));
+    for (String columnName : columnNames) {
+      cstrInfos.add(new ConstraintInfo(columnName, constraintName,
+          enable, validate, rely));
     }
   }
 
@@ -758,9 +809,8 @@ public abstract class BaseSemanticAnalyzer {
    * @param foreignKeys SQLForeignKey list
    * @throws SemanticException
    */
-  protected static void processForeignKeys(
-    ASTNode parent, ASTNode child, List<SQLForeignKey> foreignKeys) throws SemanticException {
-    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+  protected static void processForeignKeys(String databaseName, String tableName,
+      ASTNode child, List<SQLForeignKey> foreignKeys) throws SemanticException {
     // The ANTLR grammar looks like :
     // 1.  KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList
     // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
@@ -772,50 +822,69 @@ public abstract class BaseSemanticAnalyzer {
     // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
     // when the user does not specify the constraint name (i.e. child.getChildCount() == 6)
-    boolean userSpecifiedConstraintName = child.getChildCount() == 7;
-    int fkIndex = userSpecifiedConstraintName ? 1 : 0;
-    int ptIndex = fkIndex + 1;
-    int pkIndex = ptIndex + 1;
-    int relyIndex = pkIndex + 1;
-
-    if (child.getChildCount() <= fkIndex ||child.getChildCount() <= pkIndex ||
-      child.getChildCount() <= ptIndex) {
-      throw new SemanticException(ErrorMsg.INVALID_FK_SYNTAX.getMsg());
+    String constraintName = null;
+    boolean enable = true;
+    boolean validate = true;
+    boolean rely = false;
+    int fkIndex = -1;
+    for (int i = 0; i < child.getChildCount(); i++) {
+      ASTNode grandChild = (ASTNode) child.getChild(i);
+      int type = grandChild.getToken().getType();
+      if (type == HiveParser.TOK_CONSTRAINT_NAME) {
+        constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
+      } else if (type == HiveParser.TOK_ENABLE) {
+        enable = true;
+        // validate is true by default if we enable the constraint
+        validate = true;
+      } else if (type == HiveParser.TOK_DISABLE) {
+        enable = false;
+        // validate is false by default if we disable the constraint
+        validate = false;
+      } else if (type == HiveParser.TOK_VALIDATE) {
+        validate = true;
+      } else if (type == HiveParser.TOK_NOVALIDATE) {
+        validate = false;
+      } else if (type == HiveParser.TOK_RELY) {
+        rely = true;
+      } else if (type == HiveParser.TOK_TABCOLNAME && fkIndex == -1) {
+        fkIndex = i;
+      }
+    }
+    if (enable) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_FK_SYNTAX.getMsg("ENABLE feature not supported yet. "
+              + "Please use DISABLE instead."));
+    }
+    if (validate) {
+      throw new SemanticException(
+        ErrorMsg.INVALID_FK_SYNTAX.getMsg("VALIDATE feature not supported yet. "
+              + "Please use NOVALIDATE instead."));
     }
 
-    String[] parentDBTbl = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
-
+    int ptIndex = fkIndex + 1;
+    int pkIndex = ptIndex + 1;
     if (child.getChild(fkIndex).getChildCount() != child.getChild(pkIndex).getChildCount()) {
       throw new SemanticException(ErrorMsg.INVALID_FK_SYNTAX.getMsg(
         " The number of foreign key columns should be same as number of parent key columns "));
     }
+
+    String[] parentDBTbl = getQualifiedTableName((ASTNode) child.getChild(ptIndex));
     for (int j = 0; j < child.getChild(fkIndex).getChildCount(); j++) {
       SQLForeignKey sqlForeignKey = new SQLForeignKey();
+      sqlForeignKey.setFktable_db(databaseName);
+      sqlForeignKey.setFktable_name(tableName);
       Tree fkgrandChild = child.getChild(fkIndex).getChild(j);
       checkColumnName(fkgrandChild.getText());
-      boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
-      boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
-      boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
-      if (enable) {
-        throw new SemanticException(
-          ErrorMsg.INVALID_FK_SYNTAX.getMsg(" ENABLE feature not supported yet"));
-      }
-      if (validate) {
-        throw new SemanticException(
-          ErrorMsg.INVALID_FK_SYNTAX.getMsg(" VALIDATE feature not supported yet"));
-      }
-      sqlForeignKey.setRely_cstr(rely);
+      sqlForeignKey.setFkcolumn_name(unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
       sqlForeignKey.setPktable_db(parentDBTbl[0]);
       sqlForeignKey.setPktable_name(parentDBTbl[1]);
-      sqlForeignKey.setFktable_db(qualifiedTabName[0]);
-      sqlForeignKey.setFktable_name(qualifiedTabName[1]);
-      sqlForeignKey.setFkcolumn_name(unescapeIdentifier(fkgrandChild.getText().toLowerCase()));
       Tree pkgrandChild = child.getChild(pkIndex).getChild(j);
       sqlForeignKey.setPkcolumn_name(unescapeIdentifier(pkgrandChild.getText().toLowerCase()));
       sqlForeignKey.setKey_seq(j+1);
-      if (userSpecifiedConstraintName) {
-        sqlForeignKey.setFk_name(unescapeIdentifier(child.getChild(0).getText().toLowerCase()));
-      }
+      sqlForeignKey.setFk_name(constraintName);
+      sqlForeignKey.setEnable_cstr(enable);
+      sqlForeignKey.setValidate_cstr(validate);
+      sqlForeignKey.setRely_cstr(rely);
       foreignKeys.add(sqlForeignKey);
     }
   }
@@ -831,46 +900,94 @@ public abstract class BaseSemanticAnalyzer {
    * Additionally, populate the primaryKeys and foreignKeys if any.
    */
   public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) throws SemanticException {
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+    List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints)
+        throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
-    int numCh = ast.getChildCount();
-    List<PKInfo> pkInfos = new ArrayList<PKInfo>();
-    Map<String, FieldSchema> nametoFS = new HashMap<String, FieldSchema>();
     Tree parent = ast.getParent();
 
-    for (int i = 0; i < numCh; i++) {
+    for (int i = 0; i < ast.getChildCount(); i++) {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
-      if (child.getToken().getType() == HiveParser.TOK_PRIMARY_KEY) {
-        processPrimaryKeyInfos(child, pkInfos);
-      } else if (child.getToken().getType() == HiveParser.TOK_FOREIGN_KEY) {
-        processForeignKeys((ASTNode)parent, child, foreignKeys);
-      }
-      else {
-        Tree grandChild = child.getChild(0);
-        if(grandChild != null) {
-          String name = grandChild.getText();
-          if(lowerCase) {
-            name = name.toLowerCase();
+      switch (child.getToken().getType()) {
+        case HiveParser.TOK_UNIQUE: {
+            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+            processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1], child, uniqueConstraints);
           }
-          checkColumnName(name);
-          // child 0 is the name of the column
-          col.setName(unescapeIdentifier(name));
-          // child 1 is the type of the column
-          ASTNode typeChild = (ASTNode) (child.getChild(1));
-          col.setType(getTypeStringFromAST(typeChild));
+          break;
+        case HiveParser.TOK_PRIMARY_KEY: {
+            if (!primaryKeys.isEmpty()) {
+              throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
+                  "Cannot exist more than one primary key definition for the same table"));
+            }
+            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+            processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], child, primaryKeys);
+          }
+          break;
+        case HiveParser.TOK_FOREIGN_KEY: {
+            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+            processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], child, foreignKeys);
+          }
+          break;
+        default:
+          Tree grandChild = child.getChild(0);
+          if(grandChild != null) {
+            String name = grandChild.getText();
+            if(lowerCase) {
+              name = name.toLowerCase();
+            }
+            checkColumnName(name);
+            // child 0 is the name of the column
+            col.setName(unescapeIdentifier(name));
+            // child 1 is the type of the column
+            ASTNode typeChild = (ASTNode) (child.getChild(1));
+            col.setType(getTypeStringFromAST(typeChild));
 
-          // child 2 is the optional comment of the column
-          if (child.getChildCount() == 3) {
-            col.setComment(unescapeSQLString(child.getChild(2).getText()));
+            // child 2 is the optional comment of the column
+            // child 3 is the optional constraint
+            ASTNode constraintChild = null;
+            if (child.getChildCount() == 4) {
+              col.setComment(unescapeSQLString(child.getChild(2).getText()));
+              constraintChild = (ASTNode) child.getChild(3);
+            } else if (child.getChildCount() == 3
+                && ((ASTNode) child.getChild(2)).getToken().getType() == HiveParser.StringLiteral) {
+              col.setComment(unescapeSQLString(child.getChild(2).getText()));
+            } else if (child.getChildCount() == 3) {
+              constraintChild = (ASTNode) child.getChild(2);
+            }
+            if (constraintChild != null) {
+              String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+              // Process column constraint
+              switch (constraintChild.getToken().getType()) {
+                case HiveParser.TOK_NOT_NULL:
+                  processNotNullConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                          ImmutableList.of(col.getName()), notNullConstraints);
+                  break;
+                case HiveParser.TOK_UNIQUE:
+                  processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                          ImmutableList.of(col.getName()), uniqueConstraints);
+                  break;
+                case HiveParser.TOK_PRIMARY_KEY:
+                  if (!primaryKeys.isEmpty()) {
+                    throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
+                        "Cannot exist more than one primary key definition for the same table"));
+                  }
+                  processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                          ImmutableList.of(col.getName()), primaryKeys);
+                  break;
+                case HiveParser.TOK_FOREIGN_KEY:
+                  processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                          foreignKeys);
+                  break;
+                default:
+                  throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+                      constraintChild.getToken().getText()));
+              }
+            }
           }
-        }
-        nametoFS.put(col.getName(), col);
-        colList.add(col);
+          colList.add(col);
+          break;
       }
-    }
-    if (!pkInfos.isEmpty()) {
-      processPrimaryKeys((ASTNode) parent, pkInfos, primaryKeys, nametoFS);
     }
     return colList;
   }

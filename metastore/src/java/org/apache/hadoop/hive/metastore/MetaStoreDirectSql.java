@@ -56,7 +56,9 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -1918,9 +1920,6 @@ class MetaStoreDirectSql {
       + (parent_db_name == null ? "" : " \"D2\".\"NAME\" = ?") ;
 
     queryText = queryText.trim();
-    if (queryText.endsWith("WHERE")) {
-      queryText = queryText.substring(0, queryText.length()-5);
-    }
     if (queryText.endsWith("AND")) {
       queryText = queryText.substring(0, queryText.length()-3);
     }
@@ -1986,9 +1985,6 @@ class MetaStoreDirectSql {
       + (tbl_name == null ? "" : " \"TBLS\".\"TBL_NAME\" = ? ") ;
 
     queryText = queryText.trim();
-    if (queryText.endsWith("WHERE")) {
-      queryText = queryText.substring(0, queryText.length()-5);
-    }
     if (queryText.endsWith("AND")) {
       queryText = queryText.substring(0, queryText.length()-3);
     }
@@ -2019,6 +2015,109 @@ class MetaStoreDirectSql {
           validate,
           rely);
           ret.add(currKey);
+      }
+    }
+    return ret;
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    List<SQLUniqueConstraint> ret = new ArrayList<SQLUniqueConstraint>();
+    String queryText =
+      "SELECT \"DBS\".\"NAME\", \"TBLS\".\"TBL_NAME\", \"COLUMNS_V2\".\"COLUMN_NAME\","
+      + "\"KEY_CONSTRAINTS\".\"POSITION\", "
+      + "\"KEY_CONSTRAINTS\".\"CONSTRAINT_NAME\", \"KEY_CONSTRAINTS\".\"ENABLE_VALIDATE_RELY\" "
+      + " FROM  \"TBLS\" "
+      + " INNER  JOIN \"KEY_CONSTRAINTS\" ON \"TBLS\".\"TBL_ID\" = \"KEY_CONSTRAINTS\".\"PARENT_TBL_ID\" "
+      + " INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
+      + " INNER JOIN \"COLUMNS_V2\" ON \"COLUMNS_V2\".\"CD_ID\" = \"KEY_CONSTRAINTS\".\"PARENT_CD_ID\" AND "
+      + " \"COLUMNS_V2\".\"INTEGER_IDX\" = \"KEY_CONSTRAINTS\".\"PARENT_INTEGER_IDX\" "
+      + " WHERE \"KEY_CONSTRAINTS\".\"CONSTRAINT_TYPE\" = "+ MConstraint.UNIQUE_CONSTRAINT + " AND "
+      + (db_name == null ? "" : "\"DBS\".\"NAME\" = ? AND")
+      + (tbl_name == null ? "" : " \"TBLS\".\"TBL_NAME\" = ? ") ;
+
+    queryText = queryText.trim();
+    if (queryText.endsWith("AND")) {
+      queryText = queryText.substring(0, queryText.length()-3);
+    }
+    List<String> pms = new ArrayList<String>();
+    if (db_name != null) {
+      pms.add(db_name);
+    }
+    if (tbl_name != null) {
+      pms.add(tbl_name);
+    }
+
+    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
+      List<Object[]> sqlResult = ensureList(executeWithArray(
+        queryParams, pms.toArray(), queryText));
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] line : sqlResult) {
+          int enableValidateRely = extractSqlInt(line[5]);
+          boolean enable = (enableValidateRely & 4) != 0;
+          boolean validate = (enableValidateRely & 2) != 0;
+          boolean rely = (enableValidateRely & 1) != 0;
+        SQLUniqueConstraint currConstraint = new SQLUniqueConstraint(
+          extractSqlString(line[0]),
+          extractSqlString(line[1]),
+          extractSqlString(line[2]),
+          extractSqlInt(line[3]), extractSqlString(line[4]),
+          enable,
+          validate,
+          rely);
+          ret.add(currConstraint);
+      }
+    }
+    return ret;
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    List<SQLNotNullConstraint> ret = new ArrayList<SQLNotNullConstraint>();
+    String queryText =
+      "SELECT \"DBS\".\"NAME\", \"TBLS\".\"TBL_NAME\", \"COLUMNS_V2\".\"COLUMN_NAME\","
+      + "\"KEY_CONSTRAINTS\".\"CONSTRAINT_NAME\", \"KEY_CONSTRAINTS\".\"ENABLE_VALIDATE_RELY\" "
+      + " FROM  \"TBLS\" "
+      + " INNER  JOIN \"KEY_CONSTRAINTS\" ON \"TBLS\".\"TBL_ID\" = \"KEY_CONSTRAINTS\".\"PARENT_TBL_ID\" "
+      + " INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
+      + " INNER JOIN \"COLUMNS_V2\" ON \"COLUMNS_V2\".\"CD_ID\" = \"KEY_CONSTRAINTS\".\"PARENT_CD_ID\" AND "
+      + " \"COLUMNS_V2\".\"INTEGER_IDX\" = \"KEY_CONSTRAINTS\".\"PARENT_INTEGER_IDX\" "
+      + " WHERE \"KEY_CONSTRAINTS\".\"CONSTRAINT_TYPE\" = "+ MConstraint.NOT_NULL_CONSTRAINT + " AND "
+      + (db_name == null ? "" : "\"DBS\".\"NAME\" = ? AND")
+      + (tbl_name == null ? "" : " \"TBLS\".\"TBL_NAME\" = ? ") ;
+
+    queryText = queryText.trim();
+    if (queryText.endsWith("AND")) {
+      queryText = queryText.substring(0, queryText.length()-3);
+    }
+    List<String> pms = new ArrayList<String>();
+    if (db_name != null) {
+      pms.add(db_name);
+    }
+    if (tbl_name != null) {
+      pms.add(tbl_name);
+    }
+
+    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
+      List<Object[]> sqlResult = ensureList(executeWithArray(
+        queryParams, pms.toArray(), queryText));
+
+    if (!sqlResult.isEmpty()) {
+      for (Object[] line : sqlResult) {
+          int enableValidateRely = extractSqlInt(line[4]);
+          boolean enable = (enableValidateRely & 4) != 0;
+          boolean validate = (enableValidateRely & 2) != 0;
+          boolean rely = (enableValidateRely & 1) != 0;
+        SQLNotNullConstraint currConstraint = new SQLNotNullConstraint(
+          extractSqlString(line[0]),
+          extractSqlString(line[1]),
+          extractSqlString(line[2]),
+          extractSqlString(line[3]),
+          enable,
+          validate,
+          rely);
+          ret.add(currConstraint);
       }
     }
     return ret;

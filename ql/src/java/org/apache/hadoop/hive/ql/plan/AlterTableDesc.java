@@ -22,7 +22,9 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -127,6 +129,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   String dropConstraintName;
   List<SQLPrimaryKey> primaryKeyCols;
   List<SQLForeignKey> foreignKeyCols;
+  List<SQLUniqueConstraint> uniqueConstraintCols;
+  List<SQLNotNullConstraint> notNullConstraintCols;
 
   public AlterTableDesc() {
   }
@@ -155,6 +159,28 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.afterCol = afterCol;
     op = AlterTableTypes.RENAMECOLUMN;
     this.isCascade = isCascade;
+  }
+
+  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
+      String oldColName, String newColName, String newType, String newComment,
+      boolean first, String afterCol, boolean isCascade, List<SQLPrimaryKey> primaryKeyCols,
+      List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
+      List<SQLNotNullConstraint> notNullConstraintCols) {
+    super();
+    oldName = tblName;
+    this.partSpec = partSpec;
+    this.oldColName = oldColName;
+    this.newColName = newColName;
+    newColType = newType;
+    newColComment = newComment;
+    this.first = first;
+    this.afterCol = afterCol;
+    op = AlterTableTypes.RENAMECOLUMN;
+    this.isCascade = isCascade;
+    this.primaryKeyCols = primaryKeyCols;
+    this.foreignKeyCols = foreignKeyCols;
+    this.uniqueConstraintCols = uniqueConstraintCols;
+    this.notNullConstraintCols = notNullConstraintCols;
   }
 
   /**
@@ -280,10 +306,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     op = AlterTableTypes.DROPCONSTRAINT;
   }
 
-  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols, List<SQLForeignKey> foreignKeyCols) {
+  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
+          List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols) {
     this.oldName = tableName;
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
+    this.uniqueConstraintCols = uniqueConstraintCols;
     op = AlterTableTypes.ADDCONSTRAINT;
   }
 
@@ -459,6 +487,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public List<SQLForeignKey> getForeignKeyCols() {
     return foreignKeyCols;
+  }
+
+  /**
+   * @return the unique constraint cols
+   */
+  public List<SQLUniqueConstraint> getUniqueConstraintCols() {
+    return uniqueConstraintCols;
+  }
+
+  /**
+   * @return the not null constraint cols
+   */
+  public List<SQLNotNullConstraint> getNotNullConstraintCols() {
+    return notNullConstraintCols;
   }
 
   /**

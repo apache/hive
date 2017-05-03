@@ -22,7 +22,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheLoader;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -65,7 +64,9 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -2739,15 +2740,56 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    db_name = HiveStringUtils.normalizeIdentifier(db_name);
+    tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name);
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLUniqueConstraint> uk = getHBase().getUniqueConstraint(db_name, tbl_name);
+      commit = true;
+      return uk;
+    } catch (IOException e) {
+      LOG.error("Unable to get unique constraint", e);
+      throw new MetaException("Error reading db " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    db_name = HiveStringUtils.normalizeIdentifier(db_name);
+    tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name);
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLNotNullConstraint> nn = getHBase().getNotNullConstraint(db_name, tbl_name);
+      commit = true;
+      return nn;
+    } catch (IOException e) {
+      LOG.error("Unable to get not null constraint", e);
+      throw new MetaException("Error reading db " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
   public void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-                                         List<SQLForeignKey> foreignKeys)
-      throws InvalidObjectException, MetaException {
+      List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
+      List<SQLNotNullConstraint> notNullConstraints)
+          throws InvalidObjectException, MetaException {
     boolean commit = false;
     openTransaction();
     try {
       createTable(tbl);
       if (primaryKeys != null) addPrimaryKeys(primaryKeys);
       if (foreignKeys != null) addForeignKeys(foreignKeys);
+      if (uniqueConstraints != null) addUniqueConstraints(uniqueConstraints);
+      if (notNullConstraints != null) addNotNullConstraints(notNullConstraints);
       commit = true;
     } finally {
       commitOrRoleBack(commit);
@@ -2783,6 +2825,20 @@ public class HBaseStore implements RawStore {
         // have the existing keys.  Otherwise drop the foreign keys all together.
         if (newKeyList.size() > 0) getHBase().putForeignKeys(newKeyList);
         else getHBase().deleteForeignKeys(dbName, tableName);
+        commit = true;
+        return;
+      }
+
+      List<SQLUniqueConstraint> uk = getHBase().getUniqueConstraint(dbName, tableName);
+      if (uk != null && uk.size() > 0 && uk.get(0).getUk_name().equals(constraintName)) {
+        getHBase().deleteUniqueConstraint(dbName, tableName);
+        commit = true;
+        return;
+      }
+
+      List<SQLNotNullConstraint> nn = getHBase().getNotNullConstraint(dbName, tableName);
+      if (nn != null && nn.size() > 0 && nn.get(0).getNn_name().equals(constraintName)) {
+        getHBase().deleteNotNullConstraint(dbName, tableName);
         commit = true;
         return;
       }
@@ -2848,6 +2904,47 @@ public class HBaseStore implements RawStore {
     } catch (IOException e) {
       LOG.error("Error writing foreign keys", e);
       throw new MetaException("Error writing foreign keys: " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  public void addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    for (SQLUniqueConstraint uk : uks) {
+      uk.setTable_db(HiveStringUtils.normalizeIdentifier(uk.getTable_db()));
+      uk.setTable_name(HiveStringUtils.normalizeIdentifier(uk.getTable_name()));
+      uk.setColumn_name(HiveStringUtils.normalizeIdentifier(uk.getColumn_name()));
+      uk.setUk_name(HiveStringUtils.normalizeIdentifier(uk.getUk_name()));
+    }
+    openTransaction();
+    try {
+      getHBase().putUniqueConstraints(uks);
+      commit = true;
+    } catch (IOException e) {
+      LOG.error("Error writing unique constraints", e);
+      throw new MetaException("Error writing unique constraints: " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
+  }
+
+  @Override
+  public void addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    for (SQLNotNullConstraint nn : nns) {
+      nn.setTable_db(HiveStringUtils.normalizeIdentifier(nn.getTable_db()));
+      nn.setTable_name(HiveStringUtils.normalizeIdentifier(nn.getTable_name()));
+      nn.setColumn_name(HiveStringUtils.normalizeIdentifier(nn.getColumn_name()));
+      nn.setNn_name(HiveStringUtils.normalizeIdentifier(nn.getNn_name()));
+    }
+    openTransaction();
+    try {
+      getHBase().putNotNullConstraints(nns);
+      commit = true;
+    } catch (IOException e) {
+      LOG.error("Error writing not null constraints", e);
+      throw new MetaException("Error writing not null constraints: " + e.getMessage());
     } finally {
       commitOrRoleBack(commit);
     }

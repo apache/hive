@@ -70,7 +70,9 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -1846,11 +1848,28 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    // TODO constraintCache
+    return rawStore.getUniqueConstraints(db_name, tbl_name);
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    // TODO constraintCache
+    return rawStore.getNotNullConstraints(db_name, tbl_name);
+  }
+
+  @Override
   public void createTableWithConstraints(Table tbl,
-      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints,
+      List<SQLNotNullConstraint> notNullConstraints)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.createTableWithConstraints(tbl, primaryKeys, foreignKeys);
+    rawStore.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints);
     SharedCache.addTableToCache(HiveStringUtils.normalizeIdentifier(tbl.getDbName()),
         HiveStringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
   }
@@ -1874,6 +1893,20 @@ public class CachedStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
     rawStore.addForeignKeys(fks);
+  }
+
+  @Override
+  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+      throws InvalidObjectException, MetaException {
+    // TODO constraintCache
+    rawStore.addUniqueConstraints(uks);
+  }
+
+  @Override
+  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    // TODO constraintCache
+    rawStore.addNotNullConstraints(nns);
   }
 
   @Override

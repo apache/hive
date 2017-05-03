@@ -74,7 +74,11 @@ public class ImportTableDesc {
                 (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
                         .getSkewedColNames(),
                 (null == table.getSd().getSkewedInfo()) ? null : table.getSd().getSkewedInfo()
-                        .getSkewedColValues(), null, null);
+                        .getSkewedColValues(),
+                null,
+                null,
+                null,
+                null);
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;
       case VIEW:

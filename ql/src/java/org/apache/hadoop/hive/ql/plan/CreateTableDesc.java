@@ -32,7 +32,9 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -96,6 +98,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   private boolean isCTAS = false;
   List<SQLPrimaryKey> primaryKeys;
   List<SQLForeignKey> foreignKeys;
+  List<SQLUniqueConstraint> uniqueConstraints;
+  List<SQLNotNullConstraint> notNullConstraints;
 
   public CreateTableDesc() {
   }
@@ -110,13 +114,15 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
 
     this(tableName, isExternal, isTemporary, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
-        tblProps, ifNotExists, skewedColNames, skewedColValues, primaryKeys, foreignKeys);
+        tblProps, ifNotExists, skewedColNames, skewedColValues,
+        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
 
     this.databaseName = databaseName;
   }
@@ -131,12 +137,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
                          Map<String, String> serdeProps,
                          Map<String, String> tblProps,
                          boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-                         boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
+                         boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+                         List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
     this(databaseName, tableName, isExternal, isTemporary, cols, partCols,
             bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
             collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
             outputFormat, location, serName, storageHandler, serdeProps,
-            tblProps, ifNotExists, skewedColNames, skewedColValues, primaryKeys, foreignKeys);
+            tblProps, ifNotExists, skewedColNames, skewedColValues,
+            primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
     this.isCTAS = isCTAS;
 
   }
@@ -152,7 +160,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
-      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys) {
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
@@ -177,16 +186,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
     this.skewedColNames = copyList(skewedColNames);
     this.skewedColValues = copyList(skewedColValues);
-    if (primaryKeys == null) {
-      this.primaryKeys = new ArrayList<SQLPrimaryKey>();
-    } else {
-      this.primaryKeys = new ArrayList<SQLPrimaryKey>(primaryKeys);
-    }
-    if (foreignKeys == null) {
-      this.foreignKeys = new ArrayList<SQLForeignKey>();
-    } else {
-      this.foreignKeys = new ArrayList<SQLForeignKey>(foreignKeys);
-    }
+    this.primaryKeys = copyList(primaryKeys);
+    this.foreignKeys = copyList(foreignKeys);
+    this.uniqueConstraints = copyList(uniqueConstraints);
+    this.notNullConstraints = copyList(notNullConstraints);
   }
 
   private static <T> List<T> copyList(List<T> copy) {
@@ -255,6 +258,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
   public void setForeignKeys(ArrayList<SQLForeignKey> foreignKeys) {
     this.foreignKeys = foreignKeys;
+  }
+
+  public List<SQLUniqueConstraint> getUniqueConstraints() {
+    return uniqueConstraints;
+  }
+
+  public List<SQLNotNullConstraint> getNotNullConstraints() {
+    return notNullConstraints;
   }
 
   @Explain(displayName = "bucket columns")

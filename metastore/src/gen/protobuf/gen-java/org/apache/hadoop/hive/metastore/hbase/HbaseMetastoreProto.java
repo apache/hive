@@ -41301,6 +41301,4617 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys)
   }
 
+  public interface UniqueConstraintsOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> 
+        getUksList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint getUks(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    int getUksCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder> 
+        getUksOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder getUksOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints}
+   */
+  public static final class UniqueConstraints extends
+      com.google.protobuf.GeneratedMessage
+      implements UniqueConstraintsOrBuilder {
+    // Use UniqueConstraints.newBuilder() to construct.
+    private UniqueConstraints(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private UniqueConstraints(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final UniqueConstraints defaultInstance;
+    public static UniqueConstraints getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public UniqueConstraints getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private UniqueConstraints(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                uks_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              uks_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          uks_ = java.util.Collections.unmodifiableList(uks_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<UniqueConstraints> PARSER =
+        new com.google.protobuf.AbstractParser<UniqueConstraints>() {
+      public UniqueConstraints parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new UniqueConstraints(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<UniqueConstraints> getParserForType() {
+      return PARSER;
+    }
+
+    public interface UniqueConstraintOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string uk_name = 1;
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      boolean hasUkName();
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      java.lang.String getUkName();
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getUkNameBytes();
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> 
+          getColsList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn getCols(int index);
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      int getColsCount();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder> 
+          getColsOrBuilderList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder getColsOrBuilder(
+          int index);
+
+      // optional bool enable_constraint = 3;
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      boolean hasEnableConstraint();
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      boolean getEnableConstraint();
+
+      // optional bool validate_constraint = 4;
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      boolean hasValidateConstraint();
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      boolean getValidateConstraint();
+
+      // optional bool rely_constraint = 5;
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      boolean hasRelyConstraint();
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      boolean getRelyConstraint();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint}
+     */
+    public static final class UniqueConstraint extends
+        com.google.protobuf.GeneratedMessage
+        implements UniqueConstraintOrBuilder {
+      // Use UniqueConstraint.newBuilder() to construct.
+      private UniqueConstraint(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private UniqueConstraint(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final UniqueConstraint defaultInstance;
+      public static UniqueConstraint getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public UniqueConstraint getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private UniqueConstraint(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                ukName_ = input.readBytes();
+                break;
+              }
+              case 18: {
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                  cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn>();
+                  mutable_bitField0_ |= 0x00000002;
+                }
+                cols_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.PARSER, extensionRegistry));
+                break;
+              }
+              case 24: {
+                bitField0_ |= 0x00000002;
+                enableConstraint_ = input.readBool();
+                break;
+              }
+              case 32: {
+                bitField0_ |= 0x00000004;
+                validateConstraint_ = input.readBool();
+                break;
+              }
+              case 40: {
+                bitField0_ |= 0x00000008;
+                relyConstraint_ = input.readBool();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+            cols_ = java.util.Collections.unmodifiableList(cols_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<UniqueConstraint> PARSER =
+          new com.google.protobuf.AbstractParser<UniqueConstraint>() {
+        public UniqueConstraint parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new UniqueConstraint(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<UniqueConstraint> getParserForType() {
+        return PARSER;
+      }
+
+      public interface UniqueConstraintColumnOrBuilder
+          extends com.google.protobuf.MessageOrBuilder {
+
+        // required string column_name = 1;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        boolean hasColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        java.lang.String getColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        com.google.protobuf.ByteString
+            getColumnNameBytes();
+
+        // required sint32 key_seq = 2;
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        boolean hasKeySeq();
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        int getKeySeq();
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn}
+       */
+      public static final class UniqueConstraintColumn extends
+          com.google.protobuf.GeneratedMessage
+          implements UniqueConstraintColumnOrBuilder {
+        // Use UniqueConstraintColumn.newBuilder() to construct.
+        private UniqueConstraintColumn(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+          super(builder);
+          this.unknownFields = builder.getUnknownFields();
+        }
+        private UniqueConstraintColumn(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+        private static final UniqueConstraintColumn defaultInstance;
+        public static UniqueConstraintColumn getDefaultInstance() {
+          return defaultInstance;
+        }
+
+        public UniqueConstraintColumn getDefaultInstanceForType() {
+          return defaultInstance;
+        }
+
+        private final com.google.protobuf.UnknownFieldSet unknownFields;
+        @java.lang.Override
+        public final com.google.protobuf.UnknownFieldSet
+            getUnknownFields() {
+          return this.unknownFields;
+        }
+        private UniqueConstraintColumn(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          initFields();
+          int mutable_bitField0_ = 0;
+          com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+              com.google.protobuf.UnknownFieldSet.newBuilder();
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                default: {
+                  if (!parseUnknownField(input, unknownFields,
+                                         extensionRegistry, tag)) {
+                    done = true;
+                  }
+                  break;
+                }
+                case 10: {
+                  bitField0_ |= 0x00000001;
+                  columnName_ = input.readBytes();
+                  break;
+                }
+                case 16: {
+                  bitField0_ |= 0x00000002;
+                  keySeq_ = input.readSInt32();
+                  break;
+                }
+              }
+            }
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(this);
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(
+                e.getMessage()).setUnfinishedMessage(this);
+          } finally {
+            this.unknownFields = unknownFields.build();
+            makeExtensionsImmutable();
+          }
+        }
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder.class);
+        }
+
+        public static com.google.protobuf.Parser<UniqueConstraintColumn> PARSER =
+            new com.google.protobuf.AbstractParser<UniqueConstraintColumn>() {
+          public UniqueConstraintColumn parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            return new UniqueConstraintColumn(input, extensionRegistry);
+          }
+        };
+
+        @java.lang.Override
+        public com.google.protobuf.Parser<UniqueConstraintColumn> getParserForType() {
+          return PARSER;
+        }
+
+        private int bitField0_;
+        // required string column_name = 1;
+        public static final int COLUMN_NAME_FIELD_NUMBER = 1;
+        private java.lang.Object columnName_;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public boolean hasColumnName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public java.lang.String getColumnName() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            return (java.lang.String) ref;
+          } else {
+            com.google.protobuf.ByteString bs = 
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              columnName_ = s;
+            }
+            return s;
+          }
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getColumnNameBytes() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            columnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+
+        // required sint32 key_seq = 2;
+        public static final int KEY_SEQ_FIELD_NUMBER = 2;
+        private int keySeq_;
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public boolean hasKeySeq() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public int getKeySeq() {
+          return keySeq_;
+        }
+
+        private void initFields() {
+          columnName_ = "";
+          keySeq_ = 0;
+        }
+        private byte memoizedIsInitialized = -1;
+        public final boolean isInitialized() {
+          byte isInitialized = memoizedIsInitialized;
+          if (isInitialized != -1) return isInitialized == 1;
+
+          if (!hasColumnName()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          if (!hasKeySeq()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          memoizedIsInitialized = 1;
+          return true;
+        }
+
+        public void writeTo(com.google.protobuf.CodedOutputStream output)
+                            throws java.io.IOException {
+          getSerializedSize();
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            output.writeBytes(1, getColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            output.writeSInt32(2, keySeq_);
+          }
+          getUnknownFields().writeTo(output);
+        }
+
+        private int memoizedSerializedSize = -1;
+        public int getSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+
+          size = 0;
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeBytesSize(1, getColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeSInt32Size(2, keySeq_);
+          }
+          size += getUnknownFields().getSerializedSize();
+          memoizedSerializedSize = size;
+          return size;
+        }
+
+        private static final long serialVersionUID = 0L;
+        @java.lang.Override
+        protected java.lang.Object writeReplace()
+            throws java.io.ObjectStreamException {
+          return super.writeReplace();
+        }
+
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(byte[] data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseDelimitedFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseDelimitedFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+
+        public static Builder newBuilder() { return Builder.create(); }
+        public Builder newBuilderForType() { return newBuilder(); }
+        public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn prototype) {
+          return newBuilder().mergeFrom(prototype);
+        }
+        public Builder toBuilder() { return newBuilder(this); }
+
+        @java.lang.Override
+        protected Builder newBuilderForType(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          Builder builder = new Builder(parent);
+          return builder;
+        }
+        /**
+         * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn}
+         */
+        public static final class Builder extends
+            com.google.protobuf.GeneratedMessage.Builder<Builder>
+           implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder {
+          public static final com.google.protobuf.Descriptors.Descriptor
+              getDescriptor() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor;
+          }
+
+          protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+              internalGetFieldAccessorTable() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder.class);
+          }
+
+          // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.newBuilder()
+          private Builder() {
+            maybeForceBuilderInitialization();
+          }
+
+          private Builder(
+              com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+          }
+          private void maybeForceBuilderInitialization() {
+            if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            }
+          }
+          private static Builder create() {
+            return new Builder();
+          }
+
+          public Builder clear() {
+            super.clear();
+            columnName_ = "";
+            bitField0_ = (bitField0_ & ~0x00000001);
+            keySeq_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000002);
+            return this;
+          }
+
+          public Builder clone() {
+            return create().mergeFrom(buildPartial());
+          }
+
+          public com.google.protobuf.Descriptors.Descriptor
+              getDescriptorForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn getDefaultInstanceForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.getDefaultInstance();
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn build() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn result = buildPartial();
+            if (!result.isInitialized()) {
+              throw newUninitializedMessageException(result);
+            }
+            return result;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn buildPartial() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn(this);
+            int from_bitField0_ = bitField0_;
+            int to_bitField0_ = 0;
+            if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+              to_bitField0_ |= 0x00000001;
+            }
+            result.columnName_ = columnName_;
+            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+              to_bitField0_ |= 0x00000002;
+            }
+            result.keySeq_ = keySeq_;
+            result.bitField0_ = to_bitField0_;
+            onBuilt();
+            return result;
+          }
+
+          public Builder mergeFrom(com.google.protobuf.Message other) {
+            if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn) {
+              return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn)other);
+            } else {
+              super.mergeFrom(other);
+              return this;
+            }
+          }
+
+          public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn other) {
+            if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.getDefaultInstance()) return this;
+            if (other.hasColumnName()) {
+              bitField0_ |= 0x00000001;
+              columnName_ = other.columnName_;
+              onChanged();
+            }
+            if (other.hasKeySeq()) {
+              setKeySeq(other.getKeySeq());
+            }
+            this.mergeUnknownFields(other.getUnknownFields());
+            return this;
+          }
+
+          public final boolean isInitialized() {
+            if (!hasColumnName()) {
+              
+              return false;
+            }
+            if (!hasKeySeq()) {
+              
+              return false;
+            }
+            return true;
+          }
+
+          public Builder mergeFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn parsedMessage = null;
+            try {
+              parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn) e.getUnfinishedMessage();
+              throw e;
+            } finally {
+              if (parsedMessage != null) {
+                mergeFrom(parsedMessage);
+              }
+            }
+            return this;
+          }
+          private int bitField0_;
+
+          // required string column_name = 1;
+          private java.lang.Object columnName_ = "";
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public boolean hasColumnName() {
+            return ((bitField0_ & 0x00000001) == 0x00000001);
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public java.lang.String getColumnName() {
+            java.lang.Object ref = columnName_;
+            if (!(ref instanceof java.lang.String)) {
+              java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                  .toStringUtf8();
+              columnName_ = s;
+              return s;
+            } else {
+              return (java.lang.String) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public com.google.protobuf.ByteString
+              getColumnNameBytes() {
+            java.lang.Object ref = columnName_;
+            if (ref instanceof String) {
+              com.google.protobuf.ByteString b = 
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                      (java.lang.String) ref);
+              columnName_ = b;
+              return b;
+            } else {
+              return (com.google.protobuf.ByteString) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnName(
+              java.lang.String value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder clearColumnName() {
+            bitField0_ = (bitField0_ & ~0x00000001);
+            columnName_ = getDefaultInstance().getColumnName();
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnNameBytes(
+              com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+
+          // required sint32 key_seq = 2;
+          private int keySeq_ ;
+          /**
+           * <code>required sint32 key_seq = 2;</code>
+           */
+          public boolean hasKeySeq() {
+            return ((bitField0_ & 0x00000002) == 0x00000002);
+          }
+          /**
+           * <code>required sint32 key_seq = 2;</code>
+           */
+          public int getKeySeq() {
+            return keySeq_;
+          }
+          /**
+           * <code>required sint32 key_seq = 2;</code>
+           */
+          public Builder setKeySeq(int value) {
+            bitField0_ |= 0x00000002;
+            keySeq_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required sint32 key_seq = 2;</code>
+           */
+          public Builder clearKeySeq() {
+            bitField0_ = (bitField0_ & ~0x00000002);
+            keySeq_ = 0;
+            onChanged();
+            return this;
+          }
+
+          // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn)
+        }
+
+        static {
+          defaultInstance = new UniqueConstraintColumn(true);
+          defaultInstance.initFields();
+        }
+
+        // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn)
+      }
+
+      private int bitField0_;
+      // required string uk_name = 1;
+      public static final int UK_NAME_FIELD_NUMBER = 1;
+      private java.lang.Object ukName_;
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      public boolean hasUkName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      public java.lang.String getUkName() {
+        java.lang.Object ref = ukName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            ukName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string uk_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getUkNameBytes() {
+        java.lang.Object ref = ukName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          ukName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;
+      public static final int COLS_FIELD_NUMBER = 2;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> cols_;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> getColsList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder> 
+          getColsOrBuilderList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      public int getColsCount() {
+        return cols_.size();
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn getCols(int index) {
+        return cols_.get(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder getColsOrBuilder(
+          int index) {
+        return cols_.get(index);
+      }
+
+      // optional bool enable_constraint = 3;
+      public static final int ENABLE_CONSTRAINT_FIELD_NUMBER = 3;
+      private boolean enableConstraint_;
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean hasEnableConstraint() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean getEnableConstraint() {
+        return enableConstraint_;
+      }
+
+      // optional bool validate_constraint = 4;
+      public static final int VALIDATE_CONSTRAINT_FIELD_NUMBER = 4;
+      private boolean validateConstraint_;
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean hasValidateConstraint() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean getValidateConstraint() {
+        return validateConstraint_;
+      }
+
+      // optional bool rely_constraint = 5;
+      public static final int RELY_CONSTRAINT_FIELD_NUMBER = 5;
+      private boolean relyConstraint_;
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean hasRelyConstraint() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean getRelyConstraint() {
+        return relyConstraint_;
+      }
+
+      private void initFields() {
+        ukName_ = "";
+        cols_ = java.util.Collections.emptyList();
+        enableConstraint_ = false;
+        validateConstraint_ = false;
+        relyConstraint_ = false;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasUkName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        for (int i = 0; i < getColsCount(); i++) {
+          if (!getCols(i).isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getUkNameBytes());
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          output.writeMessage(2, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBool(3, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBool(4, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBool(5, relyConstraint_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getUkNameBytes());
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(2, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(3, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(4, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(5, relyConstraint_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            getColsFieldBuilder();
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          ukName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            colsBuilder_.clear();
+          }
+          enableConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000004);
+          validateConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000008);
+          relyConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.ukName_ = ukName_;
+          if (colsBuilder_ == null) {
+            if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              cols_ = java.util.Collections.unmodifiableList(cols_);
+              bitField0_ = (bitField0_ & ~0x00000002);
+            }
+            result.cols_ = cols_;
+          } else {
+            result.cols_ = colsBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.enableConstraint_ = enableConstraint_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.validateConstraint_ = validateConstraint_;
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.relyConstraint_ = relyConstraint_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.getDefaultInstance()) return this;
+          if (other.hasUkName()) {
+            bitField0_ |= 0x00000001;
+            ukName_ = other.ukName_;
+            onChanged();
+          }
+          if (colsBuilder_ == null) {
+            if (!other.cols_.isEmpty()) {
+              if (cols_.isEmpty()) {
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+              } else {
+                ensureColsIsMutable();
+                cols_.addAll(other.cols_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.cols_.isEmpty()) {
+              if (colsBuilder_.isEmpty()) {
+                colsBuilder_.dispose();
+                colsBuilder_ = null;
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+                colsBuilder_ = 
+                  com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                     getColsFieldBuilder() : null;
+              } else {
+                colsBuilder_.addAllMessages(other.cols_);
+              }
+            }
+          }
+          if (other.hasEnableConstraint()) {
+            setEnableConstraint(other.getEnableConstraint());
+          }
+          if (other.hasValidateConstraint()) {
+            setValidateConstraint(other.getValidateConstraint());
+          }
+          if (other.hasRelyConstraint()) {
+            setRelyConstraint(other.getRelyConstraint());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasUkName()) {
+            
+            return false;
+          }
+          for (int i = 0; i < getColsCount(); i++) {
+            if (!getCols(i).isInitialized()) {
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string uk_name = 1;
+        private java.lang.Object ukName_ = "";
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public boolean hasUkName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public java.lang.String getUkName() {
+          java.lang.Object ref = ukName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            ukName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getUkNameBytes() {
+          java.lang.Object ref = ukName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            ukName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public Builder setUkName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          ukName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public Builder clearUkName() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          ukName_ = getDefaultInstance().getUkName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string uk_name = 1;</code>
+         */
+        public Builder setUkNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          ukName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;
+        private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> cols_ =
+          java.util.Collections.emptyList();
+        private void ensureColsIsMutable() {
+          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+            cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn>(cols_);
+            bitField0_ |= 0x00000002;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder> colsBuilder_;
+
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> getColsList() {
+          if (colsBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(cols_);
+          } else {
+            return colsBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public int getColsCount() {
+          if (colsBuilder_ == null) {
+            return cols_.size();
+          } else {
+            return colsBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn getCols(int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);
+          } else {
+            return colsBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.set(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder addAllCols(
+            java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn> values) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            super.addAll(values, cols_);
+            onChanged();
+          } else {
+            colsBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder clearCols() {
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+            onChanged();
+          } else {
+            colsBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public Builder removeCols(int index) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.remove(index);
+            onChanged();
+          } else {
+            colsBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder getColsBuilder(
+            int index) {
+          return getColsFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder getColsOrBuilder(
+            int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);  } else {
+            return colsBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder> 
+             getColsOrBuilderList() {
+          if (colsBuilder_ != null) {
+            return colsBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(cols_);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder addColsBuilder() {
+          return getColsFieldBuilder().addBuilder(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder addColsBuilder(
+            int index) {
+          return getColsFieldBuilder().addBuilder(
+              index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder> 
+             getColsBuilderList() {
+          return getColsFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder> 
+            getColsFieldBuilder() {
+          if (colsBuilder_ == null) {
+            colsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.UniqueConstraintColumnOrBuilder>(
+                    cols_,
+                    ((bitField0_ & 0x00000002) == 0x00000002),
+                    getParentForChildren(),
+                    isClean());
+            cols_ = null;
+          }
+          return colsBuilder_;
+        }
+
+        // optional bool enable_constraint = 3;
+        private boolean enableConstraint_ ;
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public boolean hasEnableConstraint() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public boolean getEnableConstraint() {
+          return enableConstraint_;
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public Builder setEnableConstraint(boolean value) {
+          bitField0_ |= 0x00000004;
+          enableConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public Builder clearEnableConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          enableConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool validate_constraint = 4;
+        private boolean validateConstraint_ ;
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public boolean hasValidateConstraint() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public boolean getValidateConstraint() {
+          return validateConstraint_;
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public Builder setValidateConstraint(boolean value) {
+          bitField0_ |= 0x00000008;
+          validateConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public Builder clearValidateConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          validateConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool rely_constraint = 5;
+        private boolean relyConstraint_ ;
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public boolean hasRelyConstraint() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public boolean getRelyConstraint() {
+          return relyConstraint_;
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public Builder setRelyConstraint(boolean value) {
+          bitField0_ |= 0x00000010;
+          relyConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public Builder clearRelyConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          relyConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint)
+      }
+
+      static {
+        defaultInstance = new UniqueConstraint(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint)
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;
+    public static final int UKS_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> uks_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> getUksList() {
+      return uks_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder> 
+        getUksOrBuilderList() {
+      return uks_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    public int getUksCount() {
+      return uks_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint getUks(int index) {
+      return uks_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder getUksOrBuilder(
+        int index) {
+      return uks_.get(index);
+    }
+
+    private void initFields() {
+      uks_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getUksCount(); i++) {
+        if (!getUks(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < uks_.size(); i++) {
+        output.writeMessage(1, uks_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < uks_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, uks_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.UniqueConstraints}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraintsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getUksFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (uksBuilder_ == null) {
+          uks_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          uksBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints(this);
+        int from_bitField0_ = bitField0_;
+        if (uksBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            uks_ = java.util.Collections.unmodifiableList(uks_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.uks_ = uks_;
+        } else {
+          result.uks_ = uksBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.getDefaultInstance()) return this;
+        if (uksBuilder_ == null) {
+          if (!other.uks_.isEmpty()) {
+            if (uks_.isEmpty()) {
+              uks_ = other.uks_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureUksIsMutable();
+              uks_.addAll(other.uks_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.uks_.isEmpty()) {
+            if (uksBuilder_.isEmpty()) {
+              uksBuilder_.dispose();
+              uksBuilder_ = null;
+              uks_ = other.uks_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              uksBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getUksFieldBuilder() : null;
+            } else {
+              uksBuilder_.addAllMessages(other.uks_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getUksCount(); i++) {
+          if (!getUks(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> uks_ =
+        java.util.Collections.emptyList();
+      private void ensureUksIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          uks_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint>(uks_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder> uksBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> getUksList() {
+        if (uksBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(uks_);
+        } else {
+          return uksBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public int getUksCount() {
+        if (uksBuilder_ == null) {
+          return uks_.size();
+        } else {
+          return uksBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint getUks(int index) {
+        if (uksBuilder_ == null) {
+          return uks_.get(index);
+        } else {
+          return uksBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder setUks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint value) {
+        if (uksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureUksIsMutable();
+          uks_.set(index, value);
+          onChanged();
+        } else {
+          uksBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder setUks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder builderForValue) {
+        if (uksBuilder_ == null) {
+          ensureUksIsMutable();
+          uks_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          uksBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder addUks(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint value) {
+        if (uksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureUksIsMutable();
+          uks_.add(value);
+          onChanged();
+        } else {
+          uksBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder addUks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint value) {
+        if (uksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureUksIsMutable();
+          uks_.add(index, value);
+          onChanged();
+        } else {
+          uksBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder addUks(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder builderForValue) {
+        if (uksBuilder_ == null) {
+          ensureUksIsMutable();
+          uks_.add(builderForValue.build());
+          onChanged();
+        } else {
+          uksBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder addUks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder builderForValue) {
+        if (uksBuilder_ == null) {
+          ensureUksIsMutable();
+          uks_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          uksBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder addAllUks(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint> values) {
+        if (uksBuilder_ == null) {
+          ensureUksIsMutable();
+          super.addAll(values, uks_);
+          onChanged();
+        } else {
+          uksBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder clearUks() {
+        if (uksBuilder_ == null) {
+          uks_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          uksBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public Builder removeUks(int index) {
+        if (uksBuilder_ == null) {
+          ensureUksIsMutable();
+          uks_.remove(index);
+          onChanged();
+        } else {
+          uksBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder getUksBuilder(
+          int index) {
+        return getUksFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder getUksOrBuilder(
+          int index) {
+        if (uksBuilder_ == null) {
+          return uks_.get(index);  } else {
+          return uksBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder> 
+           getUksOrBuilderList() {
+        if (uksBuilder_ != null) {
+          return uksBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(uks_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder addUksBuilder() {
+        return getUksFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder addUksBuilder(
+          int index) {
+        return getUksFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.UniqueConstraints.UniqueConstraint uks = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder> 
+           getUksBuilderList() {
+        return getUksFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder> 
+          getUksFieldBuilder() {
+        if (uksBuilder_ == null) {
+          uksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.UniqueConstraints.UniqueConstraintOrBuilder>(
+                  uks_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          uks_ = null;
+        }
+        return uksBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints)
+    }
+
+    static {
+      defaultInstance = new UniqueConstraints(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.UniqueConstraints)
+  }
+
+  public interface NotNullConstraintsOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> 
+        getNnsList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint getNns(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    int getNnsCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder> 
+        getNnsOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder getNnsOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints}
+   */
+  public static final class NotNullConstraints extends
+      com.google.protobuf.GeneratedMessage
+      implements NotNullConstraintsOrBuilder {
+    // Use NotNullConstraints.newBuilder() to construct.
+    private NotNullConstraints(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private NotNullConstraints(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final NotNullConstraints defaultInstance;
+    public static NotNullConstraints getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public NotNullConstraints getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private NotNullConstraints(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                nns_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              nns_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          nns_ = java.util.Collections.unmodifiableList(nns_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<NotNullConstraints> PARSER =
+        new com.google.protobuf.AbstractParser<NotNullConstraints>() {
+      public NotNullConstraints parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new NotNullConstraints(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<NotNullConstraints> getParserForType() {
+      return PARSER;
+    }
+
+    public interface NotNullConstraintOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string nn_name = 1;
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      boolean hasNnName();
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      java.lang.String getNnName();
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getNnNameBytes();
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> 
+          getColsList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn getCols(int index);
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      int getColsCount();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder> 
+          getColsOrBuilderList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder getColsOrBuilder(
+          int index);
+
+      // optional bool enable_constraint = 3;
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      boolean hasEnableConstraint();
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      boolean getEnableConstraint();
+
+      // optional bool validate_constraint = 4;
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      boolean hasValidateConstraint();
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      boolean getValidateConstraint();
+
+      // optional bool rely_constraint = 5;
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      boolean hasRelyConstraint();
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      boolean getRelyConstraint();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint}
+     */
+    public static final class NotNullConstraint extends
+        com.google.protobuf.GeneratedMessage
+        implements NotNullConstraintOrBuilder {
+      // Use NotNullConstraint.newBuilder() to construct.
+      private NotNullConstraint(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private NotNullConstraint(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final NotNullConstraint defaultInstance;
+      public static NotNullConstraint getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public NotNullConstraint getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private NotNullConstraint(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                nnName_ = input.readBytes();
+                break;
+              }
+              case 18: {
+                if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                  cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn>();
+                  mutable_bitField0_ |= 0x00000002;
+                }
+                cols_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.PARSER, extensionRegistry));
+                break;
+              }
+              case 24: {
+                bitField0_ |= 0x00000002;
+                enableConstraint_ = input.readBool();
+                break;
+              }
+              case 32: {
+                bitField0_ |= 0x00000004;
+                validateConstraint_ = input.readBool();
+                break;
+              }
+              case 40: {
+                bitField0_ |= 0x00000008;
+                relyConstraint_ = input.readBool();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+            cols_ = java.util.Collections.unmodifiableList(cols_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<NotNullConstraint> PARSER =
+          new com.google.protobuf.AbstractParser<NotNullConstraint>() {
+        public NotNullConstraint parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new NotNullConstraint(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<NotNullConstraint> getParserForType() {
+        return PARSER;
+      }
+
+      public interface NotNullConstraintColumnOrBuilder
+          extends com.google.protobuf.MessageOrBuilder {
+
+        // required string column_name = 1;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        boolean hasColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        java.lang.String getColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        com.google.protobuf.ByteString
+            getColumnNameBytes();
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn}
+       */
+      public static final class NotNullConstraintColumn extends
+          com.google.protobuf.GeneratedMessage
+          implements NotNullConstraintColumnOrBuilder {
+        // Use NotNullConstraintColumn.newBuilder() to construct.
+        private NotNullConstraintColumn(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+          super(builder);
+          this.unknownFields = builder.getUnknownFields();
+        }
+        private NotNullConstraintColumn(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+        private static final NotNullConstraintColumn defaultInstance;
+        public static NotNullConstraintColumn getDefaultInstance() {
+          return defaultInstance;
+        }
+
+        public NotNullConstraintColumn getDefaultInstanceForType() {
+          return defaultInstance;
+        }
+
+        private final com.google.protobuf.UnknownFieldSet unknownFields;
+        @java.lang.Override
+        public final com.google.protobuf.UnknownFieldSet
+            getUnknownFields() {
+          return this.unknownFields;
+        }
+        private NotNullConstraintColumn(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          initFields();
+          int mutable_bitField0_ = 0;
+          com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+              com.google.protobuf.UnknownFieldSet.newBuilder();
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                default: {
+                  if (!parseUnknownField(input, unknownFields,
+                                         extensionRegistry, tag)) {
+                    done = true;
+                  }
+                  break;
+                }
+                case 10: {
+                  bitField0_ |= 0x00000001;
+                  columnName_ = input.readBytes();
+                  break;
+                }
+              }
+            }
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(this);
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(
+                e.getMessage()).setUnfinishedMessage(this);
+          } finally {
+            this.unknownFields = unknownFields.build();
+            makeExtensionsImmutable();
+          }
+        }
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder.class);
+        }
+
+        public static com.google.protobuf.Parser<NotNullConstraintColumn> PARSER =
+            new com.google.protobuf.AbstractParser<NotNullConstraintColumn>() {
+          public NotNullConstraintColumn parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            return new NotNullConstraintColumn(input, extensionRegistry);
+          }
+        };
+
+        @java.lang.Override
+        public com.google.protobuf.Parser<NotNullConstraintColumn> getParserForType() {
+          return PARSER;
+        }
+
+        private int bitField0_;
+        // required string column_name = 1;
+        public static final int COLUMN_NAME_FIELD_NUMBER = 1;
+        private java.lang.Object columnName_;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public boolean hasColumnName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public java.lang.String getColumnName() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            return (java.lang.String) ref;
+          } else {
+            com.google.protobuf.ByteString bs = 
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              columnName_ = s;
+            }
+            return s;
+          }
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getColumnNameBytes() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            columnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+
+        private void initFields() {
+          columnName_ = "";
+        }
+        private byte memoizedIsInitialized = -1;
+        public final boolean isInitialized() {
+          byte isInitialized = memoizedIsInitialized;
+          if (isInitialized != -1) return isInitialized == 1;
+
+          if (!hasColumnName()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          memoizedIsInitialized = 1;
+          return true;
+        }
+
+        public void writeTo(com.google.protobuf.CodedOutputStream output)
+                            throws java.io.IOException {
+          getSerializedSize();
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            output.writeBytes(1, getColumnNameBytes());
+          }
+          getUnknownFields().writeTo(output);
+        }
+
+        private int memoizedSerializedSize = -1;
+        public int getSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+
+          size = 0;
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeBytesSize(1, getColumnNameBytes());
+          }
+          size += getUnknownFields().getSerializedSize();
+          memoizedSerializedSize = size;
+          return size;
+        }
+
+        private static final long serialVersionUID = 0L;
+        @java.lang.Override
+        protected java.lang.Object writeReplace()
+            throws java.io.ObjectStreamException {
+          return super.writeReplace();
+        }
+
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(byte[] data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseDelimitedFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseDelimitedFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+
+        public static Builder newBuilder() { return Builder.create(); }
+        public Builder newBuilderForType() { return newBuilder(); }
+        public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn prototype) {
+          return newBuilder().mergeFrom(prototype);
+        }
+        public Builder toBuilder() { return newBuilder(this); }
+
+        @java.lang.Override
+        protected Builder newBuilderForType(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          Builder builder = new Builder(parent);
+          return builder;
+        }
+        /**
+         * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn}
+         */
+        public static final class Builder extends
+            com.google.protobuf.GeneratedMessage.Builder<Builder>
+           implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder {
+          public static final com.google.protobuf.Descriptors.Descriptor
+              getDescriptor() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor;
+          }
+
+          protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+              internalGetFieldAccessorTable() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder.class);
+          }
+
+          // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.newBuilder()
+          private Builder() {
+            maybeForceBuilderInitialization();
+          }
+
+          private Builder(
+              com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+          }
+          private void maybeForceBuilderInitialization() {
+            if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            }
+          }
+          private static Builder create() {
+            return new Builder();
+          }
+
+          public Builder clear() {
+            super.clear();
+            columnName_ = "";
+            bitField0_ = (bitField0_ & ~0x00000001);
+            return this;
+          }
+
+          public Builder clone() {
+            return create().mergeFrom(buildPartial());
+          }
+
+          public com.google.protobuf.Descriptors.Descriptor
+              getDescriptorForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn getDefaultInstanceForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.getDefaultInstance();
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn build() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn result = buildPartial();
+            if (!result.isInitialized()) {
+              throw newUninitializedMessageException(result);
+            }
+            return result;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn buildPartial() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn(this);
+            int from_bitField0_ = bitField0_;
+            int to_bitField0_ = 0;
+            if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+              to_bitField0_ |= 0x00000001;
+            }
+            result.columnName_ = columnName_;
+            result.bitField0_ = to_bitField0_;
+            onBuilt();
+            return result;
+          }
+
+          public Builder mergeFrom(com.google.protobuf.Message other) {
+            if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn) {
+              return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn)other);
+            } else {
+              super.mergeFrom(other);
+              return this;
+            }
+          }
+
+          public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn other) {
+            if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.getDefaultInstance()) return this;
+            if (other.hasColumnName()) {
+              bitField0_ |= 0x00000001;
+              columnName_ = other.columnName_;
+              onChanged();
+            }
+            this.mergeUnknownFields(other.getUnknownFields());
+            return this;
+          }
+
+          public final boolean isInitialized() {
+            if (!hasColumnName()) {
+              
+              return false;
+            }
+            return true;
+          }
+
+          public Builder mergeFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn parsedMessage = null;
+            try {
+              parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn) e.getUnfinishedMessage();
+              throw e;
+            } finally {
+              if (parsedMessage != null) {
+                mergeFrom(parsedMessage);
+              }
+            }
+            return this;
+          }
+          private int bitField0_;
+
+          // required string column_name = 1;
+          private java.lang.Object columnName_ = "";
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public boolean hasColumnName() {
+            return ((bitField0_ & 0x00000001) == 0x00000001);
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public java.lang.String getColumnName() {
+            java.lang.Object ref = columnName_;
+            if (!(ref instanceof java.lang.String)) {
+              java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                  .toStringUtf8();
+              columnName_ = s;
+              return s;
+            } else {
+              return (java.lang.String) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public com.google.protobuf.ByteString
+              getColumnNameBytes() {
+            java.lang.Object ref = columnName_;
+            if (ref instanceof String) {
+              com.google.protobuf.ByteString b = 
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                      (java.lang.String) ref);
+              columnName_ = b;
+              return b;
+            } else {
+              return (com.google.protobuf.ByteString) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnName(
+              java.lang.String value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder clearColumnName() {
+            bitField0_ = (bitField0_ & ~0x00000001);
+            columnName_ = getDefaultInstance().getColumnName();
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnNameBytes(
+              com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+
+          // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn)
+        }
+
+        static {
+          defaultInstance = new NotNullConstraintColumn(true);
+          defaultInstance.initFields();
+        }
+
+        // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn)
+      }
+
+      private int bitField0_;
+      // required string nn_name = 1;
+      public static final int NN_NAME_FIELD_NUMBER = 1;
+      private java.lang.Object nnName_;
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      public boolean hasNnName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      public java.lang.String getNnName() {
+        java.lang.Object ref = nnName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            nnName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string nn_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNnNameBytes() {
+        java.lang.Object ref = nnName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          nnName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;
+      public static final int COLS_FIELD_NUMBER = 2;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> cols_;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> getColsList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder> 
+          getColsOrBuilderList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      public int getColsCount() {
+        return cols_.size();
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn getCols(int index) {
+        return cols_.get(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder getColsOrBuilder(
+          int index) {
+        return cols_.get(index);
+      }
+
+      // optional bool enable_constraint = 3;
+      public static final int ENABLE_CONSTRAINT_FIELD_NUMBER = 3;
+      private boolean enableConstraint_;
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean hasEnableConstraint() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean getEnableConstraint() {
+        return enableConstraint_;
+      }
+
+      // optional bool validate_constraint = 4;
+      public static final int VALIDATE_CONSTRAINT_FIELD_NUMBER = 4;
+      private boolean validateConstraint_;
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean hasValidateConstraint() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean getValidateConstraint() {
+        return validateConstraint_;
+      }
+
+      // optional bool rely_constraint = 5;
+      public static final int RELY_CONSTRAINT_FIELD_NUMBER = 5;
+      private boolean relyConstraint_;
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean hasRelyConstraint() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean getRelyConstraint() {
+        return relyConstraint_;
+      }
+
+      private void initFields() {
+        nnName_ = "";
+        cols_ = java.util.Collections.emptyList();
+        enableConstraint_ = false;
+        validateConstraint_ = false;
+        relyConstraint_ = false;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasNnName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        for (int i = 0; i < getColsCount(); i++) {
+          if (!getCols(i).isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getNnNameBytes());
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          output.writeMessage(2, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBool(3, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBool(4, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBool(5, relyConstraint_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getNnNameBytes());
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(2, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(3, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(4, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(5, relyConstraint_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            getColsFieldBuilder();
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          nnName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            colsBuilder_.clear();
+          }
+          enableConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000004);
+          validateConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000008);
+          relyConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.nnName_ = nnName_;
+          if (colsBuilder_ == null) {
+            if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              cols_ = java.util.Collections.unmodifiableList(cols_);
+              bitField0_ = (bitField0_ & ~0x00000002);
+            }
+            result.cols_ = cols_;
+          } else {
+            result.cols_ = colsBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.enableConstraint_ = enableConstraint_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.validateConstraint_ = validateConstraint_;
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.relyConstraint_ = relyConstraint_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.getDefaultInstance()) return this;
+          if (other.hasNnName()) {
+            bitField0_ |= 0x00000001;
+            nnName_ = other.nnName_;
+            onChanged();
+          }
+          if (colsBuilder_ == null) {
+            if (!other.cols_.isEmpty()) {
+              if (cols_.isEmpty()) {
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+              } else {
+                ensureColsIsMutable();
+                cols_.addAll(other.cols_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.cols_.isEmpty()) {
+              if (colsBuilder_.isEmpty()) {
+                colsBuilder_.dispose();
+                colsBuilder_ = null;
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+                colsBuilder_ = 
+                  com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                     getColsFieldBuilder() : null;
+              } else {
+                colsBuilder_.addAllMessages(other.cols_);
+              }
+            }
+          }
+          if (other.hasEnableConstraint()) {
+            setEnableConstraint(other.getEnableConstraint());
+          }
+          if (other.hasValidateConstraint()) {
+            setValidateConstraint(other.getValidateConstraint());
+          }
+          if (other.hasRelyConstraint()) {
+            setRelyConstraint(other.getRelyConstraint());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasNnName()) {
+            
+            return false;
+          }
+          for (int i = 0; i < getColsCount(); i++) {
+            if (!getCols(i).isInitialized()) {
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string nn_name = 1;
+        private java.lang.Object nnName_ = "";
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public boolean hasNnName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public java.lang.String getNnName() {
+          java.lang.Object ref = nnName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            nnName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getNnNameBytes() {
+          java.lang.Object ref = nnName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            nnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public Builder setNnName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          nnName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public Builder clearNnName() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          nnName_ = getDefaultInstance().getNnName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string nn_name = 1;</code>
+         */
+        public Builder setNnNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          nnName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;
+        private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> cols_ =
+          java.util.Collections.emptyList();
+        private void ensureColsIsMutable() {
+          if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+            cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn>(cols_);
+            bitField0_ |= 0x00000002;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder> colsBuilder_;
+
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> getColsList() {
+          if (colsBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(cols_);
+          } else {
+            return colsBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public int getColsCount() {
+          if (colsBuilder_ == null) {
+            return cols_.size();
+          } else {
+            return colsBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn getCols(int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);
+          } else {
+            return colsBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.set(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder addAllCols(
+            java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn> values) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            super.addAll(values, cols_);
+            onChanged();
+          } else {
+            colsBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder clearCols() {
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+            onChanged();
+          } else {
+            colsBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public Builder removeCols(int index) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.remove(index);
+            onChanged();
+          } else {
+            colsBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder getColsBuilder(
+            int index) {
+          return getColsFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder getColsOrBuilder(
+            int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);  } else {
+            return colsBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder> 
+             getColsOrBuilderList() {
+          if (colsBuilder_ != null) {
+            return colsBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(cols_);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder addColsBuilder() {
+          return getColsFieldBuilder().addBuilder(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder addColsBuilder(
+            int index) {
+          return getColsFieldBuilder().addBuilder(
+              index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn cols = 2;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder> 
+             getColsBuilderList() {
+          return getColsFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder> 
+            getColsFieldBuilder() {
+          if (colsBuilder_ == null) {
+            colsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.NotNullConstraintColumnOrBuilder>(
+                    cols_,
+                    ((bitField0_ & 0x00000002) == 0x00000002),
+                    getParentForChildren(),
+                    isClean());
+            cols_ = null;
+          }
+          return colsBuilder_;
+        }
+
+        // optional bool enable_constraint = 3;
+        private boolean enableConstraint_ ;
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public boolean hasEnableConstraint() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public boolean getEnableConstraint() {
+          return enableConstraint_;
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public Builder setEnableConstraint(boolean value) {
+          bitField0_ |= 0x00000004;
+          enableConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool enable_constraint = 3;</code>
+         */
+        public Builder clearEnableConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          enableConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool validate_constraint = 4;
+        private boolean validateConstraint_ ;
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public boolean hasValidateConstraint() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public boolean getValidateConstraint() {
+          return validateConstraint_;
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public Builder setValidateConstraint(boolean value) {
+          bitField0_ |= 0x00000008;
+          validateConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool validate_constraint = 4;</code>
+         */
+        public Builder clearValidateConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          validateConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool rely_constraint = 5;
+        private boolean relyConstraint_ ;
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public boolean hasRelyConstraint() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public boolean getRelyConstraint() {
+          return relyConstraint_;
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public Builder setRelyConstraint(boolean value) {
+          bitField0_ |= 0x00000010;
+          relyConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool rely_constraint = 5;</code>
+         */
+        public Builder clearRelyConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          relyConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint)
+      }
+
+      static {
+        defaultInstance = new NotNullConstraint(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint)
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;
+    public static final int NNS_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> nns_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> getNnsList() {
+      return nns_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder> 
+        getNnsOrBuilderList() {
+      return nns_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    public int getNnsCount() {
+      return nns_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint getNns(int index) {
+      return nns_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder getNnsOrBuilder(
+        int index) {
+      return nns_.get(index);
+    }
+
+    private void initFields() {
+      nns_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getNnsCount(); i++) {
+        if (!getNns(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < nns_.size(); i++) {
+        output.writeMessage(1, nns_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < nns_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, nns_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.NotNullConstraints}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraintsOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getNnsFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (nnsBuilder_ == null) {
+          nns_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          nnsBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints(this);
+        int from_bitField0_ = bitField0_;
+        if (nnsBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            nns_ = java.util.Collections.unmodifiableList(nns_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.nns_ = nns_;
+        } else {
+          result.nns_ = nnsBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.getDefaultInstance()) return this;
+        if (nnsBuilder_ == null) {
+          if (!other.nns_.isEmpty()) {
+            if (nns_.isEmpty()) {
+              nns_ = other.nns_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureNnsIsMutable();
+              nns_.addAll(other.nns_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.nns_.isEmpty()) {
+            if (nnsBuilder_.isEmpty()) {
+              nnsBuilder_.dispose();
+              nnsBuilder_ = null;
+              nns_ = other.nns_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              nnsBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getNnsFieldBuilder() : null;
+            } else {
+              nnsBuilder_.addAllMessages(other.nns_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getNnsCount(); i++) {
+          if (!getNns(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> nns_ =
+        java.util.Collections.emptyList();
+      private void ensureNnsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          nns_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint>(nns_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder> nnsBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> getNnsList() {
+        if (nnsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(nns_);
+        } else {
+          return nnsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public int getNnsCount() {
+        if (nnsBuilder_ == null) {
+          return nns_.size();
+        } else {
+          return nnsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint getNns(int index) {
+        if (nnsBuilder_ == null) {
+          return nns_.get(index);
+        } else {
+          return nnsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder setNns(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint value) {
+        if (nnsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNnsIsMutable();
+          nns_.set(index, value);
+          onChanged();
+        } else {
+          nnsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder setNns(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder builderForValue) {
+        if (nnsBuilder_ == null) {
+          ensureNnsIsMutable();
+          nns_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          nnsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder addNns(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint value) {
+        if (nnsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNnsIsMutable();
+          nns_.add(value);
+          onChanged();
+        } else {
+          nnsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder addNns(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint value) {
+        if (nnsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureNnsIsMutable();
+          nns_.add(index, value);
+          onChanged();
+        } else {
+          nnsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder addNns(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder builderForValue) {
+        if (nnsBuilder_ == null) {
+          ensureNnsIsMutable();
+          nns_.add(builderForValue.build());
+          onChanged();
+        } else {
+          nnsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder addNns(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder builderForValue) {
+        if (nnsBuilder_ == null) {
+          ensureNnsIsMutable();
+          nns_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          nnsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder addAllNns(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint> values) {
+        if (nnsBuilder_ == null) {
+          ensureNnsIsMutable();
+          super.addAll(values, nns_);
+          onChanged();
+        } else {
+          nnsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder clearNns() {
+        if (nnsBuilder_ == null) {
+          nns_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          nnsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public Builder removeNns(int index) {
+        if (nnsBuilder_ == null) {
+          ensureNnsIsMutable();
+          nns_.remove(index);
+          onChanged();
+        } else {
+          nnsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder getNnsBuilder(
+          int index) {
+        return getNnsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder getNnsOrBuilder(
+          int index) {
+        if (nnsBuilder_ == null) {
+          return nns_.get(index);  } else {
+          return nnsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder> 
+           getNnsOrBuilderList() {
+        if (nnsBuilder_ != null) {
+          return nnsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(nns_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder addNnsBuilder() {
+        return getNnsFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder addNnsBuilder(
+          int index) {
+        return getNnsFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.NotNullConstraints.NotNullConstraint nns = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder> 
+           getNnsBuilderList() {
+        return getNnsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder> 
+          getNnsFieldBuilder() {
+        if (nnsBuilder_ == null) {
+          nnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraint.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.NotNullConstraints.NotNullConstraintOrBuilder>(
+                  nns_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          nns_ = null;
+        }
+        return nnsBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints)
+    }
+
+    static {
+      defaultInstance = new NotNullConstraints(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.NotNullConstraints)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
   private static
@@ -41526,6 +46137,36 @@ public final class HbaseMetastoreProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -41721,7 +46362,28 @@ public final class HbaseMetastoreProto {
       "\030\t \001(\010\022\027\n\017rely_constraint\030\n \001(\010\032X\n\020Forei" +
       "gnKeyColumn\022\023\n\013column_name\030\001 \002(\t\022\036\n\026refe" +
       "renced_column_name\030\002 \002(\t\022\017\n\007key_seq\030\003 \002(" +
-      "\021*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
+      "\021\"\224\003\n\021UniqueConstraints\022W\n\003uks\030\001 \003(\0132J.o" +
+      "rg.apache.hadoop.hive.metastore.hbase.Un" +
+      "iqueConstraints.UniqueConstraint\032\245\002\n\020Uni" +
+      "queConstraint\022\017\n\007uk_name\030\001 \002(\t\022o\n\004cols\030\002",
+      " \003(\0132a.org.apache.hadoop.hive.metastore." +
+      "hbase.UniqueConstraints.UniqueConstraint" +
+      ".UniqueConstraintColumn\022\031\n\021enable_constr" +
+      "aint\030\003 \001(\010\022\033\n\023validate_constraint\030\004 \001(\010\022" +
+      "\027\n\017rely_constraint\030\005 \001(\010\032>\n\026UniqueConstr" +
+      "aintColumn\022\023\n\013column_name\030\001 \002(\t\022\017\n\007key_s" +
+      "eq\030\002 \002(\021\"\213\003\n\022NotNullConstraints\022Y\n\003nns\030\001" +
+      " \003(\0132L.org.apache.hadoop.hive.metastore." +
+      "hbase.NotNullConstraints.NotNullConstrai" +
+      "nt\032\231\002\n\021NotNullConstraint\022\017\n\007nn_name\030\001 \002(",
+      "\t\022r\n\004cols\030\002 \003(\0132d.org.apache.hadoop.hive" +
+      ".metastore.hbase.NotNullConstraints.NotN" +
+      "ullConstraint.NotNullConstraintColumn\022\031\n" +
+      "\021enable_constraint\030\003 \001(\010\022\033\n\023validate_con" +
+      "straint\030\004 \001(\010\022\027\n\017rely_constraint\030\005 \001(\010\032." +
+      "\n\027NotNullConstraintColumn\022\023\n\013column_name" +
+      "\030\001 \002(\t*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROL" +
+      "E\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -41998,6 +46660,42 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor,
               new java.lang.String[] { "ColumnName", "ReferencedColumnName", "KeySeq", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor =
+            getDescriptor().getMessageTypes().get(25);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor,
+              new java.lang.String[] { "Uks", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor,
+              new java.lang.String[] { "UkName", "Cols", "EnableConstraint", "ValidateConstraint", "RelyConstraint", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_UniqueConstraints_UniqueConstraint_UniqueConstraintColumn_descriptor,
+              new java.lang.String[] { "ColumnName", "KeySeq", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor =
+            getDescriptor().getMessageTypes().get(26);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor,
+              new java.lang.String[] { "Nns", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor,
+              new java.lang.String[] { "NnName", "Cols", "EnableConstraint", "ValidateConstraint", "RelyConstraint", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_NotNullConstraints_NotNullConstraint_NotNullConstraintColumn_descriptor,
+              new java.lang.String[] { "ColumnName", });
           return null;
         }
       };

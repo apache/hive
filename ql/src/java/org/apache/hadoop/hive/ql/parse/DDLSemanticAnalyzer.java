@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -41,7 +42,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -1782,16 +1785,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableAddConstraint(ASTNode ast, String tableName)
     throws SemanticException {
     ASTNode parent = (ASTNode) ast.getParent();
+    String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
     ASTNode child = (ASTNode) ast.getChild(0);
-    List<SQLPrimaryKey> primaryKeys = new ArrayList<SQLPrimaryKey>();
-    List<SQLForeignKey> foreignKeys = new ArrayList<SQLForeignKey>();
+    List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
+    List<SQLForeignKey> foreignKeys = new ArrayList<>();
+    List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
 
-    if (child.getToken().getType() == HiveParser.TOK_PRIMARY_KEY) {
-      BaseSemanticAnalyzer.processPrimaryKeys(parent, child, primaryKeys);
-    } else if (child.getToken().getType() == HiveParser.TOK_FOREIGN_KEY) {
-      BaseSemanticAnalyzer.processForeignKeys(parent, child, foreignKeys);
+    switch (child.getToken().getType()) {
+      case HiveParser.TOK_UNIQUE:
+        BaseSemanticAnalyzer.processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1],
+                child, uniqueConstraints);        
+        break;
+      case HiveParser.TOK_PRIMARY_KEY:
+        BaseSemanticAnalyzer.processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1],
+                child, primaryKeys);
+        break;
+      case HiveParser.TOK_FOREIGN_KEY:
+        BaseSemanticAnalyzer.processForeignKeys(qualifiedTabName[0], qualifiedTabName[1],
+                child, foreignKeys);
+        break;
+      default:
+        throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+                child.getToken().getText()));
     }
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, primaryKeys, foreignKeys);
+    AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, primaryKeys, foreignKeys,
+            uniqueConstraints);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
@@ -2620,6 +2638,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String oldColName = ast.getChild(0).getText();
     String newColName = ast.getChild(1).getText();
     String newType = getTypeStringFromAST((ASTNode) ast.getChild(2));
+    ASTNode constraintChild = null;
     int childCount = ast.getChildCount();
     for (int i = 3; i < childCount; i++) {
       ASTNode child = (ASTNode)ast.getChild(i);
@@ -2639,8 +2658,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_RESTRICT:
           break;
         default:
-          throw new SemanticException("Unsupported token: " + child.getToken()
-              + " for alter table");
+          constraintChild = (ASTNode) child;
+      }
+    }
+    List<SQLPrimaryKey> primaryKeys = null;
+    List<SQLForeignKey> foreignKeys = null;
+    List<SQLUniqueConstraint> uniqueConstraints = null;
+    List<SQLNotNullConstraint> notNullConstraints = null;
+    if (constraintChild != null) {
+      // Process column constraint
+      switch (constraintChild.getToken().getType()) {
+        case HiveParser.TOK_NOT_NULL:
+          notNullConstraints = new ArrayList<>();
+          processNotNullConstraints(qualified[0], qualified[1], constraintChild,
+                  ImmutableList.of(newColName), notNullConstraints);
+          break;
+        case HiveParser.TOK_UNIQUE:
+          uniqueConstraints = new ArrayList<>();
+          processUniqueConstraints(qualified[0], qualified[1], constraintChild,
+                  ImmutableList.of(newColName), uniqueConstraints);
+          break;
+        case HiveParser.TOK_PRIMARY_KEY:
+          primaryKeys = new ArrayList<>();
+          processPrimaryKeys(qualified[0], qualified[1], constraintChild,
+                  ImmutableList.of(newColName), primaryKeys);
+          break;
+        case HiveParser.TOK_FOREIGN_KEY:
+          foreignKeys = new ArrayList<>();
+          processForeignKeys(qualified[0], qualified[1], constraintChild,
+                  foreignKeys);
+          break;
+        default:
+          throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+              constraintChild.getToken().getText()));
       }
     }
 
@@ -2656,9 +2706,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     String tblName = getDotName(qualified);
-    AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, partSpec,
-        unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
-        newType, newComment, first, flagCol, isCascade);
+    AlterTableDesc alterTblDesc;
+    if (primaryKeys == null && foreignKeys == null
+            && uniqueConstraints == null && notNullConstraints == null) {
+      alterTblDesc = new AlterTableDesc(tblName, partSpec,
+          unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
+          newType, newComment, first, flagCol, isCascade);
+    } else {
+      alterTblDesc = new AlterTableDesc(tblName, partSpec,
+          unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
+          newType, newComment, first, flagCol, isCascade,
+          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
+    }
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

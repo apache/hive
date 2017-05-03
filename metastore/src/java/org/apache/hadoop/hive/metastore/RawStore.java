@@ -54,7 +54,9 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -702,14 +704,25 @@ public interface RawStore extends Configurable {
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;
 
+  public abstract List<SQLUniqueConstraint> getUniqueConstraints(String db_name,
+    String tbl_name) throws MetaException;
+
+  public abstract List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
+    String tbl_name) throws MetaException;
+
   void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-    List<SQLForeignKey> foreignKeys) throws InvalidObjectException, MetaException;
+    List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints) throws InvalidObjectException, MetaException;
 
   void dropConstraint(String dbName, String tableName, String constraintName) throws NoSuchObjectException;
 
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  void addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+
+  void addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
 
   /**
    * Gets the unique id of the backing datastore for the metadata

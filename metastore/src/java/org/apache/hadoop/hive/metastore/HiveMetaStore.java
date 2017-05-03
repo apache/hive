@@ -1367,8 +1367,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void create_table_core(final RawStore ms, final Table tbl,
+        final EnvironmentContext envContext)
+            throws AlreadyExistsException, MetaException,
+            InvalidObjectException, NoSuchObjectException {
+      create_table_core(ms, tbl, envContext, null, null, null, null);
+    }
+
+    private void create_table_core(final RawStore ms, final Table tbl,
         final EnvironmentContext envContext, List<SQLPrimaryKey> primaryKeys,
-        List<SQLForeignKey> foreignKeys)
+        List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
+        List<SQLNotNullConstraint> notNullConstraints)
         throws AlreadyExistsException, MetaException,
         InvalidObjectException, NoSuchObjectException {
       if (!MetaStoreUtils.validateName(tbl.getTableName(), hiveConf)) {
@@ -1453,10 +1461,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
           tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
         }
-        if (primaryKeys == null && foreignKeys == null) {
+        if (primaryKeys == null && foreignKeys == null
+                && uniqueConstraints == null && notNullConstraints == null) {
           ms.createTable(tbl);
         } else {
-          ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys);
+          ms.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
+              uniqueConstraints, notNullConstraints);
         }
 
         if (!transactionalListeners.isEmpty()) {
@@ -1500,7 +1510,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, envContext, null, null);
+        create_table_core(getMS(), tbl, envContext);
         success = true;
       } catch (NoSuchObjectException e) {
         ex = e;
@@ -1523,13 +1533,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void create_table_with_constraints(final Table tbl,
-        final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys)
+        final List<SQLPrimaryKey> primaryKeys, final List<SQLForeignKey> foreignKeys,
+        List<SQLUniqueConstraint> uniqueConstraints,
+        List<SQLNotNullConstraint> notNullConstraints)
         throws AlreadyExistsException, MetaException, InvalidObjectException {
       startFunction("create_table", ": " + tbl.toString());
       boolean success = false;
       Exception ex = null;
       try {
-        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys);
+        create_table_core(getMS(), tbl, null, primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints);
         success = true;
       } catch (NoSuchObjectException e) {
         ex = e;
@@ -1628,6 +1641,58 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("add_foreign_key", success, ex, constraintName);
+      }
+    }
+
+    @Override
+    public void add_unique_constraint(AddUniqueConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+      List<SQLUniqueConstraint> uniqueConstraintCols = req.getUniqueConstraintCols();
+      String constraintName = (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) ?
+              uniqueConstraintCols.get(0).getUk_name() : "null";
+      startFunction("add_unique_constraint", ": " + constraintName);
+      boolean success = false;
+      Exception ex = null;
+      try {
+        getMS().addUniqueConstraints(uniqueConstraintCols);
+        success = true;
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_unique_constraint", success, ex, constraintName);
+      }
+    }
+
+    @Override
+    public void add_not_null_constraint(AddNotNullConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+      List<SQLNotNullConstraint> notNullConstraintCols = req.getNotNullConstraintCols();
+      String constraintName = (notNullConstraintCols != null && notNullConstraintCols.size() > 0) ?
+              notNullConstraintCols.get(0).getNn_name() : "null";
+      startFunction("add_not_null_constraint", ": " + constraintName);
+      boolean success = false;
+      Exception ex = null;
+      try {
+        getMS().addNotNullConstraints(notNullConstraintCols);
+        success = true;
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof InvalidObjectException) {
+          throw (InvalidObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("add_not_null_constraint", success, ex, constraintName);
       }
     }
 
@@ -6972,6 +7037,56 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String db_name = request.getDb_name();
+      String tbl_name = request.getTbl_name();
+      startTableFunction("get_unique_constraints", db_name, tbl_name);
+      List<SQLUniqueConstraint> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getUniqueConstraints(db_name, tbl_name);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_unique_constraints", ret != null, ex, tbl_name);
+      }
+      return new UniqueConstraintsResponse(ret);
+    }
+
+    @Override
+    public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+      String db_name = request.getDb_name();
+      String tbl_name = request.getTbl_name();
+      startTableFunction("get_not_null_constraints", db_name, tbl_name);
+      List<SQLNotNullConstraint> ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getNotNullConstraints(db_name, tbl_name);
+      } catch (Exception e) {
+        ex = e;
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      } finally {
+        endFunction("get_not_null_constraints", ret != null, ex, tbl_name);
+      }
+      return new NotNullConstraintsResponse(ret);
+    }
+
+    @Override
     public String get_metastore_db_uuid() throws MetaException, TException {
       try {
         return getMS().getMetastoreDbUuid();
@@ -6981,7 +7096,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
   }
-
 
   public static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, HiveConf hiveConf)
       throws MetaException {

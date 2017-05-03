@@ -141,7 +141,7 @@ public class TestJdbcDriver2 {
         + " (under_col int comment 'the under column', value string) comment '" + tableComment
         + "'");
     stmt.execute("create table " + tableNameWithPk
-        + " (a STRING, b STRING, primary key (a) disable novalidate) ");
+        + " (a STRING, b STRING, primary key (a) disable) ");
     // load data
     stmt.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
 

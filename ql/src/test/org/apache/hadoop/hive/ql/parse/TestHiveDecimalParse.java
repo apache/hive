@@ -104,7 +104,7 @@ public class TestHiveDecimalParse {
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
-      driver.getErrorMsg().contains("missing ) at ',' near ',' in column name or primary key or foreign key"));
+      driver.getErrorMsg().contains("missing ) at ',' near ',' in column name or constraint"));
   }
 
   @Test

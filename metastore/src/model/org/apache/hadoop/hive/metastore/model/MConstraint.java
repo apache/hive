@@ -36,8 +36,12 @@ public class MConstraint
 
   // 0 - Primary Key
   // 1 - PK-FK relationship
+  // 2 - Unique Constraint
+  // 3 - Not Null Constraint
   public final static int PRIMARY_KEY_CONSTRAINT = 0;
   public final static int FOREIGN_KEY_CONSTRAINT = 1;
+  public final static int UNIQUE_CONSTRAINT = 2;
+  public final static int NOT_NULL_CONSTRAINT = 3;
 
   @SuppressWarnings("serial")
   public static class PK implements Serializable {

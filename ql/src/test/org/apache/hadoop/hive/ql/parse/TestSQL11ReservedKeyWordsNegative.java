@@ -1072,6 +1072,19 @@ public class TestSQL11ReservedKeyWordsNegative {
 		}
 	}
 
+  @Test
+  public void testSQL11ReservedKeyWords_UNIQUE() {
+    try {
+      parse("CREATE TABLE UNIQUE (col STRING)");
+      Assert.assertFalse("Expected ParseException", true);
+    } catch (ParseException ex) {
+      Assert.assertEquals(
+          "Failure didn't match.",
+          "line 1:13 cannot recognize input near 'UNIQUE' '(' 'col' in table name",
+          ex.getMessage());
+    }
+  }
+
 	@Test
 	public void testSQL11ReservedKeyWords_UPDATE() {
 		try {

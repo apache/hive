@@ -42,10 +42,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_schema_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)')
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
-  print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys)')
+  print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints)')
   print('  void drop_constraint(DropConstraintRequest req)')
   print('  void add_primary_key(AddPrimaryKeyRequest req)')
   print('  void add_foreign_key(AddForeignKeyRequest req)')
+  print('  void add_unique_constraint(AddUniqueConstraintRequest req)')
+  print('  void add_not_null_constraint(AddNotNullConstraintRequest req)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('  void truncate_table(string dbName, string tableName,  partNames)')
@@ -111,6 +113,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_index_names(string db_name, string tbl_name, i16 max_indexes)')
   print('  PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)')
   print('  ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request)')
+  print('  UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)')
+  print('  NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)')
   print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
   print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
   print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
@@ -357,10 +361,10 @@ elif cmd == 'create_table_with_environment_context':
   pp.pprint(client.create_table_with_environment_context(eval(args[0]),eval(args[1]),))
 
 elif cmd == 'create_table_with_constraints':
-  if len(args) != 3:
-    print('create_table_with_constraints requires 3 args')
+  if len(args) != 5:
+    print('create_table_with_constraints requires 5 args')
     sys.exit(1)
-  pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),))
+  pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),eval(args[3]),eval(args[4]),))
 
 elif cmd == 'drop_constraint':
   if len(args) != 1:
@@ -379,6 +383,18 @@ elif cmd == 'add_foreign_key':
     print('add_foreign_key requires 1 args')
     sys.exit(1)
   pp.pprint(client.add_foreign_key(eval(args[0]),))
+
+elif cmd == 'add_unique_constraint':
+  if len(args) != 1:
+    print('add_unique_constraint requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_unique_constraint(eval(args[0]),))
+
+elif cmd == 'add_not_null_constraint':
+  if len(args) != 1:
+    print('add_not_null_constraint requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_not_null_constraint(eval(args[0]),))
 
 elif cmd == 'drop_table':
   if len(args) != 3:
@@ -769,6 +785,18 @@ elif cmd == 'get_foreign_keys':
     print('get_foreign_keys requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_foreign_keys(eval(args[0]),))
+
+elif cmd == 'get_unique_constraints':
+  if len(args) != 1:
+    print('get_unique_constraints requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_unique_constraints(eval(args[0]),))
+
+elif cmd == 'get_not_null_constraints':
+  if len(args) != 1:
+    print('get_not_null_constraints requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_not_null_constraints(eval(args[0]),))
 
 elif cmd == 'update_table_column_statistics':
   if len(args) != 1:

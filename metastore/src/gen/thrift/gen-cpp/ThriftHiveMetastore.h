@@ -40,10 +40,12 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_schema_with_environment_context(std::vector<FieldSchema> & _return, const std::string& db_name, const std::string& table_name, const EnvironmentContext& environment_context) = 0;
   virtual void create_table(const Table& tbl) = 0;
   virtual void create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context) = 0;
-  virtual void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys) = 0;
+  virtual void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints) = 0;
   virtual void drop_constraint(const DropConstraintRequest& req) = 0;
   virtual void add_primary_key(const AddPrimaryKeyRequest& req) = 0;
   virtual void add_foreign_key(const AddForeignKeyRequest& req) = 0;
+  virtual void add_unique_constraint(const AddUniqueConstraintRequest& req) = 0;
+  virtual void add_not_null_constraint(const AddNotNullConstraintRequest& req) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
@@ -109,6 +111,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) = 0;
   virtual void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) = 0;
   virtual void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request) = 0;
+  virtual void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request) = 0;
+  virtual void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) = 0;
   virtual bool update_table_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual bool update_partition_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) = 0;
@@ -262,7 +266,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void create_table_with_environment_context(const Table& /* tbl */, const EnvironmentContext& /* environment_context */) {
     return;
   }
-  void create_table_with_constraints(const Table& /* tbl */, const std::vector<SQLPrimaryKey> & /* primaryKeys */, const std::vector<SQLForeignKey> & /* foreignKeys */) {
+  void create_table_with_constraints(const Table& /* tbl */, const std::vector<SQLPrimaryKey> & /* primaryKeys */, const std::vector<SQLForeignKey> & /* foreignKeys */, const std::vector<SQLUniqueConstraint> & /* uniqueConstraints */, const std::vector<SQLNotNullConstraint> & /* notNullConstraints */) {
     return;
   }
   void drop_constraint(const DropConstraintRequest& /* req */) {
@@ -272,6 +276,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_foreign_key(const AddForeignKeyRequest& /* req */) {
+    return;
+  }
+  void add_unique_constraint(const AddUniqueConstraintRequest& /* req */) {
+    return;
+  }
+  void add_not_null_constraint(const AddNotNullConstraintRequest& /* req */) {
     return;
   }
   void drop_table(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */) {
@@ -477,6 +487,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_foreign_keys(ForeignKeysResponse& /* _return */, const ForeignKeysRequest& /* request */) {
+    return;
+  }
+  void get_unique_constraints(UniqueConstraintsResponse& /* _return */, const UniqueConstraintsRequest& /* request */) {
+    return;
+  }
+  void get_not_null_constraints(NotNullConstraintsResponse& /* _return */, const NotNullConstraintsRequest& /* request */) {
     return;
   }
   bool update_table_column_statistics(const ColumnStatistics& /* stats_obj */) {
@@ -2927,10 +2943,12 @@ class ThriftHiveMetastore_create_table_with_environment_context_presult {
 };
 
 typedef struct _ThriftHiveMetastore_create_table_with_constraints_args__isset {
-  _ThriftHiveMetastore_create_table_with_constraints_args__isset() : tbl(false), primaryKeys(false), foreignKeys(false) {}
+  _ThriftHiveMetastore_create_table_with_constraints_args__isset() : tbl(false), primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false) {}
   bool tbl :1;
   bool primaryKeys :1;
   bool foreignKeys :1;
+  bool uniqueConstraints :1;
+  bool notNullConstraints :1;
 } _ThriftHiveMetastore_create_table_with_constraints_args__isset;
 
 class ThriftHiveMetastore_create_table_with_constraints_args {
@@ -2945,6 +2963,8 @@ class ThriftHiveMetastore_create_table_with_constraints_args {
   Table tbl;
   std::vector<SQLPrimaryKey>  primaryKeys;
   std::vector<SQLForeignKey>  foreignKeys;
+  std::vector<SQLUniqueConstraint>  uniqueConstraints;
+  std::vector<SQLNotNullConstraint>  notNullConstraints;
 
   _ThriftHiveMetastore_create_table_with_constraints_args__isset __isset;
 
@@ -2954,6 +2974,10 @@ class ThriftHiveMetastore_create_table_with_constraints_args {
 
   void __set_foreignKeys(const std::vector<SQLForeignKey> & val);
 
+  void __set_uniqueConstraints(const std::vector<SQLUniqueConstraint> & val);
+
+  void __set_notNullConstraints(const std::vector<SQLNotNullConstraint> & val);
+
   bool operator == (const ThriftHiveMetastore_create_table_with_constraints_args & rhs) const
   {
     if (!(tbl == rhs.tbl))
@@ -2961,6 +2985,10 @@ class ThriftHiveMetastore_create_table_with_constraints_args {
     if (!(primaryKeys == rhs.primaryKeys))
       return false;
     if (!(foreignKeys == rhs.foreignKeys))
+      return false;
+    if (!(uniqueConstraints == rhs.uniqueConstraints))
+      return false;
+    if (!(notNullConstraints == rhs.notNullConstraints))
       return false;
     return true;
   }
@@ -2984,6 +3012,8 @@ class ThriftHiveMetastore_create_table_with_constraints_pargs {
   const Table* tbl;
   const std::vector<SQLPrimaryKey> * primaryKeys;
   const std::vector<SQLForeignKey> * foreignKeys;
+  const std::vector<SQLUniqueConstraint> * uniqueConstraints;
+  const std::vector<SQLNotNullConstraint> * notNullConstraints;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -3399,6 +3429,230 @@ class ThriftHiveMetastore_add_foreign_key_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_add_foreign_key_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_unique_constraint_args__isset {
+  _ThriftHiveMetastore_add_unique_constraint_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_add_unique_constraint_args__isset;
+
+class ThriftHiveMetastore_add_unique_constraint_args {
+ public:
+
+  ThriftHiveMetastore_add_unique_constraint_args(const ThriftHiveMetastore_add_unique_constraint_args&);
+  ThriftHiveMetastore_add_unique_constraint_args& operator=(const ThriftHiveMetastore_add_unique_constraint_args&);
+  ThriftHiveMetastore_add_unique_constraint_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_unique_constraint_args() throw();
+  AddUniqueConstraintRequest req;
+
+  _ThriftHiveMetastore_add_unique_constraint_args__isset __isset;
+
+  void __set_req(const AddUniqueConstraintRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_add_unique_constraint_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_unique_constraint_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_unique_constraint_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_unique_constraint_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_unique_constraint_pargs() throw();
+  const AddUniqueConstraintRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_unique_constraint_result__isset {
+  _ThriftHiveMetastore_add_unique_constraint_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_add_unique_constraint_result__isset;
+
+class ThriftHiveMetastore_add_unique_constraint_result {
+ public:
+
+  ThriftHiveMetastore_add_unique_constraint_result(const ThriftHiveMetastore_add_unique_constraint_result&);
+  ThriftHiveMetastore_add_unique_constraint_result& operator=(const ThriftHiveMetastore_add_unique_constraint_result&);
+  ThriftHiveMetastore_add_unique_constraint_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_unique_constraint_result() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_unique_constraint_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_unique_constraint_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_unique_constraint_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_unique_constraint_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_unique_constraint_presult__isset {
+  _ThriftHiveMetastore_add_unique_constraint_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_add_unique_constraint_presult__isset;
+
+class ThriftHiveMetastore_add_unique_constraint_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_unique_constraint_presult() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_unique_constraint_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_not_null_constraint_args__isset {
+  _ThriftHiveMetastore_add_not_null_constraint_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_add_not_null_constraint_args__isset;
+
+class ThriftHiveMetastore_add_not_null_constraint_args {
+ public:
+
+  ThriftHiveMetastore_add_not_null_constraint_args(const ThriftHiveMetastore_add_not_null_constraint_args&);
+  ThriftHiveMetastore_add_not_null_constraint_args& operator=(const ThriftHiveMetastore_add_not_null_constraint_args&);
+  ThriftHiveMetastore_add_not_null_constraint_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_not_null_constraint_args() throw();
+  AddNotNullConstraintRequest req;
+
+  _ThriftHiveMetastore_add_not_null_constraint_args__isset __isset;
+
+  void __set_req(const AddNotNullConstraintRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_add_not_null_constraint_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_not_null_constraint_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_not_null_constraint_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_not_null_constraint_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_not_null_constraint_pargs() throw();
+  const AddNotNullConstraintRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_not_null_constraint_result__isset {
+  _ThriftHiveMetastore_add_not_null_constraint_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_add_not_null_constraint_result__isset;
+
+class ThriftHiveMetastore_add_not_null_constraint_result {
+ public:
+
+  ThriftHiveMetastore_add_not_null_constraint_result(const ThriftHiveMetastore_add_not_null_constraint_result&);
+  ThriftHiveMetastore_add_not_null_constraint_result& operator=(const ThriftHiveMetastore_add_not_null_constraint_result&);
+  ThriftHiveMetastore_add_not_null_constraint_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_not_null_constraint_result() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_not_null_constraint_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_not_null_constraint_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_not_null_constraint_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_not_null_constraint_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_not_null_constraint_presult__isset {
+  _ThriftHiveMetastore_add_not_null_constraint_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_add_not_null_constraint_presult__isset;
+
+class ThriftHiveMetastore_add_not_null_constraint_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_not_null_constraint_presult() throw();
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_add_not_null_constraint_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -12098,6 +12352,246 @@ class ThriftHiveMetastore_get_foreign_keys_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_unique_constraints_args__isset {
+  _ThriftHiveMetastore_get_unique_constraints_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_unique_constraints_args__isset;
+
+class ThriftHiveMetastore_get_unique_constraints_args {
+ public:
+
+  ThriftHiveMetastore_get_unique_constraints_args(const ThriftHiveMetastore_get_unique_constraints_args&);
+  ThriftHiveMetastore_get_unique_constraints_args& operator=(const ThriftHiveMetastore_get_unique_constraints_args&);
+  ThriftHiveMetastore_get_unique_constraints_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_unique_constraints_args() throw();
+  UniqueConstraintsRequest request;
+
+  _ThriftHiveMetastore_get_unique_constraints_args__isset __isset;
+
+  void __set_request(const UniqueConstraintsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_unique_constraints_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_unique_constraints_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_unique_constraints_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_unique_constraints_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_unique_constraints_pargs() throw();
+  const UniqueConstraintsRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_unique_constraints_result__isset {
+  _ThriftHiveMetastore_get_unique_constraints_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_unique_constraints_result__isset;
+
+class ThriftHiveMetastore_get_unique_constraints_result {
+ public:
+
+  ThriftHiveMetastore_get_unique_constraints_result(const ThriftHiveMetastore_get_unique_constraints_result&);
+  ThriftHiveMetastore_get_unique_constraints_result& operator=(const ThriftHiveMetastore_get_unique_constraints_result&);
+  ThriftHiveMetastore_get_unique_constraints_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_unique_constraints_result() throw();
+  UniqueConstraintsResponse success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_unique_constraints_result__isset __isset;
+
+  void __set_success(const UniqueConstraintsResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_unique_constraints_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_unique_constraints_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_unique_constraints_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_unique_constraints_presult__isset {
+  _ThriftHiveMetastore_get_unique_constraints_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_unique_constraints_presult__isset;
+
+class ThriftHiveMetastore_get_unique_constraints_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_unique_constraints_presult() throw();
+  UniqueConstraintsResponse* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_unique_constraints_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_not_null_constraints_args__isset {
+  _ThriftHiveMetastore_get_not_null_constraints_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_not_null_constraints_args__isset;
+
+class ThriftHiveMetastore_get_not_null_constraints_args {
+ public:
+
+  ThriftHiveMetastore_get_not_null_constraints_args(const ThriftHiveMetastore_get_not_null_constraints_args&);
+  ThriftHiveMetastore_get_not_null_constraints_args& operator=(const ThriftHiveMetastore_get_not_null_constraints_args&);
+  ThriftHiveMetastore_get_not_null_constraints_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_not_null_constraints_args() throw();
+  NotNullConstraintsRequest request;
+
+  _ThriftHiveMetastore_get_not_null_constraints_args__isset __isset;
+
+  void __set_request(const NotNullConstraintsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_not_null_constraints_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_not_null_constraints_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_not_null_constraints_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_not_null_constraints_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_not_null_constraints_pargs() throw();
+  const NotNullConstraintsRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_not_null_constraints_result__isset {
+  _ThriftHiveMetastore_get_not_null_constraints_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_not_null_constraints_result__isset;
+
+class ThriftHiveMetastore_get_not_null_constraints_result {
+ public:
+
+  ThriftHiveMetastore_get_not_null_constraints_result(const ThriftHiveMetastore_get_not_null_constraints_result&);
+  ThriftHiveMetastore_get_not_null_constraints_result& operator=(const ThriftHiveMetastore_get_not_null_constraints_result&);
+  ThriftHiveMetastore_get_not_null_constraints_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_not_null_constraints_result() throw();
+  NotNullConstraintsResponse success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_not_null_constraints_result__isset __isset;
+
+  void __set_success(const NotNullConstraintsResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_not_null_constraints_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_not_null_constraints_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_not_null_constraints_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_not_null_constraints_presult__isset {
+  _ThriftHiveMetastore_get_not_null_constraints_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_not_null_constraints_presult__isset;
+
+class ThriftHiveMetastore_get_not_null_constraints_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_not_null_constraints_presult() throw();
+  NotNullConstraintsResponse* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_not_null_constraints_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_update_table_column_statistics_args__isset {
   _ThriftHiveMetastore_update_table_column_statistics_args__isset() : stats_obj(false) {}
   bool stats_obj :1;
@@ -19892,8 +20386,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context);
   void send_create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context);
   void recv_create_table_with_environment_context();
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys);
-  void send_create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys);
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints);
+  void send_create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints);
   void recv_create_table_with_constraints();
   void drop_constraint(const DropConstraintRequest& req);
   void send_drop_constraint(const DropConstraintRequest& req);
@@ -19904,6 +20398,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_foreign_key(const AddForeignKeyRequest& req);
   void send_add_foreign_key(const AddForeignKeyRequest& req);
   void recv_add_foreign_key();
+  void add_unique_constraint(const AddUniqueConstraintRequest& req);
+  void send_add_unique_constraint(const AddUniqueConstraintRequest& req);
+  void recv_add_unique_constraint();
+  void add_not_null_constraint(const AddNotNullConstraintRequest& req);
+  void send_add_not_null_constraint(const AddNotNullConstraintRequest& req);
+  void recv_add_not_null_constraint();
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void recv_drop_table();
@@ -20099,6 +20599,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request);
   void send_get_foreign_keys(const ForeignKeysRequest& request);
   void recv_get_foreign_keys(ForeignKeysResponse& _return);
+  void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request);
+  void send_get_unique_constraints(const UniqueConstraintsRequest& request);
+  void recv_get_unique_constraints(UniqueConstraintsResponse& _return);
+  void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request);
+  void send_get_not_null_constraints(const NotNullConstraintsRequest& request);
+  void recv_get_not_null_constraints(NotNullConstraintsResponse& _return);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   void send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics();
@@ -20335,6 +20841,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_drop_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_primary_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_foreign_key(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_unique_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_not_null_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_truncate_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -20400,6 +20908,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_index_names(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_primary_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_foreign_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_unique_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_not_null_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -20494,6 +21004,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["drop_constraint"] = &ThriftHiveMetastoreProcessor::process_drop_constraint;
     processMap_["add_primary_key"] = &ThriftHiveMetastoreProcessor::process_add_primary_key;
     processMap_["add_foreign_key"] = &ThriftHiveMetastoreProcessor::process_add_foreign_key;
+    processMap_["add_unique_constraint"] = &ThriftHiveMetastoreProcessor::process_add_unique_constraint;
+    processMap_["add_not_null_constraint"] = &ThriftHiveMetastoreProcessor::process_add_not_null_constraint;
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
     processMap_["drop_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_table_with_environment_context;
     processMap_["truncate_table"] = &ThriftHiveMetastoreProcessor::process_truncate_table;
@@ -20559,6 +21071,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_index_names"] = &ThriftHiveMetastoreProcessor::process_get_index_names;
     processMap_["get_primary_keys"] = &ThriftHiveMetastoreProcessor::process_get_primary_keys;
     processMap_["get_foreign_keys"] = &ThriftHiveMetastoreProcessor::process_get_foreign_keys;
+    processMap_["get_unique_constraints"] = &ThriftHiveMetastoreProcessor::process_get_unique_constraints;
+    processMap_["get_not_null_constraints"] = &ThriftHiveMetastoreProcessor::process_get_not_null_constraints;
     processMap_["update_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics;
     processMap_["update_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics;
     processMap_["get_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_get_table_column_statistics;
@@ -20832,13 +21346,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->create_table_with_environment_context(tbl, environment_context);
   }
 
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys) {
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->create_table_with_constraints(tbl, primaryKeys, foreignKeys);
+      ifaces_[i]->create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
     }
-    ifaces_[i]->create_table_with_constraints(tbl, primaryKeys, foreignKeys);
+    ifaces_[i]->create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
   }
 
   void drop_constraint(const DropConstraintRequest& req) {
@@ -20866,6 +21380,24 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->add_foreign_key(req);
     }
     ifaces_[i]->add_foreign_key(req);
+  }
+
+  void add_unique_constraint(const AddUniqueConstraintRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_unique_constraint(req);
+    }
+    ifaces_[i]->add_unique_constraint(req);
+  }
+
+  void add_not_null_constraint(const AddNotNullConstraintRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_not_null_constraint(req);
+    }
+    ifaces_[i]->add_not_null_constraint(req);
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -21492,6 +22024,26 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_foreign_keys(_return, request);
     }
     ifaces_[i]->get_foreign_keys(_return, request);
+    return;
+  }
+
+  void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_unique_constraints(_return, request);
+    }
+    ifaces_[i]->get_unique_constraints(_return, request);
+    return;
+  }
+
+  void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_not_null_constraints(_return, request);
+    }
+    ifaces_[i]->get_not_null_constraints(_return, request);
     return;
   }
 
@@ -22216,8 +22768,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context);
   int32_t send_create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context);
   void recv_create_table_with_environment_context(const int32_t seqid);
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys);
-  int32_t send_create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys);
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints);
+  int32_t send_create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints);
   void recv_create_table_with_constraints(const int32_t seqid);
   void drop_constraint(const DropConstraintRequest& req);
   int32_t send_drop_constraint(const DropConstraintRequest& req);
@@ -22228,6 +22780,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_foreign_key(const AddForeignKeyRequest& req);
   int32_t send_add_foreign_key(const AddForeignKeyRequest& req);
   void recv_add_foreign_key(const int32_t seqid);
+  void add_unique_constraint(const AddUniqueConstraintRequest& req);
+  int32_t send_add_unique_constraint(const AddUniqueConstraintRequest& req);
+  void recv_add_unique_constraint(const int32_t seqid);
+  void add_not_null_constraint(const AddNotNullConstraintRequest& req);
+  int32_t send_add_not_null_constraint(const AddNotNullConstraintRequest& req);
+  void recv_add_not_null_constraint(const int32_t seqid);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   int32_t send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void recv_drop_table(const int32_t seqid);
@@ -22423,6 +22981,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request);
   int32_t send_get_foreign_keys(const ForeignKeysRequest& request);
   void recv_get_foreign_keys(ForeignKeysResponse& _return, const int32_t seqid);
+  void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request);
+  int32_t send_get_unique_constraints(const UniqueConstraintsRequest& request);
+  void recv_get_unique_constraints(UniqueConstraintsResponse& _return, const int32_t seqid);
+  void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request);
+  int32_t send_get_not_null_constraints(const NotNullConstraintsRequest& request);
+  void recv_get_not_null_constraints(NotNullConstraintsResponse& _return, const int32_t seqid);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   int32_t send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics(const int32_t seqid);

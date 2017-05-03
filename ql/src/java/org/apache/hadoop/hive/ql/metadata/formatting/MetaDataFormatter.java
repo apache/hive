@@ -30,9 +30,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 
 /**
  * Interface to format table and index information.  We can format it
@@ -75,12 +77,16 @@ public interface MetaDataFormatter {
    * @param colStats
    * @param fkInfo  foreign keys information
    * @param pkInfo  primary key information
+   * @param ukInfo  unique constraint information
+   * @param nnInfo  not null constraint information
    * @throws HiveException
    */
   public void describeTable(DataOutputStream out, String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
       boolean isFormatted, boolean isExt, boolean isPretty,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats, PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo)
+      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
+      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo)
           throws HiveException;
 
   /**
