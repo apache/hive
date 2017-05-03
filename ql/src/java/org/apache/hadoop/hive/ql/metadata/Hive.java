@@ -62,7 +62,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -107,6 +106,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -115,12 +115,15 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -833,7 +836,11 @@ public class Hive {
    * @throws HiveException
    */
   public void createTable(Table tbl, boolean ifNotExists,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)  throws HiveException {
+    List<SQLPrimaryKey> primaryKeys,
+    List<SQLForeignKey> foreignKeys,
+    List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints)
+            throws HiveException {
     try {
       if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
         tbl.setDbName(SessionState.get().getCurrentDatabase());
@@ -858,10 +865,12 @@ public class Hive {
           tTbl.setPrivileges(principalPrivs);
         }
       }
-      if (primaryKeys == null && foreignKeys == null) {
+      if (primaryKeys == null && foreignKeys == null
+              && uniqueConstraints == null && notNullConstraints == null) {
         getMSC().createTable(tTbl);
       } else {
-        getMSC().createTableWithConstraints(tTbl, primaryKeys, foreignKeys);
+        getMSC().createTableWithConstraints(tTbl, primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints);
       }
 
     } catch (AlreadyExistsException e) {
@@ -874,7 +883,7 @@ public class Hive {
   }
 
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
-   createTable(tbl, ifNotExists, null, null);
+   createTable(tbl, ifNotExists, null, null, null, null);
  }
 
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
@@ -4114,6 +4123,42 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * Get all unique constraints associated with the table.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Unique constraints associated with the table.
+   * @throws HiveException
+   */
+  public UniqueConstraintInfo getUniqueConstraints(String dbName, String tblName) throws HiveException {
+    try {
+      List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
+              new UniqueConstraintsRequest(dbName, tblName));
+      return new UniqueConstraintInfo(uniqueConstraints, tblName, dbName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get all not null constraints associated with the table.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Not null constraints associated with the table.
+   * @throws HiveException
+   */
+  public NotNullConstraintInfo getNotNullConstraints(String dbName, String tblName) throws HiveException {
+    try {
+      List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
+              new NotNullConstraintsRequest(dbName, tblName));
+      return new NotNullConstraintInfo(notNullConstraints, tblName, dbName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
     throws HiveException, NoSuchObjectException {
     try {
@@ -4127,6 +4172,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
     throws HiveException, NoSuchObjectException {
     try {
       getMSC().addForeignKey(foreignKeyCols);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols)
+    throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().addUniqueConstraint(uniqueConstraintCols);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols)
+    throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().addNotNullConstraint(notNullConstraintCols);
     } catch (Exception e) {
       throw new HiveException(e);
     }

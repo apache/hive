@@ -354,14 +354,14 @@ public class AddPrimaryKeyRequest implements org.apache.thrift.TBase<AddPrimaryK
           case 1: // PRIMARY_KEY_COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list338 = iprot.readListBegin();
-                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list338.size);
-                SQLPrimaryKey _elem339;
-                for (int _i340 = 0; _i340 < _list338.size; ++_i340)
+                org.apache.thrift.protocol.TList _list354 = iprot.readListBegin();
+                struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list354.size);
+                SQLPrimaryKey _elem355;
+                for (int _i356 = 0; _i356 < _list354.size; ++_i356)
                 {
-                  _elem339 = new SQLPrimaryKey();
-                  _elem339.read(iprot);
-                  struct.primaryKeyCols.add(_elem339);
+                  _elem355 = new SQLPrimaryKey();
+                  _elem355.read(iprot);
+                  struct.primaryKeyCols.add(_elem355);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ public class AddPrimaryKeyRequest implements org.apache.thrift.TBase<AddPrimaryK
         oprot.writeFieldBegin(PRIMARY_KEY_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.primaryKeyCols.size()));
-          for (SQLPrimaryKey _iter341 : struct.primaryKeyCols)
+          for (SQLPrimaryKey _iter357 : struct.primaryKeyCols)
           {
-            _iter341.write(oprot);
+            _iter357.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ public class AddPrimaryKeyRequest implements org.apache.thrift.TBase<AddPrimaryK
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.primaryKeyCols.size());
-        for (SQLPrimaryKey _iter342 : struct.primaryKeyCols)
+        for (SQLPrimaryKey _iter358 : struct.primaryKeyCols)
         {
-          _iter342.write(oprot);
+          _iter358.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ public class AddPrimaryKeyRequest implements org.apache.thrift.TBase<AddPrimaryK
     public void read(org.apache.thrift.protocol.TProtocol prot, AddPrimaryKeyRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list343 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list343.size);
-        SQLPrimaryKey _elem344;
-        for (int _i345 = 0; _i345 < _list343.size; ++_i345)
+        org.apache.thrift.protocol.TList _list359 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.primaryKeyCols = new ArrayList<SQLPrimaryKey>(_list359.size);
+        SQLPrimaryKey _elem360;
+        for (int _i361 = 0; _i361 < _list359.size; ++_i361)
         {
-          _elem344 = new SQLPrimaryKey();
-          _elem344.read(iprot);
-          struct.primaryKeyCols.add(_elem344);
+          _elem360 = new SQLPrimaryKey();
+          _elem360.read(iprot);
+          struct.primaryKeyCols.add(_elem360);
         }
       }
       struct.setPrimaryKeyColsIsSet(true);

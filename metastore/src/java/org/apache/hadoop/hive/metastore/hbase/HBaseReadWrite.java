@@ -24,7 +24,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -147,6 +149,8 @@ public class HBaseReadWrite implements MetadataStore {
   private final static byte[] MASTER_KEY_COL = "mk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] PRIMARY_KEY_COL = "pk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] FOREIGN_KEY_COL = "fk".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] UNIQUE_CONSTRAINT_COL = "uk".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] NOT_NULL_CONSTRAINT_COL = "nn".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
   private final static byte[] SEQUENCES_KEY = "seq".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
@@ -2550,7 +2554,7 @@ public class HBaseReadWrite implements MetadataStore {
   }
 
   /**********************************************************************************************
-   * Constraints (pk/fk) related methods
+   * Constraints related methods
    *********************************************************************************************/
 
   /**
@@ -2582,6 +2586,34 @@ public class HBaseReadWrite implements MetadataStore {
   }
 
   /**
+   * Fetch a unique constraint
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @return List of unique constraints objects
+   * @throws IOException if there's a read error
+   */
+  List<SQLUniqueConstraint> getUniqueConstraint(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, UNIQUE_CONSTRAINT_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeUniqueConstraint(dbName, tableName, serialized);
+  }
+
+  /**
+   * Fetch a not null constraint
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @return List of not null constraints objects
+   * @throws IOException if there's a read error
+   */
+  List<SQLNotNullConstraint> getNotNullConstraint(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, NOT_NULL_CONSTRAINT_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeNotNullConstraint(dbName, tableName, serialized);
+  }
+
+  /**
    * Create a primary key on a table.
    * @param pk Primary key for this table
    * @throws IOException if unable to write the data to the store.
@@ -2602,6 +2634,26 @@ public class HBaseReadWrite implements MetadataStore {
   void putForeignKeys(List<SQLForeignKey> fks) throws IOException {
     byte[][] serialized = HBaseUtils.serializeForeignKeys(fks);
     store(TABLE_TABLE, serialized[0], CATALOG_CF, FOREIGN_KEY_COL, serialized[1]);
+  }
+
+  /**
+   * Create one or more unique constraints on a table.
+   * @param uks Unique constraints for this table
+   * @throws IOException if unable to write the data to the store.
+   */
+  void putUniqueConstraints(List<SQLUniqueConstraint> uks) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeUniqueConstraints(uks);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, UNIQUE_CONSTRAINT_COL, serialized[1]);
+  }
+
+  /**
+   * Create one or more not null constraints on a table.
+   * @param nns Not null constraints for this table
+   * @throws IOException if unable to write the data to the store.
+   */
+  void putNotNullConstraints(List<SQLNotNullConstraint> nns) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeNotNullConstraints(nns);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, NOT_NULL_CONSTRAINT_COL, serialized[1]);
   }
 
   /**
@@ -2627,6 +2679,28 @@ public class HBaseReadWrite implements MetadataStore {
   void deleteForeignKeys(String dbName, String tableName) throws IOException {
     byte[] key = HBaseUtils.buildKey(dbName, tableName);
     delete(TABLE_TABLE, key, CATALOG_CF, FOREIGN_KEY_COL);
+  }
+
+  /**
+   * Drop the unique constraint from a table.
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @throws IOException if unable to delete from the store
+   */
+  void deleteUniqueConstraint(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    delete(TABLE_TABLE, key, CATALOG_CF, UNIQUE_CONSTRAINT_COL);
+  }
+
+  /**
+   * Drop the not null constraint from a table.
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @throws IOException if unable to delete from the store
+   */
+  void deleteNotNullConstraint(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    delete(TABLE_TABLE, key, CATALOG_CF, NOT_NULL_CONSTRAINT_COL);
   }
 
   /**********************************************************************************************

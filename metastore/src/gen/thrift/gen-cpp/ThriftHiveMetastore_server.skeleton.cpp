@@ -112,7 +112,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_environment_context\n");
   }
 
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys) {
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints) {
     // Your implementation goes here
     printf("create_table_with_constraints\n");
   }
@@ -130,6 +130,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_foreign_key(const AddForeignKeyRequest& req) {
     // Your implementation goes here
     printf("add_foreign_key\n");
+  }
+
+  void add_unique_constraint(const AddUniqueConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_unique_constraint\n");
+  }
+
+  void add_not_null_constraint(const AddNotNullConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_not_null_constraint\n");
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -455,6 +465,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_foreign_keys(ForeignKeysResponse& _return, const ForeignKeysRequest& request) {
     // Your implementation goes here
     printf("get_foreign_keys\n");
+  }
+
+  void get_unique_constraints(UniqueConstraintsResponse& _return, const UniqueConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_unique_constraints\n");
+  }
+
+  void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_not_null_constraints\n");
   }
 
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {

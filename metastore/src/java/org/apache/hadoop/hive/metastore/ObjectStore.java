@@ -105,7 +105,9 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -965,7 +967,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+    List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints)
     throws InvalidObjectException, MetaException {
     boolean success = false;
     try {
@@ -976,6 +980,8 @@ public class ObjectStore implements RawStore, Configurable {
       // since this transaction involving create table is not yet committed.
       addPrimaryKeys(primaryKeys, false);
       addForeignKeys(foreignKeys, false);
+      addUniqueConstraints(uniqueConstraints, false);
+      addNotNullConstraints(notNullConstraints, false);
       success = commitTransaction();
     } finally {
       if (!success) {
@@ -3645,6 +3651,114 @@ public class ObjectStore implements RawStore, Configurable {
       mpks.add(mpk);
     }
     pm.makePersistentAll(mpks);
+  }
+
+  @Override
+  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+          throws InvalidObjectException, MetaException {
+    addUniqueConstraints(uks, true);
+  }
+
+  private void addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
+          throws InvalidObjectException, MetaException {
+    List<MConstraint> cstrs = new ArrayList<MConstraint>();
+    String constraintName = null;
+  
+    for (int i = 0; i < uks.size(); i++) {
+      AttachedMTableInfo nParentTable =
+        getMTable(uks.get(i).getTable_db(), uks.get(i).getTable_name(), retrieveCD);
+      MTable parentTable = nParentTable.mtbl;
+      if (parentTable == null) {
+        throw new InvalidObjectException("Parent table not found: " + uks.get(i).getTable_name());
+      }
+
+      MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
+      int parentIntegerIndex =
+          getColumnIndexFromTableColumns(parentCD == null ?
+              null : parentCD.getCols(), uks.get(i).getColumn_name());
+      if (parentIntegerIndex == -1) {
+        throw new InvalidObjectException("Parent column not found: " + uks.get(i).getColumn_name());
+      }
+      if (uks.get(i).getUk_name() == null) {
+        if (uks.get(i).getKey_seq() == 1) {
+            constraintName = generateConstraintName(uks.get(i).getTable_db(), uks.get(i).getTable_name(),
+                uks.get(i).getColumn_name(), "uk");
+        }
+      } else {
+        constraintName = uks.get(i).getUk_name();
+      }
+
+      int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
+          (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
+      MConstraint muk = new MConstraint(
+        constraintName,
+        MConstraint.UNIQUE_CONSTRAINT,
+        uks.get(i).getKey_seq(),
+        null,
+        null,
+        enableValidateRely,
+        parentTable,
+        null,
+        parentCD,
+        null,
+        null,
+        parentIntegerIndex);
+      cstrs.add(muk);
+    }
+    pm.makePersistentAll(cstrs);
+  }
+
+  @Override
+  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+          throws InvalidObjectException, MetaException {
+    addNotNullConstraints(nns, true);
+  }
+
+  private void addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
+          throws InvalidObjectException, MetaException {
+    List<MConstraint> cstrs = new ArrayList<MConstraint>();
+    String constraintName = null;
+  
+    for (int i = 0; i < nns.size(); i++) {
+      AttachedMTableInfo nParentTable =
+        getMTable(nns.get(i).getTable_db(), nns.get(i).getTable_name(), retrieveCD);
+      MTable parentTable = nParentTable.mtbl;
+      if (parentTable == null) {
+        throw new InvalidObjectException("Parent table not found: " + nns.get(i).getTable_name());
+      }
+
+      MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
+      int parentIntegerIndex =
+          getColumnIndexFromTableColumns(parentCD == null ?
+              null : parentCD.getCols(), nns.get(i).getColumn_name());
+      if (parentIntegerIndex == -1) {
+        throw new InvalidObjectException("Parent column not found: " + nns.get(i).getColumn_name());
+      }
+      if (nns.get(i).getNn_name() == null) {
+        constraintName = generateConstraintName(nns.get(i).getTable_db(), nns.get(i).getTable_name(),
+            nns.get(i).getColumn_name(), "nn");
+      } else {
+        constraintName = nns.get(i).getNn_name();
+      }
+
+      int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
+          (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
+      MConstraint muk = new MConstraint(
+        constraintName,
+        MConstraint.NOT_NULL_CONSTRAINT,
+        1, // Not null constraint should reference a single column
+        null,
+        null,
+        enableValidateRely,
+        parentTable,
+        null,
+        parentCD,
+        null,
+        null,
+        parentIntegerIndex);
+      cstrs.add(muk);
+    }
+    pm.makePersistentAll(cstrs);
   }
 
   @Override
@@ -8441,6 +8555,143 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, query);
     }
     return foreignKeys;
+  }
+
+  @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    try {
+      return getUniqueConstraintsInternal(db_name, tbl_name, true, true);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(e.getMessage());
+    }
+  }
+
+  protected List<SQLUniqueConstraint> getUniqueConstraintsInternal(final String db_name_input,
+      final String tbl_name_input, boolean allowSql, boolean allowJdo)
+          throws MetaException, NoSuchObjectException {
+    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
+    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
+    return new GetListHelper<SQLUniqueConstraint>(db_name, tbl_name, allowSql, allowJdo) {
+
+      @Override
+      protected List<SQLUniqueConstraint> getSqlResult(GetHelper<List<SQLUniqueConstraint>> ctx)
+              throws MetaException {
+        return directSql.getUniqueConstraints(db_name, tbl_name);
+      }
+
+      @Override
+      protected List<SQLUniqueConstraint> getJdoResult(GetHelper<List<SQLUniqueConstraint>> ctx)
+              throws MetaException, NoSuchObjectException {
+        return getUniqueConstraintsViaJdo(db_name, tbl_name);
+      }
+    }.run(false);
+  }
+
+  private List<SQLUniqueConstraint> getUniqueConstraintsViaJdo(String db_name, String tbl_name)
+          throws MetaException {
+    boolean commited = false;
+    List<SQLUniqueConstraint> uniqueConstraints = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+        + " constraintType == MConstraint.UNIQUE_CONSTRAINT");
+      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
+      Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
+      pm.retrieveAll(constraints);
+      uniqueConstraints = new ArrayList<SQLUniqueConstraint>();
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currPK = (MConstraint) i.next();
+        int enableValidateRely = currPK.getEnableValidateRely();
+        boolean enable = (enableValidateRely & 4) != 0;
+        boolean validate = (enableValidateRely & 2) != 0;
+        boolean rely = (enableValidateRely & 1) != 0;
+        uniqueConstraints.add(new SQLUniqueConstraint(db_name,
+         tbl_name,
+         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
+         currPK.getPosition(),
+         currPK.getConstraintName(), enable, validate, rely));
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return uniqueConstraints;
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(String db_name, String tbl_name)
+          throws MetaException {
+    try {
+      return getNotNullConstraintsInternal(db_name, tbl_name, true, true);
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(e.getMessage());
+    }
+  }
+
+  protected List<SQLNotNullConstraint> getNotNullConstraintsInternal(final String db_name_input,
+      final String tbl_name_input, boolean allowSql, boolean allowJdo)
+          throws MetaException, NoSuchObjectException {
+    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
+    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
+    return new GetListHelper<SQLNotNullConstraint>(db_name, tbl_name, allowSql, allowJdo) {
+
+      @Override
+      protected List<SQLNotNullConstraint> getSqlResult(GetHelper<List<SQLNotNullConstraint>> ctx)
+              throws MetaException {
+        return directSql.getNotNullConstraints(db_name, tbl_name);
+      }
+
+      @Override
+      protected List<SQLNotNullConstraint> getJdoResult(GetHelper<List<SQLNotNullConstraint>> ctx)
+              throws MetaException, NoSuchObjectException {
+        return getNotNullConstraintsViaJdo(db_name, tbl_name);
+      }
+    }.run(false);
+  }
+
+  private List<SQLNotNullConstraint> getNotNullConstraintsViaJdo(String db_name, String tbl_name)
+          throws MetaException {
+    boolean commited = false;
+    List<SQLNotNullConstraint> notNullConstraints = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MConstraint.class,
+        "parentTable.tableName == tbl_name && parentTable.database.name == db_name &&"
+        + " constraintType == MConstraint.NOT_NULL_CONSTRAINT");
+      query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
+      Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
+      pm.retrieveAll(constraints);
+      notNullConstraints = new ArrayList<SQLNotNullConstraint>();
+      for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
+        MConstraint currPK = (MConstraint) i.next();
+        int enableValidateRely = currPK.getEnableValidateRely();
+        boolean enable = (enableValidateRely & 4) != 0;
+        boolean validate = (enableValidateRely & 2) != 0;
+        boolean rely = (enableValidateRely & 1) != 0;
+        notNullConstraints.add(new SQLNotNullConstraint(db_name,
+         tbl_name,
+         currPK.getParentColumn().getCols().get(currPK.getParentIntegerIndex()).getName(),
+         currPK.getConstraintName(), enable, validate, rely));
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return notNullConstraints;
   }
 
   @Override

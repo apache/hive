@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10326]: Invalid Primary Key syntax  VALIDATE feature not supported yet
+FAILED: ParseException line 1:65 cannot recognize input near 'validate' ')' '<EOF>' in rely specification

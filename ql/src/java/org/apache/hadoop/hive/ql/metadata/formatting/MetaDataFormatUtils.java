@@ -42,7 +42,10 @@ import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraintInfo;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraintInfo.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraintInfo;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
@@ -275,7 +278,8 @@ public final class MetaDataFormatUtils {
     return indexInfo.toString();
   }
 
-  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo) {
+  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
+          UniqueConstraintInfo ukInfo, NotNullConstraintInfo nnInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -286,6 +290,14 @@ public final class MetaDataFormatUtils {
     if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
       constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
       getForeignKeysInformation(constraintsInfo, fkInfo);
+    }
+    if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Unique Constraints").append(LINE_DELIM);
+      getUniqueConstraintsInformation(constraintsInfo, ukInfo);
+    }
+    if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
+      getNotNullConstraintsInformation(constraintsInfo, nnInfo);
     }
     return constraintsInfo.toString();
   }
@@ -334,6 +346,55 @@ public final class MetaDataFormatUtils {
     if (foreignKeys != null && foreignKeys.size() > 0) {
       for (Map.Entry<String, List<ForeignKeyCol>> me : foreignKeys.entrySet()) {
         getForeignKeyRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getUniqueConstraintColInformation(StringBuilder constraintsInfo,
+      UniqueConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Key Sequence:" + ukCol.position;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getUniqueConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<UniqueConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (UniqueConstraintCol ukc : ukRel) {
+        getUniqueConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getUniqueConstraintsInformation(StringBuilder constraintsInfo,
+      UniqueConstraintInfo ukInfo) {
+    formatOutput("Table:",
+                 ukInfo.getDatabaseName() + "." + ukInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, List<UniqueConstraintCol>> uniqueConstraints = ukInfo.getUniqueConstraints();
+    if (uniqueConstraints != null && uniqueConstraints.size() > 0) {
+      for (Map.Entry<String, List<UniqueConstraintCol>> me : uniqueConstraints.entrySet()) {
+        getUniqueConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getNotNullConstraintsInformation(StringBuilder constraintsInfo,
+      NotNullConstraintInfo nnInfo) {
+    formatOutput("Table:",
+                 nnInfo.getDatabaseName() + "." + nnInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, String> notNullConstraints = nnInfo.getNotNullConstraints();
+    if (notNullConstraints != null && notNullConstraints.size() > 0) {
+      for (Map.Entry<String, String> me : notNullConstraints.entrySet()) {
+        formatOutput("Constraint Name:", me.getKey(), constraintsInfo);
+        formatOutput("Column Name:", me.getValue(), constraintsInfo);
+        constraintsInfo.append(LINE_DELIM);
       }
     }
   }

@@ -69,6 +69,27 @@ struct SQLForeignKey {
   14: bool rely_cstr       // Rely/No Rely
 }
 
+struct SQLUniqueConstraint {
+  1: string table_db,    // table schema
+  2: string table_name,  // table name
+  3: string column_name, // column name
+  4: i32 key_seq,        // sequence number within unique constraint
+  5: string uk_name,     // unique key name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr      // Rely/No Rely
+}
+
+struct SQLNotNullConstraint {
+  1: string table_db,    // table schema
+  2: string table_name,  // table name
+  3: string column_name, // column name
+  4: string nn_name,     // not null name
+  5: bool enable_cstr,   // Enable/Disable
+  6: bool validate_cstr, // Validate/No validate
+  7: bool rely_cstr      // Rely/No Rely
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -497,6 +518,24 @@ struct ForeignKeysResponse {
   1: required list<SQLForeignKey> foreignKeys
 }
 
+struct UniqueConstraintsRequest {
+  1: required string db_name,
+  2: required string tbl_name
+}
+
+struct UniqueConstraintsResponse {
+  1: required list<SQLUniqueConstraint> uniqueConstraints
+}
+
+struct NotNullConstraintsRequest {
+  1: required string db_name,
+  2: required string tbl_name
+}
+
+struct NotNullConstraintsResponse {
+  1: required list<SQLNotNullConstraint> notNullConstraints
+}
+
 struct DropConstraintRequest {
   1: required string dbname, 
   2: required string tablename,
@@ -509,6 +548,14 @@ struct AddPrimaryKeyRequest {
 
 struct AddForeignKeyRequest {
   1: required list<SQLForeignKey> foreignKeyCols
+}
+
+struct AddUniqueConstraintRequest {
+  1: required list<SQLUniqueConstraint> uniqueConstraintCols
+}
+
+struct AddNotNullConstraintRequest {
+  1: required list<SQLNotNullConstraint> notNullConstraintCols
 }
 
 // Return type for get_partitions_by_expr
@@ -1055,7 +1102,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
-  void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys)
+  void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
+  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
@@ -1065,6 +1113,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_foreign_key(1:AddForeignKeyRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)  
+  void add_unique_constraint(1:AddUniqueConstraintRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void add_not_null_constraint(1:AddNotNullConstraintRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
@@ -1313,10 +1365,15 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
                        throws(1:MetaException o2)
 
- //primary keys and foreign keys
+  //primary keys and foreign keys
   PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   ForeignKeysResponse get_foreign_keys(1:ForeignKeysRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  // other constraints
+  UniqueConstraintsResponse get_unique_constraints(1:UniqueConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  NotNullConstraintsResponse get_not_null_constraints(1:NotNullConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces

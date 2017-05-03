@@ -62,9 +62,8 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
@@ -87,7 +86,9 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -135,10 +136,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraintInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraintInfo;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
@@ -239,8 +242,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.tools.HadoopArchives;
@@ -386,7 +387,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (alterTbl.getOp() == AlterTableTypes.DROPCONSTRAINT ) {
           return dropConstraint(db, alterTbl);
         } else if (alterTbl.getOp() == AlterTableTypes.ADDCONSTRAINT) {
-          return addConstraint(db, alterTbl);
+          return addConstraints(db, alterTbl);
         } else {
           return alterTable(db, alterTbl);
         }
@@ -3403,9 +3404,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       PrimaryKeyInfo pkInfo = null;
       ForeignKeyInfo fkInfo = null;
+      UniqueConstraintInfo ukInfo = null;
+      NotNullConstraintInfo nnInfo = null;
       if (descTbl.isExt() || descTbl.isFormatted()) {
         pkInfo = db.getPrimaryKeys(tbl.getDbName(), tbl.getTableName());
         fkInfo = db.getForeignKeys(tbl.getDbName(), tbl.getTableName());
+        ukInfo = db.getUniqueConstraints(tbl.getDbName(), tbl.getTableName());
+        nnInfo = db.getNotNullConstraints(tbl.getDbName(), tbl.getTableName());
       }
       fixDecimalColumnTypeName(cols);
       // In case the query is served by HiveServer2, don't pad it with spaces,
@@ -3413,7 +3418,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
       formatter.describeTable(outStream, colPath, tableName, tbl, part,
           cols, descTbl.isFormatted(), descTbl.isExt(),
-          descTbl.isPretty(), isOutputPadded, colStats, pkInfo, fkInfo);
+          descTbl.isPretty(), isOutputPadded, colStats,
+          pkInfo, fkInfo, ukInfo, nnInfo);
 
       LOG.debug("DDLTask: written data for " + tbl.getTableName());
 
@@ -3592,6 +3598,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         db.alterPartitions(tbl.getTableName(), allPartitions, alterTbl.getEnvironmentContext());
       }
+      // Add constraints if necessary
+      addConstraints(db, alterTbl);
     } catch (InvalidOperationException e) {
       LOG.error("alter table: " + stringifyException(e));
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
@@ -3988,27 +3996,38 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-   private int dropConstraint(Hive db, AlterTableDesc alterTbl)
-    throws SemanticException, HiveException {
-     try {
-      db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
-        Utilities.getTableName(alterTbl.getOldName()),
-          alterTbl.getConstraintName());
-      } catch (NoSuchObjectException e) {
-        throw new HiveException(e);
-      }
-     return 0;
-   }
-
-   private int addConstraint(Hive db, AlterTableDesc alterTbl)
-    throws SemanticException, HiveException {
+  private int dropConstraint(Hive db, AlterTableDesc alterTbl)
+          throws SemanticException, HiveException {
     try {
-    // This is either an alter table add foreign key or add primary key command.
-    if (!alterTbl.getForeignKeyCols().isEmpty()) {
-       db.addForeignKey(alterTbl.getForeignKeyCols());
-     } else if (!alterTbl.getPrimaryKeyCols().isEmpty()) {
-       db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
+     db.dropConstraint(Utilities.getDatabaseName(alterTbl.getOldName()),
+       Utilities.getTableName(alterTbl.getOldName()),
+         alterTbl.getConstraintName());
+     } catch (NoSuchObjectException e) {
+       throw new HiveException(e);
      }
+    return 0;
+  }
+
+  private int addConstraints(Hive db, AlterTableDesc alterTbl)
+           throws SemanticException, HiveException {
+    try {
+      // This is either an alter table add foreign key or add primary key command.
+      if (alterTbl.getForeignKeyCols() != null
+              && !alterTbl.getForeignKeyCols().isEmpty()) {
+        db.addForeignKey(alterTbl.getForeignKeyCols());
+      }
+      if (alterTbl.getPrimaryKeyCols() != null
+              && !alterTbl.getPrimaryKeyCols().isEmpty()) {
+        db.addPrimaryKey(alterTbl.getPrimaryKeyCols());
+      }
+      if (alterTbl.getUniqueConstraintCols() != null
+              && !alterTbl.getUniqueConstraintCols().isEmpty()) {
+        db.addUniqueConstraint(alterTbl.getUniqueConstraintCols());
+      }
+      if (alterTbl.getNotNullConstraintCols() != null
+              && !alterTbl.getNotNullConstraintCols().isEmpty()) {
+        db.addNotNullConstraint(alterTbl.getNotNullConstraintCols());
+      }
     } catch (NoSuchObjectException e) {
       throw new HiveException(e);
     }
@@ -4322,6 +4341,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = crtTbl.toTable(conf);
     List<SQLPrimaryKey> primaryKeys = crtTbl.getPrimaryKeys();
     List<SQLForeignKey> foreignKeys = crtTbl.getForeignKeys();
+    List<SQLUniqueConstraint> uniqueConstraints = crtTbl.getUniqueConstraints();
+    List<SQLNotNullConstraint> notNullConstraints = crtTbl.getNotNullConstraints();
     LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
             tbl.getDataLocation());
 
@@ -4363,8 +4384,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else {
       if ((foreignKeys != null && foreignKeys.size() > 0 ) ||
-          (primaryKeys != null && primaryKeys.size() > 0)) {
-        db.createTable(tbl, crtTbl.getIfNotExists(), primaryKeys, foreignKeys);
+          (primaryKeys != null && primaryKeys.size() > 0) ||
+          (uniqueConstraints != null && uniqueConstraints.size() > 0) ||
+          (notNullConstraints != null && notNullConstraints.size() > 0)) {
+        db.createTable(tbl, crtTbl.getIfNotExists(), primaryKeys, foreignKeys,
+                uniqueConstraints, notNullConstraints);
       } else {
         db.createTable(tbl, crtTbl.getIfNotExists());
       }

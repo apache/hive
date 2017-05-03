@@ -1696,6 +1696,8 @@ public class QTestUtil {
       ".*.hive-staging.*",
       "pk_-?[0-9]*_[0-9]*_[0-9]*",
       "fk_-?[0-9]*_[0-9]*_[0-9]*",
+      "uk_-?[0-9]*_[0-9]*_[0-9]*",
+      "nn_-?[0-9]*_[0-9]*_[0-9]*",
       ".*at com\\.sun\\.proxy.*",
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",

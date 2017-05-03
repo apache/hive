@@ -752,9 +752,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public void createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
-    throws AlreadyExistsException, InvalidObjectException,
-    MetaException, NoSuchObjectException, TException {
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+    List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints)
+        throws AlreadyExistsException, InvalidObjectException,
+        MetaException, NoSuchObjectException, TException {
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
       hook.preCreateTable(tbl);
@@ -762,7 +764,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-      client.create_table_with_constraints(tbl, primaryKeys, foreignKeys);
+      client.create_table_with_constraints(tbl, primaryKeys, foreignKeys,
+          uniqueConstraints, notNullConstraints);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -792,7 +795,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.add_foreign_key(new AddForeignKeyRequest(foreignKeyCols));
   }
 
-/**
+  @Override
+  public void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols) throws
+    NoSuchObjectException, MetaException, TException {
+    client.add_unique_constraint(new AddUniqueConstraintRequest(uniqueConstraintCols));
+  }
+
+  @Override
+  public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
+    NoSuchObjectException, MetaException, TException {
+    client.add_not_null_constraint(new AddNotNullConstraintRequest(notNullConstraintCols));
+  }
+
+  /**
    * @param type
    * @return true or false
    * @throws AlreadyExistsException
@@ -1630,6 +1645,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest req) throws MetaException,
     NoSuchObjectException, TException {
     return client.get_foreign_keys(req).getForeignKeys();
+  }
+
+  @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest req)
+    throws MetaException, NoSuchObjectException, TException {
+    return client.get_unique_constraints(req).getUniqueConstraints();
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest req)
+    throws MetaException, NoSuchObjectException, TException {
+    return client.get_not_null_constraints(req).getNotNullConstraints();
   }
 
 
