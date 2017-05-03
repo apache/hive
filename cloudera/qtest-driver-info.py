@@ -16,7 +16,7 @@ POM_HADOOP_VERSION_NAME = "active.hadoop.version"
 POM_HADOOP2_VERSION_VALUE = "hadoop-23.version"
 
 # Config classes which need to be ignored in the CliConfigs class
-CLASS_NAMES_TO_IGNORE = ["PerfCliConfig", "BeeLineConfig", "DummyConfig", "MiniTezCliConfig", "AccumuloCliConfig"]
+CLASS_NAMES_TO_IGNORE = ["HdfsBlobstoreCliConfig", "PerfCliConfig", "BeeLineConfig", "DummyConfig", "MiniTezCliConfig", "AccumuloCliConfig"]
 
 # A dictionary which contains the name of the test driver class for each config class
 DRIVER_FOR_CONFIG_CLASS = {}
@@ -115,21 +115,21 @@ def is_qfile_include(excludes, includes, qfile, testproperties, override_qfile):
 
     # Checks if the qfile is not excluded from qtestgen
     if excludes is not None and len(excludes) > 0:
-        excluded_files = replace_vars(excludes, testproperties)
-        if re.compile(qfile).search(excluded_files) is not None:
+        excluded_files = replace_vars(excludes, testproperties).split(",")
+        if qfile in excluded_files:
             return False
 
     # If includesFrom exists, then check if the qfile is included, otherwise return False
     if includes is not None and len(includes) > 0:
-        included_files = replace_vars(includes, testproperties)
-        return re.compile(qfile).search(included_files) is not None
+        included_files = replace_vars(includes, testproperties).split(",")
+        return qfile in included_files
 
     # There are some drivers that has queryFile set to a file.
     # i.e. queryFile="hbase_bulk.m"
     # If it is set like the above line, then we should not use such driver if qfile is different
     if override_qfile is not None and len(override_qfile) > 0:
-        override_query_file = replace_vars(override_qfile, testproperties)
-        return re.compile(qfile).search(override_query_file) is not None
+        override_query_file = replace_vars(override_qfile, testproperties).split(",")
+        return qfile in override_query_file
 
     return True
 
