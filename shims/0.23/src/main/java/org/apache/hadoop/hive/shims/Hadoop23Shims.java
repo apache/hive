@@ -57,7 +57,6 @@ import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
-import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
@@ -1149,21 +1148,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
 
       this.conf = conf;
-      this.keyProvider = isEncryptionEnabled(dfs.getClient(), dfs.getConf()) ?
-          dfs.getClient().getKeyProvider() : null;
+      this.keyProvider = dfs.getClient().getKeyProvider();
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
-    }
-
-    private boolean isEncryptionEnabled(DFSClient client, Configuration conf) {
-      try {
-        DFSClient.class.getMethod("isHDFSEncryptionEnabled");
-      } catch (NoSuchMethodException e) {
-        // The method is available since Hadoop-2.7.1; if we run with an older Hadoop, check this
-        // ourselves. Note that this setting is in turn deprected in newer versions of Hadoop, but
-        // we only care for it in the older versions; so we will hardcode the old name here.
-        return !conf.getTrimmed("dfs.encryption.key.provider.uri", "").isEmpty();
-      }
-      return client.isHDFSEncryptionEnabled();
     }
 
     @Override
