@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 import org.apache.hive.storage.jdbc.conf.DatabaseType;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
@@ -51,7 +52,8 @@ public class JdbcStorageConfigManagerTest {
   }
 
 
-  @Test(expected = IllegalArgumentException.class)
+  // since metastore connections don't require the url, this is allowable.
+  @Ignore @Test(expected = IllegalArgumentException.class)
   public void testWithJdbcUrlMissing() {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.MYSQL.toString());

@@ -64,7 +64,7 @@ public class TestHiveSchemaTool {
     if (!file.exists()) {
       file.createNewFile();
     }
-    builder = new HiveSchemaTool.CommandBuilder(hiveConf, "testUser", pasword, scriptFile);
+    builder = new HiveSchemaTool.CommandBuilder(hiveConf, null, null, "testUser", pasword, scriptFile);
   }
 
   @After

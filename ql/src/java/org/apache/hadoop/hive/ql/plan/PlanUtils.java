@@ -896,6 +896,7 @@ public final class PlanUtils {
             org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<String, String>();
+        Map<String, String> jobSecrets = new LinkedHashMap<String, String>();
         if(input) {
             try {
                 storageHandler.configureInputJobProperties(
@@ -905,6 +906,15 @@ public final class PlanUtils {
                 LOG.info("configureInputJobProperties not found "+
                     "using configureTableJobProperties",e);
                 storageHandler.configureTableJobProperties(tableDesc, jobProperties);
+            }
+
+            try{
+              storageHandler.configureInputJobCredentials(
+                tableDesc,
+                jobSecrets);
+            } catch(AbstractMethodError e) {
+              // ignore
+              LOG.info("configureInputJobSecrets not found");
             }
         }
         else {
@@ -923,6 +933,11 @@ public final class PlanUtils {
         // plans.
         if (!jobProperties.isEmpty()) {
           tableDesc.setJobProperties(jobProperties);
+        }
+
+        // same idea, only set for non-native tables
+        if (!jobSecrets.isEmpty()) {
+          tableDesc.setJobSecrets(jobSecrets);
         }
       }
     } catch (HiveException ex) {

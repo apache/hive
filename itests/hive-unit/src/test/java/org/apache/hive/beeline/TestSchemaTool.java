@@ -57,7 +57,7 @@ public class TestSchemaTool extends TestCase {
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveConf = new HiveConf(this.getClass());
     schemaTool = new HiveSchemaTool(
-        System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby");
+        System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby", null);
     schemaTool.setUserName(
         schemaTool.getHiveConf().get(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
     schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
@@ -590,7 +590,7 @@ public class TestSchemaTool extends TestCase {
     NestedScriptParser dbOptParser = HiveSchemaHelper.getDbCommandParser(
         "postgres",
         PostgresCommandParser.POSTGRES_SKIP_STANDARD_STRINGS_DBOPT,
-        null, null, null);
+        null, null, null, null);
     expectedSQL = StringUtils.join(
         expectedScriptWithOptionAbsent, System.getProperty("line.separator")) +
             System.getProperty("line.separator");
