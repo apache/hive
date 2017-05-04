@@ -1,12 +1,6 @@
-PREHOOK: query: -- Check we can create a table located in a blobstore
--- with CTAS from a table in a blobstore
-
-DROP TABLE IF EXISTS blobstore_source
+PREHOOK: query: DROP TABLE IF EXISTS blobstore_source
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Check we can create a table located in a blobstore
--- with CTAS from a table in a blobstore
-
-DROP TABLE IF EXISTS blobstore_source
+POSTHOOK: query: DROP TABLE IF EXISTS blobstore_source
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE blobstore_source(a string, b string, c double)
 ROW FORMAT DELIMITED 

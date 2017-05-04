@@ -1,8 +1,6 @@
-PREHOOK: query: -- Create external table like should not result in data loss upon dropping the table
-DROP TABLE blobstore_partitioned_source_table
+PREHOOK: query: DROP TABLE blobstore_partitioned_source_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Create external table like should not result in data loss upon dropping the table
-DROP TABLE blobstore_partitioned_source_table
+POSTHOOK: query: DROP TABLE blobstore_partitioned_source_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE blobstore_partitioned_source_table (
   a int, b int, c string
