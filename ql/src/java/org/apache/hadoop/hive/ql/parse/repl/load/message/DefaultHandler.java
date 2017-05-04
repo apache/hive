@@ -15,30 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-
-public class DropPartitionHandler extends AbstractHandler {
-
-  DropPartitionHandler(NotificationEvent event) {
-    super(event);
-  }
-
+class DefaultHandler extends AbstractMessageHandler {
   @Override
-  public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_PARTITION message : {}", fromEventId(), event.getMessage());
-    DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
-    dmd.write();
-  }
-
-  @Override
-  public DumpType dumpType() {
-    return DumpType.EVENT_DROP_PARTITION;
+  public List<Task<? extends Serializable>> handle(Context withinContext)
+      throws SemanticException {
+    return new ArrayList<>();
   }
 }

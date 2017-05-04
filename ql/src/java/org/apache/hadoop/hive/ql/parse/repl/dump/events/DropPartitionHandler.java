@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
@@ -23,15 +23,15 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-public class DropTableHandler extends AbstractHandler {
+class DropPartitionHandler extends AbstractHandler {
 
-  DropTableHandler(NotificationEvent event) {
+  DropPartitionHandler(NotificationEvent event) {
     super(event);
   }
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_TABLE message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DROP_PARTITION message : {}", fromEventId(), event.getMessage());
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(event.getMessage());
     dmd.write();
@@ -39,6 +39,6 @@ public class DropTableHandler extends AbstractHandler {
 
   @Override
   public DumpType dumpType() {
-    return DumpType.EVENT_DROP_TABLE;
+    return DumpType.EVENT_DROP_PARTITION;
   }
 }
