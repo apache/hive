@@ -129,8 +129,14 @@ public class SparkTask extends Task<SparkWork> {
         // TODO: If the timeout is because of lack of resources in the cluster, we should
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
         // it's difficult to do it on hive side alone. See HIVE-12650.
+        LOG.info("Failed to submit Spark job " + sparkJobID);
+        jobRef.cancelJob();
+      } else if (rc == 4) {
+        LOG.info("The number of tasks reaches above the limit " + conf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS) +
+            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
         jobRef.cancelJob();
       }
+
       if (this.jobID == null) {
         this.jobID = sparkJobStatus.getAppID();
       }
