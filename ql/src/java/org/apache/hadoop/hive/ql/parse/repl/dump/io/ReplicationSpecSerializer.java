@@ -15,40 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
 
-public class DBSerializer implements JsonWriter.Serializer {
-  private final Database dbObject;
-
-  public DBSerializer(Database dbObject) {
-    this.dbObject = dbObject;
-  }
-
+public class ReplicationSpecSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    dbObject.putToParameters(
-        ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-        additionalPropertiesProvider.getCurrentReplicationState()
-    );
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    try {
-      String value = serializer.toString(dbObject, "UTF-8");
-      writer.jsonGenerator.writeStringField("db", value);
-    } catch (TException e) {
-      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
+    for (ReplicationSpec.KEY key : ReplicationSpec.KEY.values()) {
+      String value = additionalPropertiesProvider.get(key);
+      if (value != null) {
+        writer.jsonGenerator.writeStringField(key.toString(), value);
+      }
     }
   }
 }
-
-

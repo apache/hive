@@ -17,77 +17,70 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.primitives.Ints;
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
-import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.repl.dump.FunctionSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.events.EventHandler;
 import org.apache.hadoop.hive.ql.parse.repl.events.EventHandlerFactory;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
+import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -120,154 +113,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
-  public static final String DUMPMETADATA = "_dumpmetadata";
 
-  public enum DUMPTYPE {
-    BOOTSTRAP("BOOTSTRAP"),
-    INCREMENTAL("INCREMENTAL"),
-    EVENT_CREATE_TABLE("EVENT_CREATE_TABLE"),
-    EVENT_ADD_PARTITION("EVENT_ADD_PARTITION"),
-    EVENT_DROP_TABLE("EVENT_DROP_TABLE"),
-    EVENT_DROP_PARTITION("EVENT_DROP_PARTITION"),
-    EVENT_ALTER_TABLE("EVENT_ALTER_TABLE"),
-    EVENT_RENAME_TABLE("EVENT_RENAME_TABLE"),
-    EVENT_TRUNCATE_TABLE("EVENT_TRUNCATE_TABLE"),
-    EVENT_ALTER_PARTITION("EVENT_ALTER_PARTITION"),
-    EVENT_RENAME_PARTITION("EVENT_RENAME_PARTITION"),
-    EVENT_TRUNCATE_PARTITION("EVENT_TRUNCATE_PARTITION"),
-    EVENT_INSERT("EVENT_INSERT"),
-    EVENT_UNKNOWN("EVENT_UNKNOWN");
-
-    String type = null;
-    DUMPTYPE(String type) {
-      this.type = type;
-    }
-
-    @Override
-    public String toString(){
-      return type;
-    }
-
-  };
-
-  public static class DumpMetaData {
-    // wrapper class for reading and writing metadata about a dump
-    // responsible for _dumpmetadata files
-
-    private DUMPTYPE dumpType;
-    private Long eventFrom = null;
-    private Long eventTo = null;
-    private String payload = null;
-    private boolean initialized = false;
-
-    private final Path dumpRoot;
-    private final Path dumpFile;
-    private final HiveConf hiveConf;
-    private Path cmRoot;
-
-    public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
-      this.dumpRoot = dumpRoot;
-      this.hiveConf = hiveConf;
-      dumpFile = new Path(dumpRoot, DUMPMETADATA);
-    }
-
-    public DumpMetaData(Path dumpRoot, DUMPTYPE lvl, Long eventFrom, Long eventTo, Path cmRoot,
-        HiveConf hiveConf){
-      this(dumpRoot,hiveConf);
-      setDump(lvl, eventFrom, eventTo, cmRoot);
-    }
-
-    public void setDump(DUMPTYPE lvl, Long eventFrom, Long eventTo, Path cmRoot){
-      this.dumpType = lvl;
-      this.eventFrom = eventFrom;
-      this.eventTo = eventTo;
-      this.initialized = true;
-      this.cmRoot = cmRoot;
-    }
-
-    public void loadDumpFromFile() throws SemanticException {
-      try {
-        // read from dumpfile and instantiate self
-        FileSystem fs = dumpFile.getFileSystem(hiveConf);
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
-        String line = null;
-        if ( (line = br.readLine()) != null){
-          String[] lineContents = line.split("\t", 5);
-          setDump(DUMPTYPE.valueOf(lineContents[0]), Long.valueOf(lineContents[1]), Long.valueOf(lineContents[2]),
-              new Path(lineContents[3]));
-          setPayload(lineContents[4].equals(Utilities.nullStringOutput) ? null : lineContents[4]);
-          ReplChangeManager.setCmRoot(cmRoot);
-        } else {
-          throw new IOException("Unable to read valid values from dumpFile:"+dumpFile.toUri().toString());
-        }
-      } catch (IOException ioe){
-        throw new SemanticException(ioe);
-      }
-    }
-
-    public DUMPTYPE getDumpType() throws SemanticException {
-      initializeIfNot();
-      return this.dumpType;
-    }
-
-    public String getPayload() throws SemanticException {
-      initializeIfNot();
-      return this.payload;
-    }
-
-    public void setPayload(String payload) {
-      this.payload = payload;
-    }
-
-    public Long getEventFrom() throws SemanticException {
-      initializeIfNot();
-      return eventFrom;
-    }
-
-    public Long getEventTo() throws SemanticException {
-      initializeIfNot();
-      return eventTo;
-    }
-
-    public Path getCmRoot() {
-      return cmRoot;
-    }
-
-    public void setCmRoot(Path cmRoot) {
-      this.cmRoot = cmRoot;
-    }
-
-    public Path getDumpFilePath() {
-      return dumpFile;
-    }
-
-    public boolean isIncrementalDump() throws SemanticException {
-      initializeIfNot();
-      return (this.dumpType == DUMPTYPE.INCREMENTAL);
-    }
-
-    private void initializeIfNot() throws SemanticException {
-      if (!initialized){
-        loadDumpFromFile();
-      }
-    }
-
-    public void write() throws SemanticException {
-      writeOutput(
-          Arrays.asList(
-              dumpType.toString(),
-              eventFrom.toString(),
-              eventTo.toString(),
-              cmRoot.toString(),
-              payload),
-          dumpFile,
-          hiveConf
-      );
-    }
-
-  }
-
-  public ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
+  ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -387,7 +234,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.info(
             "Consolidation done, preparing to return {},{}->{}",
             dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
-        dmd.setDump(DUMPTYPE.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
+        dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot);
         dmd.write();
 
         // Set the correct last repl id to return to the user
@@ -433,10 +280,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
-        writeOutput(
-            Arrays.asList("incremental", String.valueOf(eventFrom), String.valueOf(lastReplId)),
+        Utils.writeOutput(
+            Arrays.asList(
+                "incremental",
+                String.valueOf(eventFrom),
+                String.valueOf(lastReplId)
+            ),
             dmd.getDumpFilePath(), conf);
-        dmd.setDump(DUMPTYPE.INCREMENTAL, eventFrom, lastReplId, cmRoot);
+        dmd.setDump(DumpType.INCREMENTAL, eventFrom, lastReplId, cmRoot);
         dmd.write();
       }
       prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);
@@ -463,7 +314,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     testInjectDumpDir = dumpdir;
   }
 
-  String getNextDumpDir() {
+  private String getNextDumpDir() {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
       // make it easy to write .q unit tests, instead of unique id generation.
       // however, this does mean that in writing tests, we have to be aware that
@@ -494,8 +345,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : instantiating FS objects are generally costly. Refactor
       FileSystem fs = dbRoot.getFileSystem(conf);
       Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
-      Database dbObj = db.getDatabase(dbName);
-      EximUtil.createDbExportDump(fs, dumpPath, dbObj, getNewReplicationSpec());
+      HiveWrapper.Tuple<Database> database = new HiveWrapper(db, dbName).database();
+      EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e);
@@ -513,9 +364,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : This should ideally return the Function Objects and not Strings(function names) that should be done by the caller, Look at this separately.
       List<String> functionNames = db.getFunctions(dbName, "*");
       for (String functionName : functionNames) {
-        org.apache.hadoop.hive.metastore.api.Function function =
-            db.getFunction(dbName, functionName);
-        if (function.getResourceUris().isEmpty()) {
+        HiveWrapper.Tuple<Function> tuple;
+        try {
+          tuple = new HiveWrapper(db, dbName).function(functionName);
+        } catch (HiveException e) {
+          //This can happen as we are querying the getFunctions before we are getting the actual function
+          //in between there can be a drop function by a user in which case our call will fail.
+          LOG.info("Function " + functionName + " could not be found, we are ignoring it as it can be a valid state ", e);
+          continue;
+        }
+        if (tuple.object.getResourceUris().isEmpty()) {
           SESSION_STATE_LOG.warn(
               "Not replicating function: " + functionName + " as it seems to have been created "
                   + "without USING clause");
@@ -526,7 +384,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             new Path(new Path(functionsRoot, functionName), FUNCTION_METADATA_DIR_NAME);
         try (JsonWriter jsonWriter = new JsonWriter(functionMetadataRoot.getFileSystem(conf),
             functionMetadataRoot)) {
-          new FunctionSerializer(function).writeTo(jsonWriter, getNewReplicationSpec());
+          new FunctionSerializer(tuple.object).writeTo(jsonWriter, tuple.replicationSpec);
         }
       }
     } catch (Exception e) {
@@ -738,7 +596,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
             taskChainTail = barrierTask;
             evstage++;
-            lastEvid = dmd.eventTo;
+            lastEvid = dmd.getEventTo();
           }
         }
 
@@ -1121,7 +979,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // associated with that
       // Then, we iterate over all subdirs, and create table imports for each.
 
-      EximUtil.ReadMetaData rv = new EximUtil.ReadMetaData();
+      MetaData rv = new MetaData();
       try {
         rv = EximUtil.readMetaData(fs, new Path(dir.getPath(), EximUtil.METADATA_NAME));
       } catch (IOException e) {
@@ -1163,12 +1021,64 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(dbRootTask);
       FileStatus[] dirsInDbPath = fs.listStatus(dir.getPath(), EximUtil.getDirectoryFilter(fs));
 
-      for (FileStatus tableDir : dirsInDbPath) {
+      for (FileStatus tableDir : Collections2.filter(Arrays.asList(dirsInDbPath), new TableDirPredicate())) {
         analyzeTableLoad(
             dbName, null, tableDir.getPath().toUri().toString(), dbRootTask, null, null);
       }
+
+      //Function load
+      Path functionMetaDataRoot = new Path(dir.getPath(), FUNCTIONS_ROOT_DIR_NAME);
+      if (fs.exists(functionMetaDataRoot)) {
+        List<FileStatus> functionDirectories =
+            Arrays.asList(fs.listStatus(functionMetaDataRoot, EximUtil.getDirectoryFilter(fs)));
+        for (FileStatus functionDir : functionDirectories) {
+          analyzeFunctionLoad(dbName, functionDir, dbRootTask);
+        }
+      }
     } catch (Exception e) {
       throw new SemanticException(e);
+    }
+  }
+
+  private static class TableDirPredicate implements Predicate<FileStatus> {
+    @Override
+    public boolean apply(FileStatus fileStatus) {
+      return !fileStatus.getPath().getName().contains(FUNCTIONS_ROOT_DIR_NAME);
+    }
+  }
+
+  private void analyzeFunctionLoad(String dbName, FileStatus functionDir,
+      Task<? extends Serializable> createDbTask) throws IOException, SemanticException {
+    URI fromURI = EximUtil
+        .getValidatedURI(conf, stripQuotes(functionDir.getPath().toUri().toString()));
+    Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+
+    FileSystem fs = FileSystem.get(fromURI, conf);
+    inputs.add(toReadEntity(fromPath, conf));
+
+    try {
+      MetaData metaData = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+      ReplicationSpec replicationSpec = metaData.getReplicationSpec();
+      if (replicationSpec.isNoop()) {
+        // nothing to do here, silently return.
+        return;
+      }
+      CreateFunctionDesc desc = new CreateFunctionDesc(
+          dbName + "." + metaData.function.getFunctionName(),
+          false,
+          metaData.function.getClassName(),
+          metaData.function.getResourceUris()
+      );
+
+      Task<FunctionWork> currentTask = TaskFactory.get(new FunctionWork(desc), conf);
+      if (createDbTask != null) {
+        createDbTask.addDependentTask(currentTask);
+        LOG.debug("Added {}:{} as a precursor of {}:{}",
+            createDbTask.getClass(), createDbTask.getId(), currentTask.getClass(),
+            currentTask.getId());
+      }
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }
 
@@ -1270,27 +1180,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("    > " + s);
     }
     ctx.setResFile(ctx.getLocalTmpPath());
-    writeOutput(values, ctx.getResFile(), conf);
-  }
-
-  private static void writeOutput(List<String> values, Path outputFile, HiveConf hiveConf)
-      throws SemanticException {
-    FileSystem fs = null;
-    DataOutputStream outStream = null;
-    try {
-      fs = outputFile.getFileSystem(hiveConf);
-      outStream = fs.create(outputFile);
-      outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
-      for (int i = 1; i < values.size(); i++) {
-        outStream.write(Utilities.tabCode);
-        outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
-      }
-      outStream.write(Utilities.newLineCode);
-    } catch (IOException e) {
-      throw new SemanticException(e);
-    } finally {
-      IOUtils.closeStream(outStream);
-    }
+    Utils.writeOutput(values, ctx.getResFile(), conf);
   }
 
   private ReplicationSpec getNewReplicationSpec() throws SemanticException {
@@ -1327,14 +1217,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase();
 
   static Iterable<String> removeValuesTemporaryTables(List<String> tableNames) {
-    List<String> allTables = new ArrayList<>(tableNames);
-    CollectionUtils.filter(allTables, new Predicate() {
-      @Override
-      public boolean evaluate(Object tableName) {
-        return !tableName.toString().toLowerCase().startsWith(TMP_TABLE_PREFIX);
-      }
-    });
-    return allTables;
+    return Collections2.filter(tableNames,
+        tableName -> {
+          assert tableName != null;
+          return !tableName.toLowerCase().startsWith(TMP_TABLE_PREFIX);
+        });
   }
 
   private Iterable<? extends String> matchesDb(String dbPattern) throws HiveException {

@@ -15,22 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.io.IOException;
 
-public class ReplicationSpecSerializer implements JsonWriter.Serializer {
+import static org.apache.hadoop.hive.ql.parse.EximUtil.METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION;
+
+/**
+ * This is not used as of now as the conditional which lead to its usage is always false
+ * hence we have removed the conditional and the usage of this class, but might be required in future.
+ */
+public class VersionCompatibleSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    for (ReplicationSpec.KEY key : ReplicationSpec.KEY.values()) {
-      String value = additionalPropertiesProvider.get(key);
-      if (value != null) {
-        writer.jsonGenerator.writeStringField(key.toString(), value);
-      }
-    }
+    writer.jsonGenerator.writeStringField("fcversion", METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
   }
 }

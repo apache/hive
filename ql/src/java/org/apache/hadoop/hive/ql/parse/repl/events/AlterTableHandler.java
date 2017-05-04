@@ -22,13 +22,12 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public class AlterTableHandler extends AbstractHandler {
-  private final org.apache.hadoop.hive.metastore.api.Table before;
   private final org.apache.hadoop.hive.metastore.api.Table after;
   private final boolean isTruncateOp;
   private final Scenario scenario;
@@ -36,30 +35,30 @@ public class AlterTableHandler extends AbstractHandler {
   private enum Scenario {
     ALTER {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_ALTER_TABLE;
+      DumpType dumpType() {
+        return DumpType.EVENT_ALTER_TABLE;
       }
     },
     RENAME {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_RENAME_TABLE;
+      DumpType dumpType() {
+        return DumpType.EVENT_RENAME_TABLE;
       }
     },
     TRUNCATE {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_TRUNCATE_TABLE;
+      DumpType dumpType() {
+        return DumpType.EVENT_TRUNCATE_TABLE;
       }
     };
 
-    abstract DUMPTYPE dumpType();
+    abstract DumpType dumpType();
   }
 
   AlterTableHandler(NotificationEvent event) throws Exception {
     super(event);
     AlterTableMessage atm = deserializer.getAlterTableMessage(event.getMessage());
-    before = atm.getTableObjBefore();
+    org.apache.hadoop.hive.metastore.api.Table before = atm.getTableObjBefore();
     after = atm.getTableObjAfter();
     isTruncateOp = atm.getIsTruncateOp();
     scenario = scenarioType(before, after);
@@ -97,7 +96,7 @@ public class AlterTableHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
+  public DumpType dumpType() {
     return scenario.dumpType();
   }
 }

@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,36 +19,32 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import org.apache.hadoop.io.IOUtils;
 
-import java.io.Closeable;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.List;
 
-import static org.apache.hadoop.hive.ql.parse.EximUtil.METADATA_FORMAT_VERSION;
-
-public class JsonWriter implements Closeable {
-
-  final JsonGenerator jsonGenerator;
-
-  public JsonWriter(FileSystem fs, Path writePath) throws IOException {
-    OutputStream out = fs.create(writePath);
-    jsonGenerator = new JsonFactory().createJsonGenerator(out);
-    jsonGenerator.writeStartObject();
-    jsonGenerator.writeStringField("version", METADATA_FORMAT_VERSION);
-  }
-
-  @Override
-  public void close() throws IOException {
-    jsonGenerator.writeEndObject();
-    jsonGenerator.close();
-  }
-
-  public interface Serializer {
-    void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider) throws
-        SemanticException, IOException;
+public class Utils {
+  public static void writeOutput(List<String> values, Path outputFile, HiveConf hiveConf)
+      throws SemanticException {
+    DataOutputStream outStream = null;
+    try {
+      FileSystem fs = outputFile.getFileSystem(hiveConf);
+      outStream = fs.create(outputFile);
+      outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
+      for (int i = 1; i < values.size(); i++) {
+        outStream.write(Utilities.tabCode);
+        outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
+      }
+      outStream.write(Utilities.newLineCode);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    } finally {
+      IOUtils.closeStream(outStream);
+    }
   }
 }

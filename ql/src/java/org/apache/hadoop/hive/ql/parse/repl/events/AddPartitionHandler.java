@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Iterator;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 public class AddPartitionHandler extends AbstractHandler {
   protected AddPartitionHandler(NotificationEvent notificationEvent) {
@@ -108,7 +108,7 @@ public class AddPartitionHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
-    return DUMPTYPE.EVENT_ADD_PARTITION;
+  public DumpType dumpType() {
+    return DumpType.EVENT_ADD_PARTITION;
   }
 }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class TableSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME = "table";
   private final org.apache.hadoop.hive.ql.metadata.Table tableHandle;
   private final Iterable<Partition> partitions;
 
@@ -52,8 +53,8 @@ public class TableSerializer implements JsonWriter.Serializer {
     try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       writer.jsonGenerator
-          .writeStringField("table", serializer.toString(tTable, "UTF-8"));
-      writer.jsonGenerator.writeFieldName("partitions");
+          .writeStringField(FIELD_NAME, serializer.toString(tTable, UTF_8));
+      writer.jsonGenerator.writeFieldName(PartitionSerializer.FIELD_NAME);
       writePartitions(writer, additionalPropertiesProvider);
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);

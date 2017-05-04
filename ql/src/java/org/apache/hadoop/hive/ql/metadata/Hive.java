@@ -1437,7 +1437,6 @@ public class Hive {
    */
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
-    List<String> retList = new ArrayList<String>();
     if (dbName == null)
       dbName = SessionState.get().getCurrentDatabase();
 

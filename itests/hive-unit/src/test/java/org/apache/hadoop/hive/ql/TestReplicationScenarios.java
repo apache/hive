@@ -42,7 +42,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,17 +64,22 @@ import static org.junit.Assert.assertNull;
 
 public class TestReplicationScenarios {
 
-  final static String DBNOTIF_LISTENER_CLASSNAME = "org.apache.hive.hcatalog.listener.DbNotificationListener";
-      // FIXME : replace with hive copy once that is copied
-  final static String tid =
-      TestReplicationScenarios.class.getCanonicalName().replace('.','_') + "_" + System.currentTimeMillis();
-  final static String TEST_PATH = System.getProperty("test.warehouse.dir","/tmp") + Path.SEPARATOR + tid;
+  @Rule
+  public final TestName testName = new TestName();
 
-  static HiveConf hconf;
-  static boolean useExternalMS = false;
-  static int msPort;
-  static Driver driver;
-  static HiveMetaStoreClient metaStoreClient;
+  private final static String DBNOTIF_LISTENER_CLASSNAME =
+      "org.apache.hive.hcatalog.listener.DbNotificationListener";
+      // FIXME : replace with hive copy once that is copied
+  private final static String tid =
+      TestReplicationScenarios.class.getCanonicalName().replace('.','_') + "_" + System.currentTimeMillis();
+  private final static String TEST_PATH =
+      System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
+
+  private static HiveConf hconf;
+  private static boolean useExternalMS = false;
+  private static int msPort;
+  private static Driver driver;
+  private static HiveMetaStoreClient metaStoreClient;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
@@ -141,6 +148,32 @@ public class TestReplicationScenarios {
     ReplicationSemanticAnalyzer.injectNextDumpDirForTest(String.valueOf(next));
   }
 
+  @Test
+  public void testFunctionReplicationAsPartOfBootstrap() throws IOException {
+    String dbName = createDB(testName.getMethodName());
+    run("CREATE FUNCTION " + dbName
+        + ".testFunction as 'com.yahoo.sketches.hive.theta.DataToSketchUDAF' "
+        + "using jar  'ivy://com.yahoo.datasketches:sketches-hive:0.8.2'");
+
+    String replicatedDbName = loadAndVerify(dbName);
+    run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'");
+    verifyResults(new String[] { replicatedDbName + ".testFunction" });
+  }
+
+  private String loadAndVerify(String dbName) throws IOException {
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String dumpLocation = getResult(0, 0);
+    String lastReplicationId = getResult(0, 1, true);
+    String replicatedDbName = dbName + "_replicated";
+    run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    printOutput();
+    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    verifyRun("REPL STATUS " + replicatedDbName, lastReplicationId);
+    return replicatedDbName;
+  }
+
+
   /**
    * Tests basic operation - creates a db, with 4 tables, 2 ptned and 2 unptned.
    * Inserts data into one of the ptned tables, and one of the unptned tables,
@@ -149,12 +182,8 @@ public class TestReplicationScenarios {
    */
   @Test
   public void testBasic() throws IOException {
-
-    String testName = "basic";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
@@ -165,9 +194,9 @@ public class TestReplicationScenarios {
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
     String[] empty = new String[]{};
 
-    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -182,31 +211,19 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
 
-    advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    String replicatedDbName = loadAndVerify(dbName);
 
-    verifyRun("REPL STATUS " + dbName + "_dupe", replDumpId);
-
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
+    verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2);
     verifyRun("SELECT a from " + dbName + ".ptned_empty", empty);
     verifyRun("SELECT * from " + dbName + ".unptned_empty", empty);
   }
 
   @Test
   public void testBasicWithCM() throws Exception {
-
-    String testName = "basic_with_cm";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
@@ -218,10 +235,10 @@ public class TestReplicationScenarios {
     String[] ptn_data_2_later = new String[]{ "eighteen", "nineteen", "twenty"};
     String[] empty = new String[]{};
 
-    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
-    String ptn_locn_2_later = new Path(TEST_PATH , testName + "_ptn2_later").toUri().getPath();
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+    String ptn_locn_2_later = new Path(TEST_PATH, name + "_ptn2_later").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -334,11 +351,8 @@ public class TestReplicationScenarios {
 
   @Test
   public void testIncrementalAdds() throws IOException {
-    String testName = "incrementalAdds";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
@@ -357,9 +371,9 @@ public class TestReplicationScenarios {
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
     String[] empty = new String[]{};
 
-    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -421,11 +435,8 @@ public class TestReplicationScenarios {
   @Test
   public void testDrops() throws IOException {
 
-    String testName = "drops";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
@@ -436,9 +447,9 @@ public class TestReplicationScenarios {
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
     String[] empty = new String[]{};
 
-    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
-    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
-    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
 
     createTestDataFile(unptn_locn, unptn_data);
     createTestDataFile(ptn_locn_1, ptn_data_1);
@@ -535,10 +546,7 @@ public class TestReplicationScenarios {
   public void testDropsWithCM() throws IOException {
 
     String testName = "drops_with_cm";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String dbName = createDB(testName);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
@@ -661,10 +669,7 @@ public class TestReplicationScenarios {
   public void testAlters() throws IOException {
 
     String testName = "alters";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String dbName = createDB(testName);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".unptned2(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
@@ -846,10 +851,7 @@ public class TestReplicationScenarios {
   @Test
   public void testIncrementalLoad() throws IOException {
     String testName = "incrementalLoad";
-    LOG.info("Testing " + testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String dbName = createDB(testName);
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
@@ -934,10 +936,7 @@ public class TestReplicationScenarios {
   @Test
   public void testIncrementalInserts() throws IOException {
     String testName = "incrementalInserts";
-    LOG.info("Testing " + testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String dbName = createDB(testName);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
 
     advanceDumpDir();
@@ -1062,10 +1061,7 @@ public class TestReplicationScenarios {
   @Test
   public void testViewsReplication() throws IOException {
     String testName = "viewsReplication";
-    LOG.info("Testing "+testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String dbName = createDB(testName);
 
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
@@ -1142,11 +1138,8 @@ public class TestReplicationScenarios {
 
   @Test
   public void testDumpLimit() throws IOException {
-    String testName = "dumpLimit";
-    LOG.info("Testing " + testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
 
     advanceDumpDir();
@@ -1530,11 +1523,8 @@ public class TestReplicationScenarios {
 
     // Now, to actually testing status - first, we bootstrap.
 
-    String testName = "incrementalStatus";
-    LOG.info("Testing " + testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
     advanceDumpDir();
     run("REPL DUMP " + dbName);
     String lastReplDumpLocn = getResult(0, 0);
@@ -1587,6 +1577,13 @@ public class TestReplicationScenarios {
     //   a) Multi-db wh-level REPL LOAD - need to add that
     //   b) Insert into tables - quite a few cases need to be enumerated there, including dyn adds.
 
+  }
+
+  private static String createDB(String name) {
+    LOG.info("Testing " + name);
+    String dbName = name + "_" + tid;
+    run("CREATE DATABASE " + dbName);
+    return dbName;
   }
 
   @Test
@@ -1749,18 +1746,25 @@ public class TestReplicationScenarios {
     return (lastResults.get(rowNum).split("\\t"))[colNum];
   }
 
+  /**
+   * All the results that are read from the hive output will not preserve
+   * case sensitivity and will all be in lower case, hence we will check against
+   * only lower case data values.
+   * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
+   * before assert.
+   */
   private void verifyResults(String[] data) throws IOException {
     List<String> results = getOutput();
-    LOG.info("Expecting {}",data);
-    LOG.info("Got {}",results);
-    assertEquals(data.length,results.size());
-    for (int i = 0; i < data.length; i++){
-      assertEquals(data[i],results.get(i));
+    LOG.info("Expecting {}", data);
+    LOG.info("Got {}", results);
+    assertEquals(data.length, results.size());
+    for (int i = 0; i < data.length; i++) {
+      assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
     }
   }
 
   private List<String> getOutput() throws IOException {
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     try {
       driver.getResults(results);
     } catch (CommandNeedRetryException e) {
@@ -1848,5 +1852,4 @@ public class TestReplicationScenarios {
       }
     }
   }
-
 }
