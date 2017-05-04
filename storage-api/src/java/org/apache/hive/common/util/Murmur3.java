@@ -52,7 +52,7 @@ public class Murmur3 {
   private static final int N1 = 0x52dce729;
   private static final int N2 = 0x38495ab5;
 
-  private static final int DEFAULT_SEED = 104729;
+  public static final int DEFAULT_SEED = 104729;
 
   /**
    * Murmur3 32-bit variant.
@@ -358,13 +358,13 @@ public class Murmur3 {
         int k = -1;
         switch (tailLen) {
         case 1:
-          k = orBytes(tail[0], data[0], data[1], data[2]);
+          k = orBytes(tail[0], data[offset], data[offset + 1], data[offset + 2]);
           break;
         case 2:
-          k = orBytes(tail[0], tail[1], data[0], data[1]);
+          k = orBytes(tail[0], tail[1], data[offset], data[offset + 1]);
           break;
         case 3:
-          k = orBytes(tail[0], tail[1], tail[2], data[0]);
+          k = orBytes(tail[0], tail[1], tail[2], data[offset]);
           break;
         default: throw new AssertionError(tailLen);
         }
