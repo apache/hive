@@ -191,6 +191,12 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> jobSecrets
+  ) {
+
+  }
+
+  @Override
   public void preCreateTable(Table table) throws MetaException {
     // Do safety checks
     if (MetaStoreUtils.isExternalTable(table) && !StringUtils

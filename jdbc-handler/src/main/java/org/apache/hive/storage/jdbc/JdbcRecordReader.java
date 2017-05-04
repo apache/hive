@@ -15,6 +15,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
@@ -63,7 +64,8 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
         Map<String, String> record = iterator.next();
         if ((record != null) && (!record.isEmpty())) {
           for (Entry<String, String> entry : record.entrySet()) {
-            value.put(new Text(entry.getKey()), new Text(entry.getValue()));
+            value.put(new Text(entry.getKey()),
+                entry.getValue() == null ? NullWritable.get() : new Text(entry.getValue()));
           }
           return true;
         }

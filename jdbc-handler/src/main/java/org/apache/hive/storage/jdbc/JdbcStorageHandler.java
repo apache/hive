@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
@@ -32,6 +34,7 @@ import java.util.Properties;
 
 public class JdbcStorageHandler implements HiveStorageHandler {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorageHandler.class);
   private Configuration conf;
 
 
@@ -72,26 +75,31 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     return null;
   }
 
+  @Override
+  public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+    LOGGER.debug("Adding properties to input job conf");
+    Properties properties = tableDesc.getProperties();
+    JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+  }
+
+  @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> jobSecrets) {
+    LOGGER.debug("Adding secrets to input job conf");
+    Properties properties = tableDesc.getProperties();
+    JdbcStorageConfigManager.copySecretsToJob(properties, jobSecrets);
+  }
 
   @Override
   public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+    LOGGER.debug("Adding properties to input job conf");
     Properties properties = tableDesc.getProperties();
     JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
   }
-
-
-  @Override
-  public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
-    Properties properties = tableDesc.getProperties();
-    JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
-  }
-
 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     // Nothing to do here...
   }
-
 
   @Override
   public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
