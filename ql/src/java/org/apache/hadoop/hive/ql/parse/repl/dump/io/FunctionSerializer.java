@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -28,6 +28,7 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import java.io.IOException;
 
 public class FunctionSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME="function";
   private Function function;
 
   public FunctionSerializer(Function function) {
@@ -40,7 +41,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
       writer.jsonGenerator
-          .writeStringField("function", serializer.toString(function, "UTF-8"));
+          .writeStringField(FIELD_NAME, serializer.toString(function, UTF_8));
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }

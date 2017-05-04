@@ -32,8 +32,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public class InsertHandler extends AbstractHandler {
 
@@ -103,7 +104,7 @@ public class InsertHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
-    return DUMPTYPE.EVENT_INSERT;
+  public DumpType dumpType() {
+    return DumpType.EVENT_INSERT;
   }
 }

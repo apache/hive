@@ -18,43 +18,36 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
+import org.apache.thrift.TException;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.parse.repl.dump.DBSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
-import org.apache.hadoop.hive.ql.parse.repl.dump.ReplicationSpecSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.TableSerializer;
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TJSONProtocol;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -270,122 +263,28 @@ public class EximUtil {
     }
   }
 
-  /**
-   * Utility class to help return complex value from readMetaData function
-   */
-  public static class ReadMetaData {
-    private final Database db;
-    private final Table table;
-    private final Iterable<Partition> partitions;
-    private final ReplicationSpec replicationSpec;
-
-    public ReadMetaData(){
-      this(null,null,null,new ReplicationSpec());
-    }
-    public ReadMetaData(Database db, Table table, Iterable<Partition> partitions, ReplicationSpec replicationSpec){
-      this.db = db;
-      this.table = table;
-      this.partitions = partitions;
-      this.replicationSpec = replicationSpec;
-    }
-
-    public Database getDatabase(){
-      return db;
-    }
-
-    public Table getTable() {
-      return table;
-    }
-
-    public Iterable<Partition> getPartitions() {
-      return partitions;
-    }
-
-    public ReplicationSpec getReplicationSpec() {
-      return replicationSpec;
-    }
-  };
-
-  public static ReadMetaData readMetaData(FileSystem fs, Path metadataPath)
+  static MetaData readMetaData(FileSystem fs, Path metadataPath)
       throws IOException, SemanticException {
-    FSDataInputStream mdstream = null;
+    String message = readAsString(fs, metadataPath);
     try {
-      mdstream = fs.open(metadataPath);
+      return new MetadataJson(message).getMetaData();
+    } catch (TException | JSONException e) {
+      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
+    }
+  }
+
+  private static String readAsString(final FileSystem fs, final Path fromMetadataPath)
+      throws IOException {
+    try (FSDataInputStream stream = fs.open(fromMetadataPath)) {
       byte[] buffer = new byte[1024];
       ByteArrayOutputStream sb = new ByteArrayOutputStream();
-      int read = mdstream.read(buffer);
+      int read = stream.read(buffer);
       while (read != -1) {
         sb.write(buffer, 0, read);
-        read = mdstream.read(buffer);
+        read = stream.read(buffer);
       }
-      String md = new String(sb.toByteArray(), "UTF-8");
-      JSONObject jsonContainer = new JSONObject(md);
-      String version = jsonContainer.getString("version");
-      String fcversion = getJSONStringEntry(jsonContainer, "fcversion");
-      checkCompatibility(version, fcversion);
-
-      String dbDesc = getJSONStringEntry(jsonContainer, "db");
-      String tableDesc = getJSONStringEntry(jsonContainer,"table");
-      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-
-      Database db = null;
-      if (dbDesc != null){
-        db = new Database();
-        deserializer.deserialize(db, dbDesc, "UTF-8");
-      }
-
-      Table table = null;
-      List<Partition> partitionsList = null;
-      if (tableDesc != null){
-        table = new Table();
-        deserializer.deserialize(table, tableDesc, "UTF-8");
-        // TODO : jackson-streaming-iterable-redo this
-        JSONArray jsonPartitions = new JSONArray(jsonContainer.getString("partitions"));
-        partitionsList = new ArrayList<Partition>(jsonPartitions.length());
-        for (int i = 0; i < jsonPartitions.length(); ++i) {
-          String partDesc = jsonPartitions.getString(i);
-          Partition partition = new Partition();
-          deserializer.deserialize(partition, partDesc, "UTF-8");
-          partitionsList.add(partition);
-        }
-      }
-
-      return new ReadMetaData(db, table, partitionsList,readReplicationSpec(jsonContainer));
-    } catch (JSONException e) {
-      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
-    } catch (TException e) {
-      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METADATA.getMsg(), e);
-    } finally {
-      if (mdstream != null) {
-        mdstream.close();
-      }
+      return new String(sb.toByteArray(), "UTF-8");
     }
-  }
-
-  private static ReplicationSpec readReplicationSpec(final JSONObject jsonContainer){
-    Function<String,String> keyFetcher = new Function<String, String>() {
-      @Override
-      public String apply(@Nullable String s) {
-        return getJSONStringEntry(jsonContainer,s);
-      }
-    };
-    return new ReplicationSpec(keyFetcher);
-  }
-
-  private static String getJSONStringEntry(JSONObject jsonContainer, String name) {
-    String retval = null;
-    try {
-      retval = jsonContainer.getString(name);
-    } catch (JSONException ignored) {}
-    return retval;
-  }
-
-  /* check the forward and backward compatibility */
-  private static void checkCompatibility(String version, String fcVersion) throws SemanticException {
-    doCheckCompatibility(
-        METADATA_FORMAT_VERSION,
-        version,
-        fcVersion);
   }
 
   /* check the forward and backward compatibility */

@@ -15,23 +15,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
 
-import static org.apache.hadoop.hive.ql.parse.EximUtil.METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION;
+public class DBSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME = "db";
+  private final Database dbObject;
 
-/**
- * This is not used as of now as the conditional which lead to its usage is always false
- * hence we have removed the conditional and the usage of this class, but might be required in future.
- */
-public class VersionCompatibleSerializer implements JsonWriter.Serializer {
+  public DBSerializer(Database dbObject) {
+    this.dbObject = dbObject;
+  }
+
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    writer.jsonGenerator.writeStringField("fcversion", METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
+    dbObject.putToParameters(
+        ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+        additionalPropertiesProvider.getCurrentReplicationState()
+    );
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    try {
+      String value = serializer.toString(dbObject, UTF_8);
+      writer.jsonGenerator.writeStringField(FIELD_NAME, value);
+    } catch (TException e) {
+      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
+    }
   }
 }
+
+
