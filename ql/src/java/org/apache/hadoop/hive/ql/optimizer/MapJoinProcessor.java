@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -78,6 +76,8 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of one of the rule-based map join optimization. User passes hints to specify
@@ -432,7 +432,7 @@ public class MapJoinProcessor extends Transform {
         smbJoinDesc.getOutputColumnNames(),
         bigTablePos, smbJoinDesc.getConds(),
         smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix(),
-        smbJoinDesc.getNoConditionalTaskSize());
+        smbJoinDesc.getNoConditionalTaskSize(), smbJoinDesc.getInMemoryDataSize());
 
     mapJoinDesc.setStatistics(smbJoinDesc.getStatistics());
 
@@ -1184,8 +1184,9 @@ public class MapJoinProcessor extends Transform {
     JoinCondDesc[] joinCondns = op.getConf().getConds();
     MapJoinDesc mapJoinDescriptor =
         new MapJoinDesc(keyExprMap, keyTableDesc, newValueExprs, valueTableDescs,
-            valueFilteredTableDescs, outputColumnNames, mapJoinPos, joinCondns, filters, op
-                .getConf().getNoOuterJoin(), dumpFilePrefix, op.getConf().getNoConditionalTaskSize());
+            valueFilteredTableDescs, outputColumnNames, mapJoinPos, joinCondns, filters,
+            op.getConf().getNoOuterJoin(), dumpFilePrefix,
+            op.getConf().getNoConditionalTaskSize(), op.getConf().getInMemoryDataSize());
     mapJoinDescriptor.setStatistics(op.getConf().getStatistics());
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());

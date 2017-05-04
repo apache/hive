@@ -112,36 +112,36 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Reducer 34 (CUSTOM_SIMPLE_EDGE), Reducer 9 (CUSTOM_SIMPLE_EDGE)
-Reducer 11 <- Reducer 10 (CUSTOM_SIMPLE_EDGE), Reducer 36 (CUSTOM_SIMPLE_EDGE)
-Reducer 12 <- Reducer 11 (CUSTOM_SIMPLE_EDGE), Reducer 38 (CUSTOM_SIMPLE_EDGE)
-Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE), Reducer 40 (CUSTOM_SIMPLE_EDGE)
-Reducer 14 <- Reducer 13 (CUSTOM_SIMPLE_EDGE), Reducer 42 (CUSTOM_SIMPLE_EDGE)
-Reducer 15 <- Reducer 14 (CUSTOM_SIMPLE_EDGE), Reducer 44 (CUSTOM_SIMPLE_EDGE)
-Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 46 (CUSTOM_SIMPLE_EDGE)
+Reducer 10 <- Reducer 32 (CUSTOM_SIMPLE_EDGE), Reducer 9 (CUSTOM_SIMPLE_EDGE)
+Reducer 11 <- Reducer 10 (CUSTOM_SIMPLE_EDGE), Reducer 21 (CUSTOM_SIMPLE_EDGE)
+Reducer 12 <- Reducer 11 (CUSTOM_SIMPLE_EDGE), Reducer 27 (CUSTOM_SIMPLE_EDGE)
+Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE), Reducer 33 (CUSTOM_SIMPLE_EDGE)
+Reducer 14 <- Reducer 13 (CUSTOM_SIMPLE_EDGE), Reducer 22 (CUSTOM_SIMPLE_EDGE)
+Reducer 15 <- Reducer 14 (CUSTOM_SIMPLE_EDGE), Reducer 28 (CUSTOM_SIMPLE_EDGE)
+Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 34 (CUSTOM_SIMPLE_EDGE)
 Reducer 18 <- Map 17 (CUSTOM_SIMPLE_EDGE)
+Reducer 19 <- Map 17 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 18 (CUSTOM_SIMPLE_EDGE)
-Reducer 20 <- Map 19 (CUSTOM_SIMPLE_EDGE)
-Reducer 22 <- Map 21 (CUSTOM_SIMPLE_EDGE)
+Reducer 20 <- Map 17 (CUSTOM_SIMPLE_EDGE)
+Reducer 21 <- Map 17 (CUSTOM_SIMPLE_EDGE)
+Reducer 22 <- Map 17 (CUSTOM_SIMPLE_EDGE)
 Reducer 24 <- Map 23 (CUSTOM_SIMPLE_EDGE)
-Reducer 26 <- Map 25 (CUSTOM_SIMPLE_EDGE)
-Reducer 28 <- Map 27 (CUSTOM_SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 20 (CUSTOM_SIMPLE_EDGE)
+Reducer 25 <- Map 23 (CUSTOM_SIMPLE_EDGE)
+Reducer 26 <- Map 23 (CUSTOM_SIMPLE_EDGE)
+Reducer 27 <- Map 23 (CUSTOM_SIMPLE_EDGE)
+Reducer 28 <- Map 23 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 24 (CUSTOM_SIMPLE_EDGE)
 Reducer 30 <- Map 29 (CUSTOM_SIMPLE_EDGE)
-Reducer 32 <- Map 31 (CUSTOM_SIMPLE_EDGE)
-Reducer 34 <- Map 33 (CUSTOM_SIMPLE_EDGE)
-Reducer 36 <- Map 35 (CUSTOM_SIMPLE_EDGE)
-Reducer 38 <- Map 37 (CUSTOM_SIMPLE_EDGE)
-Reducer 4 <- Reducer 22 (CUSTOM_SIMPLE_EDGE), Reducer 3 (CUSTOM_SIMPLE_EDGE)
-Reducer 40 <- Map 39 (CUSTOM_SIMPLE_EDGE)
-Reducer 42 <- Map 41 (CUSTOM_SIMPLE_EDGE)
-Reducer 44 <- Map 43 (CUSTOM_SIMPLE_EDGE)
-Reducer 46 <- Map 45 (CUSTOM_SIMPLE_EDGE)
-Reducer 5 <- Reducer 24 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 6 <- Reducer 26 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
-Reducer 7 <- Reducer 28 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
-Reducer 8 <- Reducer 30 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
-Reducer 9 <- Reducer 32 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
+Reducer 31 <- Map 29 (CUSTOM_SIMPLE_EDGE)
+Reducer 32 <- Map 29 (CUSTOM_SIMPLE_EDGE)
+Reducer 33 <- Map 29 (CUSTOM_SIMPLE_EDGE)
+Reducer 34 <- Map 29 (CUSTOM_SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE), Reducer 30 (CUSTOM_SIMPLE_EDGE)
+Reducer 5 <- Reducer 19 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 6 <- Reducer 25 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+Reducer 7 <- Reducer 31 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
+Reducer 8 <- Reducer 20 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
+Reducer 9 <- Reducer 26 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -177,11 +177,11 @@ Stage-0
                                 PARTITION_ONLY_SHUFFLE [RS_135]
                                   Merge Join Operator [MERGEJOIN_179] (rows=36 width=1961)
                                     Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9"]
-                                  <-Reducer 34 [CUSTOM_SIMPLE_EDGE]
+                                  <-Reducer 32 [CUSTOM_SIMPLE_EDGE]
                                     PARTITION_ONLY_SHUFFLE [RS_133]
                                       Group By Operator [GBY_64] (rows=1 width=288)
                                         Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                      <-Map 33 [CUSTOM_SIMPLE_EDGE]
+                                      <-Map 29 [CUSTOM_SIMPLE_EDGE]
                                         PARTITION_ONLY_SHUFFLE [RS_63]
                                           Group By Operator [GBY_62] (rows=1 width=288)
                                             Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
@@ -189,17 +189,17 @@ Stage-0
                                               Output:["ss_net_paid_inc_tax"]
                                               Filter Operator [FIL_164] (rows=63999515 width=88)
                                                 predicate:ss_quantity BETWEEN 41 AND 60
-                                                TableScan [TS_59] (rows=575995635 width=88)
+                                                TableScan [TS_17] (rows=575995635 width=88)
                                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_net_paid_inc_tax"]
                                   <-Reducer 9 [CUSTOM_SIMPLE_EDGE]
                                     PARTITION_ONLY_SHUFFLE [RS_132]
                                       Merge Join Operator [MERGEJOIN_178] (rows=36 width=1672)
                                         Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
-                                      <-Reducer 32 [CUSTOM_SIMPLE_EDGE]
+                                      <-Reducer 26 [CUSTOM_SIMPLE_EDGE]
                                         PARTITION_ONLY_SHUFFLE [RS_130]
                                           Group By Operator [GBY_57] (rows=1 width=288)
                                             Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                          <-Map 31 [CUSTOM_SIMPLE_EDGE]
+                                          <-Map 23 [CUSTOM_SIMPLE_EDGE]
                                             PARTITION_ONLY_SHUFFLE [RS_56]
                                               Group By Operator [GBY_55] (rows=1 width=288)
                                                 Output:["_col0"],aggregations:["avg(ss_ext_list_price)"]
@@ -207,34 +207,34 @@ Stage-0
                                                   Output:["ss_ext_list_price"]
                                                   Filter Operator [FIL_163] (rows=63999515 width=88)
                                                     predicate:ss_quantity BETWEEN 41 AND 60
-                                                    TableScan [TS_52] (rows=575995635 width=88)
+                                                    TableScan [TS_10] (rows=575995635 width=88)
                                                       default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_ext_list_price"]
                                       <-Reducer 8 [CUSTOM_SIMPLE_EDGE]
                                         PARTITION_ONLY_SHUFFLE [RS_129]
                                           Merge Join Operator [MERGEJOIN_177] (rows=36 width=1383)
                                             Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                                          <-Reducer 30 [CUSTOM_SIMPLE_EDGE]
+                                          <-Reducer 20 [CUSTOM_SIMPLE_EDGE]
                                             PARTITION_ONLY_SHUFFLE [RS_127]
                                               Group By Operator [GBY_50] (rows=1 width=8)
                                                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                              <-Map 29 [CUSTOM_SIMPLE_EDGE]
+                                              <-Map 17 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_49]
                                                   Group By Operator [GBY_48] (rows=1 width=8)
                                                     Output:["_col0"],aggregations:["count()"]
                                                     Select Operator [SEL_47] (rows=63999515 width=88)
                                                       Filter Operator [FIL_162] (rows=63999515 width=88)
                                                         predicate:ss_quantity BETWEEN 41 AND 60
-                                                        TableScan [TS_45] (rows=575995635 width=88)
+                                                        TableScan [TS_3] (rows=575995635 width=88)
                                                           default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity"]
                                           <-Reducer 7 [CUSTOM_SIMPLE_EDGE]
                                             PARTITION_ONLY_SHUFFLE [RS_126]
                                               Merge Join Operator [MERGEJOIN_176] (rows=36 width=1374)
                                                 Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4","_col5","_col6"]
-                                              <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
+                                              <-Reducer 31 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_124]
                                                   Group By Operator [GBY_43] (rows=1 width=288)
                                                     Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                                  <-Map 27 [CUSTOM_SIMPLE_EDGE]
+                                                  <-Map 29 [CUSTOM_SIMPLE_EDGE]
                                                     PARTITION_ONLY_SHUFFLE [RS_42]
                                                       Group By Operator [GBY_41] (rows=1 width=288)
                                                         Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
@@ -242,17 +242,16 @@ Stage-0
                                                           Output:["ss_net_paid_inc_tax"]
                                                           Filter Operator [FIL_161] (rows=63999515 width=88)
                                                             predicate:ss_quantity BETWEEN 21 AND 40
-                                                            TableScan [TS_38] (rows=575995635 width=88)
-                                                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_net_paid_inc_tax"]
+                                                             Please refer to the previous TableScan [TS_17]
                                               <-Reducer 6 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_123]
                                                   Merge Join Operator [MERGEJOIN_175] (rows=36 width=1085)
                                                     Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4","_col5"]
-                                                  <-Reducer 26 [CUSTOM_SIMPLE_EDGE]
+                                                  <-Reducer 25 [CUSTOM_SIMPLE_EDGE]
                                                     PARTITION_ONLY_SHUFFLE [RS_121]
                                                       Group By Operator [GBY_36] (rows=1 width=288)
                                                         Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                                      <-Map 25 [CUSTOM_SIMPLE_EDGE]
+                                                      <-Map 23 [CUSTOM_SIMPLE_EDGE]
                                                         PARTITION_ONLY_SHUFFLE [RS_35]
                                                           Group By Operator [GBY_34] (rows=1 width=288)
                                                             Output:["_col0"],aggregations:["avg(ss_ext_list_price)"]
@@ -260,43 +259,27 @@ Stage-0
                                                               Output:["ss_ext_list_price"]
                                                               Filter Operator [FIL_160] (rows=63999515 width=88)
                                                                 predicate:ss_quantity BETWEEN 21 AND 40
-                                                                TableScan [TS_31] (rows=575995635 width=88)
-                                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_ext_list_price"]
+                                                                 Please refer to the previous TableScan [TS_10]
                                                   <-Reducer 5 [CUSTOM_SIMPLE_EDGE]
                                                     PARTITION_ONLY_SHUFFLE [RS_120]
                                                       Merge Join Operator [MERGEJOIN_174] (rows=36 width=796)
                                                         Conds:(Left Outer),Output:["_col1","_col2","_col3","_col4"]
-                                                      <-Reducer 24 [CUSTOM_SIMPLE_EDGE]
+                                                      <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
                                                         PARTITION_ONLY_SHUFFLE [RS_118]
                                                           Group By Operator [GBY_29] (rows=1 width=8)
                                                             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                                          <-Map 23 [CUSTOM_SIMPLE_EDGE]
+                                                          <-Map 17 [CUSTOM_SIMPLE_EDGE]
                                                             PARTITION_ONLY_SHUFFLE [RS_28]
                                                               Group By Operator [GBY_27] (rows=1 width=8)
                                                                 Output:["_col0"],aggregations:["count()"]
                                                                 Select Operator [SEL_26] (rows=63999515 width=88)
                                                                   Filter Operator [FIL_159] (rows=63999515 width=88)
                                                                     predicate:ss_quantity BETWEEN 21 AND 40
-                                                                    TableScan [TS_24] (rows=575995635 width=88)
-                                                                      default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity"]
+                                                                     Please refer to the previous TableScan [TS_3]
                                                       <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
                                                         PARTITION_ONLY_SHUFFLE [RS_117]
                                                           Merge Join Operator [MERGEJOIN_173] (rows=36 width=787)
                                                             Conds:(Left Outer),Output:["_col1","_col2","_col3"]
-                                                          <-Reducer 22 [CUSTOM_SIMPLE_EDGE]
-                                                            PARTITION_ONLY_SHUFFLE [RS_115]
-                                                              Group By Operator [GBY_22] (rows=1 width=288)
-                                                                Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                                              <-Map 21 [CUSTOM_SIMPLE_EDGE]
-                                                                PARTITION_ONLY_SHUFFLE [RS_21]
-                                                                  Group By Operator [GBY_20] (rows=1 width=288)
-                                                                    Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
-                                                                    Select Operator [SEL_19] (rows=63999515 width=88)
-                                                                      Output:["ss_net_paid_inc_tax"]
-                                                                      Filter Operator [FIL_158] (rows=63999515 width=88)
-                                                                        predicate:ss_quantity BETWEEN 1 AND 20
-                                                                        TableScan [TS_17] (rows=575995635 width=88)
-                                                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_net_paid_inc_tax"]
                                                           <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
                                                             PARTITION_ONLY_SHUFFLE [RS_114]
                                                               Merge Join Operator [MERGEJOIN_172] (rows=36 width=498)
@@ -323,13 +306,12 @@ Stage-0
                                                                             Select Operator [SEL_5] (rows=63999515 width=88)
                                                                               Filter Operator [FIL_156] (rows=63999515 width=88)
                                                                                 predicate:ss_quantity BETWEEN 1 AND 20
-                                                                                TableScan [TS_3] (rows=575995635 width=88)
-                                                                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity"]
-                                                              <-Reducer 20 [CUSTOM_SIMPLE_EDGE]
+                                                                                 Please refer to the previous TableScan [TS_3]
+                                                              <-Reducer 24 [CUSTOM_SIMPLE_EDGE]
                                                                 PARTITION_ONLY_SHUFFLE [RS_112]
                                                                   Group By Operator [GBY_15] (rows=1 width=288)
                                                                     Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                                                                  <-Map 19 [CUSTOM_SIMPLE_EDGE]
+                                                                  <-Map 23 [CUSTOM_SIMPLE_EDGE]
                                                                     PARTITION_ONLY_SHUFFLE [RS_14]
                                                                       Group By Operator [GBY_13] (rows=1 width=288)
                                                                         Output:["_col0"],aggregations:["avg(ss_ext_list_price)"]
@@ -337,26 +319,37 @@ Stage-0
                                                                           Output:["ss_ext_list_price"]
                                                                           Filter Operator [FIL_157] (rows=63999515 width=88)
                                                                             predicate:ss_quantity BETWEEN 1 AND 20
-                                                                            TableScan [TS_10] (rows=575995635 width=88)
-                                                                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_ext_list_price"]
-                              <-Reducer 36 [CUSTOM_SIMPLE_EDGE]
+                                                                             Please refer to the previous TableScan [TS_10]
+                                                          <-Reducer 30 [CUSTOM_SIMPLE_EDGE]
+                                                            PARTITION_ONLY_SHUFFLE [RS_115]
+                                                              Group By Operator [GBY_22] (rows=1 width=288)
+                                                                Output:["_col0"],aggregations:["avg(VALUE._col0)"]
+                                                              <-Map 29 [CUSTOM_SIMPLE_EDGE]
+                                                                PARTITION_ONLY_SHUFFLE [RS_21]
+                                                                  Group By Operator [GBY_20] (rows=1 width=288)
+                                                                    Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
+                                                                    Select Operator [SEL_19] (rows=63999515 width=88)
+                                                                      Output:["ss_net_paid_inc_tax"]
+                                                                      Filter Operator [FIL_158] (rows=63999515 width=88)
+                                                                        predicate:ss_quantity BETWEEN 1 AND 20
+                                                                         Please refer to the previous TableScan [TS_17]
+                              <-Reducer 21 [CUSTOM_SIMPLE_EDGE]
                                 PARTITION_ONLY_SHUFFLE [RS_136]
                                   Group By Operator [GBY_71] (rows=1 width=8)
                                     Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                  <-Map 35 [CUSTOM_SIMPLE_EDGE]
+                                  <-Map 17 [CUSTOM_SIMPLE_EDGE]
                                     PARTITION_ONLY_SHUFFLE [RS_70]
                                       Group By Operator [GBY_69] (rows=1 width=8)
                                         Output:["_col0"],aggregations:["count()"]
                                         Select Operator [SEL_68] (rows=63999515 width=88)
                                           Filter Operator [FIL_165] (rows=63999515 width=88)
                                             predicate:ss_quantity BETWEEN 61 AND 80
-                                            TableScan [TS_66] (rows=575995635 width=88)
-                                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity"]
-                          <-Reducer 38 [CUSTOM_SIMPLE_EDGE]
+                                             Please refer to the previous TableScan [TS_3]
+                          <-Reducer 27 [CUSTOM_SIMPLE_EDGE]
                             PARTITION_ONLY_SHUFFLE [RS_139]
                               Group By Operator [GBY_78] (rows=1 width=288)
                                 Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                              <-Map 37 [CUSTOM_SIMPLE_EDGE]
+                              <-Map 23 [CUSTOM_SIMPLE_EDGE]
                                 PARTITION_ONLY_SHUFFLE [RS_77]
                                   Group By Operator [GBY_76] (rows=1 width=288)
                                     Output:["_col0"],aggregations:["avg(ss_ext_list_price)"]
@@ -364,13 +357,12 @@ Stage-0
                                       Output:["ss_ext_list_price"]
                                       Filter Operator [FIL_166] (rows=63999515 width=88)
                                         predicate:ss_quantity BETWEEN 61 AND 80
-                                        TableScan [TS_73] (rows=575995635 width=88)
-                                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_ext_list_price"]
-                      <-Reducer 40 [CUSTOM_SIMPLE_EDGE]
+                                         Please refer to the previous TableScan [TS_10]
+                      <-Reducer 33 [CUSTOM_SIMPLE_EDGE]
                         PARTITION_ONLY_SHUFFLE [RS_142]
                           Group By Operator [GBY_85] (rows=1 width=288)
                             Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                          <-Map 39 [CUSTOM_SIMPLE_EDGE]
+                          <-Map 29 [CUSTOM_SIMPLE_EDGE]
                             PARTITION_ONLY_SHUFFLE [RS_84]
                               Group By Operator [GBY_83] (rows=1 width=288)
                                 Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
@@ -378,26 +370,24 @@ Stage-0
                                   Output:["ss_net_paid_inc_tax"]
                                   Filter Operator [FIL_167] (rows=63999515 width=88)
                                     predicate:ss_quantity BETWEEN 61 AND 80
-                                    TableScan [TS_80] (rows=575995635 width=88)
-                                      default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_net_paid_inc_tax"]
-                  <-Reducer 42 [CUSTOM_SIMPLE_EDGE]
+                                     Please refer to the previous TableScan [TS_17]
+                  <-Reducer 22 [CUSTOM_SIMPLE_EDGE]
                     PARTITION_ONLY_SHUFFLE [RS_145]
                       Group By Operator [GBY_92] (rows=1 width=8)
                         Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                      <-Map 41 [CUSTOM_SIMPLE_EDGE]
+                      <-Map 17 [CUSTOM_SIMPLE_EDGE]
                         PARTITION_ONLY_SHUFFLE [RS_91]
                           Group By Operator [GBY_90] (rows=1 width=8)
                             Output:["_col0"],aggregations:["count()"]
                             Select Operator [SEL_89] (rows=63999515 width=88)
                               Filter Operator [FIL_168] (rows=63999515 width=88)
                                 predicate:ss_quantity BETWEEN 81 AND 100
-                                TableScan [TS_87] (rows=575995635 width=88)
-                                  default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity"]
-              <-Reducer 44 [CUSTOM_SIMPLE_EDGE]
+                                 Please refer to the previous TableScan [TS_3]
+              <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
                 PARTITION_ONLY_SHUFFLE [RS_148]
                   Group By Operator [GBY_99] (rows=1 width=288)
                     Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-                  <-Map 43 [CUSTOM_SIMPLE_EDGE]
+                  <-Map 23 [CUSTOM_SIMPLE_EDGE]
                     PARTITION_ONLY_SHUFFLE [RS_98]
                       Group By Operator [GBY_97] (rows=1 width=288)
                         Output:["_col0"],aggregations:["avg(ss_ext_list_price)"]
@@ -405,13 +395,12 @@ Stage-0
                           Output:["ss_ext_list_price"]
                           Filter Operator [FIL_169] (rows=63999515 width=88)
                             predicate:ss_quantity BETWEEN 81 AND 100
-                            TableScan [TS_94] (rows=575995635 width=88)
-                              default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_ext_list_price"]
-          <-Reducer 46 [CUSTOM_SIMPLE_EDGE]
+                             Please refer to the previous TableScan [TS_10]
+          <-Reducer 34 [CUSTOM_SIMPLE_EDGE]
             PARTITION_ONLY_SHUFFLE [RS_151]
               Group By Operator [GBY_106] (rows=1 width=288)
                 Output:["_col0"],aggregations:["avg(VALUE._col0)"]
-              <-Map 45 [CUSTOM_SIMPLE_EDGE]
+              <-Map 29 [CUSTOM_SIMPLE_EDGE]
                 PARTITION_ONLY_SHUFFLE [RS_105]
                   Group By Operator [GBY_104] (rows=1 width=288)
                     Output:["_col0"],aggregations:["avg(ss_net_paid_inc_tax)"]
@@ -419,6 +408,5 @@ Stage-0
                       Output:["ss_net_paid_inc_tax"]
                       Filter Operator [FIL_170] (rows=63999515 width=88)
                         predicate:ss_quantity BETWEEN 81 AND 100
-                        TableScan [TS_101] (rows=575995635 width=88)
-                          default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_quantity","ss_net_paid_inc_tax"]
+                         Please refer to the previous TableScan [TS_17]
 

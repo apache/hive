@@ -55,10 +55,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -71,13 +71,6 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: table_7
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Filter Operator
@@ -92,13 +85,6 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint), _col1 (type: bigint)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: table_7
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                     Filter Operator
@@ -156,7 +142,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -175,7 +161,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: bigint)
-        Reducer 7 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator

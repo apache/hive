@@ -219,8 +219,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     if (tableSize == 0) {
       tableSize = 1;
     }
-    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = )" + joinConf.isBucketMapJoin()
-    + ", pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
+    LOG.info("Mapjoin " + mapJoinOp + "(bucket map join = " + joinConf.isBucketMapJoin()
+    + "), pos: " + pos + " --> " + parentWork.getName() + " (" + keyCount
     + " keys estimated from " + rowCount + " rows, " + bucketCount + " buckets)");
     joinConf.getParentToInput().put(pos, parentWork.getName());
     if (keyCount != Long.MAX_VALUE) {
@@ -290,7 +290,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
         ReduceSinkOperator r = null;
         if (context.connectedReduceSinks.contains(parentRS)) {
-          LOG.debug("Cloning reduce sink for multi-child broadcast edge");
+          LOG.debug("Cloning reduce sink " + parentRS + " for multi-child broadcast edge");
           // we've already set this one up. Need to clone for the next work.
           r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
               parentRS.getCompilationOpContext(),

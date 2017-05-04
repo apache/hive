@@ -39,11 +39,11 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Map 7 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 4 <- Map 8 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 9 <- Map 10 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+Reducer 6 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -63,7 +63,7 @@ Stage-0
                   predicate:(_col5 > _col1)
                   Merge Join Operator [MERGEJOIN_59] (rows=696935432 width=135)
                     Conds:RS_27._col0=RS_28._col0(Inner),RS_28._col0=RS_29._col0(Inner),Output:["_col1","_col5"]
-                  <-Map 7 [SIMPLE_EDGE]
+                  <-Map 8 [SIMPLE_EDGE]
                     SHUFFLE [RS_28]
                       PartitionCols:_col0
                       Select Operator [SEL_16] (rows=231000 width=1436)
@@ -95,7 +95,7 @@ Stage-0
                                       predicate:(cs_sold_date_sk is not null and cs_item_sk is not null)
                                       TableScan [TS_0] (rows=287989836 width=135)
                                         default@catalog_sales,cs,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_item_sk","cs_ext_discount_amt"]
-                              <-Map 6 [SIMPLE_EDGE]
+                              <-Map 7 [SIMPLE_EDGE]
                                 SHUFFLE [RS_7]
                                   PartitionCols:_col0
                                   Select Operator [SEL_5] (rows=8116 width=1119)
@@ -104,29 +104,27 @@ Stage-0
                                       predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null)
                                       TableScan [TS_3] (rows=73049 width=1119)
                                         default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
-                  <-Reducer 9 [SIMPLE_EDGE]
+                  <-Reducer 6 [SIMPLE_EDGE]
                     SHUFFLE [RS_29]
                       PartitionCols:_col0
                       Select Operator [SEL_26] (rows=316788826 width=135)
                         Output:["_col0","_col1"]
                         Merge Join Operator [MERGEJOIN_58] (rows=316788826 width=135)
                           Conds:RS_23._col0=RS_24._col0(Inner),Output:["_col1","_col2"]
-                        <-Map 10 [SIMPLE_EDGE]
-                          SHUFFLE [RS_24]
-                            PartitionCols:_col0
-                            Select Operator [SEL_22] (rows=8116 width=1119)
-                              Output:["_col0"]
-                              Filter Operator [FIL_56] (rows=8116 width=1119)
-                                predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null)
-                                TableScan [TS_20] (rows=73049 width=1119)
-                                  default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
-                        <-Map 8 [SIMPLE_EDGE]
+                        <-Map 1 [SIMPLE_EDGE]
                           SHUFFLE [RS_23]
                             PartitionCols:_col0
                             Select Operator [SEL_19] (rows=287989836 width=135)
                               Output:["_col0","_col1","_col2"]
                               Filter Operator [FIL_55] (rows=287989836 width=135)
                                 predicate:(cs_sold_date_sk is not null and cs_item_sk is not null)
-                                TableScan [TS_17] (rows=287989836 width=135)
-                                  default@catalog_sales,cs,Tbl:COMPLETE,Col:NONE,Output:["cs_sold_date_sk","cs_item_sk","cs_ext_discount_amt"]
+                                 Please refer to the previous TableScan [TS_0]
+                        <-Map 7 [SIMPLE_EDGE]
+                          SHUFFLE [RS_24]
+                            PartitionCols:_col0
+                            Select Operator [SEL_22] (rows=8116 width=1119)
+                              Output:["_col0"]
+                              Filter Operator [FIL_56] (rows=8116 width=1119)
+                                predicate:(d_date BETWEEN '2000-01-27' AND '2000-04-27' and d_date_sk is not null)
+                                 Please refer to the previous TableScan [TS_3]
 

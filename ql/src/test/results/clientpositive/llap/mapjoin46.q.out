@@ -1827,7 +1827,7 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
-Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM (
@@ -1877,9 +1877,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE)
-        Map 4 <- Map 5 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
+        Map 1 <- Map 4 (BROADCAST_EDGE)
+        Map 3 <- Map 1 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1897,9 +1897,28 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: int)
                       Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col2 (type: string)
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col1 (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      input vertices:
+                        1 Map 4
+                      residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                      Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
-        Map 2 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: test2
@@ -1928,32 +1947,6 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: test1
-                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 _col1 (type: int)
-                        1 _col1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                      input vertices:
-                        1 Map 5
-                      residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
-                      Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
                   alias: test2
                   Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1968,7 +1961,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: int), _col2 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
-        Reducer 3 
+        Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1994,7 +1987,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT *
 FROM (
   SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,

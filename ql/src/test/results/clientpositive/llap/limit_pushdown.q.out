@@ -905,9 +905,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -932,13 +932,6 @@ STAGE PLANS:
                         Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -1000,7 +993,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -1017,7 +1010,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col0 (type: string), _col1 (type: bigint)
-        Reducer 6 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator

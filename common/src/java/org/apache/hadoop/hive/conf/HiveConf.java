@@ -1645,6 +1645,10 @@ public class HiveConf extends Configuration {
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
+    HIVE_SHARED_SCAN_OPTIMIZATION("hive.optimize.shared.scan", true,
+        "Whether to enable shared scan optimizer. The optimizer finds scan operator over the same table\n" +
+        "in the query plan and merges them if they meet some preconditions."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +

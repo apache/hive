@@ -655,7 +655,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Map 2 <- Map 1 (CUSTOM_EDGE)
+Map 2 <- Map 1 (BROADCAST_EDGE)
 
 Stage-0
   Fetch Operator
@@ -666,9 +666,9 @@ Stage-0
         Select Operator [SEL_33] (rows=550 width=18)
           Output:["_col0","_col1","_col2"]
           Map Join Operator [MAPJOIN_32] (rows=550 width=18)
-            BucketMapJoin:true,Conds:RS_29._col0=SEL_31._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col3"]
-          <-Map 1 [CUSTOM_EDGE] vectorized
-            MULTICAST [RS_29]
+            Conds:RS_29._col0=SEL_31._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col3"]
+          <-Map 1 [BROADCAST_EDGE] vectorized
+            BROADCAST [RS_29]
               PartitionCols:_col0
               Select Operator [SEL_28] (rows=242 width=18)
                 Output:["_col0","_col1"]

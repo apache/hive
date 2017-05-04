@@ -113,7 +113,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     final List<TableDesc> valueTblDescs, final List<TableDesc> valueFilteredTblDescs, List<String> outputColumnNames,
     final int posBigTable, final JoinCondDesc[] conds,
     final Map<Byte, List<ExprNodeDesc>> filters, boolean noOuterJoin, String dumpFilePrefix,
-    final long noConditionalTaskSize) {
+    final long noConditionalTaskSize, final long inMemoryDataSize) {
     super(values, outputColumnNames, noOuterJoin, conds, filters, null, noConditionalTaskSize);
     vectorDesc = null;
     this.keys = keys;
@@ -123,6 +123,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     this.posBigTable = posBigTable;
     this.bigTableBucketNumMapping = new LinkedHashMap<String, Integer>();
     this.dumpFilePrefix = dumpFilePrefix;
+    this.inMemoryDataSize = inMemoryDataSize;
     initRetainExprList();
   }
 

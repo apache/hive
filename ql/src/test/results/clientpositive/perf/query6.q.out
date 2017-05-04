@@ -52,11 +52,11 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 13 (SIMPLE_EDGE)
 Reducer 15 <- Map 14 (SIMPLE_EDGE)
-Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 20 (CUSTOM_SIMPLE_EDGE)
-Reducer 17 <- Map 21 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
-Reducer 19 <- Map 18 (SIMPLE_EDGE)
+Reducer 16 <- Reducer 15 (CUSTOM_SIMPLE_EDGE), Reducer 19 (CUSTOM_SIMPLE_EDGE)
+Reducer 17 <- Map 20 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
+Reducer 18 <- Map 14 (SIMPLE_EDGE)
+Reducer 19 <- Reducer 18 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 20 <- Reducer 19 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Map 10 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 12 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 17 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
@@ -100,7 +100,7 @@ Stage-0
                                   Output:["_col0"]
                                   Merge Join Operator [MERGEJOIN_112] (rows=80353 width=1119)
                                     Conds:RS_50._col0=RS_51._col1(Inner),Output:["_col2"]
-                                  <-Map 21 [SIMPLE_EDGE]
+                                  <-Map 20 [SIMPLE_EDGE]
                                     SHUFFLE [RS_51]
                                       PartitionCols:_col1
                                       Select Operator [SEL_46] (rows=73049 width=1119)
@@ -129,21 +129,21 @@ Stage-0
                                                     predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
                                                     TableScan [TS_23] (rows=73049 width=1119)
                                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
-                                      <-Reducer 20 [CUSTOM_SIMPLE_EDGE]
+                                      <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
                                         PARTITION_ONLY_SHUFFLE [RS_48]
                                           Select Operator [SEL_43] (rows=1 width=8)
                                             Filter Operator [FIL_42] (rows=1 width=8)
                                               predicate:(sq_count_check(_col0) <= 1)
                                               Group By Operator [GBY_40] (rows=1 width=8)
                                                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                              <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
+                                              <-Reducer 18 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_39]
                                                   Group By Operator [GBY_38] (rows=1 width=8)
                                                     Output:["_col0"],aggregations:["count()"]
                                                     Select Operator [SEL_36] (rows=9131 width=1119)
                                                       Group By Operator [GBY_35] (rows=9131 width=1119)
                                                         Output:["_col0"],keys:KEY._col0
-                                                      <-Map 18 [SIMPLE_EDGE]
+                                                      <-Map 14 [SIMPLE_EDGE]
                                                         SHUFFLE [RS_34]
                                                           PartitionCols:_col0
                                                           Group By Operator [GBY_33] (rows=18262 width=1119)
@@ -152,8 +152,7 @@ Stage-0
                                                               Output:["d_month_seq"]
                                                               Filter Operator [FIL_106] (rows=18262 width=1119)
                                                                 predicate:((d_year = 2000) and (d_moy = 2))
-                                                                TableScan [TS_30] (rows=73049 width=1119)
-                                                                  default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_month_seq","d_year","d_moy"]
+                                                                 Please refer to the previous TableScan [TS_23]
                             <-Reducer 4 [SIMPLE_EDGE]
                               SHUFFLE [RS_63]
                                 PartitionCols:_col6

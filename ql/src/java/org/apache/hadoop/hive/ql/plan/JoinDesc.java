@@ -107,6 +107,9 @@ public class JoinDesc extends AbstractOperatorDesc {
   private transient boolean leftInputJoin;
   private transient List<String> streamAliases;
 
+  // represents the total memory that this Join operator will use if it is a MapJoin operator
+  protected transient long inMemoryDataSize;
+
   // non-transient field, used at runtime to kill a task if it exceeded memory limits when running in LLAP
   protected long noConditionalTaskSize;
 
@@ -202,6 +205,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.residualFilterExprs = clone.residualFilterExprs;
     this.statistics = clone.statistics;
     this.noConditionalTaskSize = clone.noConditionalTaskSize;
+    this.inMemoryDataSize = clone.inMemoryDataSize;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -695,5 +699,13 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public void setNoConditionalTaskSize(final long noConditionalTaskSize) {
     this.noConditionalTaskSize = noConditionalTaskSize;
+  }
+
+  public long getInMemoryDataSize() {
+    return inMemoryDataSize;
+  }
+
+  public void setInMemoryDataSize(final long inMemoryDataSize) {
+    this.inMemoryDataSize = inMemoryDataSize;
   }
 }
