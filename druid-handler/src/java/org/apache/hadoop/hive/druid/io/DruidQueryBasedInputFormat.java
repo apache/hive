@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.druid.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -213,7 +214,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
             StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
     final String request = String.format(
             "http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
-            address, query.getDataSource().getNames().get(0), intervals);
+            address, query.getDataSource().getNames().get(0), URLEncoder.encode(intervals, "UTF-8"));
     final InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, new URL(request)));
