@@ -17,17 +17,19 @@
  */
 package org.apache.hive.service.cli.operation;
 
+import org.apache.hadoop.hive.ql.QueryInfo;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Cache some SQLOperation information for WebUI
  */
-public class SQLOperationDisplayCache extends LinkedHashMap<String, SQLOperationDisplay> {
+public class QueryInfoCache extends LinkedHashMap<String, QueryInfo> {
 
   private final int capacity;
 
-  public SQLOperationDisplayCache(int capacity) {
+  public QueryInfoCache(int capacity) {
       super(capacity + 1, 1.1f, false);
       this.capacity = capacity;
   }

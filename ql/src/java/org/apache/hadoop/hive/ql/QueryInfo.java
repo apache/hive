@@ -15,35 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.service.cli.operation;
-
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QueryDisplay;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationState;
+package org.apache.hadoop.hive.ql;
 
 /**
- * Used to display some info in the HS2 WebUI.
- *
  * The class is synchronized, as WebUI may access information about a running query.
  */
-public class SQLOperationDisplay {
-  public final String userName;
-  public final String executionEngine;
-  public final long beginTime;
-  public final String operationId;
-  public Long runtime;  //tracks only running portion of the query.
+public class QueryInfo {
 
-  public Long endTime;
-  public OperationState state;
-  public QueryDisplay queryDisplay;
+  private final String userName;
+  private final String executionEngine;
+  private final long beginTime;
+  private final String operationId;
+  private Long runtime;  // tracks only running portion of the query.
 
-  public SQLOperationDisplay(SQLOperation sqlOperation) throws HiveSQLException {
-    this.state = sqlOperation.getState();
-    this.userName = sqlOperation.getParentSession().getUserName();
-    this.executionEngine = sqlOperation.getExecutionEngine();
+  private Long endTime;
+  private String state;
+  private QueryDisplay queryDisplay;
+
+  public QueryInfo(String state, String userName, String executionEngine, String operationId) {
+    this.state = state;
+    this.userName = userName;
+    this.executionEngine = executionEngine;
     this.beginTime = System.currentTimeMillis();
-    this.operationId = sqlOperation.getHandle().getHandleIdentifier().toString();
+    this.operationId = operationId;
   }
 
   public synchronized long getElapsedTime() {
@@ -74,7 +68,7 @@ public class SQLOperationDisplay {
     return executionEngine;
   }
 
-  public synchronized OperationState getState() {
+  public synchronized String getState() {
     return state;
   }
 
@@ -86,7 +80,7 @@ public class SQLOperationDisplay {
     return endTime;
   }
 
-  public synchronized void updateState(OperationState state) {
+  public synchronized void updateState(String state) {
     this.state = state;
   }
 
@@ -94,7 +88,7 @@ public class SQLOperationDisplay {
     return operationId;
   }
 
-  public synchronized void closed() {
+  public synchronized void setEndTime() {
     this.endTime = System.currentTimeMillis();
   }
 

@@ -138,6 +138,7 @@ public class Driver implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
   static final int SHUTDOWN_HOOK_PRIORITY = 0;
+  private final QueryInfo queryInfo;
   private Runnable shutdownRunner = null;
 
   private int maxRows = 100;
@@ -360,18 +361,22 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver(HiveConf conf, String userName) {
-    this(new QueryState(conf), userName);
+    this(new QueryState(conf), userName, null);
   }
 
   public Driver(QueryState queryState, String userName) {
-    this(queryState, userName, new HooksLoader(queryState.getConf()));
+    this(queryState, userName, new HooksLoader(queryState.getConf()), null);
   }
 
   public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(new QueryState(conf), null, hooksLoader);
+    this(new QueryState(conf), null, hooksLoader, null);
   }
 
-  private Driver(QueryState queryState, String userName, HooksLoader hooksLoader) {
+  public Driver(QueryState queryState, String userName, QueryInfo queryInfo) {
+     this(queryState, userName, new HooksLoader(queryState.getConf()), queryInfo);
+  }
+
+  public Driver(QueryState queryState, String userName, HooksLoader hooksLoader, QueryInfo queryInfo) {
     this.queryState = queryState;
     this.conf = queryState.getConf();
     isParallelEnabled = (conf != null)
@@ -379,6 +384,7 @@ public class Driver implements CommandProcessor {
     this.userName = userName;
     this.hooksLoader = hooksLoader;
     this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
+    this.queryInfo = queryInfo;
   }
 
   /**
@@ -1736,7 +1742,7 @@ public class Driver implements CommandProcessor {
 
       hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserFromAuthenticator(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
-          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console)) {

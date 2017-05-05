@@ -24,7 +24,7 @@
   import="org.apache.hive.common.util.HiveVersionInfo"
   import="org.apache.hive.service.cli.operation.Operation"
   import="org.apache.hive.service.cli.operation.SQLOperation"
-  import="org.apache.hive.service.cli.operation.SQLOperationDisplay"
+  import="org.apache.hadoop.hive.ql.QueryInfo"
   import="org.apache.hive.service.cli.session.SessionManager"
   import="org.apache.hive.service.cli.session.HiveSession"
   import="javax.servlet.ServletContext"
@@ -141,8 +141,8 @@ for (HiveSession hiveSession: hiveSessions) {
     </tr>
     <%
       int queries = 0;
-      Collection<SQLOperationDisplay> operations = sessionManager.getOperationManager().getLiveSqlOperations();
-      for (SQLOperationDisplay operation : operations) {
+      Collection<QueryInfo> operations = sessionManager.getOperationManager().getLiveQueryInfos();
+      for (QueryInfo operation : operations) {
           queries++;
     %>
     <tr>
@@ -182,8 +182,8 @@ for (HiveSession hiveSession: hiveSessions) {
     </tr>
     <%
       queries = 0;
-      operations = sessionManager.getOperationManager().getHistoricalSQLOperations();
-      for (SQLOperationDisplay operation : operations) {
+      operations = sessionManager.getOperationManager().getHistoricalQueryInfos();
+      for (QueryInfo operation : operations) {
           queries++;
     %>
     <tr>

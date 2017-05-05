@@ -19,11 +19,11 @@ package org.apache.hive.service.cli.session;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryDisplay;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.operation.SQLOperationDisplay;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.hive.tmpl.QueryProfileTmpl;
@@ -69,25 +69,25 @@ public class TestQueryDisplay {
     OperationHandle opHandle2 = session.executeStatement("show tables", null);
 
 
-    List<SQLOperationDisplay> liveSqlOperations, historicSqlOperations;
-    liveSqlOperations = sessionManager.getOperationManager().getLiveSqlOperations();
-    historicSqlOperations = sessionManager.getOperationManager().getHistoricalSQLOperations();
+    List<QueryInfo> liveSqlOperations, historicSqlOperations;
+    liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
+    historicSqlOperations = sessionManager.getOperationManager().getHistoricalQueryInfos();
     Assert.assertEquals(liveSqlOperations.size(), 2);
     Assert.assertEquals(historicSqlOperations.size(), 0);
     verifyDDL(liveSqlOperations.get(0), "show databases", opHandle1.getHandleIdentifier().toString(), false);
     verifyDDL(liveSqlOperations.get(1),"show tables", opHandle2.getHandleIdentifier().toString(), false);
 
     session.closeOperation(opHandle1);
-    liveSqlOperations = sessionManager.getOperationManager().getLiveSqlOperations();
-    historicSqlOperations = sessionManager.getOperationManager().getHistoricalSQLOperations();
+    liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
+    historicSqlOperations = sessionManager.getOperationManager().getHistoricalQueryInfos();
     Assert.assertEquals(liveSqlOperations.size(), 1);
     Assert.assertEquals(historicSqlOperations.size(), 1);
     verifyDDL(historicSqlOperations.get(0),"show databases", opHandle1.getHandleIdentifier().toString(), true);
     verifyDDL(liveSqlOperations.get(0),"show tables", opHandle2.getHandleIdentifier().toString(), false);
 
     session.closeOperation(opHandle2);
-    liveSqlOperations = sessionManager.getOperationManager().getLiveSqlOperations();
-    historicSqlOperations = sessionManager.getOperationManager().getHistoricalSQLOperations();
+    liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
+    historicSqlOperations = sessionManager.getOperationManager().getHistoricalQueryInfos();
     Assert.assertEquals(liveSqlOperations.size(), 0);
     Assert.assertEquals(historicSqlOperations.size(), 2);
     verifyDDL(historicSqlOperations.get(1),"show databases", opHandle1.getHandleIdentifier().toString(), true);
@@ -123,23 +123,23 @@ public class TestQueryDisplay {
     session.close();
   }
 
-  private void verifyDDL(SQLOperationDisplay display, String stmt, String handle, boolean finished) {
+  private void verifyDDL(QueryInfo queryInfo, String stmt, String handle, boolean finished) {
 
-    Assert.assertEquals(display.getUserName(), "testuser");
-    Assert.assertEquals(display.getExecutionEngine(), "mr");
-    Assert.assertEquals(display.getOperationId(), handle);
-    Assert.assertTrue(display.getBeginTime() > 0 && display.getBeginTime() <= System.currentTimeMillis());
+    Assert.assertEquals(queryInfo.getUserName(), "testuser");
+    Assert.assertEquals(queryInfo.getExecutionEngine(), "mr");
+    Assert.assertEquals(queryInfo.getOperationId(), handle);
+    Assert.assertTrue(queryInfo.getBeginTime() > 0 && queryInfo.getBeginTime() <= System.currentTimeMillis());
 
     if (finished) {
-      Assert.assertTrue(display.getEndTime() > 0 && display.getEndTime() >= display.getBeginTime()
-        && display.getEndTime() <= System.currentTimeMillis());
-      Assert.assertTrue(display.getRuntime() > 0);
+      Assert.assertTrue(queryInfo.getEndTime() > 0 && queryInfo.getEndTime() >= queryInfo.getBeginTime()
+        && queryInfo.getEndTime() <= System.currentTimeMillis());
+      Assert.assertTrue(queryInfo.getRuntime() > 0);
     } else {
-      Assert.assertNull(display.getEndTime());
+      Assert.assertNull(queryInfo.getEndTime());
       //For runtime, query may have finished.
     }
 
-    QueryDisplay qDisplay1 = display.getQueryDisplay();
+    QueryDisplay qDisplay1 = queryInfo.getQueryDisplay();
     Assert.assertNotNull(qDisplay1);
     Assert.assertEquals(qDisplay1.getQueryString(), stmt);
     Assert.assertNotNull(qDisplay1.getExplainPlan());
@@ -170,9 +170,9 @@ public class TestQueryDisplay {
    */
   private void verifyDDLHtml(String stmt, String opHandle) throws Exception {
     StringWriter sw = new StringWriter();
-    SQLOperationDisplay sod = sessionManager.getOperationManager().getSQLOperationDisplay(
+    QueryInfo queryInfo = sessionManager.getOperationManager().getQueryInfo(
       opHandle);
-    new QueryProfileTmpl().render(sw, sod);
+    new QueryProfileTmpl().render(sw, queryInfo);
     String html = sw.toString();
 
     Assert.assertTrue(html.contains(stmt));

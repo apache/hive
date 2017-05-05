@@ -17,12 +17,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 </%doc>
 <%args>
-SQLOperationDisplay sod;
+QueryInfo queryInfo;
 </%args>
 <%import>
 java.util.*;
 org.apache.hadoop.hive.ql.QueryDisplay;
-org.apache.hive.service.cli.operation.SQLOperationDisplay;
+org.apache.hadoop.hive.ql.QueryInfo;
 </%import>
 <!--[if IE]>
 <!DOCTYPE html>
@@ -65,7 +65,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
     </div>
 
 
-    <%if sod == null %>
+    <%if queryInfo == null %>
          <div class="jumbotron">
            <p>Query not found.  It may have been deleted, increase <i>hive.server2.webui.max.historic.queries</i>
               to retain more historic query information.</p>
@@ -76,7 +76,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
     <div class="container">
       <div class="row inner_header">
         <div class="page-header">
-          <h1>Query Information: <% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getQueryString() %></h1>
+          <h1>Query Information: <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getQueryString() %></h1>
         </div>
       </div>
       <div class="row">
@@ -91,16 +91,16 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
           </ul>
           <div class="tab-content" style="padding-bottom: 9px; border-bottom: 1px solid #ddd;">
               <div class="tab-pane active" id="tab_baseProfile">
-                  <& baseProfile; sod = sod &>
+                  <& baseProfile; queryInfo = queryInfo &>
               </div>
               <div class="tab-pane" id="tab_stages">
-                  <& stages; sod = sod &>
+                  <& stages; queryInfo = queryInfo &>
               </div>
               <div class="tab-pane" id="tab_queryPlan">
-                  <& queryPlan; sod = sod &>
+                  <& queryPlan; queryInfo = queryInfo &>
               </div>
               <div class="tab-pane" id="tab_perfLogging">
-                  <& perfLogging; sod = sod &>
+                  <& perfLogging; queryInfo = queryInfo &>
               </div>
           </div>
       </div>
@@ -117,57 +117,57 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
 <%def baseProfile>
 <%args>
-    SQLOperationDisplay sod;
+    QueryInfo queryInfo;
 </%args>
     <table class="table table-striped">
         <tr>
             <td>User Name</td>
-            <td><% sod.getUserName() %></td>
+            <td><% queryInfo.getUserName() %></td>
         </tr>
         <tr>
             <td>Query String</td>
-            <td><% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getQueryString() %></td>
+            <td><% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getQueryString() %></td>
         </tr>
         <tr>
             <td>Id</td>
-            <td><% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getQueryId() %></td>
+            <td><% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getQueryId() %></td>
         </tr>
         <tr>
             <td>Execution Engine</td>
-            <td><% sod.getExecutionEngine() %>
+            <td><% queryInfo.getExecutionEngine() %>
         </tr>
         <tr>
             <td>State</td>
-            <td><% sod.getState() %></td>
+            <td><% queryInfo.getState() %></td>
         </tr>
         <tr>
             <td>Opened Timestamp</td>
-            <td><% new Date(sod.getBeginTime()) %></td>
+            <td><% new Date(queryInfo.getBeginTime()) %></td>
         </tr>
         <tr>
             <td>Opened (s)</td>
-            <td><% sod.getElapsedTime()/1000 %></td>
+            <td><% queryInfo.getElapsedTime()/1000 %></td>
         </tr>
         <tr>
             <td>Closed Timestamp</td>
-            <td><% sod.getEndTime() == null ? "Open" : new Date(sod.getEndTime()) %></td>
+            <td><% queryInfo.getEndTime() == null ? "Open" : new Date(queryInfo.getEndTime()) %></td>
         </tr>
-        <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getErrorMessage() != null %>
+        <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getErrorMessage() != null %>
             <tr>
                 <td>Error</td>
-                <td><% sod.getQueryDisplay().getErrorMessage() %></td>
+                <td><% queryInfo.getQueryDisplay().getErrorMessage() %></td>
             </tr>
         </%if>
         <tr>
             <td>Latency (s)</td>
-            <td><% sod.getRuntime() == null ? "Not finished" : sod.getRuntime()/1000 %></td>
+            <td><% queryInfo.getRuntime() == null ? "Not finished" : queryInfo.getRuntime()/1000 %></td>
         </tr>
     </table>
 </%def>
 
 <%def stages>
 <%args>
-    SQLOperationDisplay sod;
+    QueryInfo queryInfo;
 </%args>
    <table class="table table-striped">
        <tr>
@@ -180,8 +180,8 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
            <th>Retry If Fail</th>
         </tr>
 
-       <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getTaskDisplays() != null %>
-           <%for QueryDisplay.TaskDisplay taskDisplay : sod.getQueryDisplay().getTaskDisplays() %>
+       <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getTaskDisplays() != null %>
+           <%for QueryDisplay.TaskDisplay taskDisplay : queryInfo.getQueryDisplay().getTaskDisplays() %>
                <tr>
                    <td><% taskDisplay.getTaskId() + ":" + taskDisplay.getTaskType() %></td>
                    <td><% taskDisplay.getStatus() %></td>
@@ -199,13 +199,13 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
 <%def queryPlan>
 <%args>
-    SQLOperationDisplay sod;
+    QueryInfo queryInfo;
 </%args>
     <div class="panel panel-default">
       <div class="panel-heading">Explain plan</div>
       <div class="panel-body">
         <pre>
-        <% sod.getQueryDisplay() == null ? "Unknown" : sod.getQueryDisplay().getExplainPlan() %>
+        <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getExplainPlan() %>
         </pre>
       </div>
     </div>
@@ -214,7 +214,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
 <%def perfLogging>
 <%args>
-    SQLOperationDisplay sod;
+    QueryInfo queryInfo;
 </%args>
     <section>
       <h3>Compile-time metadata operations</h3>
@@ -224,8 +224,8 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
              <th>Time (ms)</th>
           </tr>
 
-          <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.COMPILATION) != null %>
-             <%for Map.Entry<String, Long> time : sod.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.COMPILATION).entrySet() %>
+          <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.COMPILATION) != null %>
+             <%for Map.Entry<String, Long> time : queryInfo.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.COMPILATION).entrySet() %>
                  <tr>
                      <td><% time.getKey() %></td>
                      <td><% time.getValue() %></td>
@@ -243,8 +243,8 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
              <th>Time (ms)</th>
           </tr>
 
-          <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.EXECUTION) != null %>
-             <%for Map.Entry<String, Long> time : sod.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.EXECUTION).entrySet() %>
+          <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.EXECUTION) != null %>
+             <%for Map.Entry<String, Long> time : queryInfo.getQueryDisplay().getHmsTimings(QueryDisplay.Phase.EXECUTION).entrySet() %>
                  <tr>
                      <td><% time.getKey() %></td>
                      <td><% time.getValue() %></td>
@@ -262,8 +262,8 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
              <th>Time (ms)</th>
           </tr>
 
-          <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.COMPILATION) != null %>
-             <%for Map.Entry<String, Long> time : sod.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.COMPILATION).entrySet()  %>
+          <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.COMPILATION) != null %>
+             <%for Map.Entry<String, Long> time : queryInfo.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.COMPILATION).entrySet()  %>
                  <tr>
                      <td><% time.getKey() %></td>
                      <td><% time.getValue() %></td>
@@ -281,8 +281,8 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
              <th>Time (ms)</th>
           </tr>
 
-          <%if sod.getQueryDisplay() != null && sod.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.EXECUTION) != null %>
-             <%for Map.Entry<String, Long> time : sod.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.EXECUTION).entrySet()  %>
+          <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.EXECUTION) != null %>
+             <%for Map.Entry<String, Long> time : queryInfo.getQueryDisplay().getPerfLogTimes(QueryDisplay.Phase.EXECUTION).entrySet()  %>
                  <tr>
                      <td><% time.getKey() %></td>
                      <td><% time.getValue() %></td>

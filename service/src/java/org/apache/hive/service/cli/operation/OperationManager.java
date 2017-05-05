@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.session.OperationLog;
@@ -62,8 +63,8 @@ public class OperationManager extends AbstractService {
 
   //Following fields for displaying queries on WebUI
   private Object webuiLock = new Object();
-  private SQLOperationDisplayCache historicSqlOperations;
-  private Map<String, SQLOperationDisplay> liveSqlOperations = new LinkedHashMap<String, SQLOperationDisplay>();
+  private QueryInfoCache historicalQueryInfos;
+  private Map<String, QueryInfo> liveQueryInfos = new LinkedHashMap<>();
 
   public OperationManager() {
     super(OperationManager.class.getSimpleName());
@@ -75,7 +76,7 @@ public class OperationManager extends AbstractService {
     LogDivertAppenderForTest.registerRoutingAppenderIfInTest(hiveConf);
 
     if (hiveConf.isWebUiQueryInfoCacheEnabled()) {
-      historicSqlOperations = new SQLOperationDisplayCache(
+      historicalQueryInfos = new QueryInfoCache(
         hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES));
     }
     super.init(hiveConf);
@@ -187,8 +188,8 @@ public class OperationManager extends AbstractService {
     handleToOperation.put(operation.getHandle(), operation);
     if (operation instanceof SQLOperation) {
       synchronized (webuiLock) {
-        liveSqlOperations.put(operation.getHandle().getHandleIdentifier().toString(),
-          ((SQLOperation) operation).getSQLOperationDisplay());
+        liveQueryInfos.put(operation.getHandle().getHandleIdentifier().toString(),
+          ((SQLOperation) operation).getQueryInfo());
       }
     }
   }
@@ -196,7 +197,7 @@ public class OperationManager extends AbstractService {
   private Operation removeOperation(OperationHandle opHandle) {
     Operation operation = handleToOperation.remove(opHandle);
     if (operation instanceof SQLOperation) {
-      removeSaveSqlOperationDisplay(opHandle);
+      removeSafeQueryInfo(opHandle);
     }
     return operation;
   }
@@ -216,24 +217,24 @@ public class OperationManager extends AbstractService {
 
       handleToOperation.remove(operationHandle, operation);
       if (operation instanceof SQLOperation) {
-        removeSaveSqlOperationDisplay(operationHandle);
+        removeSafeQueryInfo(operationHandle);
       }
       return operation;
     }
     return null;
   }
 
-  private void removeSaveSqlOperationDisplay(OperationHandle operationHandle) {
+  private void removeSafeQueryInfo(OperationHandle operationHandle) {
     synchronized (webuiLock) {
       String opKey = operationHandle.getHandleIdentifier().toString();
       // remove from list of live operations
-      SQLOperationDisplay display = liveSqlOperations.remove(opKey);
+      QueryInfo display = liveQueryInfos.remove(opKey);
       if (display == null) {
         LOG.debug("Unexpected display object value of null for operation {}",
             opKey);
-      } else if (historicSqlOperations != null) {
+      } else if (historicalQueryInfos != null) {
         // add to list of saved historic operations
-        historicSqlOperations.put(opKey, display);
+        historicalQueryInfos.put(opKey, display);
       }
     }
   }
@@ -258,7 +259,7 @@ public class OperationManager extends AbstractService {
       LOG.debug(opHandle + ": Attempting to cancel from state - " + opState);
       operation.cancel(OperationState.CANCELED);
       if (operation instanceof SQLOperation) {
-        removeSaveSqlOperationDisplay(opHandle);
+        removeSafeQueryInfo(opHandle);
       }
     }
   }
@@ -360,11 +361,11 @@ public class OperationManager extends AbstractService {
    * @return displays representing a number of historical SQLOperations, at max number of
    * hive.server2.webui.max.historic.queries. Newest items will be first.
    */
-  public List<SQLOperationDisplay> getHistoricalSQLOperations() {
-    List<SQLOperationDisplay> result = new LinkedList<>();
+  public List<QueryInfo> getHistoricalQueryInfos() {
+    List<QueryInfo> result = new LinkedList<>();
     synchronized (webuiLock) {
-      if (historicSqlOperations != null) {
-        result.addAll(historicSqlOperations.values());
+      if (historicalQueryInfos != null) {
+        result.addAll(historicalQueryInfos.values());
         Collections.reverse(result);
       }
     }
@@ -374,10 +375,10 @@ public class OperationManager extends AbstractService {
   /**
    * @return displays representing live SQLOperations
    */
-  public List<SQLOperationDisplay> getLiveSqlOperations() {
-    List<SQLOperationDisplay> result = new LinkedList<>();
+  public List<QueryInfo> getLiveQueryInfos() {
+    List<QueryInfo> result = new LinkedList<>();
     synchronized (webuiLock) {
-      result.addAll(liveSqlOperations.values());
+      result.addAll(liveQueryInfos.values());
     }
     return result;
   }
@@ -386,17 +387,17 @@ public class OperationManager extends AbstractService {
    * @param handle handle of SQLOperation.
    * @return display representing a particular SQLOperation.
    */
-  public SQLOperationDisplay getSQLOperationDisplay(String handle) {
+  public QueryInfo getQueryInfo(String handle) {
     synchronized (webuiLock) {
-      if (historicSqlOperations == null) {
+      if (historicalQueryInfos == null) {
         return null;
       }
 
-      SQLOperationDisplay result = liveSqlOperations.get(handle);
+      QueryInfo result = liveQueryInfos.get(handle);
       if (result != null) {
         return result;
       }
-      return historicSqlOperations.get(handle);
+      return historicalQueryInfos.get(handle);
     }
   }
 }
