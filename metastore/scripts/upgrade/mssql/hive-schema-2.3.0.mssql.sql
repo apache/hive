@@ -579,7 +579,7 @@ CREATE TABLE NOTIFICATION_LOG
     EVENT_TYPE nvarchar(32) NOT NULL,
     DB_NAME nvarchar(128) NULL,
     TBL_NAME nvarchar(256) NULL,
-    MESSAGE_FORMAT nvarchar(16)
+    MESSAGE_FORMAT nvarchar(16),
     MESSAGE text NULL
 );
 
