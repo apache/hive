@@ -150,10 +150,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	NULL	NULL
 5	val_5	NULL	NULL
-10	val_10	NULL	NULL
 PREHOOK: query: explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -259,10 +259,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	NULL	NULL
 5	val_5	NULL	NULL
-10	val_10	NULL	NULL
 NULL	NULL	20	val_20
 NULL	NULL	23	val_23
 NULL	NULL	25	val_25
@@ -371,10 +371,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	NULL	NULL
 5	val_5	NULL	NULL
-10	val_10	NULL	NULL
 PREHOOK: query: explain
 select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key
 PREHOOK: type: QUERY
@@ -480,10 +480,10 @@ POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 #### A masked pattern was here ####
 1	val_1	NULL	NULL
+10	val_10	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	NULL	NULL
 5	val_5	NULL	NULL
-10	val_10	NULL	NULL
 NULL	NULL	20	val_20
 NULL	NULL	23	val_23
 NULL	NULL	25	val_25

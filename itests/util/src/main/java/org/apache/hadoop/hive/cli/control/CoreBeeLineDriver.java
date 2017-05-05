@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
 import org.apache.hive.beeline.QFile.QFileBuilder;
 import org.apache.hive.beeline.QFileBeeLineClient;
@@ -118,7 +119,8 @@ public class CoreBeeLineDriver extends CliAdapter {
             "set test.script.dir=" + testScriptDirectory + ";",
             "!run " + script,
           },
-          log);
+          log,
+          Converter.NONE);
     } catch (Exception e) {
       throw new SQLException("Error running infra script: " + script
           + "\nCheck the following logs for details:\n - " + beeLineOutput + "\n - " + log, e);
