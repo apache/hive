@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -94,8 +95,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private SerDe serde = null;
   private boolean fetchStarted = false;
   private volatile MetricsScope currentSQLStateScope;
-  // Display for WebUI.
-  private SQLOperationDisplay sqlOpDisplay;
+  private QueryInfo queryInfo;
   private long queryTimeout;
   private ScheduledExecutorService timeoutExecutor;
 
@@ -117,11 +117,9 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
 
     setupSessionIO(parentSession.getSessionState());
-    try {
-      sqlOpDisplay = new SQLOperationDisplay(this);
-    } catch (HiveSQLException e) {
-      LOG.warn("Error calcluating SQL Operation Display for webui", e);
-    }
+
+    queryInfo = new QueryInfo(getState().toString(), getParentSession().getUserName(),
+            getExecutionEngine(), getHandle().getHandleIdentifier().toString());
   }
 
   private void setupSessionIO(SessionState sessionState) {
@@ -141,13 +139,13 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   /**
    * Compile the query and extract metadata
-   * @param sqlOperationConf
+   *
    * @throws HiveSQLException
    */
   public void prepare(HiveConf sqlOperationConf) throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
-      driver = new Driver(sqlOperationConf, getParentSession().getUserName());
+      driver = new Driver(sqlOperationConf, getParentSession().getUserName(), queryInfo);
 
       // Start the timer thread for cancelling the query when query timeout is reached
       // queryTimeout == 0 means no timeout
@@ -172,7 +170,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(timeoutTask, queryTimeout, TimeUnit.SECONDS);
       }
 
-      sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
+      queryInfo.setQueryDisplay(driver.getQueryDisplay());
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.
@@ -347,8 +345,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   /**
    * Returns the current UGI on the stack
-   * @param opConfig
+   *
    * @return UserGroupInformation
+   *
    * @throws HiveSQLException
    */
   private UserGroupInformation getCurrentUGI(HiveConf opConfig) throws HiveSQLException {
@@ -618,8 +617,8 @@ public class SQLOperation extends ExecuteStatementOperation {
   /**
    * Get summary information of this SQLOperation for display in WebUI.
    */
-  public SQLOperationDisplay getSQLOperationDisplay() {
-    return sqlOpDisplay;
+  public QueryInfo getQueryInfo() {
+    return queryInfo;
   }
 
   @Override
@@ -646,14 +645,14 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     if (state == OperationState.FINISHED || state == OperationState.CANCELED || state == OperationState.ERROR) {
       //update runtime
-      sqlOpDisplay.setRuntime(getOperationComplete() - getOperationStart());
+      queryInfo.setRuntime(getOperationComplete() - getOperationStart());
     }
 
     if (state == OperationState.CLOSED) {
-      sqlOpDisplay.closed();
+      queryInfo.setEndTime();
     } else {
       //CLOSED state not interesting, state before (FINISHED, ERROR) is.
-      sqlOpDisplay.updateState(state);
+      queryInfo.updateState(state.toString());
     }
   }
 
@@ -687,5 +686,11 @@ public class SQLOperation extends ExecuteStatementOperation {
         }
       }
     }
+  }
+
+   private String getExecutionEngine() {
+     return confOverlay.containsKey(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname) ? confOverlay.get(
+             HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname) : parentSession.getHiveConf().get(
+             HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname);
   }
 }

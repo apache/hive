@@ -136,6 +136,7 @@ public class Driver implements CommandProcessor {
   static final private String CLASS_NAME = Driver.class.getName();
   static final private Log LOG = LogFactory.getLog(CLASS_NAME);
   static final private LogHelper console = new LogHelper(LOG);
+  private final QueryInfo queryInfo;
 
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
@@ -345,11 +346,11 @@ public class Driver implements CommandProcessor {
    * for backwards compatibility with current tests
    */
   public Driver(HiveConf conf) {
-    this(conf, null, new HooksLoader(conf));
+    this(conf, new HooksLoader(conf));
   }
 
   public Driver(HiveConf conf, String userName) {
-    this(conf, userName, new HooksLoader(conf));
+    this(conf, userName, new HooksLoader(conf), null);
   }
 
   public Driver() {
@@ -357,14 +358,19 @@ public class Driver implements CommandProcessor {
   }
 
   public Driver(HiveConf conf, HooksLoader hooksLoader) {
-    this(conf, null, hooksLoader);
+    this(conf, null, hooksLoader, null);
   }
 
-  private Driver(HiveConf conf, String userName, HooksLoader hooksLoader) {
+  public Driver(HiveConf conf, String userName, QueryInfo queryInfo) {
+     this(conf, userName, new HooksLoader(conf), queryInfo);
+  }
+
+  public Driver(HiveConf conf, String userName, HooksLoader hooksLoader, QueryInfo queryInfo) {
     this.conf = conf;
     this.userName = userName;
     this.hooksLoader = hooksLoader;
     this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
+    this.queryInfo = queryInfo;
   }
 
   /**
@@ -1662,7 +1668,7 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       SessionState ss = SessionState.get();
-      hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
+      hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress(), queryInfo);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console)) {

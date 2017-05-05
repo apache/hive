@@ -26,8 +26,10 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -55,9 +57,10 @@ public class HookContext {
   final private Map<String, ContentSummary> inputPathToContentSummary;
   private final String ipAddress;
   private final String userName;
+  private final QueryInfo queryInfo;
 
   public HookContext(QueryPlan queryPlan, HiveConf conf,
-      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress) throws Exception {
+      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress, QueryInfo queryInfo) throws Exception {
     this.queryPlan = queryPlan;
     this.conf = conf;
     this.inputPathToContentSummary = inputPathToContentSummary;
@@ -73,6 +76,7 @@ public class HookContext {
     }
     this.ipAddress = ipAddress;
     this.userName = userName;
+    this.queryInfo = queryInfo;
   }
 
   public QueryPlan getQueryPlan() {
@@ -165,5 +169,9 @@ public class HookContext {
 
   public String getUserName() {
     return this.userName;
+  }
+
+  public QueryInfo getQueryInfo() {
+    return this.queryInfo;
   }
 }
