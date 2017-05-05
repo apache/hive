@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
+import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -72,6 +73,7 @@ public final class QFile {
   private static RegexFilterSet staticFilterSet = getStaticFilterSet();
   private RegexFilterSet specificFilterSet;
   private boolean rewriteSourceTables;
+  private Converter converter;
 
   private QFile() {}
 
@@ -105,6 +107,10 @@ public final class QFile {
 
   public File getAfterExecuteLogFile() {
     return afterExecuteLogFile;
+  }
+
+  public Converter getConverter() {
+    return converter;
   }
 
   public String getDebugHint() {
@@ -327,6 +333,17 @@ public final class QFile {
           .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + name + "@", "$1: $2: default@")
           .addFilter("name(:?) " + name + "\\.(.*)\n", "name$1 default.$2\n")
           .addFilter("/" + name + ".db/", "/");
+      result.converter = Converter.NONE;
+      String input = FileUtils.readFileToString(result.inputFile, "UTF-8");
+      if (input.contains("-- SORT_QUERY_RESULTS")) {
+        result.converter = Converter.SORT_QUERY_RESULTS;
+      }
+      if (input.contains("-- HASH_QUERY_RESULTS")) {
+        result.converter = Converter.HASH_QUERY_RESULTS;
+      }
+      if (input.contains("-- SORT_AND_HASH_QUERY_RESULTS")) {
+        result.converter = Converter.SORT_AND_HASH_QUERY_RESULTS;
+      }
       return result;
     }
   }

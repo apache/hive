@@ -1003,6 +1003,15 @@ public class Commands {
         beeLine.showWarnings();
 
         if (hasResults) {
+          OutputFile outputFile = beeLine.getRecordOutputFile();
+          if (beeLine.isTestMode() && outputFile != null && outputFile.isActiveConverter()) {
+            outputFile.fetchStarted();
+            if (!sql.trim().toLowerCase().startsWith("explain")) {
+              outputFile.foundQuery(true);
+            } else {
+              outputFile.foundQuery(false);
+            }
+          }
           do {
             ResultSet rs = stmnt.getResultSet();
             try {
@@ -1020,6 +1029,9 @@ public class Commands {
               rs.close();
             }
           } while (BeeLine.getMoreResults(stmnt));
+          if (beeLine.isTestMode() && outputFile != null && outputFile.isActiveConverter()) {
+            outputFile.fetchFinished();
+          }
         } else {
           int count = stmnt.getUpdateCount();
           long end = System.currentTimeMillis();
