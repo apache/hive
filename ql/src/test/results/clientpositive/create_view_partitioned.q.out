@@ -71,6 +71,7 @@ Protect Mode:       	None
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -263,6 +264,7 @@ Protect Mode:       	None
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -373,6 +375,7 @@ Protect Mode:       	None
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

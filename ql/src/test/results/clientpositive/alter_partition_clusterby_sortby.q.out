@@ -191,6 +191,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	SORTBUCKETCOLSPREFIX	TRUE                
+	numPartitions       	1                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

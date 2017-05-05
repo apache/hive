@@ -103,6 +103,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	comment             	a\nb                
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

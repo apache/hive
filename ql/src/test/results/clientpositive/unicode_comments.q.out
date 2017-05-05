@@ -91,6 +91,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	comment             	表格                  
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

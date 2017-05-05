@@ -215,6 +215,7 @@ import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 /**
@@ -3174,6 +3175,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
         if (!descTbl.isFormatted()) {
           cols.addAll(tbl.getPartCols());
+        }
+        if (tbl.isPartitioned() && part == null) {
+          // No partitioned specified for partitioned table, lets fetch all.
+          Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
+          int numParts = -1;
+          try {
+            numParts = db.getNumPartitionsByFilter(tbl, null);
+          } catch (HiveException | TException e) {
+            LOG.warn("Unable to get number of partitions for table " + tbl.getTableName(), e);
+          }
+          tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
+          tbl.setParamters(tblProps);
         }
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, deserializer);

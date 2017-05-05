@@ -30,6 +30,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -126,6 +127,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numPartitions       	1                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -220,6 +223,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+#### A masked pattern was here ####
+	numPartitions       	1                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -316,6 +321,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numPartitions       	1                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -410,6 +417,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+#### A masked pattern was here ####
+	numPartitions       	1                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -506,6 +515,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numPartitions       	1                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -600,6 +611,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+#### A masked pattern was here ####
+	numPartitions       	1                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -696,6 +709,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numPartitions       	1                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -790,6 +805,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+#### A masked pattern was here ####
+	numPartitions       	1                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

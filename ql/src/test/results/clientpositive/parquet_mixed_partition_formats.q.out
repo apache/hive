@@ -196,6 +196,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numPartitions       	1                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 

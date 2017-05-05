@@ -98,6 +98,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	3                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -169,6 +170,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numPartitions       	3                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
