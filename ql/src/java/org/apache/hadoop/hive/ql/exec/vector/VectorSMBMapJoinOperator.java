@@ -257,6 +257,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
         }
       }
 
+      for (VectorExpression ve : keyExpressions) {
+        ve.evaluate(inBatch);
+      }
       keyWrapperBatch.evaluateBatch(inBatch);
       keyValues = keyWrapperBatch.getVectorHashKeyWrappers();
 

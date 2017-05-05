@@ -17,11 +17,11 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>14</version>
+    <version>18</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>2.2.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -61,10 +61,12 @@
   </modules>
 
   <properties>
-    <hive.version.shortname>2.2.0</hive.version.shortname>
+    <hive.version.shortname>3.0.0</hive.version.shortname>
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
@@ -90,11 +92,11 @@
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
-    <maven.test.jvm.args>-Xmx1024m -XX:MaxPermSize=256M</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx1024m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
-    <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+    <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
     <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
@@ -113,10 +115,10 @@
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
-    <avatica.version>1.8.0</avatica.version>
+    <avatica.version>1.9.0</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.10.0</calcite.version>
+    <calcite.version>1.12.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -139,16 +141,16 @@
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.4.4</groovy.version>
     <h2database.version>1.3.166</h2database.version>
-    <hadoop.version>2.7.2</hadoop.version>
+    <hadoop.version>2.8.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.1</hamcrest.version>
     <hbase.version>1.1.1</hbase.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.0</disruptor.version>
-    <hikaricp.version>2.5.1</hikaricp.version>
+    <hikaricp.version>2.6.1</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
-    <httpcomponents.client.version>4.4</httpcomponents.client.version>
-    <httpcomponents.core.version>4.4</httpcomponents.core.version>
+    <httpcomponents.client.version>4.5.2</httpcomponents.client.version>
+    <httpcomponents.core.version>4.4.4</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
     <jackson.version>1.9.13</jackson.version>
     <!-- jackson 1 and 2 lines can coexist without issue, as they have different artifactIds -->
@@ -157,10 +159,10 @@
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
-    <javax-servlet.version>3.0.0.v201112011016</javax-servlet.version>
+    <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
-    <jetty.version>7.6.0.v20120127</jetty.version>
+    <jetty.version>9.3.8.v20160314</jetty.version>
     <jersey.version>1.14</jersey.version>
     <!-- Glassfish jersey is included for Spark client test only -->
     <glassfish.jersey.version>2.22.2</glassfish.jersey.version>
@@ -175,7 +177,7 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.6.2</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.3.1</orc.version>
+    <orc.version>1.3.3</orc.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.29.Final</netty.version>
@@ -185,9 +187,9 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>2.3.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
     <tez.version>0.8.4</tez.version>
-    <slider.version>0.90.2-incubating</slider.version>
+    <slider.version>0.92.0-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.0.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
@@ -608,9 +610,29 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.jetty.aggregate</groupId>
-        <artifactId>jetty-all-server</artifactId>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-rewrite</artifactId>
         <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>${javax-servlet.version}</version>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
@@ -662,13 +684,24 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
          </exclusions>
-     </dependency>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-auth</artifactId>
+        <version>${hadoop.version}</version>
+         <exclusions>
+           <exclusion>
+            <groupId>commmons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+         </exclusions>
+      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
-            <exclusion>
+          <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
           </exclusion>
@@ -708,7 +741,7 @@
      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <artifactId>hadoop-mapreduce-client-common</artifactId>
         <version>${hadoop.version}</version>
          <exclusions>
             <exclusion>
@@ -723,7 +756,52 @@
      </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
+        <version>${hadoop.version}</version>
+         <exclusions>
+            <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commmons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minikdc</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-api</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-client</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-registry</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-server-web-common</artifactId>
+        <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-server-web-proxy</artifactId>
         <version>${hadoop.version}</version>
       </dependency>
       <dependency>
@@ -803,10 +881,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>${maven.compiler.plugin.version}</version>
-          <configuration>
-            <source>1.7</source>
-            <target>1.7</target>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -1106,12 +1180,12 @@
 	<version>0.10</version>
 	<configuration>
 	  <excludes>
+	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-	    <exclude>docs/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>

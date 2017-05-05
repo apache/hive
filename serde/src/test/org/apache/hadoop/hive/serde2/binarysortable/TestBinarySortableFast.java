@@ -119,7 +119,9 @@ public class TestBinarySortableFast extends TestCase {
               new BinarySortableDeserializeRead(
                   primitiveTypeInfos,
                   /* useExternalBuffer */ false,
-                  columnSortOrderIsDesc);
+                  columnSortOrderIsDesc,
+                  columnNullMarker,
+                  columnNotNullMarker);
 
       BytesWritable bytesWritable = serializeWriteBytes[i];
       binarySortableDeserializeRead.set(
@@ -147,7 +149,9 @@ public class TestBinarySortableFast extends TestCase {
           new BinarySortableDeserializeRead(
               primitiveTypeInfos,
               /* useExternalBuffer */ false,
-              columnSortOrderIsDesc);
+              columnSortOrderIsDesc,
+              columnNullMarker,
+              columnNotNullMarker);
 
       binarySortableDeserializeRead2.set(
           bytesWritable.getBytes(), 0, bytesWritable.getLength() - 1);  // One fewer byte.
@@ -280,7 +284,9 @@ public class TestBinarySortableFast extends TestCase {
               new BinarySortableDeserializeRead(
                   primitiveTypeInfos,
                   /* useExternalBuffer */ false,
-                  columnSortOrderIsDesc);
+                  columnSortOrderIsDesc,
+                  columnNullMarker,
+                  columnNotNullMarker);
 
 
       BytesWritable bytesWritable = serdeBytes[i];
@@ -366,6 +372,7 @@ public class TestBinarySortableFast extends TestCase {
 
     boolean[] columnSortOrderIsDesc = new boolean[columnCount];
     Arrays.fill(columnSortOrderIsDesc, false);
+
     byte[] columnNullMarker = new byte[columnCount];
     Arrays.fill(columnNullMarker, BinarySortableSerDe.ZERO);
     byte[] columnNotNullMarker = new byte[columnCount];

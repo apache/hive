@@ -34,7 +34,8 @@ import org.apache.spark.JobExecutionStatus;
  * It print current job status to console and sleep current thread between monitor interval.
  */
 public class RemoteSparkJobMonitor extends SparkJobMonitor {
-
+  private int sparkJobMaxTaskCount = -1;
+  private int totalTaskCount = 0;
   private RemoteSparkJobStatus sparkJobStatus;
   private final HiveConf hiveConf;
 
@@ -42,6 +43,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     super(hiveConf);
     this.sparkJobStatus = sparkJobStatus;
     this.hiveConf = hiveConf;
+    sparkJobMaxTaskCount = hiveConf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS);
   }
 
   @Override
@@ -99,6 +101,17 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
                 console.printInfo(format);
               } else {
                 console.logInfo(format);
+              }
+            } else {
+              // Count the number of tasks, and kill application if it goes beyond the limit.
+              if (sparkJobMaxTaskCount != -1 && totalTaskCount == 0) {
+                totalTaskCount = getTotalTaskCount(progressMap);
+                if (totalTaskCount > sparkJobMaxTaskCount) {
+                  rc = 4;
+                  done = true;
+                  console.printInfo("\nThe total number of task in the Spark job [" + totalTaskCount + "] is greater than the limit [" +
+                      sparkJobMaxTaskCount + "]. The Spark job will be cancelled.");
+                }
               }
             }
 

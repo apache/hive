@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggreg
  */
 public class VectorGroupByDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   /**
    *     GLOBAL         No key.  All rows --> 1 full aggregation on end of input

@@ -201,6 +201,20 @@ public class TaskExecutorService extends AbstractService
   };
 
   @Override
+  public int getNumActive() {
+    int result = 0;
+    for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
+      TaskWrapper task = e.getValue();
+      if (task.isInWaitQueue()) continue;
+      TaskRunnerCallable c = task.getTaskRunnerCallable();
+      // Count the tasks in intermediate state as waiting.
+      if (c == null || c.getStartTime() == 0) continue;
+      ++result;
+    }
+    return result;
+  }
+
+  @Override
   public Set<String> getExecutorsStatus() {
     // TODO Change this method to make the output easier to parse (parse programmatically)
     Set<String> result = new LinkedHashSet<>();
@@ -277,7 +291,8 @@ public class TaskExecutorService extends AbstractService
             }
             // If the task cannot finish and if no slots are available then don't schedule it.
             // Also don't wait if we have a task and we just killed something to schedule it.
-            boolean shouldWait = numSlotsAvailable.get() == 0 && lastKillTimeMs == null;
+            // (numSlotsAvailable can go negative, if the callback after the thread completes is delayed)
+            boolean shouldWait = numSlotsAvailable.get() <= 0 && lastKillTimeMs == null;
             if (task.getTaskRunnerCallable().canFinish()) {
               if (isDebugEnabled) {
                 LOG.debug("Attempting to schedule task {}, canFinish={}. Current state: "
@@ -728,8 +743,8 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
-      taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
       updatePreemptionListAndNotify(result.getEndReason());
+      taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
     }
 
     @Override
@@ -742,8 +757,8 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
-      taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       updatePreemptionListAndNotify(null);
+      taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));
     }
 

@@ -27,6 +27,7 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -105,8 +106,8 @@ public class TopNHash {
     }
 
     final boolean isTez = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
-    final boolean isLlap = isTez && HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap");
-    final int numExecutors = isLlap ? HiveConf.getIntVar(hconf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS) : 1;
+    final boolean isLlap = LlapDaemonInfo.INSTANCE.isLlap();
+    final int numExecutors = isLlap ? LlapDaemonInfo.INSTANCE.getNumExecutors() : 1;
 
     // Used Memory = totalMemory() - freeMemory();
     // Total Free Memory = maxMemory() - Used Memory;

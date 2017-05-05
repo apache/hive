@@ -24,7 +24,11 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.util.Clock;
+import org.apache.hadoop.yarn.util.SystemClock;
+import org.apache.slider.api.types.ApplicationDiagnostics;
 import org.apache.slider.client.SliderClient;
 import org.apache.slider.common.params.ActionCreateArgs;
 import org.apache.slider.common.params.ActionDestroyArgs;
@@ -56,6 +60,60 @@ public class LlapSliderUtils {
     sliderClient.init(sliderClientConf);
     sliderClient.start();
     return sliderClient;
+  }
+
+  public static ApplicationReport getAppReport(String appName, SliderClient sliderClient,
+                                               long timeoutMs) throws
+      LlapStatusServiceDriver.LlapStatusCliException {
+    Clock clock = new SystemClock();
+    long startTime = clock.getTime();
+    long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
+    ApplicationReport appReport = null;
+
+    while (appReport == null) {
+      try {
+        appReport = sliderClient.getYarnAppListClient().findInstance(appName);
+        if (timeoutMs == 0) {
+          // break immediately if timeout is 0
+          break;
+        }
+        // Otherwise sleep, and try again.
+        if (appReport == null) {
+          long remainingTime = Math.min(timeoutTime - clock.getTime(), 500l);
+          if (remainingTime > 0) {
+            Thread.sleep(remainingTime);
+          } else {
+            break;
+          }
+        }
+      } catch (Exception e) { // No point separating IOException vs YarnException vs others
+        throw new LlapStatusServiceDriver.LlapStatusCliException(
+            LlapStatusServiceDriver.ExitCode.YARN_ERROR,
+            "Failed to get Yarn AppReport", e);
+      }
+    }
+    return appReport;
+  }
+
+  public static ApplicationDiagnostics getApplicationDiagnosticsFromYarnDiagnostics(
+      ApplicationReport appReport, Logger LOG) {
+    if (appReport == null) {
+      return null;
+    }
+    String diagnostics = appReport.getDiagnostics();
+    if (diagnostics == null || diagnostics.isEmpty()) {
+      return null;
+    }
+    try {
+      ApplicationDiagnostics appDiagnostics =
+          ApplicationDiagnostics.fromJson(diagnostics);
+      return appDiagnostics;
+    } catch (IOException e) {
+      LOG.warn(
+          "Failed to parse application diagnostics from Yarn Diagnostics - {}",
+          diagnostics);
+      return null;
+    }
   }
 
   public static void startCluster(Configuration conf, String name,

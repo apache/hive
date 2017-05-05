@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -168,6 +168,18 @@
                   </includes>
                 </filter>
                 <filter>
+                  <artifact>org.apache.parquet:parquet-hadoop-bundle</artifact>
+                  <excludes>
+                    <exclude>shaded/parquet/org/codehaus/jackson/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.apache.logging.log4j:log4j-core</artifact>
+                  <excludes>
+                    <exclude>org/apache/logging/log4j/core/jackson/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>META-INF/*.SF</exclude>
@@ -180,11 +192,7 @@
               <artifactSet>
                 <excludes>
                   <exclude>org.apache.commons:commons-compress</exclude>
-                  <exclude>org.apache.hadoop:hadoop-yarn*</exclude>
-                  <exclude>org.apache.hadoop:hadoop-mapreduce*</exclude>
-                  <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
-                  <exclude>org.apache.hadoop:hadoop-client</exclude>
-                  <exclude>org.apache.hadoop:hadoop-annotations</exclude>
+                  <exclude>org.apache.hadoop:*</exclude>
                   <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                   <exclude>org.apache.ant:*</exclude>
                   <exclude>junit:*</exclude>
@@ -229,6 +237,7 @@
                   <exclude>com.thoughtworks.paranamer:*</exclude>
                   <exclude>com.twitter:*</exclude>
                   <exclude>com.zaxxer:*</exclude>
+                  <exclude>com.fasterxml.jackson.core:*</exclude>
                   <exclude>io.netty:*</exclude>
                   <exclude>javax.activation:*</exclude>
                   <exclude>javax.inject:*</exclude>
@@ -290,13 +299,6 @@
                 <relocation>
                   <pattern>com.facebook</pattern>
                   <shadedPattern>org.apache.hive.com.facebook</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.hadoop</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
-                  <excludes>
-                    <exclude>org.apache.hadoop.security.*</exclude>
-                  </excludes>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.zookeeper</pattern>

@@ -1,0 +1,388 @@
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: CREATE TABLE test_table2 (value INT, key STRING) CLUSTERED BY (value) SORTED BY (value ASC) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: CREATE TABLE test_table2 (value INT, key STRING) CLUSTERED BY (value) SORTED BY (value ASC) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key, value) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table3
+POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key, value) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table3
+PREHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key, value) SORTED BY (value ASC, key ASC) INTO 16 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table4
+POSTHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key, value) SORTED BY (value ASC, key ASC) INTO 16 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table4
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table2 SELECT *
+INSERT OVERWRITE TABLE test_table3 SELECT *
+INSERT OVERWRITE TABLE test_table4 SELECT *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table1
+PREHOOK: Output: default@test_table2
+PREHOOK: Output: default@test_table3
+PREHOOK: Output: default@test_table4
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE test_table1 SELECT *
+INSERT OVERWRITE TABLE test_table2 SELECT *
+INSERT OVERWRITE TABLE test_table3 SELECT *
+INSERT OVERWRITE TABLE test_table4 SELECT *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table1
+POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table3
+POSTHOOK: Output: default@test_table4
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 value (type: int)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Position of Big Table: 0
+                BucketMapJoin: true
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: a
+                    sort order: +
+                    tag: -1
+                    TopN: 10
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
+                    auto parallelism: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: test_table1
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              SORTBUCKETCOLSPREFIX TRUE
+              bucket_count 16
+              bucket_field_name key
+              column.name.delimiter ,
+              columns key,value
+              columns.comments 
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.test_table1
+              numFiles 16
+              numRows 500
+              rawDataSize 5312
+              serialization.ddl struct test_table1 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 16
+                bucket_field_name key
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.test_table1
+                numFiles 16
+                numRows 500
+                rawDataSize 5312
+                serialization.ddl struct test_table1 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table1
+            name: default.test_table1
+      Truncated Path -> Alias:
+        /test_table1 [a]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Limit
+            Number of rows: 10
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int:string:int:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table2
+#### A masked pattern was here ####
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+2	val_2	2	val_2
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        b 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: UDFToDouble(value) is not null (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(value) (type: double)
+                Position of Big Table: 0
+
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: UDFToDouble(key) is not null (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 UDFToDouble(key) (type: double)
+                  1 UDFToDouble(value) (type: double)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Position of Big Table: 0
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: a
+                    sort order: +
+                    Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    TopN: 10
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
+                    auto parallelism: false
+      Local Work:
+        Map Reduce Local Work
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: test_table3
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              SORTBUCKETCOLSPREFIX TRUE
+              bucket_count 16
+              bucket_field_name key
+              column.name.delimiter ,
+              columns key,value
+              columns.comments 
+              columns.types int:string
+#### A masked pattern was here ####
+              name default.test_table3
+              numFiles 16
+              numRows 500
+              rawDataSize 5312
+              serialization.ddl struct test_table3 { i32 key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 16
+                bucket_field_name key
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types int:string
+#### A masked pattern was here ####
+                name default.test_table3
+                numFiles 16
+                numRows 500
+                rawDataSize 5312
+                serialization.ddl struct test_table3 { i32 key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 5812
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.test_table3
+            name: default.test_table3
+      Truncated Path -> Alias:
+        /test_table3 [a]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: string)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int:string:int:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table4
+#### A masked pattern was here ####

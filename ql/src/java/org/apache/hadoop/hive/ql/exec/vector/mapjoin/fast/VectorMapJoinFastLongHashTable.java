@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -279,5 +280,19 @@ public abstract class VectorMapJoinFastLongHashTable
     useMinMax = minMaxEnabled;
     min = Long.MAX_VALUE;
     max = Long.MIN_VALUE;
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    long size = super.getEstimatedMemorySize();
+    size += slotPairs == null ? 0 : jdm.lengthForLongArrayOfSize(slotPairs.length);
+    size += (2 * jdm.primitive2());
+    size += (2 * jdm.primitive1());
+    size += jdm.object();
+    // adding 16KB constant memory for keyBinarySortableDeserializeRead as the rabit hole is deep to implement
+    // MemoryEstimate interface, also it is constant overhead
+    size += (16 * 1024L);
+    return size;
   }
 }

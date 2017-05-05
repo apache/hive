@@ -371,10 +371,15 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -403,10 +408,15 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

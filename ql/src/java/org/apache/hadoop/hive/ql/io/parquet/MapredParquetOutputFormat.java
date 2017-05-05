@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.parquet.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,14 +140,11 @@ public class MapredParquetOutputFormat extends FileOutputFormat<NullWritable, Pa
     String timeZoneID =
         tableProperties.getProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
     if (!Strings.isNullOrEmpty(timeZoneID)) {
-      if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(timeZoneID)) {
-        throw new IllegalStateException("Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
-      }
+
+      NanoTimeUtils.validateTimeZone(timeZoneID);
       return TimeZone.getTimeZone(timeZoneID);
     }
 
-    // If no timezone is defined in table properties, then adjust timestamps using
-    // PARQUET_INT96_NO_ADJUSTMENT_ZONE timezone
-    return TimeZone.getTimeZone(ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
+    return TimeZone.getDefault();
   }
 }

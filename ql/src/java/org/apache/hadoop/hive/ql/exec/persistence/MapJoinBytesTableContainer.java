@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -71,6 +73,11 @@ import org.slf4j.LoggerFactory;
 public class MapJoinBytesTableContainer
          implements MapJoinTableContainer, MapJoinTableContainerDirectAccess {
   private static final Logger LOG = LoggerFactory.getLogger(MapJoinTableContainer.class);
+
+  // TODO: For object inspector fields, assigning 16KB for now. To better estimate the memory size every
+  // object inspectors have to implement MemoryEstimate interface which is a lot of change with little benefit compared
+  // to writing an instrumentation agent for object size estimation
+  public static final long DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE = 16 * 1024L;
 
   private final BytesBytesMultiHashMap hashMap;
   /** The OI used to deserialize values. We never deserialize keys. */
@@ -147,7 +154,7 @@ public class MapJoinBytesTableContainer
     this.notNullMarkers = notNullMarkers;
   }
 
-  public static interface KeyValueHelper extends BytesBytesMultiHashMap.KvSource {
+  public static interface KeyValueHelper extends BytesBytesMultiHashMap.KvSource, MemoryEstimate {
     void setKeyValue(Writable key, Writable val) throws SerDeException;
     /** Get hash value from the key. */
     int getHashFromKey() throws SerDeException;
@@ -215,6 +222,22 @@ public class MapJoinBytesTableContainer
     @Override
     public int getHashFromKey() throws SerDeException {
       throw new UnsupportedOperationException("Not supported for MapJoinBytesTableContainer");
+    }
+
+    @Override
+    public long getEstimatedMemorySize() {
+      JavaDataModel jdm = JavaDataModel.get();
+      long size = 0;
+      size += keySerDe == null ? 0 : jdm.object();
+      size += valSerDe == null ? 0 : jdm.object();
+      size += keySoi == null ? 0 : DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE;
+      size += valSoi == null ? 0 : DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE;
+      size += keyOis == null ? 0 : jdm.arrayList() + keyOis.size() * DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE;
+      size += valOis == null ? 0 : jdm.arrayList() + valOis.size() * DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE;
+      size += keyObjs == null ? 0 : jdm.array() + keyObjs.length * jdm.object();
+      size += valObjs == null ? 0 : jdm.array() + valObjs.length * jdm.object();
+      size += jdm.primitive1();
+      return size;
     }
   }
 
@@ -319,6 +342,15 @@ public class MapJoinBytesTableContainer
       aliasFilter &= filterGetter.getShort();
       return aliasFilter;
     }
+
+    @Override
+    public long getEstimatedMemorySize() {
+      JavaDataModel jdm = JavaDataModel.get();
+      long size = 0;
+      size += (4 * jdm.object());
+      size += jdm.primitive1();
+      return size;
+    }
   }
 
   /*
@@ -360,6 +392,15 @@ public class MapJoinBytesTableContainer
       byte[] keyBytes = key.getBytes();
       int keyLength = key.getLength();
       return HashCodeUtil.murmurHash(keyBytes, 0, keyLength);
+    }
+
+    @Override
+    public long getEstimatedMemorySize() {
+      JavaDataModel jdm = JavaDataModel.get();
+      long size = 0;
+      size += jdm.object() + (key == null ? 0 : key.getCapacity());
+      size += jdm.object() + (val == null ? 0 : val.getCapacity());
+      return size;
     }
   }
 
@@ -767,5 +808,20 @@ public class MapJoinBytesTableContainer
   @Override
   public int size() {
     return hashMap.size();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    long size = 0;
+    size += hashMap.getEstimatedMemorySize();
+    size += directWriteHelper == null ? 0 : directWriteHelper.getEstimatedMemorySize();
+    size += writeHelper == null ? 0 : writeHelper.getEstimatedMemorySize();
+    size += sortableSortOrders == null ? 0 : jdm.lengthForBooleanArrayOfSize(sortableSortOrders.length);
+    size += nullMarkers == null ? 0 : jdm.lengthForByteArrayOfSize(nullMarkers.length);
+    size += notNullMarkers == null ? 0 : jdm.lengthForByteArrayOfSize(notNullMarkers.length);
+    size += jdm.arrayList(); // empty list
+    size += DEFAULT_OBJECT_INSPECTOR_MEMORY_SIZE;
+    return size;
   }
 }

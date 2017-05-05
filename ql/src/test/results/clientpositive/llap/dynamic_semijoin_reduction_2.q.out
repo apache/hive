@@ -105,10 +105,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tt2
-                  filterExpr: ((timestamp_col_18 = timestamp_col_18) and decimal1911_col_16 is not null and (timestamp_col_18 BETWEEN DynamicValue(RS_23_t1_timestamp_col_18_min) AND DynamicValue(RS_23_t1_timestamp_col_18_max) and in_bloom_filter(timestamp_col_18, DynamicValue(RS_23_t1_timestamp_col_18_bloom_filter)))) (type: boolean)
+                  filterExpr: (timestamp_col_18 is not null and decimal1911_col_16 is not null and (timestamp_col_18 BETWEEN DynamicValue(RS_23_t1_timestamp_col_18_min) AND DynamicValue(RS_23_t1_timestamp_col_18_max) and in_bloom_filter(timestamp_col_18, DynamicValue(RS_23_t1_timestamp_col_18_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: ((timestamp_col_18 = timestamp_col_18) and decimal1911_col_16 is not null and (timestamp_col_18 BETWEEN DynamicValue(RS_23_t1_timestamp_col_18_min) AND DynamicValue(RS_23_t1_timestamp_col_18_max) and in_bloom_filter(timestamp_col_18, DynamicValue(RS_23_t1_timestamp_col_18_bloom_filter)))) (type: boolean)
+                    predicate: (timestamp_col_18 is not null and decimal1911_col_16 is not null and (timestamp_col_18 BETWEEN DynamicValue(RS_23_t1_timestamp_col_18_min) AND DynamicValue(RS_23_t1_timestamp_col_18_max) and in_bloom_filter(timestamp_col_18, DynamicValue(RS_23_t1_timestamp_col_18_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: decimal1911_col_16 (type: decimal(19,11)), timestamp_col_18 (type: timestamp)
@@ -184,7 +184,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Group By Operator
-                    aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=1)
+                    aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=2)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
@@ -230,7 +230,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=2)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE

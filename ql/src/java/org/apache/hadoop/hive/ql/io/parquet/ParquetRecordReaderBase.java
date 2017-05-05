@@ -20,6 +20,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -44,7 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -170,7 +170,7 @@ public class ParquetRecordReaderBase {
     boolean skipConversion = HiveConf.getBoolVar(configuration,
         HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION);
     FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
-    if (!Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr") ||
+    if (!Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr") &&
         skipConversion) {
       // Impala writes timestamp values using GMT only. We should not try to convert Impala
       // files to other type of timezones.
@@ -179,16 +179,12 @@ public class ParquetRecordReaderBase {
       // TABLE_PARQUET_INT96_TIMEZONE is a table property used to detect what timezone conversion
       // to use when reading Parquet timestamps.
       timeZoneID = configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
-          ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
-
-      if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(timeZoneID)) {
-          throw new IllegalStateException("Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
-      }
+          TimeZone.getDefault().getID());
+      NanoTimeUtils.validateTimeZone(timeZoneID);
     }
 
     // 'timeZoneID' should be valid, since we did not throw exception above
-    configuration.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
-        TimeZone.getTimeZone(timeZoneID).getID());
+    configuration.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,timeZoneID);
   }
 
   public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {

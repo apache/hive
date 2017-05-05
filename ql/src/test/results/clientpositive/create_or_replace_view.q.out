@@ -128,6 +128,7 @@ Table Type:         	VIRTUAL_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -225,6 +226,7 @@ Table Type:         	VIRTUAL_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -299,6 +301,7 @@ Table Type:         	VIRTUAL_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -396,6 +399,7 @@ Table Type:         	VIRTUAL_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   

@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -357,6 +359,12 @@ public final class FileUtils {
     return getPathOrParentThatExists(fs, parentPath);
   }
 
+  public static void checkFileAccessWithImpersonation(final FileSystem fs, final FileStatus stat,
+      final FsAction action, final String user)
+      throws IOException, AccessControlException, InterruptedException, Exception {
+    checkFileAccessWithImpersonation(fs, stat, action, user, null);
+  }
+
   /**
    * Perform a check to determine if the user is able to access the file passed in.
    * If the user name passed in is different from the current user, this method will
@@ -371,13 +379,15 @@ public final class FileUtils {
    *             check will be performed within a doAs() block to use the access privileges
    *             of this user. In this case the user must be configured to impersonate other
    *             users, otherwise this check will fail with error.
+   * @param children List of children to be collected. If this is null, no children are collected.
+   *        To be set only if this is a directory
    * @throws IOException
    * @throws AccessControlException
    * @throws InterruptedException
    * @throws Exception
    */
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
-      final FileStatus stat, final FsAction action, final String user)
+      final FileStatus stat, final FsAction action, final String user, final List<FileStatus> children)
           throws IOException, AccessControlException, InterruptedException, Exception {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
@@ -385,6 +395,7 @@ public final class FileUtils {
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
       ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action);
+      addChildren(fs, stat.getPath(), children);
       return;
     }
 
@@ -397,11 +408,26 @@ public final class FileUtils {
         public Object run() throws Exception {
           FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
           ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+          addChildren(fsAsUser, stat.getPath(), children);
           return null;
         }
       });
     } finally {
       FileSystem.closeAllForUGI(proxyUser);
+    }
+  }
+
+  private static void addChildren(FileSystem fsAsUser, Path path, List<FileStatus> children)
+      throws IOException {
+    if (children != null) {
+      FileStatus[] listStatus;
+      try {
+        listStatus = fsAsUser.listStatus(path);
+      } catch (IOException e) {
+        LOG.warn("Unable to list files under " + path + " : " + e);
+        throw e;
+      }
+      children.addAll(Arrays.asList(listStatus));
     }
   }
 
@@ -431,20 +457,26 @@ public final class FileUtils {
       dirActionNeeded.and(FsAction.EXECUTE);
     }
 
+    List<FileStatus> subDirsToCheck = null;
+    if (isDir && recurse) {
+      subDirsToCheck = new ArrayList<FileStatus>();
+    }
+
     try {
-      checkFileAccessWithImpersonation(fs, fileStatus, action, userName);
+      checkFileAccessWithImpersonation(fs, fileStatus, action, userName, subDirsToCheck);
     } catch (AccessControlException err) {
       // Action not permitted for user
+      LOG.warn("Action " + action + " denied on " + fileStatus.getPath() + " for user " + userName);
       return false;
     }
 
-    if ((!isDir) || (!recurse)) {
+    if (subDirsToCheck == null || subDirsToCheck.isEmpty()) {
       // no sub dirs to be checked
       return true;
     }
+
     // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
-    for (FileStatus childStatus : childStatuses) {
+    for (FileStatus childStatus : subDirsToCheck) {
       // check children recursively - recurse is true if we're here.
       if (!isActionPermittedForFileHierarchy(fs, childStatus, userName, action, true)) {
         return false;
@@ -486,11 +518,30 @@ public final class FileUtils {
     return false;
   }
   public static boolean isOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus, String userName)
-      throws IOException {
+      throws IOException, InterruptedException {
     return isOwnerOfFileHierarchy(fs, fileStatus, userName, true);
   }
 
-  public static boolean isOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus,
+  public static boolean isOwnerOfFileHierarchy(final FileSystem fs,
+      final FileStatus fileStatus, final String userName, final boolean recurse)
+      throws IOException, InterruptedException {
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(userName,
+        UserGroupInformation.getLoginUser());
+    try {
+      boolean isOwner = proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
+        @Override
+        public Boolean run() throws Exception {
+          FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+          return checkIsOwnerOfFileHierarchy(fsAsUser, fileStatus, userName, recurse);
+        }
+      });
+      return isOwner;
+    } finally {
+      FileSystem.closeAllForUGI(proxyUser);
+    }
+  }
+
+  public static boolean checkIsOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, boolean recurse)
       throws IOException {
     if (!fileStatus.getOwner().equals(userName)) {
@@ -505,59 +556,24 @@ public final class FileUtils {
     FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
     for (FileStatus childStatus : childStatuses) {
       // check children recursively - recurse is true if we're here.
-      if (!isOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
+      if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
         return false;
       }
     }
     return true;
   }
 
-  public static boolean mkdir(FileSystem fs, Path f, Configuration conf) throws IOException {
-    boolean inheritPerms = HiveConf.getBoolVar(conf, ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-    return mkdir(fs, f, inheritPerms, conf);
-  }
-
   /**
    * Creates the directory and all necessary parent directories.
    * @param fs FileSystem to use
    * @param f path to create.
-   * @param inheritPerms whether directory inherits the permission of the last-existing parent path
    * @param conf Hive configuration
    * @return true if directory created successfully.  False otherwise, including if it exists.
    * @throws IOException exception in creating the directory
    */
-  public static boolean mkdir(FileSystem fs, Path f, boolean inheritPerms, Configuration conf) throws IOException {
+  public static boolean mkdir(FileSystem fs, Path f, Configuration conf) throws IOException {
     LOG.info("Creating directory if it doesn't exist: " + f);
-    if (!inheritPerms) {
-      //just create the directory
-      return fs.mkdirs(f);
-    } else {
-      //Check if the directory already exists. We want to change the permission
-      //to that of the parent directory only for newly created directories.
-      try {
-        return fs.getFileStatus(f).isDir();
-      } catch (FileNotFoundException ignore) {
-      }
-      //inherit perms: need to find last existing parent path, and apply its permission on entire subtree.
-      Path lastExistingParent = f;
-      Path firstNonExistentParent = null;
-      while (!fs.exists(lastExistingParent)) {
-        firstNonExistentParent = lastExistingParent;
-        lastExistingParent = lastExistingParent.getParent();
-      }
-      boolean success = fs.mkdirs(f);
-      if (!success) {
-        return false;
-      } else {
-        //set on the entire subtree
-        if (inheritPerms) {
-          HdfsUtils.setFullFileStatus(conf,
-                  new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs,
-                  firstNonExistentParent, true);
-        }
-        return true;
-      }
-    }
+    return fs.mkdirs(f);
   }
 
   public static Path makeAbsolute(FileSystem fileSystem, Path path) throws IOException {
@@ -610,11 +626,6 @@ public final class FileUtils {
     if (!triedDistcp) {
       copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
     }
-
-    boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-    if (copied && inheritPerms) {
-      HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, dstFS, dst.getParent()), dstFS, dst, true);
-    }
     return copied;
   }
 
@@ -626,15 +637,19 @@ public final class FileUtils {
    * @return true if move successful
    * @throws IOException
    */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf)
+  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
       throws IOException {
     LOG.debug("deleting  " + f);
     boolean result = false;
     try {
-      result = Trash.moveToAppropriateTrash(fs, f, conf);
-      if (result) {
-        LOG.trace("Moved to trash: " + f);
-        return true;
+      if(purge) {
+        LOG.debug("purge is set to true. Not moving to Trash " + f);
+      } else {
+        result = Trash.moveToAppropriateTrash(fs, f, conf);
+        if (result) {
+          LOG.trace("Moved to trash: " + f);
+          return true;
+        }
       }
     } catch (IOException ioe) {
       // for whatever failure reason including that trash has lower encryption zone
@@ -646,13 +661,11 @@ public final class FileUtils {
     if (!result) {
       LOG.error("Failed to delete " + f);
     }
-
     return result;
   }
 
-  public static boolean renameWithPerms(FileSystem fs, Path sourcePath,
-                               Path destPath, boolean inheritPerms,
-                               Configuration conf) throws IOException {
+  public static boolean rename(FileSystem fs, Path sourcePath,
+                               Path destPath, Configuration conf) throws IOException {
     LOG.info("Renaming " + sourcePath + " to " + destPath);
 
     // If destPath directory exists, rename call will move the sourcePath
@@ -661,20 +674,7 @@ public final class FileUtils {
       throw new IOException("Cannot rename the source path. The destination "
           + "path already exists.");
     }
-
-    if (!inheritPerms) {
-      //just rename the directory
-      return fs.rename(sourcePath, destPath);
-    } else {
-      //rename the directory
-      if (fs.rename(sourcePath, destPath)) {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath,
-                true);
-        return true;
-      }
-
-      return false;
-    }
+    return fs.rename(sourcePath, destPath);
   }
 
   /**

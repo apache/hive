@@ -21,9 +21,12 @@ import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.List;
+
+import com.google.common.base.Strings;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -106,18 +109,20 @@ public class CoreParseNegative extends CliAdapter{
       fail("Unexpected success for query: " + fname + debugHint);
     }
     catch (ParseException pe) {
-      int ecode = qt.checkNegativeResults(fname, pe);
-      if (ecode != 0) {
-        qt.failed(ecode, fname, debugHint);
+      QTestProcessExecResult result = qt.checkNegativeResults(fname, pe);
+      if (result.getReturnCode() != 0) {
+        qt.failed(result.getReturnCode(), fname, result.getCapturedOutput() + "\r\n" + debugHint);
       }
     }
     catch (SemanticException se) {
-      int ecode = qt.checkNegativeResults(fname, se);
-      if (ecode != 0) {
-        qt.failedDiff(ecode, fname, debugHint);
+      QTestProcessExecResult result = qt.checkNegativeResults(fname, se);
+      if (result.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
+            debugHint : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
-    catch (Throwable e) {
+    catch (Exception e) {
       qt.failed(e, fname, debugHint);
     }
 

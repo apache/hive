@@ -455,10 +455,11 @@ public class GenTezWork implements NodeProcessor {
           EdgeType edgeType = GenTezUtils.determineEdgeType(work, followingWork, rs);
           if (rWork.isAutoReduceParallelism()) {
             edgeProp =
-                new TezEdgeProperty(context.conf, edgeType, true,
+                new TezEdgeProperty(context.conf, edgeType, true, rWork.isSlowStart(),
                     rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer);
           } else {
             edgeProp = new TezEdgeProperty(edgeType);
+            edgeProp.setSlowStart(rWork.isSlowStart());
           }
           tezWork.connect(work, followingWork, edgeProp);
           context.connectedReduceSinks.add(rs);

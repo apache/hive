@@ -303,8 +303,8 @@ select * from emps where (empno,deptno) in ((1,2),(3,2))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
-1	2	11
 2	5	22
+1	2	11
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view v

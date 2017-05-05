@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public abstract class ShimLoader {
   private static final Logger LOG = LoggerFactory.getLogger(ShimLoader.class);
-  public static String HADOOP23VERSIONNAME = "0.23";
+  public static final String HADOOP23VERSIONNAME = "0.23";
 
   private static volatile HadoopShims hadoopShims;
   private static JettyShims jettyShims;

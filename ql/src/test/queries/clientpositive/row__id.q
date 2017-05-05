@@ -16,7 +16,7 @@ select tid from (select row__id.transactionid as tid from hello_acid) sub order 
 select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid;
 
 explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1;
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3;
 
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1;
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3;
 

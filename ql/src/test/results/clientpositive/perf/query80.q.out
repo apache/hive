@@ -295,7 +295,7 @@ Stage-0
                                                   Select Operator [SEL_47] (rows=8116 width=1119)
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_194] (rows=8116 width=1119)
-                                                      predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
+                                                      predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
                                                       TableScan [TS_45] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                                               <-Reducer 17 [SIMPLE_EDGE]
@@ -387,7 +387,7 @@ Stage-0
                                                   Select Operator [SEL_88] (rows=8116 width=1119)
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_200] (rows=8116 width=1119)
-                                                      predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
+                                                      predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
                                                       TableScan [TS_86] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                                               <-Reducer 29 [SIMPLE_EDGE]
@@ -479,7 +479,7 @@ Stage-0
                                                   Select Operator [SEL_8] (rows=8116 width=1119)
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_188] (rows=8116 width=1119)
-                                                      predicate:(d_date BETWEEN 1998-08-04 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
+                                                      predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
                                                       TableScan [TS_6] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
                                               <-Reducer 2 [SIMPLE_EDGE]

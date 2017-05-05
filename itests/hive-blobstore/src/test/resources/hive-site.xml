@@ -279,6 +279,11 @@
     <value>pblob:${system:test.tmp.dir}/bucket</value>
   </property>
 
+  <property>
+    <name>hive.exim.uri.scheme.whitelist</name>
+    <value>hdfs,pfile,file,s3,s3a,pblob</value>
+  </property>
+
   <!--
   To run these tests:
   # Create a file blobstore-conf.xml  - DO NOT ADD TO REVISION CONTROL

@@ -45,6 +45,7 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
+import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 class BeeLineOpts implements Completer {
@@ -61,7 +62,7 @@ class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
   public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
 
-  public static String URL_ENV_PREFIX = "BEELINE_URL_";
+  public static final String URL_ENV_PREFIX = "BEELINE_URL_";
 
   private final BeeLine beeLine;
   private boolean autosave = false;
@@ -100,6 +101,7 @@ class BeeLineOpts implements Completer {
 
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
+  private int maxHistoryRows = MemoryHistory.DEFAULT_MAX_SIZE;
 
   private String scriptFile = null;
   private String[] initFiles = null;
@@ -429,6 +431,17 @@ class BeeLineOpts implements Completer {
 
   public String getHistoryFile() {
     return historyFile;
+  }
+
+  /**
+   * @param numRows - the number of rows to store in history file
+   */
+  public void setMaxHistoryRows(int numRows) {
+    this.maxHistoryRows = numRows;
+  }
+
+  public int getMaxHistoryRows() {
+    return maxHistoryRows;
   }
 
   public void setScriptFile(String scriptFile) {

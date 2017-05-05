@@ -43,4 +43,13 @@ public class VectorMapJoinFastStringHashMap extends VectorMapJoinFastBytesHashMa
     super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
   }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    long size = 0;
+    // adding 16KB constant memory for stringCommon as the rabit hole is deep to implement
+    // MemoryEstimate interface, also it is constant overhead
+    size += (16 * 1024L);
+    return super.getEstimatedMemorySize() + size;
+  }
 }

@@ -50,7 +50,7 @@ public class GroupByDesc extends AbstractOperatorDesc {
    * MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct
    * aggregations.
    */
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   /**
    * Mode.

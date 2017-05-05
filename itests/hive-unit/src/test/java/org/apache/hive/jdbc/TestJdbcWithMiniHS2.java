@@ -112,6 +112,14 @@ public class TestJdbcWithMiniHS2 {
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.execute("create database " + testDbName);
     stmt.close();
+
+    try {
+      openTestConnections();
+    } catch (Exception e) {
+      System.out.println("Unable to open default connections to MiniHS2: " + e);
+      throw e;
+    }
+
     // tables in test db
     createTestTables(conTestDb, testDbName);
   }
@@ -183,6 +191,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     startMiniHS2(conf);
     openDefaultConnections();
+    openTestConnections();
   }
 
   private static void startMiniHS2(HiveConf conf) throws Exception {
@@ -208,6 +217,9 @@ public class TestJdbcWithMiniHS2 {
 
   private static void openDefaultConnections() throws Exception {
     conDefault = getConnection();
+  }
+
+  private static void openTestConnections() throws Exception {
     conTestDb = getConnection(testDbName);
   }
 
@@ -961,6 +973,38 @@ public class TestJdbcWithMiniHS2 {
       }
     }
 
+    // Restore original state
+    restoreMiniHS2AndConnections();
+  }
+
+  /**
+   * Test for jdbc driver retry on NoHttpResponseException
+   * @throws Exception
+   */
+  @Test
+  public void testHttpRetryOnServerIdleTimeout() throws Exception {
+    // Stop HiveServer2
+    stopMiniHS2();
+    HiveConf conf = new HiveConf();
+    conf.set("hive.server2.transport.mode", "http");
+    // Set server's idle timeout to a very low value
+    conf.set("hive.server2.thrift.http.max.idle.time", "5");
+    startMiniHS2(conf);
+    String userName = System.getProperty("user.name");
+    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+    Statement stmt = conn.createStatement();
+    stmt.execute("select from_unixtime(unix_timestamp())");
+    // Sleep for longer than server's idletimeout and execute a query
+    TimeUnit.SECONDS.sleep(10);
+    try {
+      stmt.execute("select from_unixtime(unix_timestamp())");
+    } catch (Exception e) {
+      fail("Not expecting exception: " + e);
+    } finally {
+      if (conn != null) {
+        conn.close();
+      }
+    }
     // Restore original state
     restoreMiniHS2AndConnections();
   }

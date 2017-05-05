@@ -98,6 +98,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20;
 
 select 
@@ -105,6 +106,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20;
 
 

@@ -89,14 +89,7 @@ public class HiveSchemaTool {
     }
     this.hiveConf = hiveConf;
     this.dbType = dbType;
-    this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, hiveConf, dbType);
-    userName = hiveConf.get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname);
-    try {
-      passWord = ShimLoader.getHadoopShims().getPassword(hiveConf,
-          HiveConf.ConfVars.METASTOREPWD.varname);
-    } catch (IOException err) {
-      throw new HiveMetaException("Error getting metastore password", err);
-    }
+    this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, dbType);
   }
 
   public HiveConf getHiveConf() {
@@ -593,29 +586,40 @@ public class HiveSchemaTool {
   }
 
   public void doValidate() throws HiveMetaException {
-    System.out.println("Starting metastore validation");
+    System.out.println("Starting metastore validation\n");
     Connection conn = getConnectionToMetastore(false);
+    boolean success = true;
     try {
-      if (validateSchemaVersions(conn))
+      if (validateSchemaVersions(conn)) {
         System.out.println("[SUCCESS]\n");
-      else
+      } else {
+        success = false;
         System.out.println("[FAIL]\n");
-      if (validateSequences(conn))
+      }
+      if (validateSequences(conn)) {
         System.out.println("[SUCCESS]\n");
-      else
+      } else {
+        success = false;
         System.out.println("[FAIL]\n");
-      if (validateSchemaTables(conn))
+      }
+      if (validateSchemaTables(conn)) {
         System.out.println("[SUCCESS]\n");
-      else
+      } else {
+        success = false;
         System.out.println("[FAIL]\n");
-      if (validateLocations(conn, this.validationServers))
+      }
+      if (validateLocations(conn, this.validationServers)) {
         System.out.println("[SUCCESS]\n");
-      else
+      } else {
+        success = false;
         System.out.println("[FAIL]\n");
-      if (validateColumnNullValues(conn))
+      }
+      if (validateColumnNullValues(conn)) {
         System.out.println("[SUCCESS]\n");
-      else
+      } else {
+        success = false;
         System.out.println("[FAIL]\n");
+      }
     } finally {
       if (conn != null) {
         try {
@@ -626,7 +630,13 @@ public class HiveSchemaTool {
       }
     }
 
-    System.out.println("Done with metastore validation");
+    System.out.print("Done with metastore validation: ");
+    if (!success) {
+      System.out.println("[FAIL]");
+      System.exit(1);
+    } else {
+      System.out.println("[SUCCESS]");
+    }
   }
 
   boolean validateSequences(Connection conn) throws HiveMetaException {
@@ -719,14 +729,14 @@ public class HiveSchemaTool {
       version = getMetaStoreSchemaVersion(hmsConn);
     } catch (HiveMetaException he) {
       System.err.println("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
-      LOG.error("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
+      LOG.debug("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
       return false;
     }
 
     // re-open the hms connection
     hmsConn = getConnectionToMetastore(false);
 
-    LOG.info("Validating tables in the schema for version " + version);
+    LOG.debug("Validating tables in the schema for version " + version);
     try {
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
@@ -760,7 +770,7 @@ public class HiveSchemaTool {
       subScripts.addAll(findCreateTable(schemaFile, schemaTables));
       while (subScripts.size() > 0) {
         schemaFile = baseDir + "/" + dbType + "/" + subScripts.remove(0);
-        LOG.info("Parsing subscript " + schemaFile);
+        LOG.debug("Parsing subscript " + schemaFile);
         subScripts.addAll(findCreateTable(schemaFile, schemaTables));
       }
     } catch (Exception e) {
@@ -775,13 +785,12 @@ public class HiveSchemaTool {
     int schemaSize = schemaTables.size();
     schemaTables.removeAll(dbTables);
     if (schemaTables.size() > 0) {
-      System.out.println("Found " + schemaSize + " tables in schema definition, " +
-          schemaTables.size() + " tables [ " + Arrays.toString(schemaTables.toArray())
+      System.out.println("Table(s) [ " + Arrays.toString(schemaTables.toArray())
           + " ] are missing from the metastore database schema.");
       System.out.println("Schema table validation failed!!!");
       return false;
     } else {
-      System.out.println("Succeeded in schema table validation. " + schemaSize + " tables matched");
+      System.out.println("Succeeded in schema table validation.");
       return true;
     }
   }
@@ -1102,9 +1111,19 @@ public class HiveSchemaTool {
 
       if (line.hasOption("userName")) {
         schemaTool.setUserName(line.getOptionValue("userName"));
+      } else {
+        schemaTool.setUserName(
+            schemaTool.getHiveConf().get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
       }
       if (line.hasOption("passWord")) {
         schemaTool.setPassWord(line.getOptionValue("passWord"));
+      } else {
+        try {
+          schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
+              HiveConf.ConfVars.METASTOREPWD.varname));
+        } catch (IOException err) {
+          throw new HiveMetaException("Error getting metastore password", err);
+        }
       }
       if (line.hasOption("dryRun")) {
         schemaTool.setDryRun(true);

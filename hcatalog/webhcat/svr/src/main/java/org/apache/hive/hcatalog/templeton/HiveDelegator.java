@@ -49,7 +49,7 @@ public class HiveDelegator extends LauncherDelegator {
                String statusdir, String callback, String completedUrl, boolean enablelog,
                Boolean enableJobReconnect)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException
   {
     runAs = user;
     List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,

@@ -245,6 +245,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	4                   
+	numPartitions       	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	23248               

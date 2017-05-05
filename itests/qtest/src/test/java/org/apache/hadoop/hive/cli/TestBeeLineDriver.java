@@ -22,15 +22,15 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
+import org.apache.hive.beeline.Parallelized;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
+@RunWith(Parallelized.class)
 public class TestBeeLineDriver {
 
   static CliAdapter adapter = new CliConfigs.BeeLineConfig().getCliAdapter();

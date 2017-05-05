@@ -51,7 +51,7 @@ public class StreamingDelegator extends LauncherDelegator {
                Boolean enableJobReconnect,
                JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
       List<String> args = makeArgs(inputs, inputreader, output, mapper, reducer, combiner,
       fileList, cmdenvs, jarArgs);
 

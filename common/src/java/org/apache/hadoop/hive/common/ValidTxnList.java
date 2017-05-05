@@ -71,7 +71,7 @@ public interface ValidTxnList {
 
   /**
    * Populate this validTxnList from the string.  It is assumed that the string
-   * was created via {@link #writeToString()}.
+   * was created via {@link #writeToString()} and the exceptions list is sorted.
    * @param src source string.
    */
   public void readFromString(String src);
@@ -89,4 +89,20 @@ public interface ValidTxnList {
    * @return a list of invalid transaction ids
    */
   public long[] getInvalidTransactions();
+
+  /**
+   * Indicates whether a given transaction is aborted.
+   * @param txnid id for the transaction
+   * @return true if aborted, false otherwise
+   */
+  public boolean isTxnAborted(long txnid);
+
+  /**
+   * Find out if a range of transaction ids are aborted.
+   * @param minTxnId minimum txnid to look for, inclusive
+   * @param maxTxnId maximum txnid to look for, inclusive
+   * @return Indicate whether none, some, or all of these transactions are aborted.
+   */
+  public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId);
+
 }

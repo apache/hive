@@ -126,12 +126,8 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
         resultSchema = new TableSchema();
       }
       if (response.getConsoleMessages() != null) {
-        // Propagate processor messages (if any) to beeline or other client.
-        OperationLog ol = OperationLog.getCurrentOperationLog();
-        if (ol != null) {
-          for (String consoleMsg : response.getConsoleMessages()) {
-            ol.writeOperationLog(LoggingLevel.EXECUTION, consoleMsg + "\n");
-          }
+        for (String consoleMsg : response.getConsoleMessages()) {
+          LOG.info(consoleMsg);
         }
       }
     } catch (HiveSQLException e) {

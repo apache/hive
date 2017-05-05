@@ -22,6 +22,8 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
@@ -121,11 +123,13 @@ public class CorePerfCliDriver extends CliAdapter{
       if (ecode != 0) {
         qt.failed(ecode, fname, debugHint);
       }
-      ecode = qt.checkCliDriverResults(fname);
-      if (ecode != 0) {
-        qt.failedDiff(ecode, fname, debugHint);
+      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      if (result.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
+            debugHint : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    } catch (Throwable e) {
+    } catch (Exception e) {
       qt.failed(e, fname, debugHint);
     }
 

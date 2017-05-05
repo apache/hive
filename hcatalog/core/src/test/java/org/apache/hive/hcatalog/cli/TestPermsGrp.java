@@ -116,7 +116,7 @@ public class TestPermsGrp extends TestCase {
       Table tbl = getTable(dbName, tblName, typeName);
       msc.createTable(tbl);
       Database db = Hive.get(hcatConf).getDatabase(dbName);
-      Path dfsPath = clientWH.getTablePath(db, tblName);
+      Path dfsPath = clientWH.getDefaultTablePath(db, tblName);
       cleanupTbl(dbName, tblName, typeName);
 
       // Next user did specify perms.
@@ -126,7 +126,7 @@ public class TestPermsGrp extends TestCase {
         assertTrue(e instanceof ExitException);
         assertEquals(((ExitException) e).getStatus(), 0);
       }
-      dfsPath = clientWH.getTablePath(db, tblName);
+      dfsPath = clientWH.getDefaultTablePath(db, tblName);
       assertTrue(dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission().equals(FsPermission.valueOf("drwx-wx---")));
 
       cleanupTbl(dbName, tblName, typeName);
@@ -141,7 +141,7 @@ public class TestPermsGrp extends TestCase {
         assertTrue(me instanceof ExitException);
       }
       // No physical dir gets created.
-      dfsPath = clientWH.getTablePath(db, tblName);
+      dfsPath = clientWH.getDefaultTablePath(db, tblName);
       try {
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
         assert false;

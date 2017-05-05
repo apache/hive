@@ -169,7 +169,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 <%args>
     SQLOperationDisplay sod;
 </%args>
-   <table id="attributes_table" class="table table-striped">
+   <table class="table table-striped">
        <tr>
            <th>Stage Id</th>
            <th>Status</th>
@@ -218,7 +218,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 </%args>
     <section>
       <h3>Compile-time metadata operations</h3>
-        <table id="attributes_table" class="table table-striped">
+        <table class="table table-striped">
           <tr>
              <th>Call Name</th>
              <th>Time (ms)</th>
@@ -237,7 +237,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
     <section>
       <h3>Execution-time metadata operations</h3>
-        <table id="attributes_table" class="table table-striped">
+        <table class="table table-striped">
           <tr>
              <th>Call Name</th>
              <th>Time (ms)</th>
@@ -256,7 +256,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
     <section>
       <h3>Compile-Time Perf-Logger</h3>
-        <table id="attributes_table" class="table table-striped">
+        <table class="table table-striped">
           <tr>
              <th>Compile-time Call Name</th>
              <th>Time (ms)</th>
@@ -275,7 +275,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
 
     <section>
       <h3>Execution-Time Perf-Logger</h3>
-        <table id="attributes_table" class="table table-striped">
+        <table class="table table-striped">
           <tr>
              <th>Execution-time Call Name</th>
              <th>Time (ms)</th>

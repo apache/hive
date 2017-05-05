@@ -16,4 +16,4 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acid_uanp
 POSTHOOK: Lineage: acid_uanp.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acid_uanp.b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-FAILED: SemanticException [Error 10295]: INSERT OVERWRITE not allowed on table with OutputFormat that implements AcidOutputFormat while transaction manager that supports ACID is in use
+FAILED: SemanticException [Error 10295]: INSERT OVERWRITE not allowed on table default.acid_uanp with OutputFormat that implements AcidOutputFormat while transaction manager that supports ACID is in use

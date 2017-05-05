@@ -23,11 +23,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.apache.calcite.avatica.util.DateTimeUtils;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -38,8 +39,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
@@ -76,8 +77,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
@@ -96,6 +99,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -248,6 +253,8 @@ public class RexNodeConverter {
     boolean isWhenCase = tgtUdf instanceof GenericUDFWhen || tgtUdf instanceof GenericUDFCase;
     boolean isTransformableTimeStamp = func.getGenericUDF() instanceof GenericUDFUnixTimeStamp &&
             func.getChildren().size() != 0;
+    boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
+    boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -266,15 +273,33 @@ public class RexNodeConverter {
     } else if (isTransformableTimeStamp) {
       // unix_timestamp(args) -> to_unix_timestamp(args)
       func = ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), func.getChildren());
+    } else if (isBetween) {
+      assert func.getChildren().size() == 4;
+      // We skip first child as is not involved (is the revert boolean)
+      // The target type needs to account for all 3 operands
+      tgtDT = FunctionRegistry.getCommonClassForComparison(
+              func.getChildren().get(1).getTypeInfo(),
+              FunctionRegistry.getCommonClassForComparison(
+                func.getChildren().get(2).getTypeInfo(),
+                func.getChildren().get(3).getTypeInfo()));
+    } else if (isIN) {
+      // We're only considering the first element of the IN list for the type
+      assert func.getChildren().size() > 1;
+      tgtDT = FunctionRegistry.getCommonClassForComparison(func.getChildren().get(0)
+            .getTypeInfo(), func.getChildren().get(1).getTypeInfo());
     }
 
-    for (ExprNodeDesc childExpr : func.getChildren()) {
+    for (int i =0; i < func.getChildren().size(); ++i) {
+      ExprNodeDesc childExpr = func.getChildren().get(i);
       tmpExprNode = childExpr;
       if (tgtDT != null
           && TypeInfoUtils.isConversionRequiredForComparison(tgtDT, childExpr.getTypeInfo())) {
-        if (isCompare) {
+        if (isCompare || isBetween || isIN) {
           // For compare, we will convert requisite children
-          tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+          // For BETWEEN skip the first child (the revert boolean)
+          if (!isBetween || i > 0) {
+            tmpExprNode = ParseUtils.createConversionCast(childExpr, (PrimitiveTypeInfo) tgtDT);
+          }
         } else if (isNumeric) {
           // For numeric, we'll do minimum necessary cast - if we cast to the type
           // of expression, bad things will happen.
@@ -634,20 +659,40 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-      Calendar cal = new GregorianCalendar();
-      cal.setTime((Date) value);
-      calciteLiteral = rexBuilder.makeDateLiteral(cal);
-      break;
-    case TIMESTAMP:
-      Calendar c = null;
-      if (value instanceof Calendar) {
-        c = (Calendar)value;
-      } else {
-        c = Calendar.getInstance();
-        c.setTimeInMillis(((Timestamp)value).getTime());
-      }
-      calciteLiteral = rexBuilder.makeTimestampLiteral(c, RelDataType.PRECISION_NOT_SPECIFIED);
-      break;
+        // The Calcite literal is in GMT, this will be converted back to JVM locale 
+        // by ASTBuilder.literal during Calcite->Hive plan conversion
+        final Calendar cal = Calendar.getInstance(DateTimeUtils.GMT_ZONE, Locale.getDefault());
+        cal.setTime((Date) value);
+        calciteLiteral = rexBuilder.makeDateLiteral(cal);
+        break;
+      case TIMESTAMP:
+        // The Calcite literal is in GMT, this will be converted back to JVM locale 
+        // by ASTBuilder.literal during Calcite->Hive plan conversion
+        final Calendar calt = Calendar.getInstance(DateTimeUtils.GMT_ZONE, Locale.getDefault());
+        if (value instanceof Calendar) {
+          final Calendar c = (Calendar) value;
+          long timeMs = c.getTimeInMillis();
+          calt.setTimeInMillis(timeMs);
+        } else {
+          final Timestamp ts = (Timestamp) value;
+          // CALCITE-1690
+          // Calcite cannot represent TIMESTAMP literals with precision higher than 3
+          if (ts.getNanos() % 1000000 != 0) {
+            throw new CalciteSemanticException(
+              "High Precision Timestamp: " + String.valueOf(ts),
+              UnsupportedFeature.HighPrecissionTimestamp);
+          }
+          calt.setTimeInMillis(ts.getTime());
+        }
+        // Must call makeLiteral, not makeTimestampLiteral 
+        // to have the RexBuilder.roundTime logic kick in
+        calciteLiteral = rexBuilder.makeLiteral(
+          calt,
+          rexBuilder.getTypeFactory().createSqlType(
+            SqlTypeName.TIMESTAMP,
+            rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP)),
+          false);
+        break;
     case INTERVAL_YEAR_MONTH:
       // Calcite year-month literal value is months as BigDecimal
       BigDecimal totalMonths = BigDecimal.valueOf(((HiveIntervalYearMonth) value).getTotalMonths());

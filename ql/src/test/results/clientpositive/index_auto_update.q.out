@@ -98,8 +98,8 @@ STAGE PLANS:
           TableScan
             alias: temp
             Select Operator
-              expressions: key (type: string), INPUT__FILE__NAME (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)
-              outputColumnNames: key, INPUT__FILE__NAME, BLOCK__OFFSET__INSIDE__FILE
+              expressions: key (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint), INPUT__FILE__NAME (type: string)
+              outputColumnNames: key, BLOCK__OFFSET__INSIDE__FILE, INPUT__FILE__NAME
               Group By Operator
                 aggregations: collect_set(BLOCK__OFFSET__INSIDE__FILE)
                 keys: key (type: string), INPUT__FILE__NAME (type: string)

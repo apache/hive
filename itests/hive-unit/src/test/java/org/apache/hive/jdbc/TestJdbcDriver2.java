@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
@@ -577,7 +578,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testSetOnConnection() throws Exception {
-    Connection connection = getConnection("test?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
+    Connection connection = getConnection(testDbName + "?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
     try {
       verifyConfValue(connection, "conf1", "conf2");
       verifyConfValue(connection, "conf3", "conf4");
@@ -1079,6 +1080,45 @@ public class TestJdbcDriver2 {
     }
     assertTrue("table name " + tableName
         + " not found in SHOW TABLES result set", testTableExists);
+    stmt.close();
+  }
+
+  @Test
+  public void testShowTablesInDb() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    String tableNameInDbUnique = tableName + "_unique";
+    // create a table with a unique name in testDb
+    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
+    stmt.execute("create table " + testDbName + "." + tableNameInDbUnique
+        + " (under_col int comment 'the under column', value string) comment '" + tableComment
+        + "'");
+
+    ResultSet res = stmt.executeQuery("show tables in " + testDbName);
+
+    boolean testTableExists = false;
+    while (res.next()) {
+      assertNotNull("table name is null in result set", res.getString(1));
+      if (tableNameInDbUnique.equalsIgnoreCase(res.getString(1))) {
+        testTableExists = true;
+      }
+    }
+    assertTrue("table name " + tableNameInDbUnique
+        + " not found in SHOW TABLES result set", testTableExists);
+    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
+    stmt.close();
+  }
+
+  @Test
+  public void testInvalidShowTables() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    //show tables <dbname> is in invalid show tables syntax. Hive does not return
+    //any tables in this case
+    ResultSet res = stmt.executeQuery("show tables " + testDbName);
+    assertFalse(res.next());
     stmt.close();
   }
 
@@ -2882,5 +2922,11 @@ public class TestJdbcDriver2 {
     }
     assertEquals(rowCount, dataFileRowCount);
     stmt.execute("drop table " + tblName);
+  }
+
+  // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
+  @Test(expected = HiveSQLException.class)
+  public void testConnectInvalidDatabase() throws SQLException {
+    DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
   }
 }

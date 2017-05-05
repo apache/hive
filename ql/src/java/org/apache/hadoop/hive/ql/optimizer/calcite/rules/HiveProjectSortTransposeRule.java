@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -25,7 +26,12 @@ import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexCallBinding;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.validate.SqlMonotonicity;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -59,15 +65,27 @@ public class HiveProjectSortTransposeRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final HiveProject project = call.rel(0);
     final HiveSortLimit sort = call.rel(1);
+    final RelOptCluster cluster = project.getCluster();
 
     // Determine mapping between project input and output fields. If sort
     // relies on non-trivial expressions, we can't push.
     final Mappings.TargetMapping map =
-        RelOptUtil.permutation(
+        RelOptUtil.permutationIgnoreCast(
             project.getProjects(), project.getInput().getRowType()).inverse();
     for (RelFieldCollation fc : sort.getCollation().getFieldCollations()) {
       if (map.getTarget(fc.getFieldIndex()) < 0) {
         return;
+      }
+      final RexNode node = project.getProjects().get(map.getTarget(fc.getFieldIndex()));
+      if (node.isA(SqlKind.CAST)) {
+        // Check whether it is a monotonic preserving cast, otherwise we cannot push
+        final RexCall cast = (RexCall) node;
+        final RexCallBinding binding =
+            RexCallBinding.create(cluster.getTypeFactory(), cast,
+                ImmutableList.of(RexUtil.apply(map, sort.getCollation())));
+        if (cast.getOperator().getMonotonicity(binding) == SqlMonotonicity.NOT_MONOTONIC) {
+          return;
+        }
       }
     }
 

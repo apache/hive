@@ -8344,19 +8344,22 @@ class GetOpenTxnsResponse:
    - txn_high_water_mark
    - open_txns
    - min_open_txn
+   - abortedBits
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'txn_high_water_mark', None, None, ), # 1
-    (2, TType.SET, 'open_txns', (TType.I64,None), None, ), # 2
+    (2, TType.LIST, 'open_txns', (TType.I64,None), None, ), # 2
     (3, TType.I64, 'min_open_txn', None, None, ), # 3
+    (4, TType.STRING, 'abortedBits', None, None, ), # 4
   )
 
-  def __init__(self, txn_high_water_mark=None, open_txns=None, min_open_txn=None,):
+  def __init__(self, txn_high_water_mark=None, open_txns=None, min_open_txn=None, abortedBits=None,):
     self.txn_high_water_mark = txn_high_water_mark
     self.open_txns = open_txns
     self.min_open_txn = min_open_txn
+    self.abortedBits = abortedBits
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -8373,18 +8376,23 @@ class GetOpenTxnsResponse:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.SET:
-          self.open_txns = set()
-          (_etype416, _size413) = iprot.readSetBegin()
+        if ftype == TType.LIST:
+          self.open_txns = []
+          (_etype416, _size413) = iprot.readListBegin()
           for _i417 in xrange(_size413):
             _elem418 = iprot.readI64()
-            self.open_txns.add(_elem418)
-          iprot.readSetEnd()
+            self.open_txns.append(_elem418)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.I64:
           self.min_open_txn = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.abortedBits = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -8402,15 +8410,19 @@ class GetOpenTxnsResponse:
       oprot.writeI64(self.txn_high_water_mark)
       oprot.writeFieldEnd()
     if self.open_txns is not None:
-      oprot.writeFieldBegin('open_txns', TType.SET, 2)
-      oprot.writeSetBegin(TType.I64, len(self.open_txns))
+      oprot.writeFieldBegin('open_txns', TType.LIST, 2)
+      oprot.writeListBegin(TType.I64, len(self.open_txns))
       for iter419 in self.open_txns:
         oprot.writeI64(iter419)
-      oprot.writeSetEnd()
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.min_open_txn is not None:
       oprot.writeFieldBegin('min_open_txn', TType.I64, 3)
       oprot.writeI64(self.min_open_txn)
+      oprot.writeFieldEnd()
+    if self.abortedBits is not None:
+      oprot.writeFieldBegin('abortedBits', TType.STRING, 4)
+      oprot.writeString(self.abortedBits)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -8420,6 +8432,8 @@ class GetOpenTxnsResponse:
       raise TProtocol.TProtocolException(message='Required field txn_high_water_mark is unset!')
     if self.open_txns is None:
       raise TProtocol.TProtocolException(message='Required field open_txns is unset!')
+    if self.abortedBits is None:
+      raise TProtocol.TProtocolException(message='Required field abortedBits is unset!')
     return
 
 
@@ -8428,6 +8442,7 @@ class GetOpenTxnsResponse:
     value = (value * 31) ^ hash(self.txn_high_water_mark)
     value = (value * 31) ^ hash(self.open_txns)
     value = (value * 31) ^ hash(self.min_open_txn)
+    value = (value * 31) ^ hash(self.abortedBits)
     return value
 
   def __repr__(self):
@@ -11185,17 +11200,20 @@ class CurrentNotificationEventId:
 class InsertEventRequestData:
   """
   Attributes:
+   - replace
    - filesAdded
    - filesAddedChecksum
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'filesAdded', (TType.STRING,None), None, ), # 1
-    (2, TType.LIST, 'filesAddedChecksum', (TType.STRING,None), None, ), # 2
+    (1, TType.BOOL, 'replace', None, None, ), # 1
+    (2, TType.LIST, 'filesAdded', (TType.STRING,None), None, ), # 2
+    (3, TType.LIST, 'filesAddedChecksum', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, filesAdded=None, filesAddedChecksum=None,):
+  def __init__(self, replace=None, filesAdded=None, filesAddedChecksum=None,):
+    self.replace = replace
     self.filesAdded = filesAdded
     self.filesAddedChecksum = filesAddedChecksum
 
@@ -11209,6 +11227,11 @@ class InsertEventRequestData:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.BOOL:
+          self.replace = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
         if ftype == TType.LIST:
           self.filesAdded = []
           (_etype495, _size492) = iprot.readListBegin()
@@ -11218,7 +11241,7 @@ class InsertEventRequestData:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 2:
+      elif fid == 3:
         if ftype == TType.LIST:
           self.filesAddedChecksum = []
           (_etype501, _size498) = iprot.readListBegin()
@@ -11238,15 +11261,19 @@ class InsertEventRequestData:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('InsertEventRequestData')
+    if self.replace is not None:
+      oprot.writeFieldBegin('replace', TType.BOOL, 1)
+      oprot.writeBool(self.replace)
+      oprot.writeFieldEnd()
     if self.filesAdded is not None:
-      oprot.writeFieldBegin('filesAdded', TType.LIST, 1)
+      oprot.writeFieldBegin('filesAdded', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.filesAdded))
       for iter504 in self.filesAdded:
         oprot.writeString(iter504)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.filesAddedChecksum is not None:
-      oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 2)
+      oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.filesAddedChecksum))
       for iter505 in self.filesAddedChecksum:
         oprot.writeString(iter505)
@@ -11263,6 +11290,7 @@ class InsertEventRequestData:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.replace)
     value = (value * 31) ^ hash(self.filesAdded)
     value = (value * 31) ^ hash(self.filesAddedChecksum)
     return value

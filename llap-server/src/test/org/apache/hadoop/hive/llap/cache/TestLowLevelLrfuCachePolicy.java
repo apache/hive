@@ -230,18 +230,25 @@ public class TestLowLevelLrfuCachePolicy {
     // Now we should have two in the heap and two in the list, which is an implementation detail.
     // Evict only big blocks.
     et.evicted.clear();
-    assertEquals(4, lrfu.tryEvictContiguousData(2, 4));
+    assertEquals(8, lrfu.tryEvictContiguousData(2, 4));
     for (int i = 0; i < sizeTwo.size(); ++i) {
       LlapDataBuffer block = et.evicted.get(i);
       assertTrue(block.isInvalid());
       assertSame(sizeTwo.get(i), block);
     }
     et.evicted.clear();
-    // Cannot evict any more size 2.
-    assertEquals(0, lrfu.tryEvictContiguousData(2, 1));
-    assertEquals(4, lrfu.evictSomeBlocks(4));
-    for (int i = 0; i < sizeOne.size(); ++i) {
-      LlapDataBuffer block = et.evicted.get(i);
+    // Evict small blocks when no big ones are available.
+    assertEquals(2, lrfu.tryEvictContiguousData(2, 1));
+    for (int i = 0; i < 2; ++i) {
+	  LlapDataBuffer block = et.evicted.get(i);
+	  assertTrue(block.isInvalid());
+	  assertSame(sizeOne.get(i), block);
+	}
+    et.evicted.clear();
+    // Evict the rest.
+    assertEquals(2, lrfu.evictSomeBlocks(3));
+    for (int i = 2; i < sizeOne.size(); ++i) {
+      LlapDataBuffer block = et.evicted.get(i - 2);
       assertTrue(block.isInvalid());
       assertSame(sizeOne.get(i), block);
     }

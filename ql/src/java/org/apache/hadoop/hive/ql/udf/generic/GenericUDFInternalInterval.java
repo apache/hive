@@ -51,7 +51,7 @@ import org.apache.hive.common.util.DateUtils;
 
 public class GenericUDFInternalInterval extends GenericUDF {
 
-  private static Map<Integer, IntervalProcessor> processorMap;
+  private Map<Integer, IntervalProcessor> processorMap;
 
   private transient IntervalProcessor processor;
   private transient PrimitiveObjectInspector inputOI;
@@ -286,7 +286,7 @@ public class GenericUDFInternalInterval extends GenericUDF {
     }
   }
 
-  private static Map<Integer, IntervalProcessor> getProcessorMap() {
+  private Map<Integer, IntervalProcessor> getProcessorMap() {
 
     if (processorMap != null) {
       return processorMap;

@@ -171,7 +171,7 @@ STAGE PLANS:
                 value expressions: _col0 (type: int), _col1 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: int), UDFToInteger(VALUE._col1) (type: int)
+          expressions: UDFToString(VALUE._col0) (type: string), UDFToInteger(VALUE._col1) (type: int)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -213,7 +213,7 @@ POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Output: default@test_table2@ds=1
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select count(*) from test_table2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2

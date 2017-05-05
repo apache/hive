@@ -1,0 +1,186 @@
+PREHOOK: query: DROP TABLE hbase_table_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE hbase_table_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_1
+POSTHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_1
+PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table_1
+POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table_1
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from hbase_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_1
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2
+  Stage-1 is a root stage
+  Stage-3 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Alter Table Operator:
+        Alter Table
+          type: drop props
+          old name: default.hbase_table_1
+          properties:
+            COLUMN_STATS_ACCURATE 
+
+  Stage: Stage-2
+      Insert operator:
+        Insert
+
+  Stage: Stage-1
+      Pre Insert operator:
+        Pre-Insert task
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((UDFToDouble(key) % 2.0) = 0.0) (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: UDFToInteger(key) (type: int), value (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat
+                      output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
+                      serde: org.apache.hadoop.hive.hbase.HBaseSerDe
+                      name: default.hbase_table_1
+
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_1
+PREHOOK: query: ALTER TABLE hbase_table_1 SET TBLPROPERTIES('hbase.mapred.output.outputtable'='kkk')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@hbase_table_1
+PREHOOK: Output: default@hbase_table_1
+POSTHOOK: query: ALTER TABLE hbase_table_1 SET TBLPROPERTIES('hbase.mapred.output.outputtable'='kkk')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@hbase_table_1
+POSTHOOK: Output: default@hbase_table_1
+PREHOOK: query: desc formatted hbase_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table_1
+POSTHOOK: query: desc formatted hbase_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table_1
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	hbase.mapred.output.outputtable	kkk                 
+	hbase.table.name    	hbase_table_0       
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	hbase.columns.mapping	cf:string           
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE hbase_table_1 unset TBLPROPERTIES('hbase.mapred.output.outputtable')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@hbase_table_1
+PREHOOK: Output: default@hbase_table_1
+POSTHOOK: query: ALTER TABLE hbase_table_1 unset TBLPROPERTIES('hbase.mapred.output.outputtable')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@hbase_table_1
+POSTHOOK: Output: default@hbase_table_1
+PREHOOK: query: desc formatted hbase_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table_1
+POSTHOOK: query: desc formatted hbase_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table_1
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	hbase.table.name    	hbase_table_0       
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
+InputFormat:        	null                	 
+OutputFormat:       	null                	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	hbase.columns.mapping	cf:string           
+	serialization.format	1                   

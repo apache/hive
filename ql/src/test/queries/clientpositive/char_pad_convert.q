@@ -9,7 +9,7 @@ create table over1k(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -45,26 +45,26 @@ select lpad(f, 4, ' '),
        lpad(d, 2, ' '),
        lpad(bo, 9, 'z'),
        lpad(ts, 2, 'a'),
-       lpad(dec, 7, 'd'),
+       lpad(`dec`, 7, 'd'),
        lpad(bin, 8, 'b') from over1k limit 5;
 
 select lpad("oh", 10, f),
        lpad("my", 6, d),
        lpad("other", 14, bo),
        lpad("one", 12, ts),
-       lpad("two", 7, dec),
+       lpad("two", 7, `dec`),
        lpad("three", 8, bin) from over1k limit 5;
 
 select rpad(f, 4, ' '),
        rpad(d, 2, ' '),
        rpad(bo, 9, 'z'),
        rpad(ts, 2, 'a'),
-       rpad(dec, 7, 'd'),
+       rpad(`dec`, 7, 'd'),
        rpad(bin, 8, 'b') from over1k limit 5;
 
 select rpad("oh", 10, f),
        rpad("my", 6, d),
        rpad("other", 14, bo),
        rpad("one", 12, ts),
-       rpad("two", 7, dec),
+       rpad("two", 7, `dec`),
        rpad("three", 8, bin) from over1k limit 5;

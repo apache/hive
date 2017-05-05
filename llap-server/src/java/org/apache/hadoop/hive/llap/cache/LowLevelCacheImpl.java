@@ -466,4 +466,43 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     }
     return sb.toString();
   }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nORC cache state ");
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0;
+    for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
+      cache.entrySet()) {
+      if (!e.getValue().incRef()) continue;
+      try {
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0;
+        if (e.getValue().getCache().isEmpty()) continue;
+        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
+          int newRc = e2.getValue().incRef();
+          if (newRc < 0) {
+            ++fileEvicted;
+            continue;
+          }
+          try {
+            if (newRc > 1) { // We hold one refcount.
+              ++fileLocked;
+            } else {
+              ++fileUnlocked;
+            }
+          } finally {
+            e2.getValue().decRef();
+          }
+        }
+        allLocked += fileLocked;
+        allUnlocked += fileUnlocked;
+        allEvicted += fileEvicted;
+        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, "
+            + fileUnlocked + " unlocked, " + fileEvicted + " evicted");
+      } finally {
+        e.getValue().decRef();
+      }
+    }
+    sb.append("\nORC cache summary: " + allLocked + " locked, "
+        + allUnlocked + " unlocked, " + allEvicted + " evicted");
+  }
 }

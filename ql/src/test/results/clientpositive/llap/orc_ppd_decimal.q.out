@@ -386,7 +386,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-81475875500
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, cast('11.22' as float))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc
@@ -395,7 +395,7 @@ POSTHOOK: query: select sum(hash(*)) from newtypesorc where d in ('0.9', 0.22, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-81475875500
+-252951929000
 PREHOOK: query: select sum(hash(*)) from newtypesorc where d between 0 and 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc

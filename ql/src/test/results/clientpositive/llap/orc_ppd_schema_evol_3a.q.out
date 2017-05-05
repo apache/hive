@@ -7,7 +7,7 @@ PREHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -23,7 +23,7 @@ POSTHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -57,7 +57,7 @@ PREHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 PREHOOK: type: CREATETABLE
@@ -74,17 +74,17 @@ POSTHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_staging
-PREHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), dec, bin from staging order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging order by t, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), dec, bin from staging order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), `dec`, bin from staging order by t, s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -154,7 +154,7 @@ PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 PREHOOK: type: CREATETABLE
@@ -171,17 +171,17 @@ POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd
-PREHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, dec, bin from orc_ppd_staging order by t, s
+PREHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging order by t, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_staging
 PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, dec, bin from orc_ppd_staging order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, `dec`, bin from orc_ppd_staging order by t, s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_ppd_staging
 POSTHOOK: Output: default@orc_ppd

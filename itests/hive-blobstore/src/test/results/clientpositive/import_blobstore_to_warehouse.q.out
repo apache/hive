@@ -1,0 +1,157 @@
+PREHOOK: query: DROP TABLE exim_employee
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE exim_employee
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE exim_employee (emp_id int COMMENT "employee id")
+COMMENT "employee table"
+PARTITIONED BY (emp_country string COMMENT "two char iso code")
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: CREATE TABLE exim_employee (emp_id int COMMENT "employee id")
+COMMENT "employee table"
+PARTITIONED BY (emp_country string COMMENT "two char iso code")
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="in")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="in")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=in
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="us")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="us")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=us
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="cz")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/test.dat"
+INTO TABLE exim_employee PARTITION (emp_country="cz")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=cz
+PREHOOK: query: DESCRIBE EXTENDED exim_employee
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@exim_employee
+POSTHOOK: query: DESCRIBE EXTENDED exim_employee
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@exim_employee
+emp_id              	int                 	employee id         
+emp_country         	string              	two char iso code   
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	two char iso code   
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@exim_employee
+PREHOOK: Input: default@exim_employee@emp_country=cz
+PREHOOK: Input: default@exim_employee@emp_country=in
+PREHOOK: Input: default@exim_employee@emp_country=us
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Input: default@exim_employee@emp_country=cz
+POSTHOOK: Input: default@exim_employee@emp_country=in
+POSTHOOK: Input: default@exim_employee@emp_country=us
+#### A masked pattern was here ####
+1	cz
+2	cz
+3	cz
+4	cz
+5	cz
+6	cz
+1	in
+2	in
+3	in
+4	in
+5	in
+6	in
+1	us
+2	us
+3	us
+4	us
+5	us
+6	us
+PREHOOK: query: EXPORT TABLE exim_employee PARTITION (emp_country='us')
+TO '### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_employee@emp_country=us
+PREHOOK: Output: ### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee
+POSTHOOK: query: EXPORT TABLE exim_employee PARTITION (emp_country='us')
+TO '### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_employee@emp_country=us
+POSTHOOK: Output: ### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee
+PREHOOK: query: DROP TABLE exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: DROP TABLE exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: IMPORT FROM '### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee'
+PREHOOK: type: IMPORT
+PREHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee
+PREHOOK: Output: database:default
+POSTHOOK: query: IMPORT FROM '### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee'
+POSTHOOK: type: IMPORT
+POSTHOOK: Input: ### test.blobstore.path ###/import_blobstore_to_warehouse/export/exim_employee
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=us
+PREHOOK: query: DESCRIBE EXTENDED exim_employee
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@exim_employee
+POSTHOOK: query: DESCRIBE EXTENDED exim_employee
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@exim_employee
+emp_id              	int                 	employee id         
+emp_country         	string              	two char iso code   
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+emp_country         	string              	two char iso code   
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@exim_employee
+PREHOOK: Input: default@exim_employee@emp_country=us
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Input: default@exim_employee@emp_country=us
+#### A masked pattern was here ####
+1	us
+2	us
+3	us
+4	us
+5	us
+6	us

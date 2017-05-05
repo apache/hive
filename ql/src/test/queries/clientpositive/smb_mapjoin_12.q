@@ -6,7 +6,7 @@ set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
-
+set hive.cbo.enable=false;
 -- This test verifies that the output of a sort merge join on 1 big partition with multiple small partitions is bucketed and sorted
 
 -- Create two bucketed and sorted tables

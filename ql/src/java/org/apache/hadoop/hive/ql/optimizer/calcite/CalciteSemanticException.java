@@ -31,10 +31,11 @@ public class CalciteSemanticException extends SemanticException {
 
   public enum UnsupportedFeature {
     Distinct_without_an_aggreggation, Duplicates_in_RR, Filter_expression_with_non_boolean_return_type,
-    Having_clause_without_any_groupby, Hint, Invalid_column_reference, Invalid_decimal,
+    Having_clause_without_any_groupby, Invalid_column_reference, Invalid_decimal,
     Less_than_equal_greater_than, Others, Same_name_in_multiple_expressions,
     Schema_less_table, Select_alias_in_having_clause, Select_transform, Subquery,
-    Table_sample_clauses, UDTF, Union_type, Unique_join
+    Table_sample_clauses, UDTF, Union_type, Unique_join,
+    HighPrecissionTimestamp // CALCITE-1690
   };
 
   private UnsupportedFeature unsupportedFeature;

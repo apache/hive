@@ -251,7 +251,7 @@ STAGE PLANS:
                Left Outer Join1 to 2
           filter predicates:
             0 
-            1 {(UDFToDouble(KEY.reducesinkkey0) < UDFToDouble(10))}
+            1 {(UDFToDouble(KEY.reducesinkkey0) < 10.0)}
             2 
           keys:
             0 _col0 (type: string)

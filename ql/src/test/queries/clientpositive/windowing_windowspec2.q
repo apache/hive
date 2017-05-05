@@ -10,7 +10,7 @@ create table over10k(
            bo boolean,
            s string,
 	   ts timestamp,
-           dec decimal,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|';

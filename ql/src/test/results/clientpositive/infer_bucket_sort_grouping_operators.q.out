@@ -57,7 +57,7 @@ STAGE PLANS:
           Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 750 Data size: 7968 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -775,7 +775,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
+POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key EXPRESSION []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(1) FROM src GROUP BY ROLLUP (key, value)
@@ -1441,9 +1441,9 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	1                   	 
-Bucket Columns:     	[key, value, grouping_key]	 
-Sort Columns:       	[Order(col:key, order:1), Order(col:value, order:1), Order(col:grouping_key, order:1)]	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
@@ -1489,7 +1489,7 @@ STAGE PLANS:
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1580,7 +1580,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
+POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key EXPRESSION []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1')
@@ -1619,9 +1619,9 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	1                   	 
-Bucket Columns:     	[key, value, grouping_key]	 
-Sort Columns:       	[Order(col:key, order:1), Order(col:value, order:1), Order(col:grouping_key, order:1)]	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
@@ -1667,7 +1667,7 @@ STAGE PLANS:
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           pruneGroupingSetId: true
           Select Operator
-            expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+            expressions: _col0 (type: string), _col1 (type: string), UDFToString(_col3) (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1758,7 +1758,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table_out_2@part=1
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).agg EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key SIMPLE []
+POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).grouping_key EXPRESSION []
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table_out_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE FORMATTED test_table_out_2 PARTITION (part = '1')
@@ -1797,8 +1797,8 @@ SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
 OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	1                   	 
-Bucket Columns:     	[key, value, grouping_key]	 
-Sort Columns:       	[Order(col:key, order:1), Order(col:value, order:1), Order(col:grouping_key, order:1)]	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   

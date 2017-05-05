@@ -292,10 +292,10 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
-	numFiles            	2                   
+	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	547                 
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -322,11 +322,11 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: calendar
-            Statistics: Num rows: 136 Data size: 547 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: month (type: int)
               outputColumnNames: month
-              Statistics: Num rows: 136 Data size: 547 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: max(month)
                 mode: hash

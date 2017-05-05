@@ -33,8 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,9 +55,12 @@ public class TestCodahaleMetrics {
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
+
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
+    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
+        "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, "
+            + "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
 

@@ -132,6 +132,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	4                   
+	numPartitions       	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	23248               
@@ -601,6 +602,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
+	numPartitions       	4                   
 	numRows             	2000                
 	rawDataSize         	21248               
 	totalSize           	23248               

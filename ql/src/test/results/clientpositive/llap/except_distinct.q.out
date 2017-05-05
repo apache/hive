@@ -190,9 +190,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 #### A masked pattern was here ####
-1	2
 2	3
 2	20
+1	2
 PREHOOK: query: explain select * from src except distinct select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from src except distinct select * from src

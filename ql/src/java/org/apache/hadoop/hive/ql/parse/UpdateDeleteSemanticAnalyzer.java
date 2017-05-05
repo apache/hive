@@ -32,15 +32,18 @@ import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -662,9 +665,11 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
      */
     String extraPredicate = null;
     int numWhenMatchedUpdateClauses = 0, numWhenMatchedDeleteClauses = 0;
+    int numInsertClauses = 0;
     for(ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
         case HiveParser.TOK_INSERT:
+          numInsertClauses++;
           handleInsert(whenClause, rewrittenQueryStr, target, onClause, targetTable, targetName, onClauseAsText);
           break;
         case HiveParser.TOK_UPDATE:
@@ -690,6 +695,15 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
       if(numWhenMatchedUpdateClauses > 1) {
         throw new SemanticException(ErrorMsg.MERGE_TOO_MANY_UPDATE, ctx.getCmd());
+      }
+      assert numInsertClauses < 2;
+      if(numInsertClauses == 1 && numWhenMatchedUpdateClauses == 1) {
+        if(AcidUtils.getAcidOperationalProperties(targetTable).isSplitUpdate()) {
+          throw new IllegalStateException("Tables with " +
+            hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "=" +
+            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY + " currently do not " +
+            "support MERGE with both Insert and Update clauses.");
+        }
       }
     }
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {

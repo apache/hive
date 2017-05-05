@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloColumnMapping;
 import org.apache.hadoop.hive.accumulo.predicate.compare.CompareOp;
 import org.apache.hadoop.hive.accumulo.predicate.compare.PrimitiveComparison;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +53,7 @@ import com.google.common.collect.Lists;
  */
 public class PrimitiveComparisonFilter extends WholeRowIterator {
   @SuppressWarnings("unused")
-  private static final Logger log = LoggerFactory.getLogger(PrimitiveComparisonFilter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PrimitiveComparisonFilter.class);
 
   public static final String FILTER_PREFIX = "accumulo.filter.compare.iterator.";
   public static final String P_COMPARE_CLASS = "accumulo.filter.iterator.p.compare.class";
@@ -68,7 +67,7 @@ public class PrimitiveComparisonFilter extends WholeRowIterator {
 
   @Override
   protected boolean filter(Text currentRow, List<Key> keys, List<Value> values) {
-    SortedMap<Key,Value> items;
+    SortedMap<Key, Value> items;
     boolean allow;
     try { // if key doesn't contain CF, it's an encoded value from a previous iterator.
       while (keys.get(0).getColumnFamily().getBytes().length == 0) {
@@ -103,11 +102,11 @@ public class PrimitiveComparisonFilter extends WholeRowIterator {
   }
 
   @Override
-  public void init(SortedKeyValueIterator<Key,Value> source, Map<String,String> options,
+  public void init(SortedKeyValueIterator<Key, Value> source, Map<String, String> options,
       IteratorEnvironment env) throws IOException {
     super.init(source, options, env);
     String serializedColumnMapping = options.get(COLUMN);
-    Entry<String,String> pair = ColumnMappingFactory.parseMapping(serializedColumnMapping);
+    Entry<String, String> pair = ColumnMappingFactory.parseMapping(serializedColumnMapping);
 
     // The ColumnEncoding, column name and type are all irrelevant at this point, just need the
     // cf:[cq]
@@ -135,7 +134,7 @@ public class PrimitiveComparisonFilter extends WholeRowIterator {
     }
   }
 
-  protected byte[] getConstant(Map<String,String> options) {
+  protected byte[] getConstant(Map<String, String> options) {
     String b64Const = options.get(CONST_VAL);
     return Base64.decodeBase64(b64Const.getBytes());
   }

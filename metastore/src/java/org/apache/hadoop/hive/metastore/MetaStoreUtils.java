@@ -47,6 +47,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -86,6 +87,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 
@@ -638,14 +640,6 @@ public class MetaStoreUtils {
     }
   }
 
-  static boolean isCascadeNeededInAlterTable(Table oldTable, Table newTable) {
-    //currently cascade only supports add/replace columns and
-    //changing column type/position/name/comments
-    List<FieldSchema> oldCols = oldTable.getSd().getCols();
-    List<FieldSchema> newCols = newTable.getSd().getCols();
-    return !areSameColumns(oldCols, newCols);
-  }
-
   static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols.size() != newCols.size()) {
       return false;
@@ -696,8 +690,6 @@ public class MetaStoreUtils {
       TypeInfoUtils.getTypeInfoFromTypeString(newType));
   }
 
-  public static final int MAX_MS_TYPENAME_LENGTH = 2000; // 4000/2, for an unlikely unicode case
-
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
   /**
    * validate column type
@@ -708,9 +700,6 @@ public class MetaStoreUtils {
    */
   static public String validateColumnType(String type) {
     if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
-    if (type.length() > MAX_MS_TYPENAME_LENGTH) {
-      return "type name is too long: " + type;
-    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
@@ -1769,8 +1758,19 @@ public class MetaStoreUtils {
    * @param conf
    * @return The SASL configuration
    */
-  public static Map<String, String> getMetaStoreSaslProperties(HiveConf conf) {
+  public static Map<String, String> getMetaStoreSaslProperties(HiveConf conf, boolean useSSL) {
     // As of now Hive Meta Store uses the same configuration as Hadoop SASL configuration
+
+    // If SSL is enabled, override the given value of "hadoop.rpc.protection" and set it to "authentication"
+    // This disables any encryption provided by SASL, since SSL already provides it
+    String hadoopRpcProtectionVal = conf.get(CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION);
+    String hadoopRpcProtectionAuth = SaslRpcServer.QualityOfProtection.AUTHENTICATION.toString();
+
+    if (useSSL && hadoopRpcProtectionVal != null && !hadoopRpcProtectionVal.equals(hadoopRpcProtectionAuth)) {
+      LOG.warn("Overriding value of " + CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION + " setting it from "
+              + hadoopRpcProtectionVal + " to " + hadoopRpcProtectionAuth + " because SSL is enabled");
+      conf.set(CommonConfigurationKeysPublic.HADOOP_RPC_PROTECTION, hadoopRpcProtectionAuth);
+    }
     return ShimLoader.getHadoopThriftAuthBridge().getHadoopSaslProperties(conf);
   }
 

@@ -84,4 +84,9 @@ public abstract class VectorMapJoinFastBytesHashSet
 
     keyStore = new VectorMapJoinFastKeyStore(writeBuffersSize);
   }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    return super.getEstimatedMemorySize() + keyStore.getEstimatedMemorySize();
+  }
 }

@@ -5,6 +5,7 @@ create table tmp(col0 string, col1 string,col2 string,col3 string,col4 string,co
 insert overwrite table tmp select key, cast(key + 1 as int), key +2, key+3, key+4, cast(key+5 as int), key+6, key+7, key+8, key+9, key+10, cast(key+11 as int) from src where key = 100;
 
 select * from tmp;
+set hive.auto.convert.join=true;
 
 explain
 FROM src a JOIN tmp b ON (a.key = b.col11)

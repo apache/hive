@@ -35,7 +35,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class HiveIOExceptionHandlerChain {
 
-  public static String HIVE_IO_EXCEPTION_HANDLE_CHAIN = "hive.io.exception.handlers";
+  public static final String HIVE_IO_EXCEPTION_HANDLE_CHAIN = "hive.io.exception.handlers";
 
   @SuppressWarnings("unchecked")
   public static HiveIOExceptionHandlerChain getHiveIOExceptionHandlerChain(

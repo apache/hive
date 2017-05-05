@@ -35,8 +35,10 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED covar_samp
 POSTHOOK: type: DESCFUNCTION
 covar_samp(x,y) - Returns the sample covariance of a set of number pairs
 The function takes as arguments any pair of numeric types and returns a double.
-Any pair with a NULL is ignored. If the function is applied to an empty set, NULL
-will be returned. Otherwise, it computes the following:
+Any pair with a NULL is ignored.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise, it computes the following:
    (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/(COUNT(x,y)-1)
 where neither x nor y is null.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovarianceSample
@@ -67,7 +69,7 @@ POSTHOOK: query: SELECT covar_samp(b, c) FROM covar_tab WHERE a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
 #### A masked pattern was here ####
-0.0
+NULL
 PREHOOK: query: SELECT a, covar_samp(b, c) FROM covar_tab GROUP BY a ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
@@ -78,10 +80,10 @@ POSTHOOK: Input: default@covar_tab
 #### A masked pattern was here ####
 1	NULL
 2	NULL
-3	0.0
-4	0.0
-5	0.0
-6	0.0
+3	NULL
+4	NULL
+5	NULL
+6	NULL
 PREHOOK: query: SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab

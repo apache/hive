@@ -152,11 +152,24 @@ public class NanoTimeUtils {
 
     calendar.setTimeInMillis(utcCalendar.getTimeInMillis());
 
-    Calendar adjusterCalendar = copyToCalendarWithTZ(calendar, Calendar.getInstance());
+    Calendar adjusterCalendar = copyToCalendarWithTZ(calendar, getLocalCalendar());
 
     Timestamp ts = new Timestamp(adjusterCalendar.getTimeInMillis());
     ts.setNanos((int) nanos);
     return ts;
+  }
+
+  /**
+   * Check if the string id is a valid java TimeZone id.
+   * TimeZone#getTimeZone will return "GMT" if the id cannot be understood.
+   * @param timeZoneID
+   */
+  public static void validateTimeZone(String timeZoneID) {
+    if (TimeZone.getTimeZone(timeZoneID).getID().equals("GMT")
+        && !"GMT".equals(timeZoneID)) {
+      throw new IllegalStateException(
+          "Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
+    }
   }
 
   private static Calendar copyToCalendarWithTZ(Calendar from, Calendar to) {

@@ -17,21 +17,23 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.google.common.base.Strings;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
-import org.apache.hive.beeline.qfile.QFile;
-import org.apache.hive.beeline.qfile.QFile.QFileBuilder;
-import org.apache.hive.beeline.qfile.QFileBeeLineClient;
-import org.apache.hive.beeline.qfile.QFileBeeLineClient.QFileClientBuilder;
+import org.apache.hive.beeline.QFile;
+import org.apache.hive.beeline.QFile.QFileBuilder;
+import org.apache.hive.beeline.QFileBeeLineClient;
+import org.apache.hive.beeline.QFileBeeLineClient.QFileClientBuilder;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class CoreBeeLineDriver extends CliAdapter {
@@ -44,6 +46,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   private final File testDataDirectory;
   private final File testScriptDirectory;
   private boolean overwrite = false;
+  private boolean rewriteSourceTables = true;
   private MiniHS2 miniHS2;
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
@@ -67,6 +70,10 @@ public class CoreBeeLineDriver extends CliAdapter {
     String testOutputOverwrite = System.getProperty("test.output.overwrite");
     if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
       overwrite = true;
+    }
+    String testRewriteSourceTables = System.getProperty("test.rewrite.source.tables");
+    if (testRewriteSourceTables != null && "false".equalsIgnoreCase(testRewriteSourceTables)) {
+      rewriteSourceTables = false;
     }
 
     HiveConf hiveConf = new HiveConf();
@@ -92,19 +99,17 @@ public class CoreBeeLineDriver extends CliAdapter {
         .setPassword("password");
 
     fileBuilder = new QFileBuilder()
-        .setHiveRootDirectory(hiveRootDirectory)
         .setLogDirectory(logDirectory)
         .setQueryDirectory(queryDirectory)
         .setResultsDirectory(resultsDirectory)
-        .setScratchDirectoryString(hiveConf.getVar(HiveConf.ConfVars.SCRATCHDIR))
-        .setWarehouseDirectoryString(hiveConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+        .setRewriteSourceTables(rewriteSourceTables);
 
     runInfraScript(initScript, new File(logDirectory, "init.beeline"),
         new File(logDirectory, "init.raw"));
   }
 
   protected void runInfraScript(File script, File beeLineOutput, File log)
-      throws IOException {
+      throws IOException, SQLException {
     try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(beeLineOutput)) {
       beeLineClient.execute(
           new String[]{
@@ -114,6 +119,9 @@ public class CoreBeeLineDriver extends CliAdapter {
             "!run " + script,
           },
           log);
+    } catch (Exception e) {
+      throw new SQLException("Error running infra script: " + script
+          + "\nCheck the following logs for details:\n - " + beeLineOutput + "\n - " + log, e);
     }
   }
 
@@ -134,28 +142,41 @@ public class CoreBeeLineDriver extends CliAdapter {
     try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(qFile.getLogFile())) {
       long startTime = System.currentTimeMillis();
       System.err.println(">>> STARTED " + qFile.getName());
-      assertTrue("QFile execution failed, see logs for details", beeLineClient.execute(qFile));
 
-      long endTime = System.currentTimeMillis();
-      System.err.println(">>> EXECUTED " + qFile.getName() + ":" + (endTime - startTime) / 1000
-          + "s");
+      beeLineClient.execute(qFile);
+
+      long queryEndTime = System.currentTimeMillis();
+      System.err.println(">>> EXECUTED " + qFile.getName() + ": " + (queryEndTime - startTime)
+          + "ms");
 
       qFile.filterOutput();
       long filterEndTime = System.currentTimeMillis();
-      System.err.println(">>> FILTERED " + qFile.getName() + ":" + (filterEndTime - endTime) / 1000
-          + "s");
+      System.err.println(">>> FILTERED " + qFile.getName() + ": " + (filterEndTime - queryEndTime)
+          + "ms");
 
       if (!overwrite) {
-        if (qFile.compareResults()) {
+        QTestProcessExecResult result = qFile.compareResults();
+
+        long compareEndTime = System.currentTimeMillis();
+        System.err.println(">>> COMPARED " + qFile.getName() + ": "
+            + (compareEndTime - filterEndTime) + "ms");
+        if (result.getReturnCode() == 0) {
           System.err.println(">>> PASSED " + qFile.getName());
         } else {
           System.err.println(">>> FAILED " + qFile.getName());
-          fail("Failed diff");
+          String messageText = "Client result comparison failed with error code = "
+              + result.getReturnCode() + " while executing fname=" + qFile.getName() + "\n";
+          String messageBody = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
+              qFile.getDebugHint() : result.getCapturedOutput();
+          fail(messageText + messageBody);
         }
       } else {
         qFile.overwriteResults();
         System.err.println(">>> PASSED " + qFile.getName());
       }
+    } catch (Exception e) {
+      throw new Exception("Exception running or analyzing the results of the query file: " + qFile
+          + "\n" + qFile.getDebugHint(), e);
     }
   }
 

@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Maps;
+import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
@@ -71,7 +72,6 @@ import org.apache.hadoop.metrics2.lib.MutableCounterLong;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
 import org.apache.hadoop.metrics2.lib.MutableQuantiles;
-import org.apache.hadoop.metrics2.source.JvmMetrics;
 
 /**
  * Metrics about the llap daemon executors.

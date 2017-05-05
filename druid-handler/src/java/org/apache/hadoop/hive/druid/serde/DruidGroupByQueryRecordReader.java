@@ -99,7 +99,7 @@ public class DruidGroupByQueryRecordReader
         indexes[i]--;
         for (int j = i + 1; j < indexes.length; j++) {
           indexes[j] = current.getDimension(
-                  query.getDimensions().get(j).getDimension()).size() - 1;
+                  query.getDimensions().get(j).getOutputName()).size() - 1;
         }
         return true;
       }
@@ -110,7 +110,7 @@ public class DruidGroupByQueryRecordReader
       indexes = new int[query.getDimensions().size()];
       for (int i = 0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);
-        indexes[i] = current.getDimension(ds.getDimension()).size() - 1;
+        indexes[i] = current.getDimension(ds.getOutputName()).size() - 1;
       }
       return true;
     }
@@ -131,7 +131,7 @@ public class DruidGroupByQueryRecordReader
     // 2) The dimension columns
     for (int i = 0; i < query.getDimensions().size(); i++) {
       DimensionSpec ds = query.getDimensions().get(i);
-      List<String> dims = current.getDimension(ds.getDimension());
+      List<String> dims = current.getDimension(ds.getOutputName());
       if (dims.size() == 0) {
         // NULL value for dimension
         value.getValue().put(ds.getOutputName(), null);
@@ -170,7 +170,7 @@ public class DruidGroupByQueryRecordReader
       // 2) The dimension columns
       for (int i = 0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);
-        List<String> dims = current.getDimension(ds.getDimension());
+        List<String> dims = current.getDimension(ds.getOutputName());
         if (dims.size() == 0) {
           // NULL value for dimension
           value.getValue().put(ds.getOutputName(), null);

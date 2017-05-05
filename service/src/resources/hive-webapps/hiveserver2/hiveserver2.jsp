@@ -98,7 +98,7 @@ if (sessionManager != null) {
 
 <section>
 <h2>Active Sessions</h2>
-<table id="attributes_table" class="table table-striped">
+<table class="table table-striped">
     <tr>
         <th>User Name</th>
         <th>IP Address</th>
@@ -128,7 +128,7 @@ for (HiveSession hiveSession: hiveSessions) {
 
 <section>
 <h2>Open Queries</h2>
-<table id="attributes_table" class="table table-striped">
+<table class="table table-striped">
     <tr>
         <th>User Name</th>
         <th>Query</th>
@@ -169,7 +169,7 @@ for (HiveSession hiveSession: hiveSessions) {
 
 <section>
 <h2>Last Max <%= conf.get(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES.varname) %> Closed Queries</h2>
-<table id="attributes_table" class="table table-striped">
+<table class="table table-striped">
     <tr>
         <th>User Name</th>
         <th>Query</th>
@@ -213,7 +213,7 @@ for (HiveSession hiveSession: hiveSessions) {
 
     <section>
     <h2>Software Attributes</h2>
-    <table id="attributes_table" class="table table-striped">
+    <table class="table table-striped">
         <tr>
             <th>Attribute Name</th>
             <th>Value</th>

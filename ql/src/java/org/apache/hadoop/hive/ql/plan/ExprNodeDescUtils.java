@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -785,5 +786,75 @@ public class ExprNodeDescUtils {
       }
     }
     return true;
+  }
+
+  public static class ColumnOrigin {
+    public ExprNodeColumnDesc col;
+    public Operator<?> op;
+
+    public ColumnOrigin(ExprNodeColumnDesc col, Operator<?> op) {
+      super();
+      this.col = col;
+      this.op = op;
+    }
+  }
+
+  private static ExprNodeDesc findParentExpr(ExprNodeColumnDesc col, Operator<?> op) {
+    if (op instanceof ReduceSinkOperator) {
+      return col;
+    }
+
+    ExprNodeDesc parentExpr = col;
+    Map<String, ExprNodeDesc> mapping = op.getColumnExprMap();
+    if (mapping != null) {
+      parentExpr = mapping.get(col.getColumn());
+    }
+    return parentExpr;
+  }
+
+  public static ColumnOrigin findColumnOrigin(ExprNodeDesc expr, Operator<?> op) {
+    if (expr == null || op == null) {
+      // bad input
+      return null;
+    }
+
+    ExprNodeColumnDesc col = ExprNodeDescUtils.getColumnExpr(expr);
+    if (col == null) {
+      // not a column
+      return null;
+    }
+
+    Operator<?> parentOp = null;
+    int numParents = op.getNumParent();
+    if (numParents == 0) {
+      return new ColumnOrigin(col, op);
+    }
+
+    ExprNodeDesc parentExpr = findParentExpr(col, op);
+    if (parentExpr == null) {
+      // couldn't find proper parent column expr
+      return null;
+    }
+
+    if (numParents == 1) {
+      parentOp = op.getParentOperators().get(0);
+    } else {
+      // Multiple parents - find the right one based on the table alias in the parentExpr
+      ExprNodeColumnDesc parentCol = ExprNodeDescUtils.getColumnExpr(parentExpr);
+      if (parentCol != null) {
+        for (Operator<?> currParent : op.getParentOperators()) {
+          if (currParent.getSchema().getTableNames().contains(parentCol.getTabAlias())) {
+            parentOp = currParent;
+            break;
+          }
+        }
+      }
+    }
+
+    if (parentOp == null) {
+      return null;
+    }
+
+    return findColumnOrigin(parentExpr, parentOp);
   }
 }

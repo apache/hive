@@ -60,10 +60,10 @@ public class PostExecOrcRowGroupCountPrinter implements ExecuteWithHookContext {
       if (counters != null) {
         for (CounterGroup group : counters) {
           if (group.getName().equals(LlapIOCounters.class.getName())) {
-            console.printError(tezTask.getId() + " LLAP IO COUNTERS:");
+            console.printInfo(tezTask.getId() + " LLAP IO COUNTERS:", false);
             for (TezCounter counter : group) {
               if (counter.getDisplayName().equals(LlapIOCounters.SELECTED_ROWGROUPS.name())) {
-                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
+                console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
               }
             }
           }

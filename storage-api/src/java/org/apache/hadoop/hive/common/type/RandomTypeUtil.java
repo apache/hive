@@ -102,7 +102,7 @@ public class RandomTypeUtil {
   public static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
   public static final long NANOSECONDS_PER_MILLISSECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
-  private static ThreadLocal<DateFormat> DATE_FORMAT =
+  private static final ThreadLocal<DateFormat> DATE_FORMAT =
       new ThreadLocal<DateFormat>() {
         @Override
         protected DateFormat initialValue() {
@@ -111,10 +111,10 @@ public class RandomTypeUtil {
       };
 
   // We've switched to Joda/Java Calendar which has a more limited time range....
-  public static int MIN_YEAR = 1900;
-  public static int MAX_YEAR = 3000;
-  private static long MIN_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("1900-01-01 00:00:00");
-  private static long MAX_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("3000-01-01 00:00:00");
+  public static final int MIN_YEAR = 1900;
+  public static final int MAX_YEAR = 3000;
+  private static final long MIN_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("1900-01-01 00:00:00");
+  private static final long MAX_FOUR_DIGIT_YEAR_MILLIS = parseToMillis("3000-01-01 00:00:00");
 
   private static long parseToMillis(String s) {
     try {

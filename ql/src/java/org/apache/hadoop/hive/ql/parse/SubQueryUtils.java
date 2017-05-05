@@ -653,15 +653,26 @@ public class SubQueryUtils {
     return eq;
   }
 
-  static void checkForSubqueries(ASTNode node) throws SemanticException {
+  static void checkForSubqueries(ASTNode node, boolean disallow) throws SemanticException {
     // allow NOT but throw an error for rest
     if(node.getType() == HiveParser.TOK_SUBQUERY_EXPR
-            && node.getParent().getType() != HiveParser.KW_NOT) {
+            && disallow) {
       throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              "Invalid subquery. Subquery in SELECT could only be top-level expression"));
+              "Invalid subquery. Subquery in UDAF is not allowed."));
+    }
+    if (node.getType() == HiveParser.TOK_FUNCTION
+            || node.getType() == HiveParser.TOK_FUNCTIONDI
+            || node.getType() == HiveParser.TOK_FUNCTIONSTAR) {
+      if (node.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = SemanticAnalyzer.unescapeIdentifier(node.getChild(0).getText());
+        GenericUDAFResolver udafResolver = FunctionRegistry.getGenericUDAFResolver(functionName);
+        if (udafResolver != null) {
+          disallow = disallow || true;
+        }
+      }
     }
     for(int i=0; i<node.getChildCount(); i++) {
-        checkForSubqueries((ASTNode)node.getChild(i));
+        checkForSubqueries((ASTNode)node.getChild(i), disallow);
     }
   }
   /*
@@ -694,7 +705,7 @@ public class SubQueryUtils {
       }
       // otherwise we need to make sure that there is no subquery at any level
       for(int j=0; j<selExpr.getChildCount(); j++) {
-        checkForSubqueries((ASTNode) selExpr.getChild(j));
+        checkForSubqueries((ASTNode) selExpr.getChild(j), false);
       }
     }
   }

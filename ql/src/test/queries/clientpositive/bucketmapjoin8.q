@@ -15,7 +15,7 @@ LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_m
 ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) INTO 3 BUCKETS;
 
 set hive.optimize.bucketmapjoin=true;
-
+set hive.cbo.enable=false;
 -- The partition bucketing metadata match but the tables have different numbers of buckets, bucket map join should still be used
 
 EXPLAIN EXTENDED

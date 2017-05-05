@@ -898,7 +898,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key + 1) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key + 1) (type: int)
@@ -915,7 +915,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key + 1) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key + 1) (type: int)

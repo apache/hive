@@ -12,6 +12,7 @@ load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table sm
 load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2;
 load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3;
 
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;

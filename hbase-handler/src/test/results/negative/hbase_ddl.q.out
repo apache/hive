@@ -1,0 +1,29 @@
+PREHOOK: query: DROP TABLE hbase_table_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE hbase_table_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_1
+POSTHOOK: query: CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_1
+PREHOOK: query: DESCRIBE EXTENDED hbase_table_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@hbase_table_1
+POSTHOOK: query: DESCRIBE EXTENDED hbase_table_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@hbase_table_1
+key                 	int                 	It is a column key  
+value               	string              	It is the column string value
+	 	 
+#### A masked pattern was here ####
+FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS] to a non-native table  hbase_table_1

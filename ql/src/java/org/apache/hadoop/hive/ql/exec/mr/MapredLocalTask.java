@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionException;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -327,18 +326,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
 
-      StreamPrinter outPrinter;
-      StreamPrinter errPrinter;
-      OperationLog operationLog = OperationLog.getCurrentOperationLog();
-      if (operationLog != null) {
-        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out,
-            operationLog.getPrintStream());
-        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream,
-            operationLog.getPrintStream());
-      } else {
-        outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
-        errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
-      }
+      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
 
       outPrinter.start();
       errPrinter.start();
@@ -395,7 +384,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
           + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable throwable) {
       if (throwable instanceof OutOfMemoryError
-          || (throwable instanceof MapJoinMemoryExhaustionException)) {
+          || (throwable instanceof MapJoinMemoryExhaustionError)) {
         l4j.error("Hive Runtime Error: Map local work exhausted memory", throwable);
         return 3;
       } else {

@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 
+
 public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
+
   private HiveConf conf;
   private String command;
-  private HookContext hc = null;
+  private HookContext hc;
 
   @Override
   public HiveConf getHiveConf() {
@@ -53,5 +55,35 @@ public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
   @Override
   public void setHookContext(HookContext hc) {
     this.hc = hc;
+  }
+
+  public static class Builder {
+
+    private HiveConf conf;
+    private String command;
+    private HookContext hc;
+
+    public Builder withHiveConf(HiveConf conf) {
+      this.conf = conf;
+      return this;
+    }
+
+    public Builder withCommand(String command) {
+      this.command = command;
+      return this;
+    }
+
+    public Builder withHookContext(HookContext hc) {
+      this.hc = hc;
+      return this;
+    }
+
+    public QueryLifeTimeHookContextImpl build() {
+      QueryLifeTimeHookContextImpl queryLifeTimeHookContext = new QueryLifeTimeHookContextImpl();
+      queryLifeTimeHookContext.setHiveConf(this.conf);
+      queryLifeTimeHookContext.setCommand(this.command);
+      queryLifeTimeHookContext.setHookContext(this.hc);
+      return queryLifeTimeHookContext;
+    }
   }
 }

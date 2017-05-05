@@ -253,8 +253,8 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkOperator
                             native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.plan.RelOptMaterializations;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -77,7 +78,7 @@ public class HiveMaterializedViewFilterScanRule extends RelOptRule {
       // Costing is done in transformTo(), so we call it repeatedly with all applicable
       // materialized views and cheapest one will be picked
       List<RelOptMaterialization> applicableMaterializations =
-          VolcanoPlanner.getApplicableMaterializations(root, materializations);
+          RelOptMaterializations.getApplicableMaterializations(root, materializations);
       for (RelOptMaterialization materialization : applicableMaterializations) {
         List<RelNode> subs = new MaterializedViewSubstitutionVisitor(
             materialization.queryRel, root, relBuilderFactory).go(materialization.tableRel);

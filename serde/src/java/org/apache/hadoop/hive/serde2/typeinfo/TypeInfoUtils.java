@@ -869,7 +869,7 @@ public final class TypeInfoUtils {
     }
   }
 
-  public static void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
+  public static synchronized void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
     numericTypeList.add(primitiveCategory);
     numericTypes.put(primitiveCategory, level);
   }

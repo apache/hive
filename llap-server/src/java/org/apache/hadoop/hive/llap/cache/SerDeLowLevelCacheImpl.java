@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +43,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 
 import com.google.common.base.Function;
 
-public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugDump {
+public class SerDeLowLevelCacheImpl implements LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -617,18 +616,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     } 
   }
 
-  @Override
-  public void decRefBuffer(MemoryBuffer buffer) {
-    unlockBuffer((LlapDataBuffer)buffer, true);
-  }
-
-  @Override
-  public void decRefBuffers(List<MemoryBuffer> cacheBuffers) {
-    for (MemoryBuffer b : cacheBuffers) {
-      unlockBuffer((LlapDataBuffer)b, true);
-    }
-  }
-
   private void unlockBuffer(LlapDataBuffer buffer, boolean handleLastDecRef) {
     boolean isLastDecref = (buffer.decRef() == 0);
     if (handleLastDecRef && isLastDecref) {
@@ -704,18 +691,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
   }
 
   @Override
-  public boolean incRefBuffer(MemoryBuffer buffer) {
-    // notifyReused implies that buffer is already locked; it's also called once for new
-    // buffers that are not cached yet. Don't notify cache policy.
-    return lockBuffer(((LlapDataBuffer)buffer), false);
-  }
-
-  @Override
-  public Allocator getAllocator() {
-    return allocator;
-  }
-
-  @Override
   public String debugDumpForOom() {
     StringBuilder sb = new StringBuilder("File cache state ");
     for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
@@ -730,5 +705,56 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       }
     }
     return sb.toString();
+  }
+
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nSerDe cache state ");
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0;
+    for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
+      if (!e.getValue().incRef()) continue;
+      try {
+        FileData fd = e.getValue().getCache();
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0;
+        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes; ");
+        for (StripeData stripe : fd.stripes) {
+          if (stripe.data == null) continue;
+          for (int i = 0; i < stripe.data.length; ++i) {
+            LlapDataBuffer[][] colData = stripe.data[i];
+            if (colData == null) continue;
+            for (int j = 0; j < colData.length; ++j) {
+              LlapDataBuffer[] streamData = colData[j];
+              if (streamData == null) continue;
+              for (int k = 0; k < streamData.length; ++k) {
+                int newRc = streamData[k].incRef();
+                if (newRc < 0) {
+                  ++fileEvicted;
+                  continue;
+                }
+                try {
+                  if (newRc > 1) { // We hold one refcount.
+                    ++fileLocked;
+                  } else {
+                    ++fileUnlocked;
+                  }
+                } finally {
+                  streamData[k].decRef();
+                }
+              }
+            }
+          }
+        }
+        allLocked += fileLocked;
+        allUnlocked += fileUnlocked;
+        allEvicted += fileEvicted;
+        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, "
+            + fileUnlocked + " unlocked, " + fileEvicted + " evicted");
+      } finally {
+        e.getValue().decRef();
+      }
+    }
+    sb.append("\nSerDe cache summary: " + allLocked + " locked, "
+        + allUnlocked + " unlocked, " + allEvicted + " evicted");
   }
 }

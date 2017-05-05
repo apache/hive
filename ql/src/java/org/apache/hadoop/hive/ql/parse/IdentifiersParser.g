@@ -567,6 +567,12 @@ precedenceSimilarExpressionAtom[CommonTree t]
     |
     KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression)
     -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE {$t} $min $max)
+    |
+    KW_LIKE KW_ANY (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION TOK_LIKEANY {$t} {$expr.tree})
+    |
+    KW_LIKE KW_ALL (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION TOK_LIKEALL {$t} {$expr.tree})
     ;
 
 precedenceSimilarExpressionIn[CommonTree t]
@@ -585,14 +591,27 @@ precedenceSimilarExpressionPartNot[CommonTree t]
     precedenceSimilarExpressionAtom[$t]
     ;
 
+precedenceDistinctOperator
+    :
+    KW_IS KW_DISTINCT KW_FROM
+    ;
+
 precedenceEqualOperator
     :
-    EQUAL | EQUAL_NS | NOTEQUAL
+    EQUAL | EQUAL_NS | NOTEQUAL | KW_IS KW_NOT KW_DISTINCT KW_FROM -> EQUAL_NS["<=>"]
     ;
 
 precedenceEqualExpression
     :
-    precedenceSimilarExpression (precedenceEqualOperator^ precedenceSimilarExpression)*
+    (precedenceSimilarExpression -> precedenceSimilarExpression)
+    (
+        equal=precedenceEqualOperator p=precedenceSimilarExpression
+        -> ^($equal {$precedenceEqualExpression.tree} $p)
+        |
+        dist=precedenceDistinctOperator p=precedenceSimilarExpression
+        -> ^(KW_NOT["not"] ^(EQUAL_NS["<=>"] {$precedenceEqualExpression.tree} $p))
+    )*
+    -> {$precedenceEqualExpression.tree}
     ;
     
 precedenceNotOperator

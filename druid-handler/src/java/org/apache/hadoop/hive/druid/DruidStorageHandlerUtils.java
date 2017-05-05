@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Lists;
@@ -43,6 +44,8 @@ import io.druid.segment.IndexMergerV9;
 import io.druid.segment.column.ColumnConfig;
 import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.LinearShardSpec;
+import io.druid.timeline.partition.NoneShardSpec;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,9 +57,11 @@ import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.joda.time.DateTime;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.PreparedBatch;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.TransactionCallback;
 import org.skife.jdbi.v2.TransactionStatus;
@@ -335,14 +340,7 @@ public final class DruidStorageHandlerUtils {
               new HandleCallback<Void>() {
                 @Override
                 public Void withHandle(Handle handle) throws Exception {
-                  handle.createStatement(
-                          String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
-                                  metadataStorageTablesConfig.getSegmentsTable()
-                          )
-                  )
-                          .bind("dataSource", dataSource)
-                          .execute();
-
+                  disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
                   return null;
                 }
               }
@@ -353,6 +351,64 @@ public final class DruidStorageHandlerUtils {
       return false;
     }
     return true;
+  }
+
+  public static void publishSegments(final SQLMetadataConnector connector,
+      final MetadataStorageTablesConfig metadataStorageTablesConfig,
+      final String dataSource,
+      final List<DataSegment> segments, final ObjectMapper mapper, boolean overwrite)
+  {
+    connector.getDBI().inTransaction(
+        new TransactionCallback<Void>()
+        {
+          @Override
+          public Void inTransaction(Handle handle, TransactionStatus transactionStatus) throws Exception
+          {
+            if(overwrite){
+              disableDataSourceWithHandle(handle, metadataStorageTablesConfig, dataSource);
+            }
+            final PreparedBatch batch = handle.prepareBatch(
+                String.format(
+                    "INSERT INTO %1$s (id, dataSource, created_date, start, \"end\", partitioned, version, used, payload) "
+                        + "VALUES (:id, :dataSource, :created_date, :start, :end, :partitioned, :version, :used, :payload)",
+                    metadataStorageTablesConfig.getSegmentsTable()
+                )
+            );
+            for (final DataSegment segment : segments) {
+
+              batch.add(
+                  new ImmutableMap.Builder<String, Object>()
+                      .put("id", segment.getIdentifier())
+                      .put("dataSource", segment.getDataSource())
+                      .put("created_date", new DateTime().toString())
+                      .put("start", segment.getInterval().getStart().toString())
+                      .put("end", segment.getInterval().getEnd().toString())
+                      .put("partitioned", (segment.getShardSpec() instanceof NoneShardSpec) ? false : true)
+                      .put("version", segment.getVersion())
+                      .put("used", true)
+                      .put("payload", mapper.writeValueAsBytes(segment))
+                      .build()
+              );
+
+              LOG.info("Published %s", segment.getIdentifier());
+
+            }
+            batch.execute();
+
+            return null;
+          }
+        }
+    );
+  }
+
+  public static void disableDataSourceWithHandle(Handle handle, MetadataStorageTablesConfig metadataStorageTablesConfig, String dataSource){
+    handle.createStatement(
+        String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
+            metadataStorageTablesConfig.getSegmentsTable()
+        )
+    )
+        .bind("dataSource", dataSource)
+        .execute();
   }
 
   /**

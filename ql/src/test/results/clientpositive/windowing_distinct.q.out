@@ -13,7 +13,7 @@ PREHOOK: query: create table windowing_distinct(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -31,7 +31,7 @@ POSTHOOK: query: create table windowing_distinct(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           `dec` decimal,
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -52,7 +52,7 @@ PREHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT s) OVER (PARTITION BY index),
        COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        COUNT(DISTINCT ts) OVER (PARTITION BY index),
-       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
        COUNT(DISTINCT bin) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
@@ -64,7 +64,7 @@ POSTHOOK: query: SELECT COUNT(DISTINCT t) OVER (PARTITION BY index),
        COUNT(DISTINCT s) OVER (PARTITION BY index),
        COUNT(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        COUNT(DISTINCT ts) OVER (PARTITION BY index),
-       COUNT(DISTINCT dec) OVER (PARTITION BY index),
+       COUNT(DISTINCT `dec`) OVER (PARTITION BY index),
        COUNT(DISTINCT bin) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
@@ -81,7 +81,7 @@ PREHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT s) OVER (PARTITION BY index),
        SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
-       SUM(DISTINCT dec) OVER (PARTITION BY index)
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
@@ -91,7 +91,7 @@ POSTHOOK: query: SELECT SUM(DISTINCT t) OVER (PARTITION BY index),
        SUM(DISTINCT s) OVER (PARTITION BY index),
        SUM(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        SUM(DISTINCT ts) OVER (PARTITION BY index),
-       SUM(DISTINCT dec) OVER (PARTITION BY index)
+       SUM(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@windowing_distinct
@@ -107,7 +107,7 @@ PREHOOK: query: SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
        AVG(DISTINCT s) OVER (PARTITION BY index),
        AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        AVG(DISTINCT ts) OVER (PARTITION BY index),
-       AVG(DISTINCT dec) OVER (PARTITION BY index)
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
@@ -117,7 +117,7 @@ POSTHOOK: query: SELECT AVG(DISTINCT t) OVER (PARTITION BY index),
        AVG(DISTINCT s) OVER (PARTITION BY index),
        AVG(DISTINCT concat('Mr.', s)) OVER (PARTITION BY index),
        AVG(DISTINCT ts) OVER (PARTITION BY index),
-       AVG(DISTINCT dec) OVER (PARTITION BY index)
+       AVG(DISTINCT `dec`) OVER (PARTITION BY index)
 FROM windowing_distinct
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@windowing_distinct

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
@@ -43,11 +45,14 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
-public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAllocatorMXBean {
+public final class BuddyAllocator
+  implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapOomDebugDump {
   private final Arena[] arenas;
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
   private final MemoryManager memoryManager;
+  private static final long MAX_DUMP_INTERVAL_NS = 300 * 1000000000L; // 5 minutes.
+  private final AtomicLong lastLog = new AtomicLong(-1);
 
   // Config settings
   private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas;
@@ -119,13 +124,14 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     } else {
       cacheDir = null;
     }
-    int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
+    long arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : maxSizeVal / arenaCount;
+    // The math.min, and the fact that maxAllocation is an int, ensures we don't overflow.
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers;"
-          + (isMapped ? (" memory mapped off " + cacheDir.toString() + "; ") : "")
+      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers; "
+          + (isMapped ? ("memory mapped off " + cacheDir.toString() + "; ") : "")
           + "allocation sizes " + minAllocation + " - " + maxAllocation
-          + ", arena size " + arenaSizeVal + ". total size " + maxSizeVal);
+          + ", arena size " + arenaSizeVal + ", total size " + maxSizeVal);
     }
 
     String minName = ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname,
@@ -148,7 +154,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       LlapIoImpl.LOG.warn("Rounding arena size to " + arenaSizeVal + " from " + oldArenaSize
           + " to be divisible by allocation size " + maxAllocation);
     }
-    arenaSize = arenaSizeVal;
+    arenaSize = (int)arenaSizeVal;
     if ((maxSizeVal % arenaSize) > 0) {
       long oldMaxSize = maxSizeVal;
       maxSizeVal = (maxSizeVal / arenaSize) * arenaSize;
@@ -191,8 +197,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     int allocLog2 = freeListIx + minAllocLog2;
     int allocationSize = 1 << allocLog2;
     // TODO: reserving the entire thing is not ideal before we alloc anything. Interleave?
-    memoryManager.reserveMemory(dest.length << allocLog2, true);
-
+    memoryManager.reserveMemory(dest.length << allocLog2);
     int destAllocIx = 0;
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
@@ -241,38 +246,106 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     // into some sort of queues that deallocate and split will examine), or having and "actor"
     // allocator thread (or threads per arena).
     // The 2nd one is probably much simpler and will allow us to get rid of a lot of sync code.
-    // But for now we will just retry 5 times 0_o
-    for (int attempt = 0; attempt < 5; ++attempt) {
-      // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
-      {
-        int startArenaIx = (int)((threadId + attempt) % arenaCount), arenaIx = startArenaIx;
-        do {
-          int newDestIx = arenas[arenaIx].allocateWithSplit(
-              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
-          if (newDestIx == dest.length) return;
-          assert newDestIx != -1;
-          destAllocIx = newDestIx;
-          if ((++arenaIx) == arenaCount) {
-            arenaIx = 0;
-          }
-        } while (arenaIx != startArenaIx);
-      }
-
-      if (attempt == 0) {
-        // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-        for (int arenaIx = arenaCount; arenaIx < arenas.length; ++arenaIx) {
-          destAllocIx = arenas[arenaIx].allocateWithExpand(
-              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
-          if (destAllocIx == dest.length) return;
+    // But for now we will just retry. We will evict more each time.
+    long forceReserved = 0;
+    int attempt = 0;
+    try {
+      while (true) {
+        // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
+        {
+          int startArenaIx = (int)((threadId + attempt) % arenaCount), arenaIx = startArenaIx;
+          do {
+            int newDestIx = arenas[arenaIx].allocateWithSplit(
+                arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+            if (newDestIx == dest.length) return;
+            assert newDestIx != -1;
+            destAllocIx = newDestIx;
+            if ((++arenaIx) == arenaCount) {
+              arenaIx = 0;
+            }
+          } while (arenaIx != startArenaIx);
         }
+
+        if (attempt == 0) {
+          // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
+          for (int arenaIx = arenaCount; arenaIx < arenas.length; ++arenaIx) {
+            destAllocIx = arenas[arenaIx].allocateWithExpand(
+                arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+            if (destAllocIx == dest.length) return;
+          }
+        }
+        int numberToForce = (dest.length - destAllocIx) * (attempt + 1);
+        long newReserved = memoryManager.forceReservedMemory(allocationSize, numberToForce);
+        forceReserved += newReserved;
+        if (newReserved == 0) {
+          // Cannot force-evict anything, give up.
+          String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of "
+              + dest.length + " (entire cache is fragmented and locked, or an internal issue)";
+          logOomErrorMessage(msg);
+          throw new AllocatorOutOfMemoryException(msg);
+        }
+        if (attempt == 0) {
+          LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry");
+        }
+        ++attempt;
       }
-      memoryManager.forceReservedMemory(allocationSize, dest.length - destAllocIx);
-      LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry " + attempt);
+    } finally {
+      if (attempt > 4) {
+        LlapIoImpl.LOG.warn("Allocation of " + dest.length + " buffers of size " + size
+            + " took " + attempt + " attempts to evict enough memory");
+      }
+      // After we succeed (or fail), release the force-evicted memory to memory manager. We have
+      // previously reserved enough to allocate all we need, so we don't take our allocation out
+      // of this - as per the comment above, we basically just wasted a bunch of cache (and CPU).
+      if (forceReserved > 0) {
+        memoryManager.releaseMemory(forceReserved);
+      }
     }
-    String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of " + dest.length;
-    LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
-        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
-    throw new AllocatorOutOfMemoryException(msg);
+  }
+
+  private void logOomErrorMessage(String msg) {
+    while (true) {
+      long time = System.nanoTime();
+      long lastTime = lastLog.get();
+      // Magic value usage is invalid with nanoTime, so once in a 1000 years we may log extra.
+      boolean shouldLog = (lastTime == -1 || (time - lastTime) > MAX_DUMP_INTERVAL_NS);
+      if (shouldLog && !lastLog.compareAndSet(lastTime, time)) {
+        continue;
+      }
+      if (shouldLog) {
+        LlapIoImpl.LOG.error(msg + debugDumpForOom());
+      } else {
+        LlapIoImpl.LOG.error(msg);
+      }
+      return;
+    }
+  }
+
+  /**
+   * Arbitrarily, we start getting the state from Allocator. Allocator calls MM which calls
+   * the policies that call the eviction dispatcher that calls the caches. See init - these all
+   * are connected in a cycle, so we need to make sure the who-calls-whom order is definite.
+   */
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    memoryManager.debugDumpShort(sb);
+    sb.append("\nAllocator state:");
+    int unallocCount = 0, fullCount = 0;
+    long totalFree = 0;
+    for (Arena arena : arenas) {
+      Integer result = arena.debugDumpShort(sb);
+      if (result == null) {
+        ++unallocCount;
+      } else if (result == 0) {
+        ++fullCount;
+      } else {
+        totalFree += result;
+      }
+    }
+    sb.append("\nTotal available and allocated: ").append(totalFree).append(
+        "; unallocated arenas: ").append(unallocCount).append(
+        "; full arenas ").append(fullCount);
+    sb.append("\n");
   }
 
   @Override
@@ -299,7 +372,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     return isDirect;
   }
 
-  public String debugDump() {
+  public String debugDumpForOomInternal() {
     StringBuilder result = new StringBuilder(
         "NOTE: with multiple threads the dump is not guaranteed to be consistent");
     for (Arena arena : arenas) {
@@ -394,6 +467,36 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         data.putInt(offset + 4, (i == maxMaxAllocs - 1) ? -1 : (headerIndex + headerStep));
         headerIndex += headerStep;
       }
+    }
+
+    public Integer debugDumpShort(StringBuilder result) {
+      if (data == null) {
+        return null;
+      }
+      int allocSize = minAllocation;
+      int total = 0;
+      for (int i = 0; i < freeLists.length; ++i, allocSize <<= 1) {
+        FreeList freeList = freeLists[i];
+        freeList.lock.lock();
+        try {
+          int nextHeaderIx = freeList.listHead;
+          int count = 0;
+          while (nextHeaderIx >= 0) {
+            ++count;
+            nextHeaderIx = getNextFreeListItem(offsetFromHeaderIndex(nextHeaderIx));
+          }
+          if (count > 0) {
+            if (total == 0) {
+              result.append("\nArena with free list lengths by size: ");
+            }
+            total += (allocSize * count);
+            result.append(allocSize).append(" => ").append(count).append(", ");
+          }
+        } finally {
+          freeList.lock.unlock();
+        }
+      }
+      return total;
     }
 
     public void debugDump(StringBuilder result) {
@@ -676,5 +779,11 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   @Override
   public MemoryBuffer createUnallocated() {
     return new LlapDataBuffer();
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    return "\nALLOCATOR STATE:\n" + debugDumpForOomInternal()
+        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom();
   }
 }

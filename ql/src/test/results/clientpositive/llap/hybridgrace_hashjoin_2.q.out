@@ -850,8 +850,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-428
 452
+428
 PREHOOK: query: EXPLAIN
 SELECT COUNT(*)
 FROM src1 x JOIN srcpart z ON (x.key = z.key)
@@ -1100,8 +1100,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-428
 452
+428
 PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

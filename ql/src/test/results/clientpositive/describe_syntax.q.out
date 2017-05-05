@@ -99,6 +99,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	3                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -174,6 +175,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	3                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   

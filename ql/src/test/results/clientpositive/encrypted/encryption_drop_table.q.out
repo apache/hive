@@ -1,10 +1,10 @@
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -67,20 +67,7 @@ PREHOOK: query: DROP TABLE default.encrypted_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop default.encrypted_table because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
-PREHOOK: query: SHOW TABLES
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-encrypted_table
-src
-PREHOOK: query: DROP TABLE default.encrypted_table PURGE
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table
-PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: DROP TABLE default.encrypted_table PURGE
+POSTHOOK: query: DROP TABLE default.encrypted_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table
@@ -91,9 +78,9 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 src
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table1 PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table1 PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -154,42 +141,22 @@ PREHOOK: query: DROP TABLE default.encrypted_table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table1
 PREHOOK: Output: default@encrypted_table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop default.encrypted_table1 because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
-PREHOOK: query: SHOW TABLES
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-encrypted_table1
-src
-PREHOOK: query: TRUNCATE TABLE encrypted_table1
-PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@encrypted_table1
-POSTHOOK: query: TRUNCATE TABLE encrypted_table1
-POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@encrypted_table1
-PREHOOK: query: DROP TABLE default.encrypted_table1
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table1
-PREHOOK: Output: default@encrypted_table1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop default.encrypted_table1 because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
-PREHOOK: query: SHOW TABLES
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-encrypted_table1
-src
-PREHOOK: query: DROP TABLE default.encrypted_table1 PURGE
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table1
-PREHOOK: Output: default@encrypted_table1
-POSTHOOK: query: DROP TABLE default.encrypted_table1 PURGE
+POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table1
 POSTHOOK: Output: default@encrypted_table1
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+src
+FAILED: SemanticException [Error 10001]: Table not found encrypted_table1
+PREHOOK: query: DROP TABLE default.encrypted_table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE default.encrypted_table1
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default

@@ -149,9 +149,10 @@ public abstract class MessageFactory {
    * and some are not yet supported.
    * @param before The table before the alter
    * @param after The table after the alter
+   * @param isTruncateOp Flag to denote truncate table
    * @return
    */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after);
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp);
 
   /**
    * Factory method for DropTableMessage.
@@ -175,10 +176,11 @@ public abstract class MessageFactory {
    * @param table The table in which the partition is being altered
    * @param before The partition before it was altered
    * @param after The partition after it was altered
+   * @param isTruncateOp Flag to denote truncate partition
    * @return a new AlterPartitionMessage
    */
   public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after);
+                                                                   Partition after, boolean isTruncateOp);
 
   /**
    * Factory method for DropPartitionMessage.
@@ -231,9 +233,10 @@ public abstract class MessageFactory {
    * @param table Name of the table the insert occurred in
    * @param partVals Partition values for the partition that the insert occurred in, may be null if
    *          the insert was done into a non-partitioned table
+   * @param replace Flag to represent if INSERT OVERWRITE or INSERT INTO
    * @param files Iterator of file created
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, Iterator<String> files);
+      Map<String, String> partVals, boolean replace, Iterator<String> files);
 }
