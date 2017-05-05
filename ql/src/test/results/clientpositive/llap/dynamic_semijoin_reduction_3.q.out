@@ -517,7 +517,7 @@ STAGE PLANS:
                   alias: t
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (a BETWEEN DynamicValue(RS_10_nonacidorctbl_a_min) AND DynamicValue(RS_10_nonacidorctbl_a_max) and in_bloom_filter(a, DynamicValue(RS_10_nonacidorctbl_a_bloom_filter))) (type: boolean)
+                    predicate: (a BETWEEN DynamicValue(RS_10_nonacidorctbl__col0_min) AND DynamicValue(RS_10_nonacidorctbl__col0_max) and in_bloom_filter(a, DynamicValue(RS_10_nonacidorctbl__col0_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Reduce Output Operator
                       key expressions: a (type: int)
