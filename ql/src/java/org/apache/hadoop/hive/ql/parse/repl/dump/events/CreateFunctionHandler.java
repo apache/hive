@@ -5,10 +5,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.repl.dump.FunctionSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
 
 class CreateFunctionHandler extends AbstractHandler {
   CreateFunctionHandler(NotificationEvent event) {
@@ -30,7 +30,7 @@ class CreateFunctionHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
-    return DUMPTYPE.EVENT_CREATE_FUNCTION;
+  public DumpType dumpType() {
+    return DumpType.EVENT_CREATE_FUNCTION;
   }
 }
