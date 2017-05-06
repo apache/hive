@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-public class DefaultHandler extends AbstractHandler {
+class DefaultHandler extends AbstractHandler {
 
   DefaultHandler(NotificationEvent event) {
     super(event);
