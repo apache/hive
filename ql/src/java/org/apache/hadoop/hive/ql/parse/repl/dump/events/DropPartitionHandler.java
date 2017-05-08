@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DropPartitionHandler extends AbstractHandler {
+class DropPartitionHandler extends AbstractEventHandler {
 
   DropPartitionHandler(NotificationEvent event) {
     super(event);

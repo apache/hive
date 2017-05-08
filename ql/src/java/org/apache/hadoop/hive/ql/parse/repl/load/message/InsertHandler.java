@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import java.io.Serializable;
 import java.util.List;
 
-class InsertHandler extends AbstractMessageHandler {
+public class InsertHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context withinContext)
       throws SemanticException {

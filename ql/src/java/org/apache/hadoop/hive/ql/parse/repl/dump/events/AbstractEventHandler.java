@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class AbstractHandler implements EventHandler {
-  static final Logger LOG = LoggerFactory.getLogger(AbstractHandler.class);
+abstract class AbstractEventHandler implements EventHandler {
+  static final Logger LOG = LoggerFactory.getLogger(AbstractEventHandler.class);
 
   final NotificationEvent event;
   final MessageDeserializer deserializer;
 
-  AbstractHandler(NotificationEvent event) {
+  AbstractEventHandler(NotificationEvent event) {
     this.event = event;
     deserializer = MessageFactory.getInstance().getDeserializer();
   }

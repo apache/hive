@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import java.io.BufferedReader;

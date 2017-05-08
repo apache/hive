@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class AlterPartitionHandler extends AbstractHandler {
+class AlterPartitionHandler extends AbstractEventHandler {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
   private final org.apache.hadoop.hive.metastore.api.Table tableObject;
   private final boolean isTruncateOp;

@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class InsertHandler extends AbstractHandler {
+class InsertHandler extends AbstractEventHandler {
 
   InsertHandler(NotificationEvent event) {
     super(event);
