@@ -349,7 +349,15 @@ public class LlapServiceDriver {
       final Path tezDir = new Path(libDir, "tez");
       final Path udfDir = new Path(libDir, "udfs");
       final Path confPath = new Path(tmpDir, "conf");
-      lfs.mkdirs(confPath);
+      if (!lfs.mkdirs(confPath)) {
+        LOG.warn("mkdirs for " + confPath + " returned false");
+      }
+      if (!lfs.mkdirs(tezDir)) {
+        LOG.warn("mkdirs for " + tezDir + " returned false");
+      }
+      if (!lfs.mkdirs(udfDir)) {
+        LOG.warn("mkdirs for " + udfDir + " returned false");
+      }
 
       NamedCallable<Void> downloadTez = new NamedCallable<Void>("downloadTez") {
         @Override
