@@ -168,3 +168,40 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: drop table if exists t0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t0(a int,b int,c float,d double precision)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: create table t0(a int,b int,c float,d double precision)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: insert into t0 values(1,2,3.1,4.1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t0
+POSTHOOK: query: insert into t0 values(1,2,3.1,4.1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t0.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: t0.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t0.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+1	2	3.1	4.1

@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -127,6 +129,24 @@ public class TestGenericUDFNullif {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.dateTypeInfo, oi.getTypeInfo());
+    Assert.assertEquals(null, udf.evaluate(args));
+  }
+
+  @Test
+  public void testLazy() throws HiveException {
+    GenericUDFNullif udf = new GenericUDFNullif();
+
+    ObjectInspector[] inputOIs = { LazyPrimitiveObjectInspectorFactory.LAZY_INT_OBJECT_INSPECTOR,
+        LazyPrimitiveObjectInspectorFactory.LAZY_INT_OBJECT_INSPECTOR };
+    LazyInteger a1 = new LazyInteger(LazyPrimitiveObjectInspectorFactory.LAZY_INT_OBJECT_INSPECTOR);
+    LazyInteger a2 = new LazyInteger(LazyPrimitiveObjectInspectorFactory.LAZY_INT_OBJECT_INSPECTOR);
+    a1.getWritableObject().set(1);
+    a2.getWritableObject().set(1);
+
+    DeferredObject[] args = { new DeferredJavaObject(a1), new DeferredJavaObject(a2) };
+
+    PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
+    Assert.assertEquals(TypeInfoFactory.intTypeInfo, oi.getTypeInfo());
     Assert.assertEquals(null, udf.evaluate(args));
   }
 }
