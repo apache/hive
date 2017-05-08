@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,8 +75,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -292,17 +291,16 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case DOUBLE:
         return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
             Double.valueOf(((Number) literal.getValue3()).doubleValue()));
-      case DATE: {
-        final Calendar c = (Calendar) literal.getValue();
+      case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-            new java.sql.Date(c.getTimeInMillis()));
-      }
+          new Date(((Calendar)literal.getValue()).getTimeInMillis()));
       case TIME:
       case TIMESTAMP: {
-        final Calendar c = (Calendar) literal.getValue();
-        final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
-        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
-            new Timestamp(dt.getMillis()));
+        Object value = literal.getValue3();
+        if (value instanceof Long) {
+          value = new Timestamp((Long)value);
+        }
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo, value);
       }
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.    
+-->
+
+<document>
+
+  <properties>
+    <title>Hadoop Hive- Joins</title>
+    <author email="hive-user@hadoop.apache.org">Hadoop Hive Documentation Team</author>
+  </properties>
+
+  <body>
+
+    <section name="Join Syntax" href="join_syntax">
+
+    <source><![CDATA[join_table:
+    table_reference [INNER] JOIN table_factor [join_condition]
+  | table_reference {LEFT|RIGHT|FULL} [OUTER] JOIN table_reference join_condition
+  | table_reference LEFT SEMI JOIN table_reference join_condition
+
+table_reference:
+    table_factor
+  | join_table
+
+table_factor:
+    tbl_name [alias]
+  | table_subquery alias
+  | ( table_references )
+
+join_condition:
+    ON equality_expression ( AND equality_expression )*
+
+equality_expression: 
+    expression = expression
+]]></source>
+
+<p>
+Only equality joins, outer joins, and left semi joins are supported in Hive. Hive does not support join conditions that are not equality conditions as it is very difficult to express such conditions as a map/reduce job. Also, more than two tables can be joined in Hive. 
+</p>
+
+<b>Allowed Equality Joins</b>
+
+<source><![CDATA[SELECT a.* FROM a JOIN b ON (a.id = b.id) 
+]]></source>
+
+<source><![CDATA[SELECT a.* FROM a JOIN b ON (a.id = b.id AND a.department = b.department)
+]]></source>
+
+<b>Disallowed Joins</b>
+
+<source><![CDATA[SELECT a.* FROM a JOIN b ON (a.id <> b.id)
+]]></source>
+
+<p>Multiple Tables can be joined in the same query</p>
+
+<source><![CDATA[SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key2)
+]]></source>
+
+
+
+<source><![CDATA[
+]]></source>
+ 
+</section>
+
+<section name="Join implementation with Map Reduce" href="join_map_reduce">
+
+<p>Hive converts joins over multiple tables into a single map/reduce job if for every table the same column is used in the join clauses. The query below is
+converted into a single map/reduce job as only key1 column for b is involved in the join.</p>
+
+<source><![CDATA[SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key1)]]></source>
+<i>It is very interesting to note that any number of tables can be joined in single map/reduce process as long as they fit the above criteria.</i>
+
+<p>However if the join colums are not the same for all tables the is converted into multiple map/reduce jobs</p>
+
+<source><![CDATA[SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key2)
+]]></source>
+
+<p>In this case the first map/reduce job joins a with b and the results are then joined with c in the second map/reduce job. </p>
+</section>
+
+<section name="Largest Table LAST" href="lagest_table_last">
+
+<p>In every map/reduce stage of the join, the last table in the sequence is streamed through the reducers where as the others are buffered. Therefore, it helps to reduce the memory needed in the reducer for buffering the rows for a particular value of the join key by organizing the tables such that the largest tables appear last in the sequence. e.g. in</p>
+
+<source><![CDATA[SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key1)]]></source>
+
+<p>all the three tables are joined in a single map/reduce job and the values for a particular value of the key for tables a and b are buffered in the memory in the reducers. Then for each row retrieved from c, the join is computed with the buffered rows.</p>
+
+<p>For the query:</p>
+
+<source><![CDATA[SELECT a.val, b.val, c.val FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key2)]]></source>
+
+<p>    * there are two map/reduce jobs involved in computing the join. The first of these joins a with b and buffers the values of a while streaming the values of b in the reducers. The second of one of these jobs buffers the results of the first join while streaming the values of c through the reducers. </p>
+
+</section>
+
+<section name="Streamtable hint" href="stream_table_hint">
+
+<p>In every map/reduce stage of the join, the table to be streamed can be specified via a hint:</p>
+
+<source><![CDATA[SELECT /*+ STREAMTABLE(a) */ a.val, b.val, c.val 
+FROM a JOIN b ON (a.key = b.key1) JOIN c ON (c.key = b.key1)]]></source>
+
+<p>All the three tables are joined in a single map/reduce job and the values for a particular value of the key for tables b and c are buffered in the memory in the reducers. Then for each row retrieved from a, the join is computed with the buffered rows.
+</p>
+
+</section>
+
+<section name="Outer Joins" href="outer_joins">
+
+<p>LEFT, RIGHT, and FULL OUTER joins exist in order to provide more control over ON clauses for which there is no match. For example:</p>
+
+<source><![CDATA[SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key)
+]]></source>
+
+<p>The above query will return a row for every row in a. This output row will be a.val,b.val when there is a b.key that equals a.key, and the output row will be a.val,NULL when there is no corresponding b.key. Rows from b which have no corresponding a.key will be dropped. The syntax "FROM a LEFT OUTER JOIN b" must be written on one line in order to understand how it works--a is to the LEFT of b in this query, and so all rows from a are kept; a RIGHT OUTER JOIN will keep all rows from b, and a FULL OUTER JOIN will keep all rows from a and all rows from b. OUTER JOIN semantics should conform to standard SQL specs.
+</p>
+
+<p>Joins occur BEFORE WHERE CLAUSES. So, if you want to restrict the OUTPUT of a join, a requirement should be in the WHERE clause, otherwise it should be in the JOIN clause. A big point of confusion for this issue is partitioned tables</p>
+
+<source><![CDATA[SELECT a.val, b.val FROM a LEFT OUTER JOIN b ON (a.key=b.key)
+  WHERE a.ds='2009-07-07' AND b.ds='2009-07-07']]></source>
+
+<p>will join a on b, producing a list of a.val and b.val. The WHERE clause, however, can also reference other columns of a and b that are in the output of the join, and then filter them out. However, whenever a row from the JOIN has found a key for a and no key for b, all of the columns of b will be NULL, including the ds column. This is to say, you will filter out all rows of join output for which there was no valid b.key, and thus you have outsmarted your LEFT OUTER requirement. In other words, the LEFT OUTER part of the join is irrelevant if you reference any column of b in the WHERE clause. Instead, when OUTER JOINing, use this syntax:</p>
+
+<source><![CDATA[SELECT a.val, b.val FROM a LEFT OUTER JOIN b
+  ON (a.key=b.key AND b.ds='2009-07-07' AND a.ds='2009-07-07')]]></source>
+
+<p>Joins are NOT commutative! Joins are left-associative regardless of whether they are LEFT or RIGHT joins. </p>
+
+<source><![CDATA[SELECT a.val1, a.val2, b.val, c.val
+FROM a
+JOIN b ON (a.key = b.key)
+LEFT OUTER JOIN c ON (a.key = c.key)]]></source>
+
+<p>The above query first joins a on b, throwing away everything in a or b that does not have a corresponding key in the other table. The reduced table is then joined on c. This provides unintuitive results if there is a key that exists in both a and c, but not b: The whole row (including a.val1, a.val2, and a.key) is dropped in the "a JOIN b" step, so when the result of that is joined with c, any row with a c.key that had a corresponding a.key or b.key (but not both) will show up as NULL, NULL, NULL, c.val.</p>
+</section>
+
+<section name="Left Semi Join" href="left_semi_join">
+
+<p>LEFT SEMI JOIN implements the correlated IN/EXISTS subquery semantics in an efficient way. Since Hive currently does not support IN/EXISTS subqueries, you can rewrite your queries using LEFT SEMI JOIN. The restrictions of using LEFT SEMI JOIN is that the right-hand-side table should only be referenced in the join condition (ON-clause), but not in WHERE- or SELECT-clauses etc.</p>
+
+<p>This type of query</p>
+<source><![CDATA[SELECT a.key, a.value
+FROM a 
+WHERE a.key in 
+(SELECT b.key
+FROM B);]]></source>
+
+<p>Can be written as:</p>
+
+<source><![CDATA[SELECT a.key, a.val
+FROM a LEFT SEMI JOIN b on (a.key = b.key)]]></source>
+
+</section>
+
+<section name="Map Side Join" href="map_side_join">
+
+<p>If all but one of the tables being joined are small, the join can be performed as a map only job. The query
+does not need a reducer. For every mapper a,b is read completely. A restriction is that a <b>FULL/RIGHT OUTER JOIN b</b> cannot be performed. </p>
+
+<source><![CDATA[SELECT /*+ MAPJOIN(b) */ a.key, a.value
+FROM a join b on a.key = b.key]]></source>
+
+</section>
+
+<section name="Bucketed Map Join" href="bucket_map_join">
+
+<p>If the tables being joined are bucketized, and the buckets are a multiple of each other, the buckets can be joined with each other. If table A has 8 buckets are table B has 4 buckets, the following join:</p>
+
+<source><![CDATA[SELECT /*+ MAPJOIN(b) */ a.key, a.value
+FROM a join b on a.key = b.key]]></source>
+
+<p>can be done on the mapper only. Instead of fetching B completely for each mapper of A, only the required buckets are fetched. For the query above, the mapper processing bucket 1 for A will only fetch bucket 1 of B. It is not the default behavior, and is governed by the following parameter </p>
+
+<i>set hive.optimize.bucketmapjoin = true</i>
+
+<p>If the tables being joined are sorted and bucketized, and the number of buckets are same, a sort-merge join can be performed. The corresponding buckets are joined with each other at the mapper. If both A and B have 4 buckets</p>
+
+<source><![CDATA[ SELECT /*+ MAPJOIN(b) */ a.key, a.value
+FROM A a join B b on a.key = b.key]]></source>
+
+<p>can be done on the mapper only. The mapper for the bucket for A will traverse the corresponding bucket for B. This is not the default behavior, and the following parameters need to be set:</p>
+
+<source><![CDATA[set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+set hive.optimize.bucketmapjoin = true;
+set hive.optimize.bucketmapjoin.sortedmerge = true;]]></source>
+
+</section>
+
+</body>
+
+
+
+</document>

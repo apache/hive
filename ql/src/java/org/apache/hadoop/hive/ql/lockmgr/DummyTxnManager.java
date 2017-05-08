@@ -301,8 +301,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
       new HiveLockObject.HiveLockObjectData(plan.getQueryId(),
                              String.valueOf(System.currentTimeMillis()),
                              "IMPLICIT",
-                             plan.getQueryStr(),
-                             conf);
+                             plan.getQueryStr());
 
     if (db != null) {
       locks.add(new HiveLockObj(new HiveLockObject(db.getName(), lockData),

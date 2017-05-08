@@ -42,6 +42,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -53,13 +54,11 @@ import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.LowResourceMonitor;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
@@ -86,9 +85,9 @@ public class HttpServer {
   public static final String ADMINS_ACL = "admins.acl";
 
   private final String name;
-  private String appDir;
-  private WebAppContext webAppContext;
-  private Server webServer;
+  private final String appDir;
+  private final WebAppContext webAppContext;
+  private final Server webServer;
 
   /**
    * Create a status server on the given port.
@@ -96,7 +95,16 @@ public class HttpServer {
   private HttpServer(final Builder b) throws IOException {
     this.name = b.name;
 
-    createWebServer(b);
+    webServer = new Server();
+    appDir = getWebAppsPath(b.name);
+    webAppContext = createWebAppContext(b);
+
+    if (b.useSPNEGO) {
+      // Secure the web server with kerberos
+      setupSpnegoFilter(b);
+    }
+
+    initializeWebServer(b);
   }
 
   public static class Builder {
@@ -211,7 +219,7 @@ public class HttpServer {
   }
 
   public int getPort() {
-    return ((ServerConnector)(webServer.getConnectors()[0])).getLocalPort();
+    return webServer.getConnectors()[0].getLocalPort();
   }
 
   /**
@@ -337,14 +345,9 @@ public class HttpServer {
    * Create a channel connector for "http/https" requests
    */
   Connector createChannelConnector(int queueSize, Builder b) {
-    ServerConnector connector;
-
-    final HttpConfiguration conf = new HttpConfiguration();
-    conf.setRequestHeaderSize(1024*64);
-    final HttpConnectionFactory http = new HttpConnectionFactory(conf);
-
+    SelectChannelConnector connector;
     if (!b.useSSL) {
-      connector = new ServerConnector(webServer, http);
+      connector = new SelectChannelConnector();
     } else {
       SslContextFactory sslContextFactory = new SslContextFactory();
       sslContextFactory.setKeyStorePath(b.keyStorePath);
@@ -354,13 +357,15 @@ public class HttpServer {
       sslContextFactory.addExcludeProtocols(excludedSSLProtocols.toArray(
           new String[excludedSSLProtocols.size()]));
       sslContextFactory.setKeyStorePassword(b.keyStorePassword);
-      connector = new ServerConnector(webServer, sslContextFactory, http);
+      connector = new SslSelectChannelConnector(sslContextFactory);
     }
 
+    connector.setLowResourcesMaxIdleTime(10000);
     connector.setAcceptQueueSize(queueSize);
+    connector.setResolveNames(false);
+    connector.setUseDirectBuffers(false);
+    connector.setRequestHeaderSize(1024*64);
     connector.setReuseAddress(true);
-    connector.setHost(b.host);
-    connector.setPort(b.port);
     return connector;
   }
 
@@ -373,7 +378,7 @@ public class HttpServer {
     }
   }
 
-  private void createWebServer(final Builder b) throws IOException {
+  void initializeWebServer(Builder b) {
     // Create the thread pool for the web server to handle HTTP requests
     QueuedThreadPool threadPool = new QueuedThreadPool();
     if (b.maxThreads > 0) {
@@ -381,26 +386,12 @@ public class HttpServer {
     }
     threadPool.setDaemon(true);
     threadPool.setName(b.name + "-web");
+    webServer.setThreadPool(threadPool);
 
-    this.webServer = new Server(threadPool);
-    this.appDir = getWebAppsPath(b.name);
-    this.webAppContext = createWebAppContext(b);
-
-    if (b.useSPNEGO) {
-      // Secure the web server with kerberos
-      setupSpnegoFilter(b);
-    }
-
-    initializeWebServer(b, threadPool.getMaxThreads());
-  }
-
-  private void initializeWebServer(final Builder b, int queueSize) {
-    // Set handling for low resource conditions.
-    final LowResourceMonitor low = new LowResourceMonitor(webServer);
-    low.setLowResourcesIdleTimeout(10000);
-    webServer.addBean(low);
-
-    Connector connector = createChannelConnector(queueSize, b);
+    // Create the channel connector for the web server
+    Connector connector = createChannelConnector(threadPool.getMaxThreads(), b);
+    connector.setHost(b.host);
+    connector.setPort(b.port);
     webServer.addConnector(connector);
 
     RewriteHandler rwHandler = new RewriteHandler();

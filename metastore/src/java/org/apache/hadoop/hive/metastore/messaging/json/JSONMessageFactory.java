@@ -28,10 +28,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -108,8 +104,8 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp) {
-    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, isTruncateOp, now());
+  public AlterTableMessage buildAlterTableMessage(Table before, Table after) {
+    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, now());
   }
 
   @Override
@@ -127,8 +123,8 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-      Partition after, boolean isTruncateOp) {
-    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after, isTruncateOp,
+      Partition after) {
+    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after,
         now());
   }
 
@@ -165,9 +161,10 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals, boolean replace,
+  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
       Iterator<String> fileIter) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals, replace, fileIter, now());
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
+        fileIter, now());
   }
 
   private long now() {
@@ -301,4 +298,5 @@ public class JSONMessageFactory extends MessageFactory {
     };
     return getTObjs(Iterables.transform(jsonArrayIterator, textExtractor), objClass);
   }
+
 }

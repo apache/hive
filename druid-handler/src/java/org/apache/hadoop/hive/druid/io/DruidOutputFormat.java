@@ -33,9 +33,6 @@ import io.druid.granularity.QueryGranularity;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
-import io.druid.segment.IndexSpec;
-import io.druid.segment.data.ConciseBitmapSerdeFactory;
-import io.druid.segment.data.RoaringBitmapSerdeFactory;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.indexing.granularity.GranularitySpec;
@@ -203,12 +200,6 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     }
     Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
 
-    IndexSpec indexSpec;
-    if ("concise".equals(HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BITMAP_FACTORY_TYPE))) {
-      indexSpec = new IndexSpec(new ConciseBitmapSerdeFactory(), null, null, null);
-    } else {
-      indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
-    }
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
             null,
             null,
@@ -217,7 +208,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             null,
             null,
             null,
-            indexSpec,
+            null,
             true,
             0,
             0,
@@ -241,6 +232,6 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
 
   @Override
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
-    // NOOP
+    throw new UnsupportedOperationException("not implemented yet");
   }
 }

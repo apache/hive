@@ -75,9 +75,4 @@ public class VectorMapJoinOptimizedHashSet
       MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
     super(originalTableContainer, hashMapRowGetter);
   }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize();
-  }
 }

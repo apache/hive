@@ -260,7 +260,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -271,7 +271,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [2]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -299,7 +299,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -310,7 +310,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -345,7 +345,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -356,7 +356,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [2, 3]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 5237 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join0 to 1
@@ -374,7 +374,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 22 Data size: 5804 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join0 to 1
@@ -392,7 +392,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 6384 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 6336 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:
@@ -407,9 +407,10 @@ STAGE PLANS:
                           Reduce Output Operator
                             sort order: 
                             Reduce Sink Vectorization:
-                                className: VectorReduceSinkObjectHashOperator
-                                native: true
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                className: VectorReduceSinkOperator
+                                native: false
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint), _col1 (type: bigint)
             Execution mode: vectorized
@@ -433,8 +434,6 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: 
-                reduceColumnSortOrder: 
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false

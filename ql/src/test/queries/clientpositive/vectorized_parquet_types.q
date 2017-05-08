@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
-set hive.explain.user=false;
+SET hive.vectorized.execution.enabled=true;
+set hive.explain.user=true;
 
 DROP TABLE parquet_types_staging;
 DROP TABLE parquet_types;
@@ -45,8 +46,6 @@ LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE
 INSERT OVERWRITE TABLE parquet_types
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 unhex(cbinary), cdecimal FROM parquet_types_staging;
-
-SET hive.vectorized.execution.enabled=true;
 
 -- select
 explain vectorization expression

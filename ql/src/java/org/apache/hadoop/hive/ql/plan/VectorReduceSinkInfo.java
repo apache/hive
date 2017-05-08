@@ -33,9 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class VectorReduceSinkInfo {
 
-  private static final long serialVersionUID = 1L;
-
-  private boolean useUniformHash;
+  private static long serialVersionUID = 1L;
 
   private int[] reduceSinkKeyColumnMap;
   private TypeInfo[] reduceSinkKeyTypeInfos;
@@ -47,19 +45,7 @@ public class VectorReduceSinkInfo {
   private Type[] reduceSinkValueColumnVectorTypes;
   private VectorExpression[] reduceSinkValueExpressions;
 
-  private int[] reduceSinkBucketColumnMap;
-  private TypeInfo[] reduceSinkBucketTypeInfos;
-  private Type[] reduceSinkBucketColumnVectorTypes;
-  private VectorExpression[] reduceSinkBucketExpressions;
-
-  private int[] reduceSinkPartitionColumnMap;
-  private TypeInfo[] reduceSinkPartitionTypeInfos;
-  private Type[] reduceSinkPartitionColumnVectorTypes;
-  private VectorExpression[] reduceSinkPartitionExpressions;
-
   public VectorReduceSinkInfo() {
-    useUniformHash = false;
-
     reduceSinkKeyColumnMap = null;
     reduceSinkKeyTypeInfos = null;
     reduceSinkKeyColumnVectorTypes = null;
@@ -69,24 +55,6 @@ public class VectorReduceSinkInfo {
     reduceSinkValueTypeInfos = null;
     reduceSinkValueColumnVectorTypes = null;
     reduceSinkValueExpressions = null;
-
-    reduceSinkBucketColumnMap = null;
-    reduceSinkBucketTypeInfos = null;
-    reduceSinkBucketColumnVectorTypes = null;
-    reduceSinkBucketExpressions = null;
-
-    reduceSinkPartitionColumnMap = null;
-    reduceSinkPartitionTypeInfos = null;
-    reduceSinkPartitionColumnVectorTypes = null;
-    reduceSinkPartitionExpressions = null;
-  }
-
-  public boolean getUseUniformHash() {
-    return useUniformHash;
-  }
-
-  public void setUseUniformHash(boolean useUniformHash) {
-    this.useUniformHash = useUniformHash;
   }
 
   public int[] getReduceSinkKeyColumnMap() {
@@ -151,69 +119,5 @@ public class VectorReduceSinkInfo {
 
   public void setReduceSinkValueExpressions(VectorExpression[] reduceSinkValueExpressions) {
     this.reduceSinkValueExpressions = reduceSinkValueExpressions;
-  }
-
-  public int[] getReduceSinkBucketColumnMap() {
-    return reduceSinkBucketColumnMap;
-  }
-
-  public void setReduceSinkBucketColumnMap(int[] reduceSinkBucketColumnMap) {
-    this.reduceSinkBucketColumnMap = reduceSinkBucketColumnMap;
-  }
-
-  public TypeInfo[] getReduceSinkBucketTypeInfos() {
-    return reduceSinkBucketTypeInfos;
-  }
-
-  public void setReduceSinkBucketTypeInfos(TypeInfo[] reduceSinkBucketTypeInfos) {
-    this.reduceSinkBucketTypeInfos = reduceSinkBucketTypeInfos;
-  }
-
-  public Type[] getReduceSinkBucketColumnVectorTypes() {
-    return reduceSinkBucketColumnVectorTypes;
-  }
-
-  public void setReduceSinkBucketColumnVectorTypes(Type[] reduceSinkBucketColumnVectorTypes) {
-    this.reduceSinkBucketColumnVectorTypes = reduceSinkBucketColumnVectorTypes;
-  }
-
-  public VectorExpression[] getReduceSinkBucketExpressions() {
-    return reduceSinkBucketExpressions;
-  }
-
-  public void setReduceSinkBucketExpressions(VectorExpression[] reduceSinkBucketExpressions) {
-    this.reduceSinkBucketExpressions = reduceSinkBucketExpressions;
-  }
-
-  public int[] getReduceSinkPartitionColumnMap() {
-    return reduceSinkPartitionColumnMap;
-  }
-
-  public void setReduceSinkPartitionColumnMap(int[] reduceSinkPartitionColumnMap) {
-    this.reduceSinkPartitionColumnMap = reduceSinkPartitionColumnMap;
-  }
-
-  public TypeInfo[] getReduceSinkPartitionTypeInfos() {
-    return reduceSinkPartitionTypeInfos;
-  }
-
-  public void setReduceSinkPartitionTypeInfos(TypeInfo[] reduceSinkPartitionTypeInfos) {
-    this.reduceSinkPartitionTypeInfos = reduceSinkPartitionTypeInfos;
-  }
-
-  public Type[] getReduceSinkPartitionColumnVectorTypes() {
-    return reduceSinkPartitionColumnVectorTypes;
-  }
-
-  public void setReduceSinkPartitionColumnVectorTypes(Type[] reduceSinkPartitionColumnVectorTypes) {
-    this.reduceSinkPartitionColumnVectorTypes = reduceSinkPartitionColumnVectorTypes;
-  }
-
-  public VectorExpression[] getReduceSinkPartitionExpressions() {
-    return reduceSinkPartitionExpressions;
-  }
-
-  public void setReduceSinkPartitionExpressions(VectorExpression[] reduceSinkPartitionExpressions) {
-    this.reduceSinkPartitionExpressions = reduceSinkPartitionExpressions;
   }
 }

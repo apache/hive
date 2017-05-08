@@ -2,7 +2,8 @@ create table alias_test_01(a INT, b STRING) ;
                          create table alias_test_02(a INT, b STRING) ;
                          create table alias_test_03(a INT, b STRING) ;
                          set hive.groupby.position.alias = true;
-                         set hive.strict.checks.cartesian.product = false;
+                         set hive.cbo.enable=true;
+
 
                          explain
                          select * from

@@ -298,13 +298,12 @@ public class SparkPlanGenerator {
       throw new IllegalArgumentException(msg, e);
     }
     if (work instanceof MapWork) {
-      MapWork mapWork = (MapWork) work;
       cloned.setBoolean("mapred.task.is.map", true);
-      List<Path> inputPaths = Utilities.getInputPaths(cloned, mapWork,
+      List<Path> inputPaths = Utilities.getInputPaths(cloned, (MapWork) work,
           scratchDir, context, false);
       Utilities.setInputPaths(cloned, inputPaths);
-      Utilities.setMapWork(cloned, mapWork, scratchDir, false);
-      Utilities.createTmpDirs(cloned, mapWork);
+      Utilities.setMapWork(cloned, (MapWork) work, scratchDir, false);
+      Utilities.createTmpDirs(cloned, (MapWork) work);
       if (work instanceof MergeFileWork) {
         MergeFileWork mergeFileWork = (MergeFileWork) work;
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, MergeFileMapper.class.getName());
@@ -314,21 +313,9 @@ public class SparkPlanGenerator {
       } else {
         cloned.set(Utilities.MAPRED_MAPPER_CLASS, ExecMapper.class.getName());
       }
-      if (mapWork.getMaxSplitSize() != null) {
-        HiveConf.setLongVar(cloned, HiveConf.ConfVars.MAPREDMAXSPLITSIZE,
-            mapWork.getMaxSplitSize());
-      }
-      if (mapWork.getMinSplitSize() != null) {
+      if (((MapWork) work).getMinSplitSize() != null) {
         HiveConf.setLongVar(cloned, HiveConf.ConfVars.MAPREDMINSPLITSIZE,
-            mapWork.getMinSplitSize());
-      }
-      if (mapWork.getMinSplitSizePerNode() != null) {
-        HiveConf.setLongVar(cloned, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE,
-            mapWork.getMinSplitSizePerNode());
-      }
-      if (mapWork.getMinSplitSizePerRack() != null) {
-        HiveConf.setLongVar(cloned, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK,
-            mapWork.getMinSplitSizePerRack());
+            ((MapWork) work).getMinSplitSize());
       }
       // remember the JobConf cloned for each MapWork, so we won't clone for it again
       workToJobConf.put(work, cloned);

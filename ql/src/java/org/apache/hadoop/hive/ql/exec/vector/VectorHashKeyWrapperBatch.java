@@ -18,15 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper.EmptyVectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 
 /**
  * Class for handling vectorized hash map key wrappers. It evaluates the key columns in a
@@ -63,11 +59,6 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    */
   private int keysFixedSize;
 
-  /**
-   * Shared hashcontext for all keys in this batch
-   */
-  private final VectorHashKeyWrapper.HashContext hashCtx = new VectorHashKeyWrapper.HashContext();
-
    /**
    * Returns the compiled fixed size for the key wrappers.
    * @return
@@ -94,21 +85,12 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * @throws HiveException
    */
   public void evaluateBatch(VectorizedRowBatch batch) throws HiveException {
-
-    if (keyCount == 0) {
-      // all keywrappers must be EmptyVectorHashKeyWrapper
-      return;
+    for(int i = 0; i < keyExpressions.length; ++i) {
+      keyExpressions[i].evaluate(batch);
     }
-
-    for(int i=0;i<batch.size;++i) {
-      vectorHashKeyWrappers[i].clearIsNull();
-    }
-
-    int keyIndex;
-    int columnIndex;
     for(int i = 0; i< longIndices.length; ++i) {
-      keyIndex = longIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = longIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       LongColumnVector columnVector = (LongColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignLongNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -117,11 +99,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignLongNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignLongNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignLongNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignLongNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignLongNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignLongNullsNoRepeatingSelection (keyIndex, i, batch.size, columnVector, batch.selected);
+        assignLongNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented Long null/repeat/selected combination %b/%b/%b",
@@ -129,8 +111,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<doubleIndices.length; ++i) {
-      keyIndex = doubleIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = doubleIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       DoubleColumnVector columnVector = (DoubleColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDoubleNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -139,11 +121,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignDoubleNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDoubleNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignDoubleNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignDoubleNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignDoubleNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDoubleNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
+        assignDoubleNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented Double null/repeat/selected combination %b/%b/%b",
@@ -151,8 +133,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<stringIndices.length; ++i) {
-      keyIndex = stringIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = stringIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       BytesColumnVector columnVector = (BytesColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignStringNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -161,11 +143,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignStringNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignStringNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignStringNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignStringNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignStringNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignStringNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
+        assignStringNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented String null/repeat/selected combination %b/%b/%b",
@@ -173,8 +155,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<decimalIndices.length; ++i) {
-      keyIndex = decimalIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = decimalIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       DecimalColumnVector columnVector = (DecimalColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDecimalNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -183,11 +165,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignDecimalNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDecimalNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignDecimalNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignDecimalNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignDecimalNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDecimalNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
+        assignDecimalNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented Decimal null/repeat/selected combination %b/%b/%b",
@@ -195,8 +177,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<timestampIndices.length; ++i) {
-      keyIndex = timestampIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = timestampIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       TimestampColumnVector columnVector = (TimestampColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignTimestampNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -205,11 +187,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignTimestampNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignTimestampNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignTimestampNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignTimestampNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignTimestampNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignTimestampNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
+        assignTimestampNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented timestamp null/repeat/selected combination %b/%b/%b",
@@ -217,8 +199,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<intervalDayTimeIndices.length; ++i) {
-      keyIndex = intervalDayTimeIndices[i];
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
+      int keyIndex = intervalDayTimeIndices[i];
+      int columnIndex = keyExpressions[keyIndex].getOutputColumn();
       IntervalDayTimeColumnVector columnVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
       if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignIntervalDayTimeNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
@@ -227,198 +209,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       } else if (columnVector.noNulls && columnVector.isRepeating) {
         assignIntervalDayTimeNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignIntervalDayTimeNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
+        assignIntervalDayTimeNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignIntervalDayTimeNullsRepeating(keyIndex, i, batch.size, columnVector);
+        assignIntervalDayTimeNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignIntervalDayTimeNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented intervalDayTime null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<batch.size;++i) {
-      vectorHashKeyWrappers[i].setHashKey();
-    }
-  }
-
-  public void evaluateBatchGroupingSets(VectorizedRowBatch batch,
-      boolean[] groupingSetsOverrideIsNulls) throws HiveException {
-
-    for(int i=0;i<batch.size;++i) {
-      vectorHashKeyWrappers[i].clearIsNull();
-    }
-    int keyIndex;
-    int columnIndex;
-    for(int i = 0; i< longIndices.length; ++i) {
-      keyIndex = longIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullLong(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      LongColumnVector columnVector = (LongColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignLongNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignLongNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignLongNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignLongNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignLongNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignLongNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented Long null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<doubleIndices.length; ++i) {
-      keyIndex = doubleIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullDouble(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      DoubleColumnVector columnVector = (DoubleColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDoubleNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDoubleNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignDoubleNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDoubleNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignDoubleNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDoubleNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented Double null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<stringIndices.length; ++i) {
-      keyIndex = stringIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullString(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      BytesColumnVector columnVector = (BytesColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignStringNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignStringNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignStringNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignStringNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignStringNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignStringNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented String null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<decimalIndices.length; ++i) {
-      keyIndex = decimalIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullDecimal(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      DecimalColumnVector columnVector = (DecimalColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDecimalNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDecimalNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignDecimalNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignDecimalNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignDecimalNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignDecimalNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented Decimal null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<timestampIndices.length; ++i) {
-      keyIndex = timestampIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullTimestamp(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      TimestampColumnVector columnVector = (TimestampColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignTimestampNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignTimestampNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignTimestampNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignTimestampNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignTimestampNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignTimestampNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
-      } else {
-        throw new HiveException (String.format(
-            "Unimplemented timestamp null/repeat/selected combination %b/%b/%b",
-            columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
-      }
-    }
-    for(int i=0;i<intervalDayTimeIndices.length; ++i) {
-      keyIndex = intervalDayTimeIndices[i];
-      if (groupingSetsOverrideIsNulls[keyIndex]) {
-        final int batchSize = batch.size;
-        for(int r = 0; r < batchSize; ++r) {
-          vectorHashKeyWrappers[r].assignNullIntervalDayTime(keyIndex, i);
-        }
-        continue;
-      }
-      columnIndex = keyExpressions[keyIndex].getOutputColumn();
-      IntervalDayTimeColumnVector columnVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
-      if (columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignIntervalDayTimeNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
-      } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignIntervalDayTimeNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
-        assignIntervalDayTimeNoNullsRepeating(i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
-        assignIntervalDayTimeNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && columnVector.isRepeating) {
-        assignIntervalDayTimeNullsRepeating(keyIndex, i, batch.size, columnVector);
-      } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
-        assignIntervalDayTimeNullsNoRepeatingSelection(keyIndex, i, batch.size, columnVector, batch.selected);
+        assignIntervalDayTimeNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
         throw new HiveException (String.format(
             "Unimplemented intervalDayTime null/repeat/selected combination %b/%b/%b",
@@ -434,15 +229,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for string type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignStringNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignStringNullsNoRepeatingSelection(int index, int size,
       BytesColumnVector columnVector, int[] selected) {
     for(int i=0; i<size; ++i) {
       int row = selected[i];
       if (columnVector.isNull[row]) {
-        vectorHashKeyWrappers[i].assignNullString(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullString(index);
       } else {
-        vectorHashKeyWrappers[i].assignString(
-            index,
+        vectorHashKeyWrappers[i].assignString(index,
             columnVector.vector[row],
             columnVector.start[row],
             columnVector.length[row]);
@@ -454,15 +248,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, possible nulls, repeat values.
    */
-  private void assignStringNullsRepeating(int keyIndex, int index, int size, BytesColumnVector columnVector) {
+  private void assignStringNullsRepeating(int index, int size, BytesColumnVector columnVector) {
     if (columnVector.isNull[0]) {
       for(int i = 0; i < size; ++i) {
-        vectorHashKeyWrappers[i].assignNullString(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullString(index);
       }
     } else {
       for(int i = 0; i < size; ++i) {
-        vectorHashKeyWrappers[i].assignString(
-            index,
+        vectorHashKeyWrappers[i].assignString(index,
             columnVector.vector[0],
             columnVector.start[0],
             columnVector.length[0]);
@@ -474,14 +267,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for string type, possible nulls, no repeat values, no selection vector.
    */
-  private void assignStringNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignStringNullsNoRepeatingNoSelection(int index, int size,
       BytesColumnVector columnVector) {
     for(int i=0; i<size; ++i) {
       if (columnVector.isNull[i]) {
-        vectorHashKeyWrappers[i].assignNullString(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullString(index);
       } else {
-        vectorHashKeyWrappers[i].assignString(
-            index,
+        vectorHashKeyWrappers[i].assignString(index,
             columnVector.vector[i],
             columnVector.start[i],
             columnVector.length[i]);
@@ -493,11 +285,9 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, no nulls, repeat values, no selection vector.
    */
-  private void assignStringNoNullsRepeating(int index, int size,
-      BytesColumnVector columnVector) {
+  private void assignStringNoNullsRepeating(int index, int size, BytesColumnVector columnVector) {
     for(int i = 0; i < size; ++i) {
-      vectorHashKeyWrappers[i].assignString(
-          index,
+      vectorHashKeyWrappers[i].assignString(index,
           columnVector.vector[0],
           columnVector.start[0],
           columnVector.length[0]);
@@ -512,8 +302,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       BytesColumnVector columnVector, int[] selected) {
     for(int i=0; i<size; ++i) {
       int row = selected[i];
-      vectorHashKeyWrappers[i].assignString(
-          index,
+      vectorHashKeyWrappers[i].assignString(index,
           columnVector.vector[row],
           columnVector.start[row],
           columnVector.length[row]);
@@ -527,8 +316,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   private void assignStringNoNullsNoRepeatingNoSelection(int index, int size,
       BytesColumnVector columnVector) {
     for(int i=0; i<size; ++i) {
-      vectorHashKeyWrappers[i].assignString(
-          index,
+      vectorHashKeyWrappers[i].assignString(index,
           columnVector.vector[i],
           columnVector.start[i],
           columnVector.length[i]);
@@ -539,14 +327,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignDoubleNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignDoubleNullsNoRepeatingSelection(int index, int size,
       DoubleColumnVector columnVector, int[] selected) {
     for(int i = 0; i < size; ++i) {
       int row = selected[i];
       if (!columnVector.isNull[row]) {
         vectorHashKeyWrappers[i].assignDouble(index, columnVector.vector[row]);
       } else {
-        vectorHashKeyWrappers[i].assignNullDouble(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullDouble(index);
       }
     }
   }
@@ -555,10 +343,10 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Double type, repeat null values.
    */
-  private void assignDoubleNullsRepeating(int keyIndex, int index, int size,
+  private void assignDoubleNullsRepeating(int index, int size,
       DoubleColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
-      vectorHashKeyWrappers[r].assignNullDouble(keyIndex, index);
+      vectorHashKeyWrappers[r].assignNullDouble(index);
     }
   }
 
@@ -566,13 +354,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Double type, possible nulls, repeat values.
    */
-  private void assignDoubleNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignDoubleNullsNoRepeatingNoSelection(int index, int size,
       DoubleColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
       if (!columnVector.isNull[r]) {
         vectorHashKeyWrappers[r].assignDouble(index, columnVector.vector[r]);
       } else {
-        vectorHashKeyWrappers[r].assignNullDouble(keyIndex, index);
+        vectorHashKeyWrappers[r].assignNullDouble(index);
       }
     }
   }
@@ -613,14 +401,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignLongNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignLongNullsNoRepeatingSelection(int index, int size,
       LongColumnVector columnVector, int[] selected) {
     for(int i = 0; i < size; ++i) {
       int row = selected[i];
       if (!columnVector.isNull[row]) {
         vectorHashKeyWrappers[i].assignLong(index, columnVector.vector[row]);
       } else {
-        vectorHashKeyWrappers[i].assignNullLong(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullLong(index);
       }
     }
   }
@@ -629,10 +417,10 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, repeating nulls.
    */
-  private void assignLongNullsRepeating(int keyIndex, int index, int size,
+  private void assignLongNullsRepeating(int index, int size,
       LongColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
-      vectorHashKeyWrappers[r].assignNullLong(keyIndex, index);
+      vectorHashKeyWrappers[r].assignNullLong(index);
     }
   }
 
@@ -640,13 +428,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for double type, possible nulls, no repeat values, no selection vector.
    */
-  private void assignLongNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignLongNullsNoRepeatingNoSelection(int index, int size,
       LongColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
       if (!columnVector.isNull[r]) {
         vectorHashKeyWrappers[r].assignLong(index, columnVector.vector[r]);
       } else {
-        vectorHashKeyWrappers[r].assignNullLong(keyIndex, index);
+        vectorHashKeyWrappers[r].assignNullLong(index);
       }
     }
   }
@@ -687,14 +475,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Decimal type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignDecimalNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignDecimalNullsNoRepeatingSelection(int index, int size,
       DecimalColumnVector columnVector, int[] selected) {
     for(int i = 0; i < size; ++i) {
       int row = selected[i];
       if (!columnVector.isNull[row]) {
         vectorHashKeyWrappers[i].assignDecimal(index, columnVector.vector[row]);
       } else {
-        vectorHashKeyWrappers[i].assignNullDecimal(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullDecimal(index);
       }
     }
   }
@@ -703,10 +491,10 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Decimal type, repeat null values.
    */
-  private void assignDecimalNullsRepeating(int keyIndex, int index, int size,
+  private void assignDecimalNullsRepeating(int index, int size,
       DecimalColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
-      vectorHashKeyWrappers[r].assignNullDecimal(keyIndex, index);
+      vectorHashKeyWrappers[r].assignNullDecimal(index);
     }
   }
 
@@ -714,13 +502,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Decimal type, possible nulls, repeat values.
    */
-  private void assignDecimalNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignDecimalNullsNoRepeatingNoSelection(int index, int size,
       DecimalColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
       if (!columnVector.isNull[r]) {
         vectorHashKeyWrappers[r].assignDecimal(index, columnVector.vector[r]);
       } else {
-        vectorHashKeyWrappers[r].assignNullDecimal(keyIndex, index);
+        vectorHashKeyWrappers[r].assignNullDecimal(index);
       }
     }
   }
@@ -761,14 +549,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Timestamp type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignTimestampNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignTimestampNullsNoRepeatingSelection(int index, int size,
       TimestampColumnVector columnVector, int[] selected) {
     for(int i = 0; i < size; ++i) {
       int row = selected[i];
       if (!columnVector.isNull[row]) {
         vectorHashKeyWrappers[i].assignTimestamp(index, columnVector, row);
       } else {
-        vectorHashKeyWrappers[i].assignNullTimestamp(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullTimestamp(index);
       }
     }
   }
@@ -777,10 +565,10 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Timestamp type, repeat null values.
    */
-  private void assignTimestampNullsRepeating(int keyIndex, int index, int size,
+  private void assignTimestampNullsRepeating(int index, int size,
       TimestampColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
-      vectorHashKeyWrappers[r].assignNullTimestamp(keyIndex, index);
+      vectorHashKeyWrappers[r].assignNullTimestamp(index);
     }
   }
 
@@ -788,13 +576,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for Timestamp type, possible nulls, repeat values.
    */
-  private void assignTimestampNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignTimestampNullsNoRepeatingNoSelection(int index, int size,
       TimestampColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
       if (!columnVector.isNull[r]) {
         vectorHashKeyWrappers[r].assignTimestamp(index, columnVector, r);
       } else {
-        vectorHashKeyWrappers[r].assignNullTimestamp(keyIndex, index);
+        vectorHashKeyWrappers[r].assignNullTimestamp(index);
       }
     }
   }
@@ -835,14 +623,14 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for IntervalDayTime type, possible nulls, no repeat values, batch selection vector.
    */
-  private void assignIntervalDayTimeNullsNoRepeatingSelection(int keyIndex, int index, int size,
+  private void assignIntervalDayTimeNullsNoRepeatingSelection(int index, int size,
       IntervalDayTimeColumnVector columnVector, int[] selected) {
     for(int i = 0; i < size; ++i) {
       int row = selected[i];
       if (!columnVector.isNull[row]) {
         vectorHashKeyWrappers[i].assignIntervalDayTime(index, columnVector, row);
       } else {
-        vectorHashKeyWrappers[i].assignNullIntervalDayTime(keyIndex, index);
+        vectorHashKeyWrappers[i].assignNullIntervalDayTime(index);
       }
     }
   }
@@ -851,10 +639,10 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for IntervalDayTime type, repeat null values.
    */
-  private void assignIntervalDayTimeNullsRepeating(int keyIndex, int index, int size,
+  private void assignIntervalDayTimeNullsRepeating(int index, int size,
       IntervalDayTimeColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
-      vectorHashKeyWrappers[r].assignNullIntervalDayTime(keyIndex, index);
+      vectorHashKeyWrappers[r].assignNullIntervalDayTime(index);
     }
   }
 
@@ -862,13 +650,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * Helper method to assign values from a vector column into the key wrapper.
    * Optimized for IntervalDayTime type, possible nulls, repeat values.
    */
-  private void assignIntervalDayTimeNullsNoRepeatingNoSelection(int keyIndex, int index, int size,
+  private void assignIntervalDayTimeNullsNoRepeatingNoSelection(int index, int size,
       IntervalDayTimeColumnVector columnVector) {
     for(int r = 0; r < size; ++r) {
       if (!columnVector.isNull[r]) {
         vectorHashKeyWrappers[r].assignIntervalDayTime(index, columnVector, r);
       } else {
-        vectorHashKeyWrappers[r].assignNullIntervalDayTime(keyIndex, index);
+        vectorHashKeyWrappers[r].assignNullIntervalDayTime(index);
       }
     }
   }
@@ -905,28 +693,13 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     }
   }
 
-  public static VectorHashKeyWrapperBatch compileKeyWrapperBatch(VectorExpression[] keyExpressions)
-      throws HiveException
-  {
-
-    final int size = keyExpressions.length;
-    ColumnVector.Type[] columnVectorTypes = new ColumnVector.Type[size];
-    for (int i = 0; i < size; i++) {
-      String typeName = VectorizationContext.mapTypeNameSynonyms(keyExpressions[i].getOutputType());
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      columnVectorTypes[i] = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-    }
-    return compileKeyWrapperBatch(keyExpressions, columnVectorTypes);
-  }
-
   /**
    * Prepares a VectorHashKeyWrapperBatch to work for a specific set of keys.
    * Computes the fast access lookup indices, preallocates all needed internal arrays.
    * This step is done only once per query, not once per batch. The information computed now
    * will be used to generate proper individual VectorKeyHashWrapper objects.
    */
-  public static VectorHashKeyWrapperBatch compileKeyWrapperBatch(VectorExpression[] keyExpressions,
-      ColumnVector.Type[] columnVectorTypes)
+  public static VectorHashKeyWrapperBatch compileKeyWrapperBatch(VectorExpression[] keyExpressions)
     throws HiveException {
     VectorHashKeyWrapperBatch compiledKeyWrapperBatch = new VectorHashKeyWrapperBatch(keyExpressions.length);
     compiledKeyWrapperBatch.keyExpressions = keyExpressions;
@@ -934,8 +707,8 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     compiledKeyWrapperBatch.keysFixedSize = 0;
 
     // Inspect the output type of each key expression.
-    for(int i=0; i < columnVectorTypes.length; ++i) {
-      compiledKeyWrapperBatch.addKey(columnVectorTypes[i]);
+    for(int i=0; i < keyExpressions.length; ++i) {
+      compiledKeyWrapperBatch.addKey(keyExpressions[i].getOutputType());
     }
     compiledKeyWrapperBatch.finishAdding();
 
@@ -971,54 +744,49 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   }
 
   public VectorHashKeyWrapper allocateKeyWrapper() {
-    return VectorHashKeyWrapper.allocate(hashCtx,
-        longIndices.length,
-        doubleIndices.length,
-        stringIndices.length,
-        decimalIndices.length,
-        timestampIndices.length,
-        intervalDayTimeIndices.length,
-        keyCount);
+    return VectorHashKeyWrapper.allocate(longIndices.length, doubleIndices.length,
+        stringIndices.length, decimalIndices.length, timestampIndices.length,
+        intervalDayTimeIndices.length);
   }
 
   /**
    * Get the row-mode writable object value of a key from a key wrapper
    * @param keyOutputWriter
    */
-  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int keyIndex,
+  public Object getWritableKeyValue(VectorHashKeyWrapper kw, int i,
       VectorExpressionWriter keyOutputWriter)
     throws HiveException {
 
-    if (kw.isNull(keyIndex)) {
-      return null;
-    }
-
-    ColumnVector.Type columnVectorType = columnVectorTypes[keyIndex];
-    int columnTypeSpecificIndex = columnTypeSpecificIndices[keyIndex];
-
-    switch (columnVectorType) {
-    case LONG:
-      return keyOutputWriter.writeValue(
-          kw.getLongValue(columnTypeSpecificIndex));
-    case DOUBLE:
-      return keyOutputWriter.writeValue(
-          kw.getDoubleValue(columnTypeSpecificIndex));
-    case BYTES:
-      return keyOutputWriter.writeValue(
-          kw.getBytes(columnTypeSpecificIndex),
-          kw.getByteStart(columnTypeSpecificIndex),
-          kw.getByteLength(columnTypeSpecificIndex));
-    case DECIMAL:
-      return keyOutputWriter.writeValue(
-          kw.getDecimal(columnTypeSpecificIndex));
-    case TIMESTAMP:
-      return keyOutputWriter.writeValue(
-          kw.getTimestamp(columnTypeSpecificIndex));
-    case INTERVAL_DAY_TIME:
-      return keyOutputWriter.writeValue(
-          kw.getIntervalDayTime(columnTypeSpecificIndex));
-    default:
-      throw new HiveException("Unexpected column vector type " + columnVectorType);
+    KeyLookupHelper klh = indexLookup[i];
+    if (klh.longIndex >= 0) {
+      return kw.getIsLongNull(klh.longIndex) ? null :
+        keyOutputWriter.writeValue(kw.getLongValue(klh.longIndex));
+    } else if (klh.doubleIndex >= 0) {
+      return kw.getIsDoubleNull(klh.doubleIndex) ? null :
+          keyOutputWriter.writeValue(kw.getDoubleValue(klh.doubleIndex));
+    } else if (klh.stringIndex >= 0) {
+      return kw.getIsBytesNull(klh.stringIndex) ? null :
+          keyOutputWriter.writeValue(
+              kw.getBytes(klh.stringIndex),
+                kw.getByteStart(klh.stringIndex),
+                kw.getByteLength(klh.stringIndex));
+    } else if (klh.decimalIndex >= 0) {
+      return kw.getIsDecimalNull(klh.decimalIndex)? null :
+          keyOutputWriter.writeValue(
+                kw.getDecimal(klh.decimalIndex));
+    } else if (klh.timestampIndex >= 0) {
+      return kw.getIsTimestampNull(klh.timestampIndex)? null :
+          keyOutputWriter.writeValue(
+                kw.getTimestamp(klh.timestampIndex));
+    } else if (klh.intervalDayTimeIndex >= 0) {
+      return kw.getIsIntervalDayTimeNull(klh.intervalDayTimeIndex)? null :
+        keyOutputWriter.writeValue(
+              kw.getIntervalDayTime(klh.intervalDayTimeIndex));
+    } else {
+      throw new HiveException(String.format(
+          "Internal inconsistent KeyLookupHelper at index [%d]:%d %d %d %d %d %d",
+          i, klh.longIndex, klh.doubleIndex, klh.stringIndex, klh.decimalIndex,
+          klh.timestampIndex, klh.intervalDayTimeIndex));
     }
   }
 

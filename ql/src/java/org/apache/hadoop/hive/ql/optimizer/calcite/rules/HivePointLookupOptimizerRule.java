@@ -55,89 +55,36 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import org.apache.calcite.plan.RelOptRuleOperand;
-import org.apache.calcite.rel.AbstractRelNode;
-import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
-
-
-public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
 /**
- * This optimization will take a Filter or expression, and if its predicate contains
+ * This optimization will take a Filter expression, and if its predicate contains
  * an OR operator whose children are constant equality expressions, it will try
  * to generate an IN clause (which is more efficient). If the OR operator contains
  * AND operator children, the optimization might generate an IN clause that uses
  * structs.
  */
-  public static class FilterCondition extends HivePointLookupOptimizerRule {
-    public FilterCondition (int minNumORClauses) {
-      super(operand(Filter.class, any()), minNumORClauses);
-    }
-
-    public void onMatch(RelOptRuleCall call) {
-      final Filter filter = call.rel(0);
-      final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
-      final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
-      analyzeCondition(call , rexBuilder, filter, condition);
-    }
-
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Filter filter  = (Filter) node;
-      return filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
-    }
-  }
-
-/**
- * This optimization will take a Join or expression, and if its join condition contains
- * an OR operator whose children are constant equality expressions, it will try
- * to generate an IN clause (which is more efficient). If the OR operator contains
- * AND operator children, the optimization might generate an IN clause that uses
- * structs.
- */  
-  public static class JoinCondition extends HivePointLookupOptimizerRule {
-    public JoinCondition (int minNumORClauses) {
-      super(operand(Join.class, any()), minNumORClauses);
-    }
-    
-    public void onMatch(RelOptRuleCall call) {
-      final Join join = call.rel(0);
-      final RexBuilder rexBuilder = join.getCluster().getRexBuilder();
-      final RexNode condition = RexUtil.pullFactors(rexBuilder, join.getCondition());
-      analyzeCondition(call , rexBuilder, join, condition);
-    }
-
-    @Override protected RelNode copyNode(AbstractRelNode node, RexNode newCondition) {
-      final Join join = (Join) node;
-      return join.copy(join.getTraitSet(),
-              newCondition,
-              join.getLeft(),
-              join.getRight(),
-              join.getJoinType(),
-              join.isSemiJoinDone());
-    }
-  }
+public class HivePointLookupOptimizerRule extends RelOptRule {
 
   protected static final Log LOG = LogFactory.getLog(HivePointLookupOptimizerRule.class);
 
+
   // Minimum number of OR clauses needed to transform into IN clauses
-  protected final int minNumORClauses;
+  private final int minNumORClauses;
 
-  protected abstract RelNode copyNode(AbstractRelNode node, RexNode newCondition);
-
-  protected HivePointLookupOptimizerRule(
-    RelOptRuleOperand operand, int minNumORClauses) {
-    super(operand);
+  public HivePointLookupOptimizerRule(int minNumORClauses) {
+    super(operand(Filter.class, any()));
     this.minNumORClauses = minNumORClauses;
   }
 
-  public void analyzeCondition(RelOptRuleCall call,
-          RexBuilder rexBuilder,
-          AbstractRelNode node, 
-          RexNode condition) {
+  public void onMatch(RelOptRuleCall call) {
+    final Filter filter = call.rel(0);
+
+    final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
+
+    final RexNode condition = RexUtil.pullFactors(rexBuilder, filter.getCondition());
 
     // 1. We try to transform possible candidates
-    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, node,
+    RexTransformIntoInClause transformIntoInClause = new RexTransformIntoInClause(rexBuilder, filter,
             minNumORClauses);
     RexNode newCondition = transformIntoInClause.apply(condition);
 
@@ -150,10 +97,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return;
     }
 
-    // 4. We create the Filter/Join with the new condition
-    RelNode newNode = copyNode(node, newCondition);
+    // 4. We create the filter with the new condition
+    RelNode newFilter = filter.copy(filter.getTraitSet(), filter.getInput(), newCondition);
 
-    call.transformTo(newNode);
+    call.transformTo(newFilter);
   }
 
 
@@ -162,11 +109,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexTransformIntoInClause extends RexShuttle {
     private final RexBuilder rexBuilder;
-    private final AbstractRelNode nodeOp;
+    private final Filter filterOp;
     private final int minNumORClauses;
 
-    RexTransformIntoInClause(RexBuilder rexBuilder, AbstractRelNode nodeOp, int minNumORClauses) {
-      this.nodeOp = nodeOp;
+    RexTransformIntoInClause(RexBuilder rexBuilder, Filter filterOp, int minNumORClauses) {
+      this.filterOp = filterOp;
       this.rexBuilder = rexBuilder;
       this.minNumORClauses = minNumORClauses;
     }
@@ -182,7 +129,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             if (operand.getKind() == SqlKind.OR) {
               try {
                 newOperand = transformIntoInClauseCondition(rexBuilder,
-                        nodeOp.getRowType(), operand, minNumORClauses);
+                        filterOp.getRowType(), operand, minNumORClauses);
                 if (newOperand == null) {
                   newOperand = operand;
                 }
@@ -200,7 +147,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         case OR:
           try {
             node = transformIntoInClauseCondition(rexBuilder,
-                    nodeOp.getRowType(), call, minNumORClauses);
+                    filterOp.getRowType(), call, minNumORClauses);
             if (node == null) {
               return call;
             }

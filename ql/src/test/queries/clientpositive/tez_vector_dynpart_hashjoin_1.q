@@ -3,7 +3,6 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.auto.convert.join=false;
 set hive.optimize.dynamic.partition.hashjoin=false;
-set hive.llap.memory.oversubscription.max.executors.per.query=0;
 
 -- First try with regular mergejoin
 explain

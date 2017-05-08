@@ -1633,8 +1633,8 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string)
-              outputColumnNames: key, value
+              expressions: value (type: string), key (type: string)
+              outputColumnNames: value, key
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(DISTINCT key)
@@ -1748,7 +1748,7 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
   Stage-6 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-3
+  Stage-2 depends on stages: Stage-4
   Stage-7 depends on stages: Stage-2
 
 STAGE PLANS:

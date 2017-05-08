@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.Map;
-
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -35,8 +33,7 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
   public ExprNodeDynamicListDesc() {
   }
 
-  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
-      int keyIndex) {
+  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source, int keyIndex) {
     super(typeInfo);
     this.source = source;
     this.keyIndex = keyIndex;
@@ -60,7 +57,8 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   @Override
   public ExprNodeDesc clone() {
-    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
+    ExprNodeDynamicListDesc clone = new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
+    return clone;
   }
 
   @Override
@@ -80,5 +78,4 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
   public String toString() {
     return source.toString();
   }
-
 }

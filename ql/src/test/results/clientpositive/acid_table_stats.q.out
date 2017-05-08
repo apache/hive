@@ -35,7 +35,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -98,7 +97,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	3852                
+	totalSize           	3837                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -136,9 +135,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 1 Data size: 3852 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3837 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 3852 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3837 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -215,7 +214,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3852                
+	totalSize           	3837                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -264,7 +263,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3852                
+	totalSize           	3837                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -391,7 +390,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	7718                
+	totalSize           	7689                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -440,7 +439,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	7718                
+	totalSize           	7689                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -609,7 +608,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   

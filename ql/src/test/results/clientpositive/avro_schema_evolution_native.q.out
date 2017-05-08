@@ -105,7 +105,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	7                   
-	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
 	totalSize           	3077                
@@ -218,7 +217,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	7                   
-	numPartitions       	7                   
 	numRows             	8                   
 	rawDataSize         	0                   
 	totalSize           	3077                

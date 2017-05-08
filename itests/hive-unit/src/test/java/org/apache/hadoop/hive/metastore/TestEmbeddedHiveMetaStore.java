@@ -26,6 +26,8 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+    hiveConf.setBoolean(
+        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS.varname, true);
     warehouse = new Warehouse(hiveConf);
     try {
       client = new HiveMetaStoreClient(hiveConf);

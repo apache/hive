@@ -431,7 +431,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
     }
 
   @Override
-  public long getAggregationBufferFixedSize() {
+  public int getAggregationBufferFixedSize() {
       JavaDataModel model = JavaDataModel.get();
       return JavaDataModel.alignUp(
         model.object(),

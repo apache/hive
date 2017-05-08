@@ -109,7 +109,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private void handlePartialPartitionSpec(Map<String,String> partSpec, ColumnStatsAutoGatherContext context) throws
+  private void handlePartialPartitionSpec(Map<String,String> partSpec) throws
     SemanticException {
 
     // If user has fully specified partition, validate that partition exists
@@ -120,7 +120,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     try {
       // for static partition, it may not exist when HIVESTATSCOLAUTOGATHER is
       // set to true
-      if (context == null) {
+      if (!conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)) {
         if ((partValsSpecified == tbl.getPartitionKeys().size())
             && (db.getPartition(tbl, partSpec, false, null, false) == null)) {
           throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_PARTITION.getMsg()
@@ -242,10 +242,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return colTypes;
   }
 
-  private String escapeBackTicks(String colName) {
-    return colName.replaceAll("`", "``");
-  }
-
   private String genRewrittenQuery(List<String> colNames, int numBitVectors, Map<String,String> partSpec,
     boolean isPartitionStats) throws SemanticException{
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
@@ -256,7 +252,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         rewrittenQueryBuilder.append(" , ");
       }
       rewrittenQueryBuilder.append("compute_stats(`");
-      rewrittenQueryBuilder.append(escapeBackTicks(colNames.get(i)));
+      rewrittenQueryBuilder.append(colNames.get(i));
       rewrittenQueryBuilder.append("` , ");
       rewrittenQueryBuilder.append(numBitVectors);
       rewrittenQueryBuilder.append(" )");
@@ -337,6 +333,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         + " is passed for " + colName + ".";
     warning = "WARNING: " + warning;
     console.printInfo(warning);
+    // Propagate warning to beeline via operation log.
+    OperationLog ol = OperationLog.getCurrentOperationLog();
+    if (ol != null) {
+      ol.writeOperationLog(LoggingLevel.EXECUTION, warning + "\n");
+    }
   }
 
   @Override
@@ -372,7 +373,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       if (isPartitionStats) {
         isTableLevel = false;
         partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
-        handlePartialPartitionSpec(partSpec, null);
+        handlePartialPartitionSpec(partSpec);
       } else {
         isTableLevel = true;
       }
@@ -442,7 +443,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     if (isPartitionStats) {
       isTableLevel = false;
       partSpec = AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf);
-      handlePartialPartitionSpec(partSpec, context);
+      handlePartialPartitionSpec(partSpec);
     } else {
       isTableLevel = true;
     }

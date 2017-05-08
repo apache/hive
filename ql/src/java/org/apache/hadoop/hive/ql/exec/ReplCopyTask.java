@@ -107,7 +107,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       srcFiles.addAll(Arrays.asList(srcs));
       LOG.debug("ReplCopyTask numFiles:" + (srcFiles == null ? "null" : srcFiles.size()));
 
-      if (!FileUtils.mkdir(dstFs, toPath, conf)) {
+      boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+      if (!FileUtils.mkdir(dstFs, toPath, inheritPerms, conf)) {
         console.printError("Cannot make target directory: " + toPath.toString());
         return 2;
       }

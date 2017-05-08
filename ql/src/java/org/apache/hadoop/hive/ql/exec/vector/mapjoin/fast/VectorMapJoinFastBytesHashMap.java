@@ -107,9 +107,4 @@ public abstract class VectorMapJoinFastBytesHashMap
     // Share the same write buffers with our value store.
     keyStore = new VectorMapJoinFastKeyStore(valueStore.writeBuffers());
   }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize() + valueStore.getEstimatedMemorySize() + keyStore.getEstimatedMemorySize();
-  }
 }

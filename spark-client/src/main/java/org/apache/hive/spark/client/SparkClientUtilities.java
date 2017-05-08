@@ -83,8 +83,7 @@ public class SparkClientUtilities {
     try {
       if (StringUtils.indexOf(path, "file:/") == 0) {
         url = new URL(path);
-      } else if (StringUtils.indexOf(path, "hdfs:/") == 0
-          || StringUtils.indexOf(path, "viewfs:/") == 0) {
+      } else if (StringUtils.indexOf(path, "hdfs:/") == 0) {
         Path remoteFile = new Path(path);
         Path localFile =
             new Path(localTmpDir.getAbsolutePath() + File.separator + remoteFile.getName());

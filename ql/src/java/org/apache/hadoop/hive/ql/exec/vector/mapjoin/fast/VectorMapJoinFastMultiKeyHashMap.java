@@ -53,9 +53,4 @@ public class VectorMapJoinFastMultiKeyHashMap
         int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
     super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize();
-  }
 }

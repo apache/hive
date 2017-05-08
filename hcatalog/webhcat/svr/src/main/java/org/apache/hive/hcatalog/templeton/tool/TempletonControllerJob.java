@@ -81,14 +81,9 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     this.appConf = conf;
   }
 
-  private Job job = null;
+  private JobID submittedJobId;
 
   public String getSubmittedId() {
-    if (job == null ) {
-      return null;
-    }
-
-    JobID submittedJobId = job.getJobID();
     if (submittedJobId == null) {
       return null;
     } else {
@@ -124,7 +119,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
-    job = new Job(conf);
+    Job job = new Job(conf);
     job.setJarByClass(LaunchMapper.class);
     job.setJobName(TempletonControllerJob.class.getSimpleName());
     job.setMapperClass(LaunchMapper.class);
@@ -146,7 +141,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
 
     job.submit();
 
-    JobID submittedJobId = job.getJobID();
+    submittedJobId = job.getJobID();
     if(metastoreTokenStrForm != null) {
       //so that it can be cancelled later from CompleteDelegator
       DelegationTokenCache.getStringFormTokenCache().storeDelegationToken(

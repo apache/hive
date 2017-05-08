@@ -36,7 +36,7 @@ public class LlapDaemonConfiguration extends Configuration {
   public static final String[] SSL_DAEMON_CONFIGS = { "ssl-server.xml" };
 
   public LlapDaemonConfiguration() {
-    super(true); // Load the defaults.
+    super(false);
     for (String conf : DAEMON_CONFIGS) {
       addResource(conf);
     }

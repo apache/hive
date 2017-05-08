@@ -86,8 +86,7 @@ public class GenericUDFInFile extends GenericUDF {
     return
       poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.STRING ||
       poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.CHAR ||
-      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VARCHAR ||
-      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VOID;
+      poi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.VARCHAR;
   }
 
   @Override

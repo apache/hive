@@ -62,25 +62,25 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
         String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
         for (CounterGroup group : counters) {
           if (hiveCountersGroup.equals(group.getDisplayName())) {
-            console.printInfo(tezTask.getId() + " HIVE COUNTERS:", false);
+            console.printError(tezTask.getId() + " HIVE COUNTERS:");
             for (TezCounter counter : group) {
-              console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
+              console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
             }
           } else if (group.getName().equals(FileSystemCounter.class.getName())) {
-            console.printInfo(tezTask.getId() + " FILE SYSTEM COUNTERS:", false);
+            console.printError(tezTask.getId() + " FILE SYSTEM COUNTERS:");
             for (TezCounter counter : group) {
               // HDFS counters should be relatively consistent across test runs when compared to
               // local file system counters
               if (counter.getName().contains("HDFS")) {
-                console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
+                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
               }
             }
           } else if (group.getName().equals(LlapIOCounters.class.getName())) {
-            console.printInfo(tezTask.getId() + " LLAP IO COUNTERS:", false);
+            console.printError(tezTask.getId() + " LLAP IO COUNTERS:");
             List<String> testSafeCounters = LlapIOCounters.testSafeCounterNames();
             for (TezCounter counter : group) {
               if (testSafeCounters.contains(counter.getDisplayName())) {
-                console.printInfo("   " + counter.getDisplayName() + ": " + counter.getValue(), false);
+                console.printError("   " + counter.getDisplayName() + ": " + counter.getValue());
               }
             }
           }

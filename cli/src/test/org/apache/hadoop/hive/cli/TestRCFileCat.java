@@ -25,6 +25,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -75,7 +77,7 @@ public class TestRCFileCat {
     writer.close();
 
     RCFileCat fileCat = new RCFileCat();
-    fileCat.test=true;
+    RCFileCat.test=true;
     fileCat.setConf(new Configuration());
 
     // set fake input and output streams

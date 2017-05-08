@@ -1,5 +1,4 @@
 
-set hive.cbo.enable=false;
 
 
 CREATE TABLE srcbucket_mapjoin_part_1 (key INT, value STRING) PARTITIONED BY (part STRING) 

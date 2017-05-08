@@ -116,7 +116,7 @@ public class IncrementalObjectSizeEstimator {
           addToProcessing(byType, stack, fieldObj, fieldClass);
         }
       }
-      estimator.directSize = (int) JavaDataModel.alignUp(
+      estimator.directSize = JavaDataModel.alignUp(
           estimator.directSize, memoryModel.memoryAlign());
     }
   }
@@ -454,7 +454,7 @@ public class IncrementalObjectSizeEstimator {
           if (len != 0) {
             int elementSize = getPrimitiveSize(e.field.getType().getComponentType());
             arraySize += elementSize * len;
-            arraySize = (int) JavaDataModel.alignUp(arraySize, memoryModel.memoryAlign());
+            arraySize = JavaDataModel.alignUp(arraySize, memoryModel.memoryAlign());
           }
           referencedSize += arraySize;
           break;

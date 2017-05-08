@@ -61,7 +61,7 @@ public class LlapRegistryService extends AbstractService {
     if (hosts.startsWith("@")) {
       // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
       String appName = hosts.substring(1);
-      String userName = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, currentUser());
+      String userName = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
       String key = appName + "-" + userName;
       registry = yarnRegistries.get(key);
       if (registry == null || !registry.isInState(STATE.STARTED)) {
@@ -79,9 +79,6 @@ public class LlapRegistryService extends AbstractService {
     return registry;
   }
 
-  public static String currentUser() {
-    return RegistryUtils.currentUser();
-  }
 
   @Override
   public void serviceInit(Configuration conf) {

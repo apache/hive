@@ -76,8 +76,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.eclipse.jetty.rewrite.handler.Rule;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -379,8 +378,7 @@ public class LlapServiceDriver {
               LlapTezUtils.class, // llap-tez
               LlapInputFormat.class, // llap-server
               HiveInputFormat.class, // hive-exec
-              SslContextFactory.class, // hive-common (https deps)
-              Rule.class, // Jetty rewrite class
+              SslSocketConnector.class, // hive-common (https deps)
               RegistryUtils.ServiceRecordMarshal.class, // ZK registry
               // log4j2
               com.lmax.disruptor.RingBuffer.class, // disruptor

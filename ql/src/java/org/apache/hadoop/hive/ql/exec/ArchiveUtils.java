@@ -28,6 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.shims.HadoopShims;
 
 /**
  * ArchiveUtils.
@@ -45,7 +48,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  */
 @SuppressWarnings("nls")
 public final class ArchiveUtils {
-  public static final String ARCHIVING_LEVEL = "archiving_level";
+  private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class.getName());
+
+  public static String ARCHIVING_LEVEL = "archiving_level";
 
   /**
    * PartSpecInfo keeps fields and values extracted from partial partition info

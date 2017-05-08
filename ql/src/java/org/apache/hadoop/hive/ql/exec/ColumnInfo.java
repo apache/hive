@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -97,7 +96,7 @@ public class ColumnInfo implements Serializable {
     this.tabAlias = tabAlias;
     this.isVirtualCol = isVirtualCol;
     this.isHiddenVirtualCol = isHiddenVirtualCol;
-    setTypeName(getType().getTypeName());
+    this.typeName = getType().getTypeName();
   }
 
   public ColumnInfo(ColumnInfo columnInfo) {
@@ -115,7 +114,7 @@ public class ColumnInfo implements Serializable {
   }
 
   public void setTypeName(String typeName) {
-    this.typeName = StringInternUtils.internIfNotNull(typeName);
+    this.typeName = typeName;
   }
 
   public TypeInfo getType() {
@@ -161,7 +160,7 @@ public class ColumnInfo implements Serializable {
   }
 
   public void setAlias(String col_alias) {
-    alias = StringInternUtils.internIfNotNull(col_alias);
+    alias = col_alias;
   }
 
   public String getAlias() {

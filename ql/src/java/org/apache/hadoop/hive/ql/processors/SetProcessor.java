@@ -209,22 +209,17 @@ public class SetProcessor implements CommandProcessor {
       : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
   }
 
-  static String setConf(String varname, String key, String varvalue, boolean register)
-        throws IllegalArgumentException {
-    return setConf(SessionState.get(), varname, key, varvalue, register);
-  }
-
   /**
    * @return A console message that is not strong enough to fail the command (e.g. deprecation).
    */
-  static String setConf(SessionState ss, String varname, String key, String varvalue, boolean register)
+  static String setConf(String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     String result = null;
-    HiveConf conf = ss.getConf();
+    HiveConf conf = SessionState.get().getConf();
     String value = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
-        return ss.getHiveVariables();
+        return SessionState.get().getHiveVariables();
       }
     }).substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
@@ -251,7 +246,7 @@ public class SetProcessor implements CommandProcessor {
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if (!"spark".equals(value)) {
-        ss.closeSparkSession();
+        SessionState.get().closeSparkSession();
       }
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();
@@ -259,7 +254,7 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     if (register) {
-      ss.getOverriddenConfigurations().put(key, value);
+      SessionState.get().getOverriddenConfigurations().put(key, value);
     }
     return result;
   }

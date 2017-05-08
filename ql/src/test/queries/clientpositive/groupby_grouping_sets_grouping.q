@@ -1,6 +1,3 @@
-
--- SORT_QUERY_RESULTS
-
 CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1;
@@ -119,39 +116,3 @@ select key, value
 from T1
 group by key, value
 having grouping(key) = 0;
-
-explain
-select key, value, `grouping__id`, grouping(key, value)
-from T1
-group by cube(key, value);
-
-select key, value, `grouping__id`, grouping(key, value)
-from T1
-group by cube(key, value);
-
-explain
-select key, value, `grouping__id`, grouping(value, key)
-from T1
-group by cube(key, value);
-
-select key, value, `grouping__id`, grouping(value, key)
-from T1
-group by cube(key, value);
-
-explain
-select key, value, `grouping__id`, grouping(key, value)
-from T1
-group by rollup(key, value);
-
-select key, value, `grouping__id`, grouping(key, value)
-from T1
-group by rollup(key, value);
-
-explain
-select key, value, `grouping__id`, grouping(value, key)
-from T1
-group by rollup(key, value);
-
-select key, value, `grouping__id`, grouping(value, key)
-from T1
-group by rollup(key, value);

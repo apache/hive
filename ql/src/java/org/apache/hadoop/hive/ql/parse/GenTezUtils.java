@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
-import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.util.*;
 
@@ -96,8 +95,6 @@ public class GenTezUtils {
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
-    reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
-    reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
@@ -105,7 +102,6 @@ public class GenTezUtils {
       final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       // estimated number of reducers
       final int nReducers = reduceSink.getConf().getNumReducers();
-      // TODO# HERE
 
       // min we allow tez to pick
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
@@ -136,13 +132,11 @@ public class GenTezUtils {
     EdgeType edgeType = determineEdgeType(context.preceedingWork, reduceWork, reduceSink);
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
-          new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
+          new TezEdgeProperty(context.conf, edgeType, true,
               reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
     } else {
       edgeProp = new TezEdgeProperty(edgeType);
-      edgeProp.setSlowStart(reduceWork.isSlowStart());
     }
-    reduceWork.setEdgePropRef(edgeProp);
 
     tezWork.connect(
         context.preceedingWork,
@@ -270,14 +264,11 @@ public class GenTezUtils {
             }
           }
           // This TableScanOperator could be part of semijoin optimization.
-          Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
-                  context.parseContext.getRsToSemiJoinBranchInfo();
-          for (ReduceSinkOperator rs : rsToSemiJoinBranchInfo.keySet()) {
-            SemiJoinBranchInfo sjInfo = rsToSemiJoinBranchInfo.get(rs);
-            if (sjInfo.getTsOp() == orig) {
-              SemiJoinBranchInfo newSJInfo = new SemiJoinBranchInfo(
-                      (TableScanOperator)newRoot, sjInfo.getIsHint());
-              rsToSemiJoinBranchInfo.put(rs, newSJInfo);
+          Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap =
+                  context.parseContext.getRsOpToTsOpMap();
+          for (ReduceSinkOperator rs : rsOpToTsOpMap.keySet()) {
+            if (rsOpToTsOpMap.get(rs) == orig) {
+              rsOpToTsOpMap.put(rs, (TableScanOperator) newRoot);
             }
           }
         }
@@ -524,18 +515,19 @@ public class GenTezUtils {
     return EdgeType.SIMPLE_EDGE;
   }
 
-  public static void processDynamicSemiJoinPushDownOperator(
+  public static void processDynamicMinMaxPushDownOperator(
           GenTezProcContext procCtx, RuntimeValuesInfo runtimeValuesInfo,
           ReduceSinkOperator rs)
           throws SemanticException {
-    SemiJoinBranchInfo sjInfo = procCtx.parseContext.getRsToSemiJoinBranchInfo().get(rs);
+    TableScanOperator ts = procCtx.parseContext.getRsOpToTsOpMap().get(rs);
 
     List<BaseWork> rsWorkList = procCtx.childToWorkMap.get(rs);
-    if (sjInfo == null || rsWorkList == null) {
+    if (ts == null || rsWorkList == null) {
       // This happens when the ReduceSink's edge has been removed by cycle
       // detection logic. Nothing to do here.
       return;
     }
+    LOG.debug("ResduceSink " + rs + " to TableScan " + ts);
 
     if (rsWorkList.size() != 1) {
       StringBuilder sb = new StringBuilder();
@@ -547,9 +539,6 @@ public class GenTezUtils {
       }
       throw new SemanticException(rs + " belongs to multiple BaseWorks: " + sb.toString());
     }
-
-    TableScanOperator ts = sjInfo.getTsOp();
-    LOG.debug("ResduceSink " + rs + " to TableScan " + ts);
 
     BaseWork parentWork = rsWorkList.get(0);
     BaseWork childWork = procCtx.rootToWorkMap.get(ts);
@@ -621,7 +610,7 @@ public class GenTezUtils {
         skip = true;
       }
     }
-    context.getRsToSemiJoinBranchInfo().remove(rs);
+    context.getRsOpToTsOpMap().remove(rs);
   }
 
   private static class DynamicValuePredicateContext implements NodeProcessorCtx {

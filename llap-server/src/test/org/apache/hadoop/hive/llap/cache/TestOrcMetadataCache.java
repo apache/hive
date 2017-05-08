@@ -63,12 +63,8 @@ public class TestOrcMetadataCache {
     }
 
     @Override
-    public long tryEvictContiguousData(int allocationSize, int count) {
+    public int tryEvictContiguousData(int allocationSize, int count) {
       return 0;
-    }
-
-    @Override
-    public void debugDumpShort(StringBuilder sb) {
     }
   }
 
@@ -76,8 +72,9 @@ public class TestOrcMetadataCache {
     int allocs = 0;
 
     @Override
-    public void reserveMemory(long memoryToReserve) {
+    public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
       ++allocs;
+      return true;
     }
 
     @Override
@@ -95,12 +92,7 @@ public class TestOrcMetadataCache {
     }
 
     @Override
-    public long forceReservedMemory(int allocationSize, int count) {
-      return allocationSize * count;
-    }
-
-    @Override
-    public void debugDumpShort(StringBuilder sb) {
+    public void forceReservedMemory(int allocationSize, int count) {
     }
   }
 

@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 public class ASTBuilder {
 
@@ -271,23 +269,19 @@ public class ASTBuilder {
       type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE : HiveParser.KW_FALSE;
       break;
     case DATE: {
-      //Calcite Calendar is always GMT, Hive atm uses JVM local
-      final Calendar c = (Calendar) literal.getValue();
-      final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
+      val = literal.getValue();
       type = HiveParser.TOK_DATELITERAL;
       DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-      val = df.format(dt.toDateTime(DateTimeZone.getDefault()).toDate());
+      val = df.format(((Calendar) val).getTime());
       val = "'" + val + "'";
     }
       break;
     case TIME:
     case TIMESTAMP: {
-      //Calcite Calendar is always GMT, Hive atm uses JVM local
-      final Calendar c = (Calendar) literal.getValue();
-      final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
+      val = literal.getValue();
       type = HiveParser.TOK_TIMESTAMPLITERAL;
       DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-      val = df.format(dt.toDateTime(DateTimeZone.getDefault()).toDate());
+      val = df.format(((Calendar) val).getTime());
       val = "'" + val + "'";
     }
       break;

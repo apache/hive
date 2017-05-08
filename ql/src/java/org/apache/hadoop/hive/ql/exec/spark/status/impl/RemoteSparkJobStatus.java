@@ -67,9 +67,6 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
       return getAppID.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Exception e) {
       LOG.warn("Failed to get APP ID.", e);
-      if (Thread.interrupted()) {
-        error = e;
-      }
       return null;
     }
   }
@@ -189,9 +186,6 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   public JobHandle.State getRemoteJobState() {
-    if (error != null) {
-      return JobHandle.State.FAILED;
-    }
     return jobHandle.getState();
   }
 

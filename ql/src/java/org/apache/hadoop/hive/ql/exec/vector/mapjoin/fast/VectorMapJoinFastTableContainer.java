@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -27,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
+import org.apache.hadoop.hive.ql.exec.tez.HashTableLoader;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
  * HashTableLoader for Tez constructs the hashtable from records read from
@@ -45,7 +46,7 @@ import org.apache.hadoop.io.Writable;
  */
 public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContainer {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastTableContainer.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(HashTableLoader.class.getName());
 
   private final MapJoinDesc desc;
   private final Configuration hconf;
@@ -215,17 +216,6 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   @Override
   public int size() {
     return vectorMapJoinFastHashTable.size();
-  }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    JavaDataModel jdm = JavaDataModel.get();
-    long size = 0;
-    size += vectorMapJoinFastHashTable.getEstimatedMemorySize();
-    size += (4 * jdm.primitive1());
-    size += (2 * jdm.object());
-    size += (jdm.primitive2());
-    return size;
   }
 
   @Override

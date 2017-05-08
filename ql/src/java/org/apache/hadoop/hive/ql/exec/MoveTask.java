@@ -153,7 +153,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         throw new HiveException("Target " + targetPath + " is not a local directory.");
       }
     } else {
-      if (!FileUtils.mkdir(dstFs, targetPath, conf)) {
+      if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
         throw new HiveException("Failed to create local target directory " + targetPath);
       }
     }
@@ -182,6 +182,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
+        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
+      }
     }
     return deletePath;
   }
@@ -415,7 +418,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
         + " into " + tbd.getTable().getTableName());
     boolean isCommitMmWrite = tbd.isCommitMmWrite();
-    db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
+    db.loadSinglePartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
         (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&

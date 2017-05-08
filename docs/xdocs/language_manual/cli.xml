@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<document>
+
+  <properties>
+    <title>Hadoop Hive- Command Line Interface (CLI)</title>
+    <author email="hive-user@hadoop.apache.org">Hadoop Hive Documentation Team</author>
+  </properties>
+
+  <body>
+<h3>Hive Cli</h3>
+<section name="Hive Command line Options" href="command_line_options">
+
+<p>Usage:</p>
+
+<source><![CDATA[Usage: hive [-hiveconf x=y]* [<-i filename>]* [<-f filename>|<-e query-string>] [-S]
+
+  -i <filename>             Initialization Sql from file (executed automatically and silently before any other commands)
+  -e 'quoted query string'  Sql from command line
+  -f <filename>             Sql from file
+  -S                        Silent mode in interactive shell where only data is emitted
+  -hiveconf x=y             Use this to set hive/hadoop configuration variables. 
+  
+   -e and -f cannot be specified together. In the absence of these options, interactive shell is started.  However, -i can be used with any other options.
+
+   To see this usage help, run hive -h
+]]></source>
+
+<ul>
+<li>Example of running a Query from the command line
+<source><![CDATA[$HIVE_HOME/bin/hive -e 'select a.col from tab1 a'
+   ]]></source>
+</li>
+
+<li>Example of setting hive configuration variables 
+<source><![CDATA[$HIVE_HOME/bin/hive -e 'select a.col from tab1 a' -hiveconf hive.exec.scratchdir=/home/my/hive_scratch  -hiveconf mapred.reduce.tasks=32
+   ]]></source>
+</li>
+
+<li>Example of dumping data out from a query into a file using silent mode 
+<source><![CDATA[$HIVE_HOME/bin/hive -S -e 'select a.col from tab1 a' > a.txt
+]]></source>
+</li>
+
+<li>Example of running a script non-interactively
+<source><![CDATA[$HIVE_HOME/bin/hive -f /home/my/hive-script.sql
+]]></source>
+</li>
+
+<li>Example of running an initialization script before entering interactive mode 
+<source><![CDATA[$HIVE_HOME/bin/hive -i /home/my/hive-init.sql
+]]></source>
+</li>
+
+</ul>
+</section>
+
+<section name="hiverc file " href="hiverc">
+<p>
+The cli when invoked without the -i option will attempt to load HIVE_HOME/bin/.hiverc and $HOME/.hiverc as initialization files.
+</p>
+</section>
+
+<section name="Hive interactive shell commands" href="hive_interactive_shell_commands">
+When $HIVE_HOME/bin/hive is run without either -e/-f option it enters interactive shell mode.
+
+Use ";" (semicolon) to terminate commands. Comments in scripts can be specified using the "--" prefix. 
+
+<table border="1">
+
+<tr>
+<td><b>Command</b></td>
+<td><b>Description</b></td>
+</tr>
+
+<tr>
+<td>quit</td>
+<td>Use quit or exit to leave the interactive shell.</td>
+</tr>
+
+<tr>
+<td>set key=value</td>
+<td>Use this to set value of particular configuration variable. One thing to note here is that if you misspell the variable name, cli will not show an error.</td>
+</tr>
+
+<tr>
+<td>set</td>
+<td>This will print a list of configuration variables that are overridden by user or hive.</td>
+</tr>
+
+
+<tr>
+<td>set -v </td>
+<td>This will print all hadoop and hive configuration variables.</td>
+</tr>
+
+
+<tr>
+<td>add FILE [file] [file]*</td>
+<td>Adds a file to the list of resources</td>
+</tr>
+
+<tr>
+<td>list FILE</td>
+<td>list all the files added to the distributed cache</td>
+</tr>
+
+<tr>
+<td>list FILE [file]*</td>
+<td>Check if given resources are already added to distributed cache</td>
+</tr>
+
+<tr>
+<td>! [cmd]</td>
+<td>Executes a shell command from the hive shell</td>
+</tr>
+
+<tr>
+<td>dfs [dfs cmd]</td>
+<td>Executes a dfs command from the hive shell</td>
+</tr>
+
+<tr>
+<td>[query]</td>
+<td>Executes a hive query and prints results to standard out</td>
+</tr>
+
+<tr>
+<td>source FILE</td>
+<td>Used to execute a script file inside the CLI.</td>
+</tr>
+
+</table>
+
+Sample Usage:
+
+<source><![CDATA[  hive> set  mapred.reduce.tasks=32;
+  hive> set;
+  hive> select a.* from tab1;
+  hive> !ls;
+  hive> dfs -ls;
+]]></source>
+
+</section>
+
+<section name="Logging" href="logging">
+<p>
+Hive uses log4j for logging. These logs are not emitted to the standard output by default but are instead captured to a log file specified by Hive's log4j properties file. By default Hive will use <i>hive-log4j2.properties</i> in the <i>conf/</i> directory of the hive installation which writes out logs to <i>/tmp/$USER/hive.log</i> and uses the <i>WARN</i> level.
+</p>
+<p>
+It is often desirable to emit the logs to the standard output and/or change the logging level for debugging purposes. These can be done from the command line as follows: </p>
+
+<source><![CDATA[$HIVE_HOME/bin/hive -hiveconf hive.root.logger=INFO,console ]]></source>
+<p>
+<i>hive.root.logger</i> specifies the logging level as well as the log destination. Specifying console as the target sends the logs to the standard error (instead of the log file).
+</p>
+</section>
+
+<section name="Hive Resources" href="Hive Resources">
+<p>
+Hive can manage the addition of resources to a session where those resources need to be made available at query execution time. Any locally accessible file can be added to the session. Once a file is added to a session, hive query can refer to this file by its name (in map/reduce/transform clauses) and this file is available locally at execution time on the entire hadoop cluster. Hive uses Hadoop's Distributed Cache to distribute the added files to all the machines in the cluster at query execution time.</p>
+
+<source><![CDATA[   ADD { FILE[S] | JAR[S] | ARCHIVE[S] } <filepath1> [<filepath2>]*
+   LIST { FILE[S] | JAR[S] | ARCHIVE[S] } [<filepath1> <filepath2> ..]
+   DELETE { FILE[S] | JAR[S] | ARCHIVE[S] } [<filepath1> <filepath2> ..] ]]></source>
+
+<ul>
+<li>FILE resources are just added to the distributed cache. Typically, this might be something like a transform script to be executed.</li>
+<li>JAR resources are also added to the Java classpath. This is required in order to reference objects they contain such as UDF's. </li>
+<li>ARCHIVE resources are automatically unarchived as part of distributing them.  </li>
+</ul>
+
+<p>Example</p>
+
+<source><![CDATA[hive> add FILE /tmp/tt.py;
+hive> list FILES;
+/tmp/tt.py
+hive> from networks a  MAP a.networkid USING 'python tt.py' as nn where a.ds = '2009-01-04' limit  10; ]]></source>
+
+<p>It is not neccessary to add files to the session if the files used in a transform script are already available on all machines in the hadoop cluster using the same path name. For example: </p>
+
+<ul>
+<li>... MAP a.networkid USING 'wc -l' ...: here wc is an executable available on all machines</li>
+<li>... MAP a.networkid USING '/home/nfsserv1/hadoopscripts/tt.py' ...: here tt.py may be accessible via a nfs mount point that's configured identically on all the cluster nodes. </li>
+</ul>
+
+
+</section>
+</body>
+</document>

@@ -339,7 +339,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
   }
 
   @Override
-  public long getAggregationBufferFixedSize() {
+  public int getAggregationBufferFixedSize() {
     if (aggBufferSize < 0) {
       // Not pretty, but we need a way to get the size
       try {

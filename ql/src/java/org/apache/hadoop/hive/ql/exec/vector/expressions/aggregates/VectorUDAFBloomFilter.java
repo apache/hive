@@ -383,7 +383,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
   }
 
   @Override
-  public long getAggregationBufferFixedSize() {
+  public int getAggregationBufferFixedSize() {
     if (bitSetSize < 0) {
       // Not pretty, but we need a way to get the size
       try {
@@ -396,7 +396,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
     // BloomFilter: object(BitSet: object(data: long[]), numBits: int, numHashFunctions: int)
     JavaDataModel model = JavaDataModel.get();
-    long bloomFilterSize = JavaDataModel.alignUp(model.object() + model.lengthForLongArrayOfSize(bitSetSize),
+    int bloomFilterSize = JavaDataModel.alignUp(model.object() + model.lengthForLongArrayOfSize(bitSetSize),
         model.memoryAlign());
     return JavaDataModel.alignUp(
         model.object() + bloomFilterSize + model.primitive1() + model.primitive1(),

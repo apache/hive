@@ -75,17 +75,19 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * @param add partition event
+   * @throws MetaException
+   */
+
+  /**
    * @param tableEvent alter table event
    * @throws MetaException
    */
   public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
   }
 
-  /**
-   * @param partitionEvent add partition event
-   * @throws MetaException
-   */
-  public void onAddPartition (AddPartitionEvent partitionEvent) throws MetaException {
+  public void onAddPartition (AddPartitionEvent partitionEvent)
+      throws MetaException {
   }
 
   /**

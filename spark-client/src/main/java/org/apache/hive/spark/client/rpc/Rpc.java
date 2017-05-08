@@ -237,9 +237,8 @@ public class Rpc implements Closeable {
     // Note: this does not work for embedded channels.
     channel.pipeline().addLast("monitor", new ChannelInboundHandlerAdapter() {
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        public void channelInactive(ChannelHandlerContext ctx) {
           close();
-          super.channelInactive(ctx);
         }
     });
   }

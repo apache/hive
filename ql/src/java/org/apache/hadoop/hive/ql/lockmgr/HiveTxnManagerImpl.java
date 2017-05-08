@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 abstract class HiveTxnManagerImpl implements HiveTxnManager {
 
   protected HiveConf conf;
+  private boolean isAutoCommit = true;//true by default; matches JDBC spec
 
   void setHiveConf(HiveConf c) {
     conf = c;
@@ -67,6 +68,16 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
     destruct();
   }
   @Override
+  public void setAutoCommit(boolean autoCommit) throws LockException {
+    isAutoCommit = autoCommit;
+  }
+
+  @Override
+  public boolean getAutoCommit() {
+    return isAutoCommit;
+  }
+
+  @Override
   public int lockTable(Hive db, LockTableDesc lockTbl) throws HiveException {
     HiveLockManager lockMgr = getAndCheckLockManager();
 
@@ -82,8 +93,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
         new HiveLockObjectData(lockTbl.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
             "EXPLICIT",
-            lockTbl.getQueryStr(),
-            conf);
+            lockTbl.getQueryStr());
 
     if (partSpec == null) {
       HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
@@ -141,7 +151,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
     HiveLockObjectData lockData =
         new HiveLockObjectData(lockDb.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
-            "EXPLICIT", lockDb.getQueryStr(), conf);
+            "EXPLICIT", lockDb.getQueryStr());
 
     HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
     if (lck == null) {
@@ -192,13 +202,4 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
 
     return lockMgr;
   }
-  @Override
-  public boolean recordSnapshot(QueryPlan queryPlan) {
-    return false;
-  }
-  @Override
-  public boolean isImplicitTransactionOpen() {
-    return true;
-  }
-
 }

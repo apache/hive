@@ -51,7 +51,7 @@ public class PigDelegator extends LauncherDelegator {
                boolean usesHcatalog, String completedUrl, boolean enablelog,
                Boolean enableJobReconnect)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
+    ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(execute,
       srcFile, pigArgs,

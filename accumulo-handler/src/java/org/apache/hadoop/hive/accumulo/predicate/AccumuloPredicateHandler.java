@@ -1,11 +1,10 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -30,7 +29,6 @@ import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.data.Range;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.ColumnMapper;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloColumnMapping;
 import org.apache.hadoop.hive.accumulo.predicate.compare.CompareOp;
@@ -88,13 +86,13 @@ public class AccumuloPredicateHandler {
   private static final List<Range> TOTAL_RANGE = Collections.singletonList(new Range());
 
   private static AccumuloPredicateHandler handler = new AccumuloPredicateHandler();
-  private static Map<String, Class<? extends CompareOp>> compareOps = Maps.newHashMap();
-  private static Map<String, Class<? extends PrimitiveComparison>> pComparisons = Maps.newHashMap();
+  private static Map<String,Class<? extends CompareOp>> compareOps = Maps.newHashMap();
+  private static Map<String,Class<? extends PrimitiveComparison>> pComparisons = Maps.newHashMap();
 
   // Want to start sufficiently "high" enough in the iterator stack
   private static int iteratorCount = 50;
 
-  private static final Logger LOG = LoggerFactory.getLogger(AccumuloPredicateHandler.class);
+  private static final Logger log = LoggerFactory.getLogger(AccumuloPredicateHandler.class);
   static {
     compareOps.put(GenericUDFOPEqual.class.getName(), Equal.class);
     compareOps.put(GenericUDFOPNotEqual.class.getName(), NotEqual.class);
@@ -138,9 +136,8 @@ public class AccumuloPredicateHandler {
    */
   public Class<? extends CompareOp> getCompareOpClass(String udfType)
       throws NoSuchCompareOpException {
-    if (!compareOps.containsKey(udfType)) {
+    if (!compareOps.containsKey(udfType))
       throw new NoSuchCompareOpException("Null compare op for specified key: " + udfType);
-    }
     return compareOps.get(udfType);
   }
 
@@ -170,10 +167,9 @@ public class AccumuloPredicateHandler {
    */
   public Class<? extends PrimitiveComparison> getPrimitiveComparisonClass(String type)
       throws NoSuchPrimitiveComparisonException {
-    if (!pComparisons.containsKey(type)) {
+    if (!pComparisons.containsKey(type))
       throw new NoSuchPrimitiveComparisonException("Null primitive comparison for specified key: "
           + type);
-    }
     return pComparisons.get(type);
   }
 
@@ -200,8 +196,7 @@ public class AccumuloPredicateHandler {
   /**
    * Loop through search conditions and build ranges for predicates involving rowID column, if any.
    */
-  public List<Range> getRanges(Configuration conf, ColumnMapper columnMapper)
-      throws SerDeException {
+  public List<Range> getRanges(Configuration conf, ColumnMapper columnMapper) throws SerDeException {
     if (!columnMapper.hasRowIdMapping()) {
       return TOTAL_RANGE;
     }
@@ -223,16 +218,16 @@ public class AccumuloPredicateHandler {
       return TOTAL_RANGE;
     }
 
-    Object result = generateRanges(conf, columnMapper, hiveRowIdColumnName, root);
+    Object result = generateRanges(columnMapper, hiveRowIdColumnName, root);
 
     if (null == result) {
-      LOG.info("Calculated null set of ranges, scanning full table");
+      log.info("Calculated null set of ranges, scanning full table");
       return TOTAL_RANGE;
     } else if (result instanceof Range) {
-      LOG.info("Computed a single Range for the query: " + result);
+      log.info("Computed a single Range for the query: " + result);
       return Collections.singletonList((Range) result);
     } else if (result instanceof List) {
-      LOG.info("Computed a collection of Ranges for the query: " + result);
+      log.info("Computed a collection of Ranges for the query: " + result);
       @SuppressWarnings("unchecked")
       List<Range> ranges = (List<Range>) result;
       return ranges;
@@ -242,11 +237,9 @@ public class AccumuloPredicateHandler {
   }
 
   /**
-   * Encapsulates the traversal over some {@link ExprNodeDesc} tree for the generation of Accumuluo.
-   * Ranges using expressions involving the Accumulo rowid-mapped Hive column.
+   * Encapsulates the traversal over some {@link ExprNodeDesc} tree for the generation of Accumuluo
+   * Ranges using expressions involving the Accumulo rowid-mapped Hive column
    *
-   * @param conf
-   *          Hadoop configuration
    * @param columnMapper
    *          Mapping of Hive to Accumulo columns for the query
    * @param hiveRowIdColumnName
@@ -256,16 +249,15 @@ public class AccumuloPredicateHandler {
    * @return An object representing the result from the ExprNodeDesc tree traversal using the
    *         AccumuloRangeGenerator
    */
-  protected Object generateRanges(Configuration conf, ColumnMapper columnMapper,
-                                  String hiveRowIdColumnName, ExprNodeDesc root) {
-    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(conf, handler,
+  protected Object generateRanges(ColumnMapper columnMapper, String hiveRowIdColumnName, ExprNodeDesc root) {
+    AccumuloRangeGenerator rangeGenerator = new AccumuloRangeGenerator(handler,
         columnMapper.getRowIdMapping(), hiveRowIdColumnName);
     Dispatcher disp = new DefaultRuleDispatcher(rangeGenerator,
-        Collections.<Rule, NodeProcessor> emptyMap(), null);
+        Collections.<Rule,NodeProcessor> emptyMap(), null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
-    List<Node> roots = new ArrayList<Node>();
+    ArrayList<Node> roots = new ArrayList<Node>();
     roots.add(root);
-    HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
+    HashMap<Node,Object> nodeOutput = new HashMap<Node,Object>();
 
     try {
       ogw.startWalking(roots, nodeOutput);
@@ -290,12 +282,9 @@ public class AccumuloPredicateHandler {
     boolean shouldPushdown = conf.getBoolean(AccumuloSerDeParameters.ITERATOR_PUSHDOWN_KEY,
         AccumuloSerDeParameters.ITERATOR_PUSHDOWN_DEFAULT);
     if (!shouldPushdown) {
-      LOG.info("Iterator pushdown is disabled for this table");
+      log.info("Iterator pushdown is disabled for this table");
       return itrs;
     }
-
-    boolean binaryEncodedRow = ColumnEncoding.BINARY.getName().
-        equalsIgnoreCase(conf.get(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE));
 
     int rowIdOffset = columnMapper.getRowIdOffset();
     String[] hiveColumnNamesArr = conf.getStrings(serdeConstants.LIST_COLUMNS);
@@ -317,12 +306,11 @@ public class AccumuloPredicateHandler {
       if (hiveRowIdColumnName == null || !hiveRowIdColumnName.equals(col)) {
         HiveAccumuloColumnMapping mapping = (HiveAccumuloColumnMapping) columnMapper
             .getColumnMappingForHiveColumn(hiveColumnNames, col);
-        itrs.add(toSetting(mapping, sc, binaryEncodedRow));
+        itrs.add(toSetting(mapping, sc));
       }
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("num iterators = " + itrs.size());
-    }
+    if (log.isInfoEnabled())
+      log.info("num iterators = " + itrs.size());
     return itrs;
   }
 
@@ -334,19 +322,15 @@ public class AccumuloPredicateHandler {
    *          ColumnMapping to filter
    * @param sc
    *          IndexSearchCondition
-   * @param binaryEncodedValues
-   *          flag for binary encodedValues
    * @return IteratorSetting
    * @throws SerDeException
    */
   public IteratorSetting toSetting(HiveAccumuloColumnMapping accumuloColumnMapping,
-      IndexSearchCondition sc, boolean binaryEncodedValues) throws SerDeException {
+      IndexSearchCondition sc) throws SerDeException {
     iteratorCount++;
     final IteratorSetting is = new IteratorSetting(iteratorCount,
-        PrimitiveComparisonFilter.FILTER_PREFIX + iteratorCount,
-        PrimitiveComparisonFilter.class);
-    final String type =  binaryEncodedValues ? sc.getColumnDesc().getTypeString()
-                                             : ColumnEncoding.STRING.getName();
+        PrimitiveComparisonFilter.FILTER_PREFIX + iteratorCount, PrimitiveComparisonFilter.class);
+    final String type = sc.getColumnDesc().getTypeString();
     final String comparisonOpStr = sc.getComparisonOp();
 
     PushdownTuple tuple;
@@ -371,9 +355,8 @@ public class AccumuloPredicateHandler {
 
   public ExprNodeDesc getExpression(Configuration conf) {
     String filteredExprSerialized = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-    if (filteredExprSerialized == null) {
+    if (filteredExprSerialized == null)
       return null;
-    }
 
     return SerializationUtilities.deserializeExpression(filteredExprSerialized);
   }
@@ -392,9 +375,8 @@ public class AccumuloPredicateHandler {
     }
     IndexPredicateAnalyzer analyzer = newAnalyzer(conf);
     ExprNodeDesc residual = analyzer.analyzePredicate(filterExpr, sConditions);
-    if (residual != null) {
+    if (residual != null)
       throw new RuntimeException("Unexpected residual predicate: " + residual.getExprString());
-    }
     return sConditions;
   }
 
@@ -412,7 +394,8 @@ public class AccumuloPredicateHandler {
     ExprNodeDesc residualPredicate = analyzer.analyzePredicate(desc, sConditions);
 
     if (sConditions.size() == 0) {
-      LOG.info("nothing to decompose. Returning");
+      if (log.isInfoEnabled())
+        log.info("nothing to decompose. Returning");
       return null;
     }
 

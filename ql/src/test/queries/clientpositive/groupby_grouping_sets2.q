@@ -1,9 +1,5 @@
-set hive.explain.user=false;
-set hive.cli.print.header=true;
 set hive.mapred.mode=nonstrict;
 set hive.new.job.grouping.set.cardinality=2;
-
--- SORT_QUERY_RESULTS
 
 CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE; 
 

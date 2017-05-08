@@ -391,7 +391,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       throw new MetaException("Temp table path not set for " + tbl.getTableName());
     } else {
       if (!wh.isDir(tblPath)) {
-        if (!wh.mkdirs(tblPath)) {
+        if (!wh.mkdirs(tblPath, true)) {
           throw new MetaException(tblPath
               + " is not a directory or unable to create one");
         }

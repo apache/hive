@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.Operator;
+
 public class AbstractVectorDesc implements VectorDesc {
 
-  private static final long serialVersionUID = 1L;
+  private static long serialVersionUID = 1L;
 
   private Class<?> vectorOpClass;
 

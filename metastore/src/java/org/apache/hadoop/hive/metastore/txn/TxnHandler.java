@@ -52,7 +52,6 @@ import javax.sql.DataSource;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -148,7 +147,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static final private Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
   static private DataSource connPool;
-  private static DataSource connPoolMutex;
   static private boolean doRetryOnConnPool = false;
   
   private enum OpertaionType {
@@ -205,8 +203,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private int deadlockCnt;
   private long deadlockRetryInterval;
   protected HiveConf conf;
-  private static DatabaseProduct dbProduct;
-  private static SQLGenerator sqlGenerator;
+  protected DatabaseProduct dbProduct;
+  private SQLGenerator sqlGenerator;
 
   // (End user) Transaction timeout, in milliseconds.
   private long timeout;
@@ -225,6 +223,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   private final static ConcurrentHashMap<String, Semaphore> derbyKey2Lock = new ConcurrentHashMap<>();
   private static final String hostname = ServerUtils.hostname();
+  private static volatile boolean dumpConfig = true;
 
   // Private methods should never catch SQLException and then throw MetaException.  The public
   // methods depend on SQLException coming back so they can detect and handle deadlocks.  Private
@@ -248,36 +247,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     checkQFileTestHack();
 
-    synchronized (TxnHandler.class) {
-      if (connPool == null) {
-        //only do this once per JVM; useful for support
-        LOG.info(HiveConfUtil.dumpConfig(conf).toString());
-
-        Connection dbConn = null;
-        // Set up the JDBC connection pool
-        try {
-          int maxPoolSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_MAX_CONNECTIONS);
-          long getConnectionTimeoutMs = 30000;
-          connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
-          /*the mutex pools should ideally be somewhat larger since some operations require 1
-           connection from each pool and we want to avoid taking a connection from primary pool
-           and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
-           to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
-           connection from connPool first, then connPoolMutex.  All others, go in the opposite
-           order (not very elegant...).  So number of connection requests for connPoolMutex cannot
-           exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-          connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length, getConnectionTimeoutMs);
-          dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-          determineDatabaseProduct(dbConn);
-          sqlGenerator = new SQLGenerator(dbProduct, conf);
-        } catch (SQLException e) {
-          String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
-          LOG.error(msg);
-          throw new RuntimeException(e);
-        } finally {
-          closeDbConn(dbConn);
-        }
-      }
+    Connection dbConn = null;
+    // Set up the JDBC connection pool
+    try {
+      setupJdbcConnectionPool(conf);
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      determineDatabaseProduct(dbConn);
+      sqlGenerator = new SQLGenerator(dbProduct, conf);
+    } catch (SQLException e) {
+      String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
+      LOG.error(msg);
+      throw new RuntimeException(e);
+    }
+    finally {
+      closeDbConn(dbConn);
     }
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -287,6 +270,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     retryLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
     maxOpenTxns = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_MAX_OPEN_TXNS);
+    if(dumpConfig) {
+      LOG.info(HiveConfUtil.dumpConfig(conf).toString());
+      //only do this once per JVM; useful for support
+      dumpConfig = false;
+    }
   }
   @Override
   @RetrySemantics.ReadOnly
@@ -379,7 +367,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         /**
          * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
-         */
+\         */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
@@ -395,27 +383,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        List<Long> openList = new ArrayList<Long>();
+        Set<Long> openList = new HashSet<Long>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm + " order by txn_id";
+        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm;
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         long minOpenTxn = Long.MAX_VALUE;
-        BitSet abortedBits = new BitSet();
         while (rs.next()) {
           long txnId = rs.getLong(1);
           openList.add(txnId);
           char c = rs.getString(2).charAt(0);
           if(c == TXN_OPEN) {
             minOpenTxn = Math.min(minOpenTxn, txnId);
-          } else if (c == TXN_ABORTED) {
-            abortedBits.set(openList.size() - 1);
           }
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
-        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList, byteBuffer);
+        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList);
         if(minOpenTxn < Long.MAX_VALUE) {
           otr.setMin_open_txn(minOpenTxn);
         }
@@ -860,7 +844,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
-   * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
+   * perform an operation on 1 connection and immediately get another fron the pool, the 2nd one
    * doesn't see results of the first.
    * 
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
@@ -997,13 +981,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   }
                   break;
                 case SELECT:
-                  updateTxnComponents = false;
-                  break;
-                case NO_TXN:
-                  /*this constant is a bit of a misnomer since we now always have a txn context.  It
-                   just means the operation is such that we don't care what tables/partitions it
-                   affected as it doesn't trigger a compaction or conflict detection.  A better name
-                   would be NON_TRANSACTIONAL.*/
                   updateTxnComponents = false;
                   break;
                 default:
@@ -1957,10 +1934,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   }
 
-  Connection getDbConn(int isolationLevel) throws SQLException {
-    return getDbConn(isolationLevel, connPool);
-  }
-  private Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
+  protected Connection getDbConn(int isolationLevel) throws SQLException {
     int rc = doRetryOnConnPool ? 10 : 1;
     Connection dbConn = null;
     while (true) {
@@ -2483,14 +2457,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       response.setLockid(extLockId);
 
       LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
-      Savepoint save = dbConn.setSavepoint();
+      Savepoint save = dbConn.setSavepoint();//todo: get rid of this
       StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
         "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
         "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
 
       Set<String> strings = new HashSet<String>(locksBeingChecked.size());
 
-      //This the set of entities that the statement represented by extLockId wants to update
+      //This the set of entities that the statement represnted by extLockId wants to update
       List<LockInfo> writeSet = new ArrayList<>();
 
       for (LockInfo info : locksBeingChecked) {
@@ -3157,7 +3131,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static synchronized DataSource setupJdbcConnectionPool(HiveConf conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
+  private static synchronized void setupJdbcConnectionPool(HiveConf conf) throws SQLException {
+    if (connPool != null) return;
+
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
     String user = getMetastoreJdbcUser(conf);
     String passwd = getMetastoreJdbcPasswd(conf);
@@ -3167,40 +3143,33 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
       config.setJdbcUrl(driverUrl);
-      //if we are waiting for connection for a long time, something is really wrong
+      //if we are waiting for connection for 60s, something is really wrong
       //better raise an error than hang forever
-      //see DefaultConnectionStrategy.getConnectionInternal()
-      config.setConnectionTimeoutInMs(getConnectionTimeoutMs);
-      config.setMaxConnectionsPerPartition(maxPoolSize);
+      config.setConnectionTimeoutInMs(60000);
+      config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
       config.setUser(user);
       config.setPassword(passwd);
+      connPool = new BoneCPDataSource(config);
       doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
-      return new BoneCPDataSource(config);
     } else if ("dbcp".equals(connectionPooler)) {
-      GenericObjectPool objectPool = new GenericObjectPool();
-      //https://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/impl/GenericObjectPool.html#setMaxActive(int)
-      objectPool.setMaxActive(maxPoolSize);
-      objectPool.setMaxWait(getConnectionTimeoutMs);
+      ObjectPool objectPool = new GenericObjectPool();
       ConnectionFactory connFactory = new DriverManagerConnectionFactory(driverUrl, user, passwd);
       // This doesn't get used, but it's still necessary, see
       // http://svn.apache.org/viewvc/commons/proper/dbcp/branches/DBCP_1_4_x_BRANCH/doc/ManualPoolingDataSourceExample.java?view=markup
       PoolableConnectionFactory poolConnFactory =
           new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
-      return new PoolingDataSource(objectPool);
+      connPool = new PoolingDataSource(objectPool);
     } else if ("hikaricp".equals(connectionPooler)) {
       HikariConfig config = new HikariConfig();
-      config.setMaximumPoolSize(maxPoolSize);
       config.setJdbcUrl(driverUrl);
       config.setUsername(user);
       config.setPassword(passwd);
-      //https://github.com/brettwooldridge/HikariCP
-      config.setConnectionTimeout(getConnectionTimeoutMs);
 
-      return new HikariDataSource(config);
+      connPool = new HikariDataSource(config);
     } else if ("none".equals(connectionPooler)) {
       LOG.info("Choosing not to pool JDBC connections");
-      return new NoPoolConnectionPool(conf);
+      connPool = new NoPoolConnectionPool(conf);
     } else {
       throw new RuntimeException("Unknown JDBC connection pooling " + connectionPooler);
     }
@@ -3458,7 +3427,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         String sqlStmt = sqlGenerator.addForUpdateClause("select MT_COMMENT from AUX_TABLE where MT_KEY1=" + quoteString(key) + " and MT_KEY2=0");
         lockInternal();
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         if(LOG.isDebugEnabled()) {
           LOG.debug("About to execute SQL: " + sqlStmt);

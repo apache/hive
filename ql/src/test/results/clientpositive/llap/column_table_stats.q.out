@@ -295,7 +295,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	11624               
@@ -336,8 +335,8 @@ STAGE PLANS:
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
-                    outputColumnNames: key, value, ds, hr
+                    expressions: ds (type: string), hr (type: string), key (type: string), value (type: string)
+                    outputColumnNames: ds, hr, key, value
                     Statistics: Num rows: 58 Data size: 32968 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)
@@ -549,7 +548,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
 	totalSize           	11624               
@@ -712,7 +710,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	11624               
@@ -753,8 +750,8 @@ STAGE PLANS:
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
-                    outputColumnNames: key, value, ds, hr
+                    expressions: ds (type: string), hr (type: string), key (type: string), value (type: string)
+                    outputColumnNames: ds, hr, key, value
                     Statistics: Num rows: 58 Data size: 32968 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)
@@ -966,7 +963,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
 	totalSize           	11624               
@@ -1129,7 +1125,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	11624               
@@ -1170,8 +1165,8 @@ STAGE PLANS:
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
-                    expressions: key (type: string), value (type: string), ds (type: string)
-                    outputColumnNames: key, value, ds
+                    expressions: ds (type: string), key (type: string), value (type: string)
+                    outputColumnNames: ds, key, value
                     Statistics: Num rows: 29 Data size: 11148 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 16), compute_stats(value, 16)
@@ -1330,7 +1325,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	11624               

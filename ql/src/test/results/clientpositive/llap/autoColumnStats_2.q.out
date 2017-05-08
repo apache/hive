@@ -253,8 +253,8 @@ POSTHOOK: query: insert into table b select NULL, NULL from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key EXPRESSION []
-POSTHOOK: Lineage: b.value EXPRESSION []
+POSTHOOK: Lineage: b.key SIMPLE []
+POSTHOOK: Lineage: b.value SIMPLE []
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
@@ -1079,7 +1079,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   

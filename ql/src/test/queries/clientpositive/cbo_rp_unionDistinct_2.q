@@ -78,7 +78,6 @@ select key as key, value from u3
 
 drop view if exists v;
 
-set hive.cbo.returnpath.hiveop=false;
 create view v as select distinct * from 
 (
 select distinct * from u1

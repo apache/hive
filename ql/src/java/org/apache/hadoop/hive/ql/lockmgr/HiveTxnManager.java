@@ -72,7 +72,7 @@ public interface HiveTxnManager {
 
   /**
    * Acquire all of the locks needed by a query.  If used with a query that
-   * requires transactions, this should be called after {@link #openTxn(Context, String)}.
+   * requires transactions, this should be called after {@link #openTxn(String)}.
    * A list of acquired locks will be stored in the
    * {@link org.apache.hadoop.hive.ql.Context} object and can be retrieved
    * via {@link org.apache.hadoop.hive.ql.Context#getHiveLocks}.
@@ -208,13 +208,17 @@ public interface HiveTxnManager {
   boolean supportsAcid();
 
   /**
-   * For resources that support MVCC, the state of the DB must be recorded for the duration of the
-   * operation/transaction.  Returns {@code true} if current statment needs to do this.
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#setAutoCommit(boolean)
    */
-  boolean recordSnapshot(QueryPlan queryPlan);
+  void setAutoCommit(boolean autoCommit) throws LockException;
 
-  boolean isImplicitTransactionOpen();
-  
+  /**
+   * This behaves exactly as
+   * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#getAutoCommit()
+   */
+  boolean getAutoCommit();
+
   boolean isTxnOpen();
   /**
    * if {@code isTxnOpen()}, returns the currently active transaction ID

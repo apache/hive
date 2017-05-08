@@ -53,6 +53,7 @@ import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -269,7 +270,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
-  private final List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
+  private List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
   private final Map<JoinOperator, QBJoinTree> joinContext;
   private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
@@ -552,7 +553,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           function.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
         function = (ASTNode)function.getChild(0);
       }
-      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns, null);
+      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns);
     }
 
     // window based aggregations are handled differently
@@ -603,16 +604,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void doPhase1GetAllAggregations(ASTNode expressionTree,
-      HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns,
-      ASTNode wndParent) throws SemanticException {
+      HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
     if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
       //since now we have scalar subqueries we can get subquery expression in having
       // we don't want to include aggregate from within subquery
       return;
     }
-
-    boolean parentIsWindowSpec = wndParent != null;
 
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
@@ -624,9 +622,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Further, we will examine its children AST nodes to check whether
         // there are aggregation functions within
         wdwFns.add(expressionTree);
-        for(Node child : expressionTree.getChildren()) {
-          doPhase1GetAllAggregations((ASTNode) child, aggregations, wdwFns, expressionTree);
-        }
+        doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(expressionTree.getChildCount()-1),
+                aggregations, wdwFns);
         return;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
@@ -636,11 +633,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (FunctionRegistry.getFunctionInfo(functionName) == null) {
           throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
         }
-        if(FunctionRegistry.impliesOrder(functionName) && !parentIsWindowSpec) {
+        if(FunctionRegistry.impliesOrder(functionName)) {
           throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
         }
         if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
-          if(containsLeadLagUDF(expressionTree) && !parentIsWindowSpec) {
+          if(containsLeadLagUDF(expressionTree)) {
             throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
           }
           aggregations.put(expressionTree.toStringTree(), expressionTree);
@@ -655,7 +652,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
       doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
-          aggregations, wdwFns, wndParent);
+          aggregations, wdwFns);
     }
   }
 
@@ -1452,7 +1449,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           try {
             ASTNode hintNode = pd.parseHint(queryHintStr);
-            qbp.setHints(hintNode);
+            qbp.setHints((ASTNode) hintNode);
             posn++;
           } catch (ParseException e) {
             throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
@@ -2575,7 +2572,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       unparseTranslator.addIdentifierTranslation(condn);
       break;
-    case HiveParser.TOK_NULL:
     case HiveParser.Number:
     case HiveParser.StringLiteral:
     case HiveParser.IntegralLiteral:
@@ -3066,6 +3062,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected static ASTNode rewriteGroupingFunctionAST(final List<ASTNode> grpByAstExprs, ASTNode targetNode,
           final boolean noneSet) throws SemanticException {
+    final MutableBoolean visited = new MutableBoolean(false);
+    final MutableBoolean found = new MutableBoolean(false);
 
     TreeVisitorAction action = new TreeVisitorAction() {
 
@@ -3077,62 +3075,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       @Override
       public Object post(Object t) {
         ASTNode root = (ASTNode) t;
-        if (root.getType() == HiveParser.TOK_FUNCTION) {
+        if (root.getType() == HiveParser.TOK_FUNCTION && root.getChildCount() == 2) {
           ASTNode func = (ASTNode) ParseDriver.adaptor.getChild(root, 0);
-          if (func.getText().equals("grouping") && func.getChildCount() == 0) {
-            int numberOperands = ParseDriver.adaptor.getChildCount(root);
-            // We implement this logic using replaceChildren instead of replacing
-            // the root node itself because windowing logic stores multiple
-            // pointers to the AST, and replacing root might lead to some pointers
-            // leading to non-rewritten version
-            ASTNode newRoot = new ASTNode();
-            // Rewritten grouping function
-            ASTNode groupingFunc = (ASTNode) ParseDriver.adaptor.create(
-                    HiveParser.Identifier, "grouping");
-            ParseDriver.adaptor.addChild(groupingFunc, ParseDriver.adaptor.create(
-                    HiveParser.Identifier, "rewritten"));
-            newRoot.addChild(groupingFunc);
-            // Grouping ID reference
-            ASTNode childGroupingID;
-            if (noneSet) {
-              // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
-              // grouping should return 0
-              childGroupingID = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                    String.valueOf(0));
-            } else {
-              // We refer to grouping_id column
-              childGroupingID = (ASTNode) ParseDriver.adaptor.create(
-                      HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
-              ParseDriver.adaptor.addChild(childGroupingID, ParseDriver.adaptor.create(
-                      HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
-            }
-            newRoot.addChild(childGroupingID);
-            // Indices
-            for (int i = 1; i < numberOperands; i++) {
-              ASTNode c = (ASTNode) ParseDriver.adaptor.getChild(root, i);
-              for (int j = 0; j < grpByAstExprs.size(); j++) {
-                ASTNode grpByExpr = grpByAstExprs.get(j);
-                if (grpByExpr.toStringTree().equals(c.toStringTree())) {
-                  // Create and add AST node with position of grouping function input
-                  // in group by clause
-                  ASTNode childN = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                          String.valueOf(IntMath.mod(-j-1, grpByAstExprs.size())));
-                  newRoot.addChild(childN);
-                  break;
+          if (func.getText().equals("grouping")) {
+            ASTNode c = (ASTNode) ParseDriver.adaptor.getChild(root, 1);
+            visited.setValue(true);
+            for (int i = 0; i < grpByAstExprs.size(); i++) {
+              ASTNode grpByExpr = grpByAstExprs.get(i);
+              if (grpByExpr.toStringTree().equals(c.toStringTree())) {
+                ASTNode child1;
+                if (noneSet) {
+                  // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
+                  // grouping should return 0
+                  child1 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                        String.valueOf(0));
+                } else {
+                  // We refer to grouping_id column
+                  child1 = (ASTNode) ParseDriver.adaptor.create(
+                          HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+                  ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
+                          HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
                 }
+                ASTNode child2 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                        String.valueOf(IntMath.mod(-i-1, grpByAstExprs.size())));
+                root.setChild(1, child1);
+                root.addChild(child2);
+                found.setValue(true);
+                break;
               }
             }
-            if (numberOperands + 1 != ParseDriver.adaptor.getChildCount(newRoot)) {
-              throw new RuntimeException(ErrorMsg.HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY.getMsg());
-            }
-            // Replace expression
-            root.replaceChildren(0, numberOperands - 1, newRoot);
           }
         }
         return t;
       }
     };
-    return (ASTNode) new TreeVisitor(ParseDriver.adaptor).visit(targetNode, action);
+    ASTNode newTargetNode = (ASTNode) new TreeVisitor(ParseDriver.adaptor).visit(targetNode, action);
+    if (visited.booleanValue() && !found.booleanValue()) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY.getMsg());
+    }
+    return newTargetNode;
   }
 
   private Operator genPlanForSubQueryPredicate(
@@ -3446,69 +3427,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<ColumnInfo, ColumnInfo> inputColsProcessed = new HashMap<ColumnInfo, ColumnInfo>();
     // For expr "*", aliases should be iterated in the order they are specified
     // in the query.
-
-    if (colSrcRR.getNamedJoinInfo() != null) {
-      // We got using() clause in previous join. Need to generate select list as
-      // per standard. For * we will have joining columns first non-repeated
-      // followed by other columns.
-      HashMap<String, ColumnInfo> leftMap = colSrcRR.getFieldMap(colSrcRR.getNamedJoinInfo().getAliases().get(0));
-      HashMap<String, ColumnInfo> rightMap = colSrcRR.getFieldMap(colSrcRR.getNamedJoinInfo().getAliases().get(1));
-      HashMap<String, ColumnInfo> chosenMap = null;
-      if (colSrcRR.getNamedJoinInfo().getHiveJoinType() != JoinType.RIGHTOUTER) {
-        chosenMap = leftMap;
-      } else {
-        chosenMap = rightMap;
-      }
-      // first get the columns in named columns
-      for (String columnName : colSrcRR.getNamedJoinInfo().getNamedColumns()) {
-        for (Map.Entry<String, ColumnInfo> entry : chosenMap.entrySet()) {
-          ColumnInfo colInfo = entry.getValue();
-          if (!columnName.equals(colInfo.getAlias())) {
-            continue;
-          }
-          String name = colInfo.getInternalName();
-          String[] tmp = colSrcRR.reverseLookup(name);
-
-          // Skip the colinfos which are not for this particular alias
-          if (tabAlias != null && !tmp[0].equalsIgnoreCase(tabAlias)) {
-            continue;
-          }
-
-          if (colInfo.getIsVirtualCol() && colInfo.isHiddenVirtualCol()) {
-            continue;
-          }
-          ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
-          if (oColInfo == null) {
-            ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(), name,
-                colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
-            col_list.add(expr);
-            oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
-                colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
-            inputColsProcessed.put(colInfo, oColInfo);
-          }
-          if (ensureUniqueCols) {
-            if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
-              throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "."
-                  + tmp[1] + " => " + oColInfo + " due to duplication, see previous warnings",
-                  UnsupportedFeature.Duplicates_in_RR);
-            }
-          } else {
-            output.put(tmp[0], tmp[1], oColInfo);
-          }
-          pos = Integer.valueOf(pos.intValue() + 1);
-          matched++;
-
-          if (unparseTranslator.isEnabled() || tableMask.isEnabled()) {
-            if (replacementText.length() > 0) {
-              replacementText.append(", ");
-            }
-            replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
-            replacementText.append(".");
-            replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
-          }
-        }
-      }
-    }
     for (String alias : aliases) {
       HashMap<String, ColumnInfo> fMap = colSrcRR.getFieldMap(alias);
       if (fMap == null) {
@@ -3518,19 +3436,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // from the input schema
       for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
         ColumnInfo colInfo = entry.getValue();
-        if (colSrcRR.getNamedJoinInfo() != null && colSrcRR.getNamedJoinInfo().getNamedColumns().contains(colInfo.getAlias())) {
-          // we already added this column in select list.
-          continue;
-        }
         if (excludeCols != null && excludeCols.contains(colInfo)) {
           continue; // This was added during plan generation.
         }
-        // First, look up the column from the source against which * is to be
-        // resolved.
-        // We'd later translated this into the column from proper input, if
-        // it's valid.
-        // TODO: excludeCols may be possible to remove using the same
-        // technique.
+        // First, look up the column from the source against which * is to be resolved.
+        // We'd later translated this into the column from proper input, if it's valid.
+        // TODO: excludeCols may be possible to remove using the same technique.
         String name = colInfo.getInternalName();
         String[] tmp = colSrcRR.reverseLookup(name);
 
@@ -3548,14 +3459,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        // If input (GBY) is different than the source of columns, find the
-        // same column in input.
+        // If input (GBY) is different than the source of columns, find the same column in input.
         // TODO: This is fraught with peril.
         if (input != colSrcRR) {
           colInfo = input.get(tabAlias, tmp[1]);
           if (colInfo == null) {
-            LOG.error("Cannot find colInfo for " + tabAlias + "." + tmp[1] + ", derived from ["
-                + colSrcRR + "], in [" + input + "]");
+            LOG.error("Cannot find colInfo for " + tabAlias + "." + tmp[1]
+                + ", derived from [" + colSrcRR + "], in [" + input + "]");
             throw new SemanticException(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY, tmp[1]);
           }
           String oldCol = null;
@@ -3572,11 +3482,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
         if (oColInfo == null) {
-          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(), name,
-              colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
+          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+              name, colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
+              colInfo.isSkewedCol());
           col_list.add(expr);
-          oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
-              colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          oColInfo = new ColumnInfo(getColumnInternalName(pos),
+              colInfo.getType(), colInfo.getTabAlias(),
+              colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
           inputColsProcessed.put(colInfo, oColInfo);
         }
         if (ensureUniqueCols) {
@@ -3601,7 +3513,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-
     if (matched == 0) {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel));
     }
@@ -7034,9 +6945,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + dest_type);
     }
 
-    if (!(dest_type.intValue() == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
-      input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
-    }
+    input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
 
     inputRR = opParseCtx.get(input).getRowResolver();
 
@@ -7256,20 +7165,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
-          .mapDirToOp(ltd.getSourcePath(), output);
+          .mapDirToOp(ltd.getSourcePath(), (FileSinkOperator) output);
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getTableName())[1];
       try {
         Warehouse wh = new Warehouse(conf);
-        tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
+        tlocation = wh.getTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
 
       SessionState.get().getLineageState()
-              .mapDirToOp(tlocation, output);
+              .mapDirToOp(tlocation, (FileSinkOperator) output);
     }
   }
 
@@ -7424,7 +7333,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName) && !Operation.INSERT_ONLY.equals(acidOp)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
-      throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID, tableName);
+      throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
     }
     /*
     LOG.info("Modifying config values for ACID write");
@@ -7515,9 +7424,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             rowFields.get(rowFieldsOffset).getInternalName(), "", false,
             rowFields.get(rowFieldsOffset).isSkewedCol());
         // LazySimpleSerDe can convert any types to String type using
-        // JSON-format. However, we may add more operators.
-        // Thus, we still keep the conversion.
-        if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
+        // JSON-format.
+        if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)
+            && !(isLazySimpleSerDe
+                && tableFieldTypeInfo.getCategory().equals(Category.PRIMITIVE) && tableFieldTypeInfo
+                  .equals(TypeInfoFactory.stringTypeInfo))) {
           // need to do some conversions here
           converted = true;
           if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
@@ -8187,7 +8098,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames,
-        join.getNoOuterJoin(), joinCondns, filterMap, joinKeys, 0);
+        join.getNoOuterJoin(), joinCondns, filterMap, joinKeys);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
     // For outer joins, add filters that apply to more than one input
@@ -8734,6 +8645,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("STREAMTABLE hint honored.");
       parseStreamTables(joinTree, qb);
     }
+
     return joinTree;
   }
 
@@ -9077,81 +8989,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     joinTree.setStreamAliases(streamAliases);
-  }
-
-  /** Parses semjoin hints in the query and returns the table names mapped to filter size, or -1 if not specified.
-   *  Hints can be in 3 formats
-   *  1. TableName, ColumnName, bloom filter entries
-   *  2. TableName, bloom filter entries, and
-   *  3. TableName, ColumnName
-   *  */
-  private Map<String, SemiJoinHint> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
-    if (hints == null || hints.size() == 0) return null;
-    Map<String, SemiJoinHint> result = null;
-    for (ASTNode hintNode : hints) {
-      for (Node node : hintNode.getChildren()) {
-        ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
-        if (result == null) {
-          result = new HashMap<>();
-        }
-        String alias = null;
-        String colName = null;
-        Tree args = hint.getChild(1);
-        if (args.getChildCount() == 1) {
-          String text = args.getChild(0).getText();
-          if (text.equalsIgnoreCase("None")) {
-            // Hint to disable runtime filtering.
-            return result;
-          }
-        }
-        for (int i = 0; i < args.getChildCount(); i++) {
-          // We can have table names, column names or sizes here (or incorrect hint if the user is so inclined).
-          String text = args.getChild(i).getText();
-          Integer number = null;
-          try {
-            number = Integer.parseInt(text);
-          } catch (NumberFormatException ex) { // Ignore.
-          }
-          if (number != null) {
-            if (alias == null) {
-              throw new SemanticException("Invalid semijoin hint - arg " + i + " ("
-                      + text + ") is a number but the previous one is not an alias");
-            }
-            if (result.get(alias) != null) {
-              // A hint with same alias already present, throw
-              throw new SemanticException("A hint with alias " + alias +
-                      " already present. Please use unique aliases");
-            }
-            SemiJoinHint sjHint = new SemiJoinHint(alias, colName, number);
-            result.put(alias, sjHint);
-            alias = null;
-            colName = null;
-          } else {
-            if (alias == null) {
-              alias = text;
-            } else if (colName == null) {
-              colName = text;
-            } else {
-              // No bloom filter entries provided.
-              if (result.get(alias) != null) {
-                // A hint with same alias already present, throw
-                throw new SemanticException("A hint with alias " + alias +
-                        " already present. Please use unique aliases");
-              }
-              SemiJoinHint sjHint = new SemiJoinHint(alias, colName, null);
-              result.put(alias, sjHint);
-              alias = text;
-              colName = null;
-            }
-          }
-        }
-      }
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Semijoin hint parsed: " + result);
-    }
-    return result;
   }
 
   /**
@@ -10520,7 +10357,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Currently, partition spec can only be static partition.
       String k = MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
-
+      
       // set up WriteEntity for replication
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
 
@@ -10968,7 +10805,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     void setCTASToken(ASTNode child) {
     }
-
+    
     void setViewToken(ASTNode child) {
     }
 
@@ -11257,40 +11094,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ex);
     }
   }
-
-  public void getHintsFromQB(QB qb, List<ASTNode> hints) {
-    if (qb.getParseInfo().getHints() != null) {
-      hints.add(qb.getParseInfo().getHints());
-    }
-
-    Set<String> aliases = qb.getSubqAliases();
-
-    for (String alias : aliases) {
-      getHintsFromQB(qb.getSubqForAlias(alias), hints);
-    }
-  }
-
-  public void getHintsFromQB(QBExpr qbExpr, List<ASTNode> hints) {
-    QBExpr qbExpr1 = qbExpr.getQBExpr1();
-    QBExpr qbExpr2 = qbExpr.getQBExpr2();
-    QB qb = qbExpr.getQB();
-
-    if (qbExpr1 != null) {
-      getHintsFromQB(qbExpr1, hints);
-    }
-    if (qbExpr2 != null) {
-      getHintsFromQB(qbExpr2, hints);
-    }
-    if (qb != null) {
-      getHintsFromQB(qb, hints);
-    }
-  }
-
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
-    // fetch all the hints in qb
-    List<ASTNode> hintsList = new ArrayList<>();
-    getHintsFromQB(qb, hintsList);
-    getQB().getParseInfo().setHintList(hintsList);
     return genPlan(qb);
   }
 
@@ -11349,15 +11153,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
 
-    // Set the semijoin hints in parse context
-    pCtx.setSemiJoinHints(parseSemiJoinHint(getQB().getParseInfo().getHintList()));
-
     // 5. Take care of view creation
     if (createVwDesc != null) {
       if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return;
       }
-
+      
       if (!ctx.isCboSucceeded()) {
         saveViewDefinition();
       }

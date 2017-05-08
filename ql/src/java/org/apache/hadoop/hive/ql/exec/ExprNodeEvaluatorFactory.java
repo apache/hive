@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
@@ -47,6 +48,11 @@ public final class ExprNodeEvaluatorFactory {
     // Constant node
     if (desc instanceof ExprNodeConstantDesc) {
       return new ExprNodeConstantEvaluator((ExprNodeConstantDesc) desc, conf);
+    }
+
+    // Special 'default' constant node
+    if (desc instanceof ExprNodeConstantDefaultDesc) {
+      return new ExprNodeConstantDefaultEvaluator((ExprNodeConstantDefaultDesc) desc);
     }
 
     // Column-reference node, e.g. a column in the input row

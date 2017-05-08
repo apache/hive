@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
+set hive.cbo.returnpath.hiveop=true;
 set hive.exec.check.crossproducts=false;
 
 set hive.stats.fetch.column.stats=true;

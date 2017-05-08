@@ -52,8 +52,4 @@ public class VectorMapJoinFastMultiKeyHashMultiSet
     super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 
-  @Override
-  public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize();
-  }
 }

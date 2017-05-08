@@ -303,7 +303,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1381,7 +1380,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1488,7 +1486,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1595,7 +1592,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1749,7 +1745,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1860,7 +1855,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2039,7 +2033,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2133,7 +2126,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2285,7 +2277,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2466,7 +2457,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2587,7 +2577,6 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -2701,14 +2690,16 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 full outer join
 (select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab
+PREHOOK: Input: default@tab@ds=2008-04-08
 PREHOOK: Input: default@tab_part
+PREHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
 (select * from tab where tab.key = 0)a
@@ -2716,7 +2707,9 @@ full outer join
 (select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
+POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
@@ -3270,14 +3263,15 @@ NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
 (select * from tab where tab.key = 0)a
 join
 (select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab
+PREHOOK: Input: default@tab@ds=2008-04-08
 PREHOOK: Input: default@tab_part
 PREHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
@@ -3287,6 +3281,7 @@ join
 (select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####

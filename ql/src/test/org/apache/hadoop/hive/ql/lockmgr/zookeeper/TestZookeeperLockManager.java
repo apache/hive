@@ -62,7 +62,7 @@ public class TestZookeeperLockManager {
   @Before
   public void setup() {
     conf = new HiveConf();
-    lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables", conf);
+    lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables");
     hiveLock = new HiveLockObject(TABLE, lockObjData);
     zLock = new ZooKeeperHiveLock(TABLE_LOCK_PATH, hiveLock, HiveLockMode.SHARED);
 

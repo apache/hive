@@ -366,7 +366,6 @@ public abstract class GenericUDF implements Closeable {
     case SHORT:
     case INT:
     case LONG:
-    case VOID:
       break;
     default:
       throw new UDFArgumentTypeException(i, getFuncName()
@@ -376,7 +375,7 @@ public abstract class GenericUDF implements Closeable {
 
     Converter converter = ObjectInspectorConverters.getConverter(
         arguments[i],
-        PrimitiveObjectInspectorFactory.writableLongObjectInspector);
+        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
   }

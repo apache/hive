@@ -96,9 +96,4 @@ public class VectorMapJoinFastLongHashSet
     super(minMaxEnabled, isOuterJoin, hashTableKeyType,
         initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    return super.getEstimatedMemorySize();
-  }
 }

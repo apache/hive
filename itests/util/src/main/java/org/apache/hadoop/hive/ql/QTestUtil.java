@@ -39,10 +39,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -55,7 +51,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,22 +59,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
@@ -128,6 +118,7 @@ import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.tools.ant.BuildException;
@@ -176,7 +167,7 @@ public class QTestUtil {
   private final Set<String> qNoSessionReuseQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
-  private final Set<String> srcTables;
+  private final HashSet<String> srcTables;
   private final Set<String> srcUDFs;
   private final MiniClusterType clusterType;
   private final FsType fsType;
@@ -209,7 +200,7 @@ public class QTestUtil {
   }
   private HBaseTestingUtility utility;
 
-  public static Set<String> getSrcTables() {
+  HashSet<String> getSrcTables() {
     HashSet<String> srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line
@@ -1404,8 +1395,7 @@ public class QTestUtil {
 
         int rc = response.getResponseCode();
         if (rc != 0) {
-          SessionState.getConsole().printError(response.toString(), response.getException() != null ?
-                  Throwables.getStackTraceAsString(response.getException()) : "");
+          SessionState.get().out.println(response);
         }
 
         return rc;
@@ -1413,7 +1403,7 @@ public class QTestUtil {
         throw new RuntimeException("Could not get CommandProcessor for command: " + commandName);
       }
     } catch (Exception e) {
-      throw new RuntimeException("Could not execute test command", e);
+      throw new RuntimeException("Could not execute test command: " + e.getMessage());
     }
   }
 
@@ -1476,6 +1466,10 @@ public class QTestUtil {
     // Create an instance of hive in order to create the tables
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     db = Hive.get(conf);
+    // Create dest4 to replace dest4_sequencefile
+    LinkedList<String> cols = new LinkedList<String>();
+    cols.add("key");
+    cols.add("value");
 
     // Move all data from dest4_sequencefile to dest4
     drv
@@ -1486,7 +1480,7 @@ public class QTestUtil {
         true, true);
   }
 
-  public QTestProcessExecResult checkNegativeResults(String tname, Exception e) throws Exception {
+  public int checkNegativeResults(String tname, Exception e) throws Exception {
 
     String outFileExtension = getOutFileExtension(tname);
 
@@ -1509,17 +1503,16 @@ public class QTestUtil {
     outfd.write(e.getMessage());
     outfd.close();
 
-    QTestProcessExecResult result = executeDiffCommand(outf.getPath(), expf, false,
+    int exitVal = executeDiffCommand(outf.getPath(), expf, false,
                                      qSortSet.contains(qf.getName()));
-    if (overWrite) {
-      overwriteResults(outf.getPath(), expf);
-      return QTestProcessExecResult.createWithoutOutput(0);
+    if (exitVal != 0 && overWrite) {
+      exitVal = overwriteResults(outf.getPath(), expf);
     }
 
-    return result;
+    return exitVal;
   }
 
-  public QTestProcessExecResult checkParseResults(String tname, ASTNode tree) throws Exception {
+  public int checkParseResults(String tname, ASTNode tree) throws Exception {
 
     if (tree != null) {
       String outFileExtension = getOutFileExtension(tname);
@@ -1535,11 +1528,10 @@ public class QTestUtil {
       outfd.write(tree.toStringTree());
       outfd.close();
 
-      QTestProcessExecResult exitVal = executeDiffCommand(outf.getPath(), expf, false, false);
+      int exitVal = executeDiffCommand(outf.getPath(), expf, false, false);
 
-      if (overWrite) {
-        overwriteResults(outf.getPath(), expf);
-        return QTestProcessExecResult.createWithoutOutput(0);
+      if (exitVal != 0 && overWrite) {
+        exitVal = overwriteResults(outf.getPath(), expf);
       }
 
       return exitVal;
@@ -1708,7 +1700,7 @@ public class QTestUtil {
   });
 
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
+  private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
     add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
   }};
 
@@ -1720,7 +1712,7 @@ public class QTestUtil {
     patternsWithMaskComments.add(toPatternPair(patternStr, maskComment));
   }
 
-  public QTestProcessExecResult checkCliDriverResults(String tname) throws Exception {
+  public int checkCliDriverResults(String tname) throws Exception {
     assert(qMap.containsKey(tname));
 
     String outFileExtension = getOutFileExtension(tname);
@@ -1729,71 +1721,69 @@ public class QTestUtil {
     File f = new File(logDir, tname + outFileExtension);
 
     maskPatterns(planMask, f.getPath());
-    QTestProcessExecResult exitVal = executeDiffCommand(f.getPath(),
+    int exitVal = executeDiffCommand(f.getPath(),
                                      outFileName, false,
                                      qSortSet.contains(tname));
 
-    if (overWrite) {
-      overwriteResults(f.getPath(), outFileName);
-      return QTestProcessExecResult.createWithoutOutput(0);
+    if (exitVal != 0 && overWrite) {
+      exitVal = overwriteResults(f.getPath(), outFileName);
     }
 
     return exitVal;
   }
 
 
-  public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs)
-      throws Exception {
+  public int checkCompareCliDriverResults(String tname, List<String> outputs) throws Exception {
     assert outputs.size() > 1;
     maskPatterns(planMask, outputs.get(0));
     for (int i = 1; i < outputs.size(); ++i) {
       maskPatterns(planMask, outputs.get(i));
-      QTestProcessExecResult result = executeDiffCommand(
+      int ecode = executeDiffCommand(
           outputs.get(i - 1), outputs.get(i), false, qSortSet.contains(tname));
-      if (result.getReturnCode() != 0) {
+      if (ecode != 0) {
         System.out.println("Files don't match: " + outputs.get(i - 1) + " and " + outputs.get(i));
-        return result;
+        return ecode;
       }
     }
-    return QTestProcessExecResult.createWithoutOutput(0);
+    return 0;
   }
 
-  private static void overwriteResults(String inFileName, String outFileName) throws Exception {
+  private static int overwriteResults(String inFileName, String outFileName) throws Exception {
     // This method can be replaced with Files.copy(source, target, REPLACE_EXISTING)
     // once Hive uses JAVA 7.
     System.out.println("Overwriting results " + inFileName + " to " + outFileName);
-    int result = executeCmd(new String[]{
+    return executeCmd(new String[] {
         "cp",
         getQuotedString(inFileName),
         getQuotedString(outFileName)
-    }).getReturnCode();
-    if (result != 0)
-      throw new IllegalStateException("Unexpected error while overwriting " +
-          inFileName + " with " + outFileName);
+      });
   }
 
-  private static QTestProcessExecResult executeDiffCommand(String inFileName,
+  private static int executeDiffCommand(String inFileName,
       String outFileName,
       boolean ignoreWhiteSpace,
       boolean sortResults
       ) throws Exception {
 
-    QTestProcessExecResult result;
+    int result = 0;
 
     if (sortResults) {
       // sort will try to open the output file in write mode on windows. We need to
       // close it first.
       SessionState ss = SessionState.get();
       if (ss != null && ss.out != null && ss.out != System.out) {
-        ss.out.close();
+  ss.out.close();
       }
 
       String inSorted = inFileName + SORT_SUFFIX;
       String outSorted = outFileName + SORT_SUFFIX;
 
-      sortFiles(inFileName, inSorted);
-      sortFiles(outFileName, outSorted);
-
+      result = sortFiles(inFileName, inSorted);
+      result |= sortFiles(outFileName, outSorted);
+      if (result != 0) {
+        System.err.println("ERROR: Could not sort files before comparing");
+        return result;
+      }
       inFileName = inSorted;
       outFileName = outSorted;
     }
@@ -1823,47 +1813,40 @@ public class QTestUtil {
     return result;
   }
 
-  private static void sortFiles(String in, String out) throws Exception {
-    int result = executeCmd(new String[]{
+  private static int sortFiles(String in, String out) throws Exception {
+    return executeCmd(new String[] {
         "sort",
         getQuotedString(in),
-    }, out, null).getReturnCode();
-    if (result != 0)
-      throw new IllegalStateException("Unexpected error while sorting " + in);
+      }, out, null);
   }
 
-  private static QTestProcessExecResult executeCmd(Collection<String> args) throws Exception {
+  private static int executeCmd(Collection<String> args) throws Exception {
     return executeCmd(args, null, null);
   }
 
-  private static QTestProcessExecResult executeCmd(String[] args) throws Exception {
+  private static int executeCmd(String[] args) throws Exception {
     return executeCmd(args, null, null);
   }
 
-  private static QTestProcessExecResult executeCmd(Collection<String> args, String outFile,
-                                            String errFile) throws Exception {
+  private static int executeCmd(Collection<String> args, String outFile, String errFile) throws Exception {
     String[] cmdArray = args.toArray(new String[args.size()]);
     return executeCmd(cmdArray, outFile, errFile);
   }
 
-  private static QTestProcessExecResult executeCmd(String[] args, String outFile,
-                                            String errFile) throws Exception {
+  private static int executeCmd(String[] args, String outFile, String errFile) throws Exception {
     System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(args, ' '));
 
     PrintStream out = outFile == null ?
       SessionState.getConsole().getChildOutStream() :
-      new PrintStream(new FileOutputStream(outFile), true, "UTF-8");
+      new PrintStream(new FileOutputStream(outFile), true);
     PrintStream err = errFile == null ?
       SessionState.getConsole().getChildErrStream() :
-      new PrintStream(new FileOutputStream(errFile), true, "UTF-8");
+      new PrintStream(new FileOutputStream(errFile), true);
 
     Process executor = Runtime.getRuntime().exec(args);
 
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    PrintStream str = new PrintStream(bos, true, "UTF-8");
-
     StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, err);
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, out, str);
+    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, out);
 
     outPrinter.start();
     errPrinter.start();
@@ -1881,8 +1864,7 @@ public class QTestUtil {
       err.close();
     }
 
-    return QTestProcessExecResult.
-        create(result, new String(bos.toByteArray(), StandardCharsets.UTF_8));
+    return result;
   }
 
   private static String getQuotedString(String str){
@@ -2058,18 +2040,11 @@ public class QTestUtil {
       qt[i].clearTestSideEffects();
       qt[i].cliInit(qfiles[i].getName(), false);
       qt[i].executeClient(qfiles[i].getName());
-      QTestProcessExecResult result = qt[i].checkCliDriverResults(qfiles[i].getName());
-      if (result.getReturnCode() != 0) {
+      int ecode = qt[i].checkCliDriverResults(qfiles[i].getName());
+      if (ecode != 0) {
         failed = true;
-        StringBuilder builder = new StringBuilder();
-        builder.append("Test ")
-            .append(qfiles[i].getName())
-            .append(" results check failed with error code ")
-            .append(result.getReturnCode());
-        if (Strings.isNotEmpty(result.getCapturedOutput())) {
-          builder.append(" and diff value ").append(result.getCapturedOutput());
-        }
-        System.err.println(builder.toString());
+        System.err.println("Test " + qfiles[i].getName()
+            + " results check failed with error code " + ecode);
         outputTestFailureHelpMessage();
       }
       qt[i].clearPostTestEffects();
@@ -2116,18 +2091,11 @@ public class QTestUtil {
 
     for (int i = 0; i < qfiles.length; i++) {
       qtThread[i].join();
-      QTestProcessExecResult result = qt[i].checkCliDriverResults(qfiles[i].getName());
-      if (result.getReturnCode() != 0) {
+      int ecode = qt[i].checkCliDriverResults(qfiles[i].getName());
+      if (ecode != 0) {
         failed = true;
-        StringBuilder builder = new StringBuilder();
-        builder.append("Test ")
-            .append(qfiles[i].getName())
-            .append(" results check failed with error code ")
-            .append(result.getReturnCode());
-        if (Strings.isNotEmpty(result.getCapturedOutput())) {
-          builder.append(" and diff value ").append(result.getCapturedOutput());
-        }
-        System.err.println(builder.toString());
+        System.err.println("Test " + qfiles[i].getName()
+            + " results check failed with error code " + ecode);
         outputTestFailureHelpMessage();
       }
     }
@@ -2225,15 +2193,16 @@ public class QTestUtil {
 
   public void failedDiff(int ecode, String fname, String debugHint) {
     String message =
-        "Client Execution succeeded but contained differences " +
-            "(error code = " + ecode + ") after executing " +
+        "Client Execution results failed with error code = " + ecode + " while executing fname=" +
             fname + (debugHint != null ? (" " + debugHint) : "");
     LOG.error(message);
     Assert.fail(message);
   }
 
-  public void failed(Exception e, String fname, String debugHint) {
+  public void failed(Throwable e, String fname, String debugHint) {
     String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
+    System.err.println("Exception: " + e.getMessage());
+    e.printStackTrace();
     System.err.println("Failed query: " + fname);
     System.err.flush();
     Assert.fail("Unexpected exception " +
@@ -2273,6 +2242,9 @@ public class QTestUtil {
       }
       br.close();
     } catch (Exception e) {
+      System.err.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.err.flush();
       Assert.fail("Unexpected exception " + org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
@@ -2296,9 +2268,7 @@ public class QTestUtil {
       String mdbPath =   AbstractCliConfig.HIVE_ROOT + "/data/files/tpcds-perf/metastore_export/";
 
       // Setup the table column stats
-      BufferedReader br = new BufferedReader(
-          new FileReader(
-              new File(AbstractCliConfig.HIVE_ROOT + "/metastore/scripts/upgrade/derby/022-HIVE-11107.derby.sql")));
+      BufferedReader br = new BufferedReader(new FileReader(new File(AbstractCliConfig.HIVE_ROOT + "/metastore/scripts/upgrade/derby/022-HIVE-11107.derby.sql")));
       String command;
 
       s.execute("DROP TABLE APP.TABLE_PARAMS");
@@ -2324,13 +2294,15 @@ public class QTestUtil {
       }
       br.close();
 
-      java.nio.file.Path tabColStatsCsv = FileSystems.getDefault().getPath(mdbPath, "csv" ,"TAB_COL_STATS.txt.bz2");
-      java.nio.file.Path tabParamsCsv = FileSystems.getDefault().getPath(mdbPath, "csv", "TABLE_PARAMS.txt.bz2");
+      File tabColStatsCsv = new File(mdbPath+"csv/TAB_COL_STATS.txt");
+      File tabParamsCsv = new File(mdbPath+"csv/TABLE_PARAMS.txt");
 
       // Set up the foreign key constraints properly in the TAB_COL_STATS data
       String tmpBaseDir =  System.getProperty(TEST_TMP_DIR_PROPERTY);
-      java.nio.file.Path tmpFileLoc1 = FileSystems.getDefault().getPath(tmpBaseDir, "TAB_COL_STATS.txt");
-      java.nio.file.Path tmpFileLoc2 = FileSystems.getDefault().getPath(tmpBaseDir, "TABLE_PARAMS.txt");
+      File tmpFileLoc1 = new File(tmpBaseDir+"/TAB_COL_STATS.txt");
+      File tmpFileLoc2 = new File(tmpBaseDir+"/TABLE_PARAMS.txt");
+      FileUtils.copyFile(tabColStatsCsv, tmpFileLoc1);
+      FileUtils.copyFile(tabParamsCsv, tmpFileLoc2);
 
       class MyComp implements Comparator<String> {
         @Override
@@ -2342,7 +2314,7 @@ public class QTestUtil {
         }
       }
 
-      final SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
+      SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
 
      rs = s.executeQuery("SELECT * FROM APP.TBLS");
       while(rs.next()) {
@@ -2354,73 +2326,29 @@ public class QTestUtil {
           LOG.debug("Resultset : " +  tblName + " | " + tblId);
         }
       }
-
-      final Map<String, Map<String, String>> data = new HashMap<>();
-      rs = s.executeQuery("select TBLS.TBL_NAME, a.COLUMN_NAME, a.TYPE_NAME from  "
-          + "(select COLUMN_NAME, TYPE_NAME, SDS.SD_ID from APP.COLUMNS_V2 join APP.SDS on SDS.CD_ID = COLUMNS_V2.CD_ID) a"
-          + " join APP.TBLS on  TBLS.SD_ID = a.SD_ID");
-      while (rs.next()) {
-        String tblName = rs.getString(1);
-        String colName = rs.getString(2);
-        String typeName = rs.getString(3);
-        Map<String, String> cols = data.get(tblName);
-        if (null == cols) {
-          cols = new HashMap<>();
+      for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
+        String toReplace1 = ",_" + entry.getKey() + "_" ;
+        String replacementString1 = ","+entry.getValue();
+        String toReplace2 = "_" + entry.getKey() + "_@" ;
+        String replacementString2 = ""+entry.getValue()+"@";
+        try {
+          String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
+          content1 = content1.replaceAll(toReplace1, replacementString1);
+          FileUtils.writeStringToFile(tmpFileLoc1, content1, "UTF-8");
+          String content2 = FileUtils.readFileToString(tmpFileLoc2, "UTF-8");
+          content2 = content2.replaceAll(toReplace2, replacementString2);
+          FileUtils.writeStringToFile(tmpFileLoc2, content2, "UTF-8");
+        } catch (IOException e) {
+          LOG.info("Generating file failed", e);
         }
-        cols.put(colName, typeName);
-        data.put(tblName, cols);
       }
 
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-        new BZip2CompressorInputStream(Files.newInputStream(tabColStatsCsv, StandardOpenOption.READ))));
-
-      Stream<String> replaced = reader.lines().parallel().map(str-> {
-        String[] splits = str.split(",");
-        String tblName = splits[0];
-        String colName = splits[1];
-        Integer tblID = tableNameToID.get(tblName);
-        StringBuilder sb = new StringBuilder("default@"+tblName + "@" + colName + "@" + data.get(tblName).get(colName)+"@");
-        for (int i = 2; i < splits.length; i++) {
-          sb.append(splits[i]+"@");
-        }
-        return sb.append(tblID).toString();
-        });
-
-      Files.write(tmpFileLoc1, (Iterable<String>)replaced::iterator);
-      replaced.close();
-      reader.close();
-
-      BufferedReader reader2 = new BufferedReader(new InputStreamReader(
-          new BZip2CompressorInputStream(Files.newInputStream(tabParamsCsv, StandardOpenOption.READ))));
-      final Map<String,String> colStats = new ConcurrentHashMap<>();
-      Stream<String> replacedStream = reader2.lines().parallel().map(str-> {
-        String[] splits = str.split("_@");
-        String tblName = splits[0];
-        Integer tblId = tableNameToID.get(tblName);
-        Map<String,String> cols = data.get(tblName);
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"COLUMN_STATS\":{");
-        for (String colName : cols.keySet()) {
-          sb.append("\""+colName+"\":\"true\",");
-        }
-        sb.append("},\"BASIC_STATS\":\"true\"}");
-        colStats.put(tblId.toString(), sb.toString());
-
-        return  tblId.toString() + "@" + splits[1];
-      });
-
-      Files.write(tmpFileLoc2, (Iterable<String>)replacedStream::iterator);
-      Files.write(tmpFileLoc2, (Iterable<String>)colStats.entrySet().stream()
-        .map(map->map.getKey()+"@COLUMN_STATS_ACCURATE@"+map.getValue())::iterator, StandardOpenOption.APPEND);
-
-      replacedStream.close();
-      reader2.close();
       // Load the column stats and table params with 30 TB scale
-      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TAB_COL_STATS" +
-        "', '" + tmpFileLoc1.toAbsolutePath().toString() +
-        "', '@', null, 'UTF-8', 1)";
-      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TABLE_PARAMS" +
-        "', '" + tmpFileLoc2.toAbsolutePath().toString() +
+      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TAB_COL_STATS" +
+        "', '" + tmpFileLoc1.getAbsolutePath() +
+        "', ',', null, 'UTF-8', 1)";
+      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TABLE_PARAMS" +
+        "', '" + tmpFileLoc2.getAbsolutePath() +
         "', '@', null, 'UTF-8', 1)";
       try {
         PreparedStatement psImport1 = conn.prepareStatement(importStatement1);

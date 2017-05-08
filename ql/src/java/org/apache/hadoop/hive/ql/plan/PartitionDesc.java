@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -56,7 +55,13 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PartitionDesc implements Serializable, Cloneable {
 
-  private static final Interner<Class<?>> CLASS_INTERNER = Interners.newWeakInterner();
+  static {
+    STRING_INTERNER = Interners.newWeakInterner();
+    CLASS_INTERNER = Interners.newWeakInterner();
+  }
+
+  private static final Interner<String> STRING_INTERNER;
+  private static final Interner<Class<?>> CLASS_INTERNER;
 
   private TableDesc tableDesc;
   private LinkedHashMap<String, String> partSpec;
@@ -217,12 +222,8 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
-    if (properties instanceof CopyOnFirstWriteProperties) {
-      this.properties = properties;
-    } else {
-      internProperties(properties);
-      this.properties = new CopyOnFirstWriteProperties(properties);
-    }
+    internProperties(properties);
+    this.properties = properties;
   }
 
   private static TableDesc getTableDesc(Table table) {
@@ -236,7 +237,8 @@ public class PartitionDesc implements Serializable, Cloneable {
       String key = (String) keys.nextElement();
       String oldValue = properties.getProperty(key);
       if (oldValue != null) {
-        properties.setProperty(key, oldValue.intern());
+        String value = STRING_INTERNER.intern(oldValue);
+        properties.setProperty(key, value);
       }
     }
   }
@@ -280,7 +282,13 @@ public class PartitionDesc implements Serializable, Cloneable {
     ret.inputFileFormatClass = inputFileFormatClass;
     ret.outputFileFormatClass = outputFileFormatClass;
     if (properties != null) {
-      ret.setProperties((Properties) properties.clone());
+      Properties newProp = new Properties();
+      Enumeration<Object> keysProp = properties.keys();
+      while (keysProp.hasMoreElements()) {
+        Object key = keysProp.nextElement();
+        newProp.put(key, properties.get(key));
+      }
+      ret.setProperties(newProp);
     }
     ret.tableDesc = (TableDesc) tableDesc.clone();
     // The partition spec is not present

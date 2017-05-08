@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.llap.io.encoded;
 
-import org.apache.orc.impl.MemoryManager;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
@@ -220,7 +218,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.jobConf = jobConf;
     this.schema = schema;
     this.writerIncludes = OrcInputFormat.genIncludedColumns(schema, columnIds);
-    SchemaEvolution evolution = new SchemaEvolution(schema, null,
+    SchemaEvolution evolution = new SchemaEvolution(schema,
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
   }
@@ -1534,29 +1532,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private static final class NoopMemoryManager extends MemoryManager {
-    public NoopMemoryManager() {
-      super(null);
-    }
-
-    @Override
-    public void addedRow(int rows) {}
-    @Override
-    public void addWriter(Path path, long requestedAllocation, Callback callback) {}
-    @Override
-    public void notifyWriters() {}
-    @Override
-    public void removeWriter(Path path) throws IOException {}
-  }
-  private static final NoopMemoryManager MEMORY_MANAGER = new NoopMemoryManager();
-
   static WriterOptions createOrcWriterOptions(ObjectInspector sourceOi,
       Configuration conf, CacheWriter cacheWriter, int allocSize) throws IOException {
     return OrcFile.writerOptions(conf).stripeSize(Long.MAX_VALUE).blockSize(Long.MAX_VALUE)
         .rowIndexStride(Integer.MAX_VALUE) // For now, do not limit this - one RG per split
         .blockPadding(false).compress(CompressionKind.NONE).version(Version.CURRENT)
         .encodingStrategy(EncodingStrategy.SPEED).bloomFilterColumns(null).inspector(sourceOi)
-        .physicalWriter(cacheWriter).memory(MEMORY_MANAGER).bufferSize(allocSize);
+        .physicalWriter(cacheWriter).bufferSize(allocSize);
   }
 
   private ObjectInspector getOiFromSerDe() throws IOException {

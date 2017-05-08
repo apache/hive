@@ -110,12 +110,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     }
   }
 
-  @SuppressWarnings("serial")
-  class UnsupportedDoubleException extends Exception {
-  }
-
   private void unpackDoubleStats(ObjectInspector oi, Object o, String fName,
-      ColumnStatisticsObj statsObj) throws UnsupportedDoubleException {
+      ColumnStatisticsObj statsObj) {
     if (fName.equals("countnulls")) {
       long v = ((LongObjectInspector) oi).get(o);
       statsObj.getStatsData().getDoubleStats().setNumNulls(v);
@@ -124,15 +120,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       statsObj.getStatsData().getDoubleStats().setNumDVs(v);
     } else if (fName.equals("max")) {
       double d = ((DoubleObjectInspector) oi).get(o);
-      if (Double.isInfinite(d) || Double.isNaN(d)) {
-        throw new UnsupportedDoubleException();
-      }
       statsObj.getStatsData().getDoubleStats().setHighValue(d);
     } else if (fName.equals("min")) {
       double d = ((DoubleObjectInspector) oi).get(o);
-      if (Double.isInfinite(d) || Double.isNaN(d)) {
-        throw new UnsupportedDoubleException();
-      }
       statsObj.getStatsData().getDoubleStats().setLowValue(d);
     } else if (fName.equals("ndvbitvector")) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
@@ -244,7 +234,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   }
 
   private void unpackPrimitiveObject (ObjectInspector oi, Object o, String fieldName,
-      ColumnStatisticsObj statsObj) throws UnsupportedDoubleException {
+      ColumnStatisticsObj statsObj) {
     if (o == null) {
       return;
     }
@@ -304,7 +294,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   }
 
   private void unpackStructObject(ObjectInspector oi, Object o, String fName,
-      ColumnStatisticsObj cStatsObj) throws UnsupportedDoubleException {
+      ColumnStatisticsObj cStatsObj) {
     if (oi.getCategory() != ObjectInspector.Category.STRUCT) {
       throw new RuntimeException("Invalid object datatype : " + oi.getCategory().toString());
     }
@@ -361,13 +351,8 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
         ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
         statsObj.setColName(colName.get(i));
         statsObj.setColType(colType.get(i));
-        try {
-          unpackStructObject(foi, f, fieldName, statsObj);
-          statsObjs.add(statsObj);
-        } catch (UnsupportedDoubleException e) {
-          // due to infinity or nan.
-          LOG.info("Because " + colName.get(i) + " is infinite or NaN, we skip stats.");
-        }
+        unpackStructObject(foi, f, fieldName, statsObj);
+        statsObjs.add(statsObj);
       }
 
       if (!isTblLevel) {
@@ -386,9 +371,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
-      if (!statsObjs.isEmpty()) {
-        stats.add(colStats);
-      }
+      stats.add(colStats);
     }
     ftOp.clearFetchContext();
     return stats;
@@ -415,9 +398,6 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(db);
     // Persist the column statistics object to the metastore
     // Note, this function is shared for both table and partition column stats.
-    if (colStats.isEmpty()) {
-      return 0;
-    }
     SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
     if (work.getColStats() != null && work.getColStats().getNumBitVector() > 0) {
       request.setNeedMerge(true);

@@ -40,9 +40,6 @@ public class JSONInsertMessage extends InsertMessage {
   Long timestamp;
 
   @JsonProperty
-  String replace;
-
-  @JsonProperty
   List<String> files;
 
   @JsonProperty
@@ -55,13 +52,12 @@ public class JSONInsertMessage extends InsertMessage {
   }
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-      Map<String, String> partKeyVals, boolean replace, Iterator<String> fileIter, Long timestamp) {
+      Map<String, String> partKeyVals, Iterator<String> fileIter, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
     this.timestamp = timestamp;
-    this.replace = Boolean.toString(replace);
     this.partKeyVals = partKeyVals;
     this.files = Lists.newArrayList(fileIter);
     checkValid();
@@ -101,9 +97,6 @@ public class JSONInsertMessage extends InsertMessage {
   public Long getTimestamp() {
     return timestamp;
   }
-
-  @Override
-  public boolean isReplace() { return Boolean.parseBoolean(replace); }
 
   @Override
   public String toString() {

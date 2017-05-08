@@ -53,11 +53,10 @@ public class TestLocationQueries extends BaseTestQueries {
      * @return non-zero if it failed
      */
     @Override
-    public QTestProcessExecResult checkCliDriverResults(String tname) throws Exception {
+    public int checkCliDriverResults(String tname) throws Exception {
       File logFile = new File(logDir, tname + ".out");
 
       int failedCount = 0;
-      StringBuilder fileNames = new StringBuilder("Files failing the location check:");
       FileReader fr = new FileReader(logFile);
       BufferedReader in = new BufferedReader(fr);
       try {
@@ -70,20 +69,19 @@ public class TestLocationQueries extends BaseTestQueries {
             File f = new File(m.group(1));
             if (!f.getName().equals(locationSubdir)) {
               failedCount++;
-              fileNames.append(f.getName()).append("\r\n");
             }
             locationCount++;
           }
         }
         // we always have to find at least one location, otw the test is useless
         if (locationCount == 0) {
-          return QTestProcessExecResult.create(Integer.MAX_VALUE, "0 locations tested");
+          return Integer.MAX_VALUE;
         }
       } finally {
         in.close();
       }
 
-      return QTestProcessExecResult.create(failedCount, fileNames.toString());
+      return failedCount;
     }
 
     public CheckResults(String outDir, String logDir, MiniClusterType miniMr,

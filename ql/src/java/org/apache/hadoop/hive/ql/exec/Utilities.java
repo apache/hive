@@ -76,7 +76,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -110,8 +109,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver.DriverState;
-import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -206,6 +203,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
@@ -282,11 +280,11 @@ public final class Utilities {
    * The object in the reducer are composed of these top level fields.
    */
 
-  public static final String HADOOP_LOCAL_FS = "file:///";
+  public static String HADOOP_LOCAL_FS = "file:///";
   public static final String HADOOP_LOCAL_FS_SCHEME = "file";
-  public static final String MAP_PLAN_NAME = "map.xml";
-  public static final String REDUCE_PLAN_NAME = "reduce.xml";
-  public static final String MERGE_PLAN_NAME = "merge.xml";
+  public static String MAP_PLAN_NAME = "map.xml";
+  public static String REDUCE_PLAN_NAME = "reduce.xml";
+  public static String MERGE_PLAN_NAME = "merge.xml";
   public static final String INPUT_NAME = "iocontext.input.name";
   public static final String HAS_MAP_WORK = "has.map.work";
   public static final String HAS_REDUCE_WORK = "has.reduce.work";
@@ -295,11 +293,11 @@ public final class Utilities {
   public static final String HIVE_ADDED_JARS = "hive.added.jars";
   public static final String VECTOR_MODE = "VECTOR_MODE";
   public static final String USE_VECTORIZED_INPUT_FILE_FORMAT = "USE_VECTORIZED_INPUT_FILE_FORMAT";
-  public static final String MAPNAME = "Map ";
-  public static final String REDUCENAME = "Reducer ";
+  public static String MAPNAME = "Map ";
+  public static String REDUCENAME = "Reducer ";
 
   @Deprecated
-  protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
+  protected static String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
 
   /**
    * ReduceField:
@@ -605,7 +603,7 @@ public final class Utilities {
   public static void setMapRedWork(Configuration conf, MapredWork w, Path hiveScratchDir) {
     String useName = conf.get(INPUT_NAME);
     if (useName == null) {
-      useName = "mapreduce:" + hiveScratchDir;
+      useName = "mapreduce";
     }
     conf.set(INPUT_NAME, useName);
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
@@ -769,8 +767,8 @@ public final class Utilities {
   // Note: When DDL supports specifying what string to represent null,
   // we should specify "NULL" to represent null in the temp table, and then
   // we can make the following translation deprecated.
-  public static final String nullStringStorage = "\\N";
-  public static final String nullStringOutput = "NULL";
+  public static String nullStringStorage = "\\N";
+  public static String nullStringOutput = "NULL";
 
   public static Random randGen = new Random();
 
@@ -2683,7 +2681,7 @@ public final class Utilities {
     setColumnTypeList(jobConf, rowSchema, excludeVCs);
   }
 
-  public static final String suffix = ".hashtable";
+  public static String suffix = ".hashtable";
 
   public static Path generatePath(Path basePath, String dumpFilePrefix,
       Byte tag, String bigBucketFileName) {
@@ -3164,7 +3162,6 @@ public final class Utilities {
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
-    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
     // AliasToWork contains all the aliases
     Collection<String> aliasToWork = work.getAliasToWork().keySet();
     if (!skipDummy) {
@@ -3185,9 +3182,6 @@ public final class Utilities {
       boolean hasLogged = false;
       Path path = null;
       for (Map.Entry<Path, ArrayList<String>> e : pathToAliases) {
-        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
-          throw new IOException("Operation is Canceled. ");
-
         Path file = e.getKey();
         List<String> aliases = e.getValue();
         if (aliases.contains(alias)) {
@@ -3241,8 +3235,6 @@ public final class Utilities {
     List<Path> finalPathsToAdd = new LinkedList<>();
     List<Future<Path>> futures = new LinkedList<>();
     for (final Path path : pathsToAdd) {
-      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
-        throw new IOException("Operation is Canceled. ");
       if (pool == null) {
         finalPathsToAdd.add(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call());
       } else {
@@ -3252,8 +3244,6 @@ public final class Utilities {
 
     if (pool != null) {
       for (Future<Path> future : futures) {
-        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
-          throw new IOException("Operation is Canceled. ");
         finalPathsToAdd.add(future.get());
       }
     }

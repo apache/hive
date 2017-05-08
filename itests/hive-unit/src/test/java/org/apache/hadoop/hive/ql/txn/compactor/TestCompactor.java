@@ -659,17 +659,17 @@ public class TestCompactor {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000003_0000006")) {
+        if (names[i].equals("delta_0000001_0000004")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000003_0000004",
-          "delta_0000003_0000006", "delta_0000005_0000006", "delta_0000007_0000008"};
+      String[] expected = new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 3L, 6L);
+      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 1L, 4L);
 
     } finally {
       connection.close();
@@ -718,11 +718,11 @@ public class TestCompactor {
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000006");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
+      Assert.assertEquals(name, "base_0000004");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -778,17 +778,17 @@ public class TestCompactor {
       Path resultDelta = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000003_0000006")) {
+        if (names[i].equals("delta_0000001_0000004")) {
           resultDelta = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000003_0000004",
-          "delta_0000003_0000006", "delta_0000005_0000006"};
+      String[] expected = new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000004", "delta_0000003_0000004"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
+      checkExpectedTxnsPresent(null, new Path[]{resultDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -844,13 +844,13 @@ public class TestCompactor {
         Assert.fail("majorCompactAfterAbort FileStatus[] stat " + Arrays.toString(stat));
       }
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      if (!name.equals("base_0000006")) {
-        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000006");
+      if (!name.equals("base_0000004")) {
+        Assert.fail("majorCompactAfterAbort name " + name + " not equals to base_0000004");
       }
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -899,11 +899,11 @@ public class TestCompactor {
       FileStatus[] stat =
           fs.listStatus(new Path(table.getSd().getLocation()), AcidUtils.baseFileFilter);
       if (1 != stat.length) {
-        Assert.fail("Expecting 1 file \"base_0000006\" and found " + stat.length + " files " + Arrays.toString(stat));
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals(name, "base_0000006");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 3L, 6L);
+      Assert.assertEquals(name, "base_0000004");
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L);
     } finally {
       connection.close();
     }
@@ -923,18 +923,18 @@ public class TestCompactor {
         " STORED AS ORC  TBLPROPERTIES ('transactional'='true',"
         + "'transactional_properties'='default')", driver);
 
-    // Insert some data -> this will generate only insert deltas and no delete deltas: delta_3_3
+    // Insert some data -> this will generate only insert deltas and no delete deltas: delta_1_1
     executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
 
-    // Insert some data -> this will again generate only insert deltas and no delete deltas: delta_4_4
+    // Insert some data -> this will again generate only insert deltas and no delete deltas: delta_2_2
     executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
 
-    // Delete some data -> this will generate only delete deltas and no insert deltas: delete_delta_5_5
+    // Delete some data -> this will generate only delete deltas and no insert deltas: delete_delta_3_3
     executeStatementOnDriver("DELETE FROM " + tblName +" WHERE a = 2", driver);
 
     // Now, compact -> Compaction produces a single range for both delta and delete delta
-    // That is, both delta and delete_deltas would be compacted into delta_3_5 and delete_delta_3_5
-    // even though there are only two delta_3_3, delta_4_4 and one delete_delta_5_5.
+    // That is, both delta and delete_deltas would be compacted into delta_1_3 and delete_delta_1_3
+    // even though there are only two delta_1_1, delta_2_2 and one delete_delta_3_3.
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MINOR));
     Worker t = new Worker();
@@ -957,16 +957,16 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000003_0000005")) {
+      if (deltas[i].equals("delta_0000001_0000003")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000003_0000003_0000", "delta_0000003_0000005", "delta_0000004_0000004_0000"};
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000003", "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 4L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 2L);
 
     // Verify that we have got correct set of delete_deltas.
     FileStatus[] deleteDeltaStat =
@@ -975,16 +975,16 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000003_0000005")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000003")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000005", "delete_delta_0000005_0000005_0000"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000003", "delete_delta_0000003_0000003_0000"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0, 4L, 4L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDeleteDelta}, columnNamesProperty, columnTypesProperty, 0, 2L, 2L);
   }
 
   @Test
@@ -1034,16 +1034,16 @@ public class TestCompactor {
     Path minorCompactedDelta = null;
     for (int i = 0; i < deltas.length; i++) {
       deltas[i] = stat[i].getPath().getName();
-      if (deltas[i].equals("delta_0000003_0000004")) {
+      if (deltas[i].equals("delta_0000001_0000002")) {
         minorCompactedDelta = stat[i].getPath();
       }
     }
     Arrays.sort(deltas);
-    String[] expectedDeltas = new String[]{"delta_0000003_0000003_0000", "delta_0000003_0000004", "delta_0000004_0000004_0000"};
+    String[] expectedDeltas = new String[]{"delta_0000001_0000001_0000", "delta_0000001_0000002", "delta_0000002_0000002_0000"};
     if (!Arrays.deepEquals(expectedDeltas, deltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeltas) + ", found: " + Arrays.toString(deltas));
     }
-    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 3L, 4L);
+    checkExpectedTxnsPresent(null, new Path[]{minorCompactedDelta}, columnNamesProperty, columnTypesProperty, 0, 1L, 2L);
 
     // Verify that we have got correct set of delete_deltas.
     FileStatus[] deleteDeltaStat =
@@ -1052,12 +1052,12 @@ public class TestCompactor {
     Path minorCompactedDeleteDelta = null;
     for (int i = 0; i < deleteDeltas.length; i++) {
       deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-      if (deleteDeltas[i].equals("delete_delta_0000003_0000004")) {
+      if (deleteDeltas[i].equals("delete_delta_0000001_0000002")) {
         minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
       }
     }
     Arrays.sort(deleteDeltas);
-    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000004"};
+    String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000002"};
     if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
       Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
     }
@@ -1111,17 +1111,17 @@ public class TestCompactor {
       Path resultFile = null;
       for (int i = 0; i < names.length; i++) {
         names[i] = stat[i].getPath().getName();
-        if (names[i].equals("delta_0000003_0000006")) {
+        if (names[i].equals("delta_0000001_0000004")) {
           resultFile = stat[i].getPath();
         }
       }
       Arrays.sort(names);
-      String[] expected = new String[]{"delta_0000003_0000004",
-          "delta_0000003_0000006", "delta_0000005_0000006", "delta_0000007_0000008"};
+      String[] expected = new String[]{"delta_0000001_0000002",
+          "delta_0000001_0000004", "delta_0000003_0000004", "delta_0000005_0000006"};
       if (!Arrays.deepEquals(expected, names)) {
         Assert.fail("Expected: " + Arrays.toString(expected) + ", found: " + Arrays.toString(names));
       }
-      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 3L, 6L);
+      checkExpectedTxnsPresent(null, new Path[]{resultFile},columnNamesProperty, columnTypesProperty,  0, 1L, 4L);
 
       // Verify that we have got correct set of delete_deltas also
       FileStatus[] deleteDeltaStat =
@@ -1130,12 +1130,12 @@ public class TestCompactor {
       Path minorCompactedDeleteDelta = null;
       for (int i = 0; i < deleteDeltas.length; i++) {
         deleteDeltas[i] = deleteDeltaStat[i].getPath().getName();
-        if (deleteDeltas[i].equals("delete_delta_0000003_0000006")) {
+        if (deleteDeltas[i].equals("delete_delta_0000001_0000004")) {
           minorCompactedDeleteDelta = deleteDeltaStat[i].getPath();
         }
       }
       Arrays.sort(deleteDeltas);
-      String[] expectedDeleteDeltas = new String[]{"delete_delta_0000003_0000006"};
+      String[] expectedDeleteDeltas = new String[]{"delete_delta_0000001_0000004"};
       if (!Arrays.deepEquals(expectedDeleteDeltas, deleteDeltas)) {
         Assert.fail("Expected: " + Arrays.toString(expectedDeleteDeltas) + ", found: " + Arrays.toString(deleteDeltas));
       }
@@ -1331,16 +1331,6 @@ public class TestCompactor {
       @Override
       public boolean isValidBase(long txnid) {
         return true;
-      }
-
-      @Override
-      public boolean isTxnAborted(long txnid) {
-        return true;
-      }
-
-      @Override
-      public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId) {
-        return RangeResponse.ALL;
       }
     };
 

@@ -36,13 +36,11 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -81,14 +79,13 @@ public class TestDbTxnManager {
   @Test
   public void testSingleReadTable() throws Exception {
     addTableInput();
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.commitTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -96,14 +93,13 @@ public class TestDbTxnManager {
   @Test
   public void testSingleReadPartition() throws Exception {
     addPartitionInput(newTable(true));
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, null);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, null);
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.commitTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
 
@@ -115,14 +111,13 @@ public class TestDbTxnManager {
     addPartitionInput(t);
     addPartitionInput(t);
     addPartitionInput(t);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(3,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.commitTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -134,14 +129,13 @@ public class TestDbTxnManager {
     addPartitionInput(t);
     addPartitionInput(t);
     addTableInput();
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(4,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.commitTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -149,7 +143,7 @@ public class TestDbTxnManager {
   @Test
   public void testSingleWriteTable() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -165,7 +159,7 @@ public class TestDbTxnManager {
   @Test
   public void testSingleWritePartition() throws Exception {
     WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -180,7 +174,7 @@ public class TestDbTxnManager {
   @Test
   public void testWriteDynamicPartition() throws Exception {
     WriteEntity we = addDynamicPartitionedOutput(newTable(true), WriteEntity.WriteType.INSERT);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -223,7 +217,7 @@ public class TestDbTxnManager {
   @Test
   public void testExceptions() throws Exception {
     addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     ((DbTxnManager) txnMgr).openTxn(ctx, "NicholasII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
@@ -249,11 +243,10 @@ public class TestDbTxnManager {
     txnMgr.rollbackTxn();//this is idempotent
   }
 
-  @Ignore("This seems useless now that we have a txn for everything")
   @Test
   public void testLockTimeout() throws Exception {
     addPartitionInput(newTable(true));
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     //make sure it works with nothing to expire
     testLockExpiration(txnMgr, 0, true);
 
@@ -301,7 +294,7 @@ public class TestDbTxnManager {
     addPartitionInput(t);
     addPartitionInput(t);
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -316,7 +309,7 @@ public class TestDbTxnManager {
   @Test
   public void testUpdate() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.UPDATE);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -331,7 +324,7 @@ public class TestDbTxnManager {
   @Test
   public void testDelete() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -346,7 +339,7 @@ public class TestDbTxnManager {
   @Test
   public void testRollback() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
@@ -361,14 +354,13 @@ public class TestDbTxnManager {
   @Test
   public void testDDLExclusive() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_EXCLUSIVE);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.DROPTABLE);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.rollbackTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -376,14 +368,13 @@ public class TestDbTxnManager {
   @Test
   public void testDDLShared() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_SHARED);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.ALTERTABLE_EXCHANGEPARTITION);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TxnDbUtil.countLockComponents(((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.commitTxn();
+    txnMgr.getLockManager().unlock(locks.get(0));
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -391,12 +382,10 @@ public class TestDbTxnManager {
   @Test
   public void testDDLNoLock() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DDL_NO_LOCK);
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.CREATEDATABASE);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertNull(locks);
-    txnMgr.rollbackTxn();
   }
 
   @Test
@@ -417,12 +406,11 @@ public class TestDbTxnManager {
   @Test
   public void testLockAcquisitionAndRelease() throws Exception {
     addTableInput();
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
-    txnMgr.openTxn(ctx, "fred");
+    QueryPlan qp = new MockQueryPlan(this);
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
-    txnMgr.commitTxn();
+    txnMgr.releaseLocks(locks);
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -433,7 +421,7 @@ public class TestDbTxnManager {
 
     addTableInput();
     LockException exception = null;
-    QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
+    QueryPlan qp = new MockQueryPlan(this);
 
     // Case 1: If there's no delay for the heartbeat, txn should be able to commit
     txnMgr.openTxn(ctx, "fred");
@@ -505,8 +493,7 @@ public class TestDbTxnManager {
     private final HashSet<WriteEntity> outputs = new HashSet<>();
     private final String queryId;
     
-    MockQueryPlan(TestDbTxnManager test, HiveOperation operation) {
-      super(operation);
+    MockQueryPlan(TestDbTxnManager test) {
       inputs.addAll(test.readEntities);
       outputs.addAll(test.writeEntities);
       queryId = makeQueryId();

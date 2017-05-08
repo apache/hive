@@ -194,7 +194,7 @@ public class ReduceSinkDeDuplication extends Transform {
       ReduceSinkDesc cRSc = cRS.getConf();
       for (ReduceSinkOperator pRSNs : pRSs) {
         ReduceSinkDesc pRSNc = pRSNs.getConf();
-        if (cRSc.getKeyCols().size() != pRSNc.getKeyCols().size()) {
+        if (cRSc.getKeyCols().size() < pRSNc.getKeyCols().size()) {
           return false;
         }
         if (cRSc.getPartitionCols().size() != pRSNc.getPartitionCols().size()) {

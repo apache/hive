@@ -60,7 +60,15 @@ public class Udf extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     if (exec == null) {
-      initExec(arguments);
+      exec = new Exec(); 
+      String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
+      String[] args = { "-e", query, "-trace" };
+      try {
+        exec.setUdfRun(true);
+        exec.init(args);
+      } catch (Exception e) {
+        throw new HiveException(e.getMessage());
+      }
     }
     if (arguments.length > 1) {
       setParameters(arguments);
@@ -70,22 +78,6 @@ public class Udf extends GenericUDF {
       return result.toString();
     }
     return null;
-  }
-
-  /**
-   * init exec
-   */
-  public void initExec(DeferredObject[] arguments) throws HiveException {
-    exec = new Exec();
-    exec.enterGlobalScope();
-    String query = queryOI.getPrimitiveJavaObject(arguments[0].get());
-    String[] args = { "-e", query, "-trace" };
-    try {
-      exec.setUdfRun(true);
-      exec.init(args);
-    } catch (Exception e) {
-      throw new HiveException(e.getMessage());
-    }
   }
   
   /**

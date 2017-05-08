@@ -1,0 +1,1 @@
+FAILED: SemanticException org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 0:-1 Unsupported SubQuery Expression 'key': Only SubQuery expressions that are top level conjuncts are allowed

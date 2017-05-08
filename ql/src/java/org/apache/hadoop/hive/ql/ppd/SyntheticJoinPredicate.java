@@ -134,6 +134,8 @@ public class SyntheticJoinPredicate extends Transform {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      ParseContext pCtx = ((SyntheticContext) procCtx).getParseContext();
+
       @SuppressWarnings("unchecked")
       CommonJoinOperator<JoinDesc> join = (CommonJoinOperator<JoinDesc>) nd;
 

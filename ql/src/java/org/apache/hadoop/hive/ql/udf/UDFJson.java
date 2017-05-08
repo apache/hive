@@ -59,13 +59,19 @@ import org.codehaus.jackson.type.JavaType;
     + "  [,] : Union operator\n"
     + "  [start:end:step] : array slice operator\n")
 public class UDFJson extends UDF {
-  private static final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
-  private static final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
+  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
+  private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
+
+  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  static {
+    // Allows for unescaped ASCII control characters in JSON values
+    JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+    // Enabled to accept quoting of all character backslash qooting mechanism
+    JSON_FACTORY.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
+  }
+  private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
   private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
   private static final JavaType LIST_TYPE = TypeFactory.fromClass(List.class);
-
-  private final JsonFactory jsonFactory = new JsonFactory();
-  private final ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
 
   // An LRU cache using a linked hash map
   static class HashCache<K, V> extends LinkedHashMap<K, V> {
@@ -87,18 +93,16 @@ public class UDFJson extends UDF {
 
   }
 
-  Map<String, Object> extractObjectCache = new HashCache<String, Object>();
-  Map<String, String[]> pathExprCache = new HashCache<String, String[]>();
-  Map<String, ArrayList<String>> indexListCache =
+  static Map<String, Object> extractObjectCache = new HashCache<String, Object>();
+  static Map<String, String[]> pathExprCache = new HashCache<String, String[]>();
+  static Map<String, ArrayList<String>> indexListCache =
       new HashCache<String, ArrayList<String>>();
-  Map<String, String> mKeyGroup1Cache = new HashCache<String, String>();
-  Map<String, Boolean> mKeyMatchesCache = new HashCache<String, Boolean>();
+  static Map<String, String> mKeyGroup1Cache = new HashCache<String, String>();
+  static Map<String, Boolean> mKeyMatchesCache = new HashCache<String, Boolean>();
+
+  Text result = new Text();
 
   public UDFJson() {
-    // Allows for unescaped ASCII control characters in JSON values
-    jsonFactory.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
-    // Enabled to accept quoting of all character backslash qooting mechanism
-    jsonFactory.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
   }
 
   /**
@@ -121,13 +125,13 @@ public class UDFJson extends UDF {
    * @return json string or null when an error happens.
    */
   public Text evaluate(String jsonString, String pathString) {
+
     if (jsonString == null || jsonString.isEmpty() || pathString == null
         || pathString.isEmpty() || pathString.charAt(0) != '$') {
       return null;
     }
 
     int pathExprStart = 1;
-    boolean unknownType = pathString.equals("$");
     boolean isRootArray = false;
 
     if (pathString.length() > 1) {
@@ -151,41 +155,23 @@ public class UDFJson extends UDF {
     // Cache extractObject
     Object extractObject = extractObjectCache.get(jsonString);
     if (extractObject == null) {
-      if (unknownType) {
-        try {
-          extractObject = objectMapper.readValue(jsonString, LIST_TYPE);
-        } catch (Exception e) {
-          // Ignore exception
-        }
-        if (extractObject == null) {
-          try {
-            extractObject = objectMapper.readValue(jsonString, MAP_TYPE);
-          } catch (Exception e) {
-            return null;
-          }
-        }
-      } else {
-        JavaType javaType = isRootArray ? LIST_TYPE : MAP_TYPE;
-        try {
-          extractObject = objectMapper.readValue(jsonString, javaType);
-        } catch (Exception e) {
-          return null;
-        }
+      JavaType javaType = isRootArray ? LIST_TYPE : MAP_TYPE;
+      try {
+        extractObject = MAPPER.readValue(jsonString, javaType);
+      } catch (Exception e) {
+        return null;
       }
       extractObjectCache.put(jsonString, extractObject);
     }
-
     for (int i = pathExprStart; i < pathExpr.length; i++) {
       if (extractObject == null) {
           return null;
       }
       extractObject = extract(extractObject, pathExpr[i], i == pathExprStart && isRootArray);
     }
-
-    Text result = new Text();
     if (extractObject instanceof Map || extractObject instanceof List) {
       try {
-        result.set(objectMapper.writeValueAsString(extractObject));
+        result.set(MAPPER.writeValueAsString(extractObject));
       } catch (Exception e) {
         return null;
       }
@@ -249,8 +235,6 @@ public class UDFJson extends UDF {
   private transient AddingList jsonList = new AddingList();
 
   private static class AddingList extends ArrayList<Object> {
-    private static final long serialVersionUID = 1L;
-
     @Override
     public Iterator<Object> iterator() {
       return Iterators.forArray(toArray());
@@ -263,6 +247,7 @@ public class UDFJson extends UDF {
 
   @SuppressWarnings("unchecked")
   private Object extract_json_withindex(Object json, ArrayList<String> indexList) {
+
     jsonList.clear();
     jsonList.add(json);
     for (String index : indexList) {

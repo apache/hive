@@ -1,8 +1,8 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
--- SORT_QUERY_RESULTS
-
 -- union10.q
+
+ 
 
 -- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
 

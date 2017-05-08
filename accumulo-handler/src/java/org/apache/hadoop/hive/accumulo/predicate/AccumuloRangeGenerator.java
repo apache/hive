@@ -1,11 +1,10 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -15,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.accumulo.predicate;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
 import org.apache.accumulo.core.data.Range;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.accumulo.serde.AccumuloIndexParameters;
-import org.apache.hadoop.hive.accumulo.AccumuloIndexScanner;
-import org.apache.hadoop.hive.accumulo.AccumuloIndexScannerException;
-import org.apache.hadoop.hive.accumulo.AccumuloIndexLexicoder;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
 import org.apache.hadoop.hive.accumulo.predicate.compare.CompareOp;
 import org.apache.hadoop.hive.accumulo.predicate.compare.Equal;
@@ -44,18 +43,16 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantBooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantDoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantLongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantShortObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.UTF8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  *
@@ -66,27 +63,12 @@ public class AccumuloRangeGenerator implements NodeProcessor {
   private final AccumuloPredicateHandler predicateHandler;
   private final HiveAccumuloRowIdColumnMapping rowIdMapping;
   private final String hiveRowIdColumnName;
-  private AccumuloIndexScanner indexScanner;
 
-  public AccumuloRangeGenerator(Configuration conf, AccumuloPredicateHandler predicateHandler,
+  public AccumuloRangeGenerator(AccumuloPredicateHandler predicateHandler,
       HiveAccumuloRowIdColumnMapping rowIdMapping, String hiveRowIdColumnName) {
     this.predicateHandler = predicateHandler;
     this.rowIdMapping = rowIdMapping;
     this.hiveRowIdColumnName = hiveRowIdColumnName;
-    try {
-      this.indexScanner = new AccumuloIndexParameters(conf).createScanner();
-    } catch (AccumuloIndexScannerException e) {
-      LOG.error(e.getLocalizedMessage(), e);
-      this.indexScanner = null;
-    }
-  }
-
-  public AccumuloIndexScanner getIndexScanner() {
-    return indexScanner;
-  }
-
-  public void setIndexScanner(AccumuloIndexScanner indexScanner) {
-    this.indexScanner = indexScanner;
   }
 
   @Override
@@ -252,39 +234,13 @@ public class AccumuloRangeGenerator implements NodeProcessor {
       return null;
     }
 
-    ConstantObjectInspector objInspector = constantDesc.getWritableObjectInspector();
-
-    // Reject any clauses that are against a column that isn't the rowId mapping or indexed
+    // Reject any clauses that are against a column that isn't the rowId mapping
     if (!this.hiveRowIdColumnName.equals(columnDesc.getColumn())) {
-      if (this.indexScanner != null && this.indexScanner.isIndexed(columnDesc.getColumn())) {
-        return getIndexedRowIds(genericUdf, leftHandNode, columnDesc.getColumn(), objInspector);
-      }
       return null;
     }
 
-    Text constText = getConstantText(objInspector);
+    ConstantObjectInspector objInspector = constantDesc.getWritableObjectInspector();
 
-    return getRange(genericUdf, leftHandNode, constText);
-  }
-
-  private Range getRange(GenericUDF genericUdf, ExprNodeDesc leftHandNode, Text constText) {
-    Class<? extends CompareOp> opClz;
-    try {
-      opClz = predicateHandler.getCompareOpClass(genericUdf.getUdfName());
-    } catch (NoSuchCompareOpException e) {
-      throw new IllegalArgumentException("Unhandled UDF class: " + genericUdf.getUdfName());
-    }
-
-    if (leftHandNode instanceof ExprNodeConstantDesc) {
-      return getConstantOpColumnRange(opClz, constText);
-    } else if (leftHandNode instanceof ExprNodeColumnDesc) {
-      return getColumnOpConstantRange(opClz, constText);
-    } else {
-      throw new IllegalStateException("Expected column or constant on LHS of expression");
-    }
-  }
-
-  private Text getConstantText(ConstantObjectInspector objInspector) throws SemanticException {
     Text constText;
     switch (rowIdMapping.getEncoding()) {
       case STRING:
@@ -301,7 +257,21 @@ public class AccumuloRangeGenerator implements NodeProcessor {
         throw new SemanticException("Unable to parse unknown encoding: "
             + rowIdMapping.getEncoding());
     }
-    return constText;
+
+    Class<? extends CompareOp> opClz;
+    try {
+      opClz = predicateHandler.getCompareOpClass(genericUdf.getUdfName());
+    } catch (NoSuchCompareOpException e) {
+      throw new IllegalArgumentException("Unhandled UDF class: " + genericUdf.getUdfName());
+    }
+
+    if (leftHandNode instanceof ExprNodeConstantDesc) {
+      return getConstantOpColumnRange(opClz, constText);
+    } else if (leftHandNode instanceof ExprNodeColumnDesc) {
+      return getColumnOpConstantRange(opClz, constText);
+    } else {
+      throw new IllegalStateException("Expected column or constant on LHS of expression");
+    }
   }
 
   protected Range getConstantOpColumnRange(Class<? extends CompareOp> opClz, Text constText) {
@@ -341,21 +311,6 @@ public class AccumuloRangeGenerator implements NodeProcessor {
     }
   }
 
-
-  protected Object getIndexedRowIds(GenericUDF genericUdf, ExprNodeDesc leftHandNode,
-                                    String columnName, ConstantObjectInspector objInspector)
-      throws SemanticException {
-    Text constText = getConstantText(objInspector);
-    byte[] value = constText.toString().getBytes(UTF_8);
-    byte[] encoded = AccumuloIndexLexicoder.encodeValue(value, leftHandNode.getTypeString(), true);
-    Range range = getRange(genericUdf, leftHandNode, new Text(encoded));
-    if (indexScanner != null) {
-      return indexScanner.getIndexRowRanges(columnName, range);
-    }
-    return null;
-  }
-
-
   protected Text getUtf8Value(ConstantObjectInspector objInspector) {
     // TODO is there a more correct way to get the literal value for the Object?
     return new Text(objInspector.getWritableConstantValue().toString());
@@ -372,7 +327,7 @@ public class AccumuloRangeGenerator implements NodeProcessor {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     if (objInspector instanceof PrimitiveObjectInspector) {
       LazyUtils.writePrimitive(out, objInspector.getWritableConstantValue(),
-          (PrimitiveObjectInspector) objInspector);
+        (PrimitiveObjectInspector) objInspector);
     } else {
       return getUtf8Value(objInspector);
     }

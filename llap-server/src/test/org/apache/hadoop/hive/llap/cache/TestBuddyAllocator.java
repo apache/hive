@@ -58,7 +58,8 @@ public class TestBuddyAllocator {
 
   private static class DummyMemoryManager implements MemoryManager {
     @Override
-    public void reserveMemory(long memoryToReserve) {
+    public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
+      return true;
     }
 
     @Override
@@ -75,12 +76,7 @@ public class TestBuddyAllocator {
     }
 
     @Override
-    public long forceReservedMemory(int allocationSize, int count) {
-      return allocationSize * count;
-    }
-
-    @Override
-    public void debugDumpShort(StringBuilder sb) {
+    public void forceReservedMemory(int allocationSize, int count) {
     }
   }
 
@@ -252,7 +248,7 @@ public class TestBuddyAllocator {
     try {
       a.allocateMultiple(allocs[index], size);
     } catch (AllocatorOutOfMemoryException ex) {
-      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDumpForOomInternal());
+      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDump());
       throw ex;
     }
     // LOG.info("Allocated " + allocCount + " of " + size + "; " + a.debugDump());

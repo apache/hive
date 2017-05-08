@@ -83,8 +83,6 @@ public class SparkTask extends Task<SparkWork> {
   private transient int totalTaskCount;
   private transient int failedTaskCount;
   private transient List<Integer> stageIds;
-  private transient SparkJobRef jobRef = null;
-  private transient boolean isShutdown = false;
 
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
@@ -109,7 +107,7 @@ public class SparkTask extends Task<SparkWork> {
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
-      jobRef = sparkSession.submit(driverContext, sparkWork);
+      SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       addToHistory(jobRef);
@@ -129,14 +127,8 @@ public class SparkTask extends Task<SparkWork> {
         // TODO: If the timeout is because of lack of resources in the cluster, we should
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
         // it's difficult to do it on hive side alone. See HIVE-12650.
-        LOG.info("Failed to submit Spark job " + sparkJobID);
-        jobRef.cancelJob();
-      } else if (rc == 4) {
-        LOG.info("The number of tasks reaches above the limit " + conf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS) +
-            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
         jobRef.cancelJob();
       }
-
       if (this.jobID == null) {
         this.jobID = sparkJobStatus.getAppID();
       }
@@ -296,23 +288,6 @@ public class SparkTask extends Task<SparkWork> {
 
   public long getFinishTime() {
     return finishTime;
-  }
-
-  public boolean isTaskShutdown() {
-    return isShutdown;
-  }
-
-  @Override
-  public void shutdown() {
-    super.shutdown();
-    if (jobRef != null && !isShutdown) {
-      try {
-        jobRef.cancelJob();
-      } catch (Exception e) {
-        LOG.warn("failed to kill job", e);
-      }
-    }
-    isShutdown = true;
   }
 
   /**

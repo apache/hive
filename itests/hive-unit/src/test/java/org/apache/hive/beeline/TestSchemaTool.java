@@ -36,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
 
@@ -58,10 +57,6 @@ public class TestSchemaTool extends TestCase {
     hiveConf = new HiveConf(this.getClass());
     schemaTool = new HiveSchemaTool(
         System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby");
-    schemaTool.setUserName(
-        schemaTool.getHiveConf().get(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
-    schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
-          HiveConf.ConfVars.METASTOREPWD.varname));
     System.setProperty("beeLine.system.exit", "true");
     errStream = System.err;
     outStream = System.out;
@@ -125,8 +120,8 @@ public class TestSchemaTool extends TestCase {
     boolean isValid = (boolean)schemaTool.validateSchemaTables(conn);
     assertTrue(isValid);
 
-    // upgrade from 2.0.0 schema and re-validate
-    schemaTool.doUpgrade("2.0.0");
+    // upgrade to 2.2.0 schema and re-validate
+    schemaTool.doUpgrade("2.2.0");
     isValid = (boolean)schemaTool.validateSchemaTables(conn);
     assertTrue(isValid);
 

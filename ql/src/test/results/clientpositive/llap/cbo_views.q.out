@@ -50,8 +50,8 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
-1
 NULL
+1
 1
 PREHOOK: query: select count(v1.c_int)  from v1 join cbo_t2 on v1.c_int = cbo_t2.c_int
 PREHOOK: type: QUERY

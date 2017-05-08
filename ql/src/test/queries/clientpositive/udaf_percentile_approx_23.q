@@ -99,5 +99,4 @@ select percentile_approx(key, 0.5) from bucket;
 select percentile_approx(key, 0.5) between 255.0 and 257.0 from bucket;
 
 -- test where number of elements is zero
-set hive.cbo.enable=false;
 select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket where key > 10000;

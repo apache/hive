@@ -1,5 +1,4 @@
 set hive.mapred.mode=nonstrict;
-set hive.llap.memory.oversubscription.max.executors.per.query=0;
 
 set hive.explain.user=true;
 set hive.auto.convert.join=false;

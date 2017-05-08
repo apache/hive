@@ -85,11 +85,6 @@ public class ReduceWork extends BaseWork {
 
   // boolean that says whether tez auto reduce parallelism should be used
   private boolean isAutoReduceParallelism;
-  // boolean that says whether the data distribution is uniform hash (not java HashCode)
-  private transient boolean isUniformDistribution = false;
-
-  // boolean that says whether to slow start or not
-  private boolean isSlowStart = true;
 
   // for auto reduce parallelism - minimum reducers requested
   private int minReduceTasks;
@@ -102,11 +97,6 @@ public class ReduceWork extends BaseWork {
 
   private boolean reduceVectorizationEnabled;
   private String vectorReduceEngine;
-
-  private String vectorReduceColumnSortOrder;
-  private String vectorReduceColumnNullOrder;
-
-  private transient TezEdgeProperty edgeProp;
 
   /**
    * If the plan has a reducer and correspondingly a reduce-sink, then store the TableDesc pointing
@@ -227,23 +217,6 @@ public class ReduceWork extends BaseWork {
     return isAutoReduceParallelism;
   }
 
-  public boolean isSlowStart() {
-    return isSlowStart;
-  }
-
-  public void setSlowStart(boolean isSlowStart) {
-    this.isSlowStart = isSlowStart;
-  }
-
-  // ReducerTraits.UNIFORM
-  public void setUniformDistribution(boolean isUniformDistribution) {
-    this.isUniformDistribution = isUniformDistribution;
-  }
-
-  public boolean isUniformDistribution() {
-    return this.isUniformDistribution;
-  }
-
   public void setMinReduceTasks(int minReduceTasks) {
     this.minReduceTasks = minReduceTasks;
   }
@@ -274,22 +247,6 @@ public class ReduceWork extends BaseWork {
 
   public String getVectorReduceEngine() {
     return vectorReduceEngine;
-  }
-
-  public void setVectorReduceColumnSortOrder(String vectorReduceColumnSortOrder) {
-    this.vectorReduceColumnSortOrder = vectorReduceColumnSortOrder;
-  }
-
-  public String getVectorReduceColumnSortOrder() {
-    return vectorReduceColumnSortOrder;
-  }
-
-  public void setVectorReduceColumnNullOrder(String vectorReduceColumnNullOrder) {
-    this.vectorReduceColumnNullOrder = vectorReduceColumnNullOrder;
-  }
-
-  public String getVectorReduceColumnNullOrder() {
-    return vectorReduceColumnNullOrder;
   }
 
   // Use LinkedHashSet to give predictable display order.
@@ -343,22 +300,6 @@ public class ReduceWork extends BaseWork {
       }
       return VectorizationCondition.getConditionsNotMet(reduceVectorizationConditions);
     }
-
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "reduceColumnSortOrder", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getReduceColumnSortOrder() {
-      if (!getVectorizationExamined()) {
-        return null;
-      }
-      return reduceWork.getVectorReduceColumnSortOrder();
-    }
-
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "reduceColumnNullOrder", explainLevels = { Level.DEFAULT, Level.EXTENDED })
-    public String getReduceColumnNullOrder() {
-      if (!getVectorizationExamined()) {
-        return null;
-      }
-      return reduceWork.getVectorReduceColumnNullOrder();
-    }
   }
 
   @Explain(vectorization = Vectorization.SUMMARY, displayName = "Reduce Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -367,13 +308,5 @@ public class ReduceWork extends BaseWork {
       return null;
     }
     return new ReduceExplainVectorization(this);
-  }
-
-  public void setEdgePropRef(TezEdgeProperty edgeProp) {
-    this.edgeProp = edgeProp;
-  }
-
-  public TezEdgeProperty getEdgePropRef() {
-    return edgeProp;
   }
 }

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.druid.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -171,8 +170,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // Create Select query
     SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
     builder.dataSource(dataSource);
-    final List<Interval> intervals = Arrays.asList();
-    builder.intervals(intervals);
+    builder.intervals(Arrays.asList(DruidTable.DEFAULT_INTERVAL));
     builder.pagingSpec(PagingSpec.newSpec(1));
     Map<String, Object> context = new HashMap<>();
     context.put(Constants.DRUID_QUERY_FETCH, false);
@@ -214,7 +212,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
             StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
     final String request = String.format(
             "http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
-            address, query.getDataSource().getNames().get(0), URLEncoder.encode(intervals, "UTF-8"));
+            address, query.getDataSource().getNames().get(0), intervals);
     final InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, new URL(request)));
@@ -415,15 +413,11 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   private static List<List<Interval>> createSplitsIntervals(List<Interval> intervals, int numSplits
   ) {
-
+    final long totalTime = DruidDateTimeUtils.extractTotalTime(intervals);
     long startTime = intervals.get(0).getStartMillis();
     long endTime = startTime;
     long currTime = 0;
     List<List<Interval>> newIntervals = new ArrayList<>();
-    long totalTime = 0;
-    for (Interval interval: intervals) {
-      totalTime += interval.getEndMillis() - interval.getStartMillis();
-    }
     for (int i = 0, posIntervals = 0; i < numSplits; i++) {
       final long rangeSize = Math.round((double) (totalTime * (i + 1)) / numSplits) -
               Math.round((double) (totalTime * i) / numSplits);

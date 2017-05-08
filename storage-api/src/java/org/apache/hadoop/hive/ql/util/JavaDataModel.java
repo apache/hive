@@ -212,7 +212,7 @@ public enum JavaDataModel {
   public abstract int memoryAlign();
 
   // ascii string
-  public long lengthFor(String string) {
+  public int lengthFor(String string) {
     return lengthForStringOfLength(string.length());
   }
 
@@ -228,8 +228,8 @@ public enum JavaDataModel {
     return PRIMITIVES2;
   }
 
-  public static long alignUp(long value, long align) {
-    return (value + align - 1L) & ~(align - 1L);
+  public static int alignUp(int value, int align) {
+    return (value + align - 1) & ~(align - 1);
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(JavaDataModel.class);
@@ -282,35 +282,35 @@ public enum JavaDataModel {
     return ((size + 8) >> 3) << 3;
   }
 
-  private long lengthForPrimitiveArrayOfSize(int primitiveSize, long length) {
+  private int lengthForPrimitiveArrayOfSize(int primitiveSize, int length) {
     return alignUp(array() + primitiveSize*length, memoryAlign());
   }
 
-  public long lengthForByteArrayOfSize(long length) {
+  public int lengthForByteArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
   }
-  public long lengthForObjectArrayOfSize(long length) {
+  public int lengthForObjectArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(ref(), length);
   }
-  public long lengthForLongArrayOfSize(long length) {
+  public int lengthForLongArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(primitive2(), length);
   }
-  public long lengthForDoubleArrayOfSize(long length) {
+  public int lengthForDoubleArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(primitive2(), length);
   }
-  public long lengthForIntArrayOfSize(long length) {
+  public int lengthForIntArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(primitive1(), length);
   }
-  public long lengthForBooleanArrayOfSize(long length) {
+  public int lengthForBooleanArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
   }
-  public long lengthForTimestampArrayOfSize(long length) {
+  public int lengthForTimestampArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(lengthOfTimestamp(), length);
   }
-  public long lengthForDateArrayOfSize(long length) {
+  public int lengthForDateArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(lengthOfDate(), length);
   }
-  public long lengthForDecimalArrayOfSize(long length) {
+  public int lengthForDecimalArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(lengthOfDecimal(), length);
   }
 

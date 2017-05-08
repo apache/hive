@@ -524,8 +524,4 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     return queryId + "-" + dagIndex;
   }
 
-  public int getNumActive() {
-    return executorService.getNumActive();
-  }
-
 }

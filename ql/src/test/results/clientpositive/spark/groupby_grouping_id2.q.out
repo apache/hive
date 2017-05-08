@@ -22,7 +22,6 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-key	value	grouping__id	_c3
 1	1	0	1
 1	NULL	0	1
 1	NULL	1	2
@@ -42,7 +41,6 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY ROLL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-key	value	grouping__id	_c3
 1	1	0	1
 1	NULL	0	1
 1	NULL	1	2
@@ -72,7 +70,6 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-grouping__id	_c1
 0	6
 1	4
 3	1
@@ -94,7 +91,6 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-grouping__id	_c1
 0	6
 1	4
 3	1
@@ -112,7 +108,6 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-t1.grouping__id	t2.grouping__id
 0	0
 0	0
 0	0
@@ -180,7 +175,6 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-t1.grouping__id	t2.grouping__id
 0	0
 0	0
 0	0
@@ -242,7 +236,6 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-key	value	grouping__id	_c3
 1	1	0	1
 1	NULL	0	1
 1	NULL	1	2
@@ -272,7 +265,6 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-grouping__id	_c1
 0	6
 1	4
 3	1
@@ -290,7 +282,6 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-t1.grouping__id	t2.grouping__id
 0	0
 0	0
 0	0

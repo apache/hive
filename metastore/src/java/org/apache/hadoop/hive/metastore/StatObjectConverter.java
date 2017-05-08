@@ -527,7 +527,7 @@ public class StatObjectConverter {
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses,
       Object avgLong, Object avgDouble, Object avgDecimal, Object sumDist,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
+      boolean useDensityFunctionForNDVEstimation) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -561,29 +561,23 @@ public class StatObjectConverter {
       }
       long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
       long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
-      long rangeBound = Long.MAX_VALUE;
-      if (lhigh != null && llow != null) {
-        rangeBound = MetaStoreDirectSql.extractSqlLong(lhigh)
-            - MetaStoreDirectSql.extractSqlLong(llow) + 1;
-      }
-      long estimation;
       if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
           && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
         // We have estimation, lowerbound and higherbound. We use estimation if
         // it is between lowerbound and higherbound.
-        estimation = MetaStoreDirectSql
+        long estimation = MetaStoreDirectSql
             .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
                 .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
         if (estimation < lowerBound) {
-          estimation = lowerBound;
+          longStats.setNumDVs(lowerBound);
         } else if (estimation > higherBound) {
-          estimation = higherBound;
+          longStats.setNumDVs(higherBound);
+        } else {
+          longStats.setNumDVs(estimation);
         }
       } else {
-        estimation = (long) (lowerBound + (higherBound - lowerBound) * ndvTuner);
+        longStats.setNumDVs(lowerBound);
       }
-      estimation = Math.min(estimation, rangeBound);
-      longStats.setNumDVs(estimation);
       data.setLongStats(longStats);
     } else if (colType.equals("date")) {
       DateColumnStatsData dateStats = new DateColumnStatsData();
@@ -596,29 +590,23 @@ public class StatObjectConverter {
       }
       long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
       long higherBound = MetaStoreDirectSql.extractSqlLong(sumDist);
-      long rangeBound = Long.MAX_VALUE;
-      if (lhigh != null && llow != null) {
-        rangeBound = MetaStoreDirectSql.extractSqlLong(lhigh)
-            - MetaStoreDirectSql.extractSqlLong(llow) + 1;
-      }
-      long estimation;
       if (useDensityFunctionForNDVEstimation && lhigh != null && llow != null && avgLong != null
           && MetaStoreDirectSql.extractSqlDouble(avgLong) != 0.0) {
         // We have estimation, lowerbound and higherbound. We use estimation if
         // it is between lowerbound and higherbound.
-        estimation = MetaStoreDirectSql
+        long estimation = MetaStoreDirectSql
             .extractSqlLong((MetaStoreDirectSql.extractSqlLong(lhigh) - MetaStoreDirectSql
                 .extractSqlLong(llow)) / MetaStoreDirectSql.extractSqlDouble(avgLong));
         if (estimation < lowerBound) {
-          estimation = lowerBound;
+          dateStats.setNumDVs(lowerBound);
         } else if (estimation > higherBound) {
-          estimation = higherBound;
+          dateStats.setNumDVs(higherBound);
+        } else {
+          dateStats.setNumDVs(estimation);
         }
       } else {
-        estimation = (long) (lowerBound + (higherBound - lowerBound) * ndvTuner);
+        dateStats.setNumDVs(lowerBound);
       }
-      estimation = Math.min(estimation, rangeBound);
-      dateStats.setNumDVs(estimation);
       data.setDateStats(dateStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
@@ -644,7 +632,7 @@ public class StatObjectConverter {
           doubleStats.setNumDVs(estimation);
         }
       } else {
-        doubleStats.setNumDVs((long) (lowerBound + (higherBound - lowerBound) * ndvTuner));
+        doubleStats.setNumDVs(lowerBound);
       }
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
@@ -685,7 +673,7 @@ public class StatObjectConverter {
           decimalStats.setNumDVs(estimation);
         }
       } else {
-        decimalStats.setNumDVs((long) (lowerBound + (higherBound - lowerBound) * ndvTuner));
+        decimalStats.setNumDVs(lowerBound);
       }
       data.setDecimalStats(decimalStats);
     }

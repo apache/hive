@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
@@ -44,15 +43,14 @@ import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -124,7 +122,7 @@ public class Main {
       checkEnv();
       runServer(port);
       // Currently only print the first port to be consistent with old behavior
-      port =  ArrayUtils.isEmpty(server.getConnectors()) ? -1 : ((ServerConnector)(server.getConnectors()[0])).getLocalPort();
+      port =  ArrayUtils.isEmpty(server.getConnectors()) ? -1 : server.getConnectors()[0].getPort();
 
       System.out.println("templeton: listening on port " + port);
       LOG.info("Templeton listening on port " + port);
@@ -187,7 +185,6 @@ public class Main {
 
     // Add the Auth filter
     FilterHolder fHolder = makeAuthFilter();
-    EnumSet<DispatcherType> dispatches = EnumSet.of(DispatcherType.REQUEST);
 
     /* 
      * We add filters for each of the URIs supported by templeton.
@@ -196,18 +193,28 @@ public class Main {
      * This is because mapreduce does not use secure credentials for 
      * callbacks. So jetty would fail the request as unauthorized.
      */ 
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/ddl/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/pig/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/hive/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/sqoop/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/queue/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/jobs/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/mapreduce/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/status/*", dispatches);
-    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/version/*", dispatches);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/ddl/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/pig/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/hive/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/sqoop/*",
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/queue/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/jobs/*",
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/mapreduce/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/status/*", 
+             FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/version/*", 
+             FilterMapping.REQUEST);
 
     if (conf.getBoolean(AppConfig.XSRF_FILTER_ENABLED, false)){
-      root.addFilter(makeXSRFFilter(), "/" + SERVLET_PATH + "/*", dispatches);
+      root.addFilter(makeXSRFFilter(), "/" + SERVLET_PATH + "/*",
+             FilterMapping.REQUEST);
       LOG.debug("XSRF filter enabled");
     } else {
       LOG.warn("XSRF filter disabled");

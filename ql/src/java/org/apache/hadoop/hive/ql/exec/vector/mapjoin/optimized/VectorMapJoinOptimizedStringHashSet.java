@@ -60,12 +60,4 @@ public class VectorMapJoinOptimizedStringHashSet
     super(originalTableContainer, hashMapRowGetter);
     stringCommon =  new VectorMapJoinOptimizedStringCommon(isOuterJoin);
   }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    // adding 16KB constant memory for stringCommon as the rabit hole is deep to implement
-    // MemoryEstimate interface, also it is constant overhead
-    long size = (16 * 1024L);
-    return super.getEstimatedMemorySize() + size;
-  }
 }

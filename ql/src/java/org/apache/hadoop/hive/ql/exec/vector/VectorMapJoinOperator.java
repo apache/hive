@@ -215,9 +215,6 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
       }
     }
 
-    for (VectorExpression ve : keyExpressions) {
-      ve.evaluate(inBatch);
-    }
     keyWrapperBatch.evaluateBatch(inBatch);
     keyValues = keyWrapperBatch.getVectorHashKeyWrappers();
 

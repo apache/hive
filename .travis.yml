@@ -23,8 +23,10 @@ dist: trusty
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
 
+# parallel builds on jdk7 and jdk8
 language: java
 jdk:
+  - oraclejdk7
   - oraclejdk8
 
 cache:
@@ -33,7 +35,7 @@ cache:
 
 env:
   MAVEN_SKIP_RC=true
-  MAVEN_OPTS="-Xmx2g"
+  MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:

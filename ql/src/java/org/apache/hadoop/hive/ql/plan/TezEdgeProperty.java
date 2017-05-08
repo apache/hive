@@ -35,7 +35,6 @@ public class TezEdgeProperty {
   private int numBuckets;
 
   private boolean isAutoReduce;
-  private boolean isSlowStart = true;
   private int minReducer;
   private int maxReducer;
   private long inputSizePerReducer;
@@ -48,19 +47,12 @@ public class TezEdgeProperty {
   }
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, boolean isAutoReduce,
-      boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer) {
+      int minReducer, int maxReducer, long bytesPerReducer) {
     this(hiveConf, edgeType, -1);
-    setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer);
-  }
-
-  public void setAutoReduce(HiveConf hiveConf, boolean isAutoReduce, int minReducer,
-      int maxReducer, long bytesPerReducer) {
-    this.hiveConf = hiveConf;
     this.minReducer = minReducer;
     this.maxReducer = maxReducer;
     this.isAutoReduce = isAutoReduce;
     this.inputSizePerReducer = bytesPerReducer;
-    this.isSlowStart = isSlowStart;
   }
 
   public TezEdgeProperty(EdgeType edgeType) {
@@ -93,13 +85,5 @@ public class TezEdgeProperty {
 
   public long getInputSizePerReducer() {
     return inputSizePerReducer;
-  }
-
-  public boolean isSlowStart() {
-    return isSlowStart;
-  }
-
-  public void setSlowStart(boolean slowStart) {
-    this.isSlowStart = slowStart;
   }
 }

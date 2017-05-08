@@ -1861,13 +1861,11 @@ class GetOpenTxnsResponse
   TXN_HIGH_WATER_MARK = 1
   OPEN_TXNS = 2
   MIN_OPEN_TXN = 3
-  ABORTEDBITS = 4
 
   FIELDS = {
     TXN_HIGH_WATER_MARK => {:type => ::Thrift::Types::I64, :name => 'txn_high_water_mark'},
-    OPEN_TXNS => {:type => ::Thrift::Types::LIST, :name => 'open_txns', :element => {:type => ::Thrift::Types::I64}},
-    MIN_OPEN_TXN => {:type => ::Thrift::Types::I64, :name => 'min_open_txn', :optional => true},
-    ABORTEDBITS => {:type => ::Thrift::Types::STRING, :name => 'abortedBits', :binary => true}
+    OPEN_TXNS => {:type => ::Thrift::Types::SET, :name => 'open_txns', :element => {:type => ::Thrift::Types::I64}},
+    MIN_OPEN_TXN => {:type => ::Thrift::Types::I64, :name => 'min_open_txn', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1875,7 +1873,6 @@ class GetOpenTxnsResponse
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txn_high_water_mark is unset!') unless @txn_high_water_mark
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field open_txns is unset!') unless @open_txns
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field abortedBits is unset!') unless @abortedBits
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -2511,12 +2508,10 @@ end
 
 class InsertEventRequestData
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  REPLACE = 1
-  FILESADDED = 2
-  FILESADDEDCHECKSUM = 3
+  FILESADDED = 1
+  FILESADDEDCHECKSUM = 2
 
   FIELDS = {
-    REPLACE => {:type => ::Thrift::Types::BOOL, :name => 'replace', :optional => true},
     FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
     FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }

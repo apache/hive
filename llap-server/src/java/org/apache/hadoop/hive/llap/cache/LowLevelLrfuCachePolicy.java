@@ -69,6 +69,12 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private EvictionListener evictionListener;
   private LlapOomDebugDump parentDebugDump;
 
+  public LowLevelLrfuCachePolicy(Configuration conf) {
+    this((int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
+        HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), conf);
+  }
+
+  @VisibleForTesting
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
@@ -204,14 +210,13 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public long tryEvictContiguousData(int allocationSize, int count) {
+  public int tryEvictContiguousData(int allocationSize, int count) {
     int evicted = evictDataFromList(allocationSize, count);
-    if (count <= evicted) return evicted * allocationSize;
-    evicted += evictDataFromHeap(timer.get(), count - evicted, allocationSize);
-    long evictedBytes = evicted * allocationSize;
-    if (count <= evicted) return evictedBytes;
-    evictedBytes += evictSomeBlocks(allocationSize * (count - evicted));
-    return evictedBytes;
+    count -= evicted;
+    if (count > 0) {
+      evicted += evictDataFromHeap(timer.get(), count, allocationSize);
+    }
+    return evicted;
   }
 
   private long evictFromList(long memoryToReserve) {
@@ -567,27 +572,5 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       result += "\n" + parentDebugDump.debugDumpForOom();
     }
     return result;
-  }
-
-  @Override
-  public void debugDumpShort(StringBuilder sb) {
-    sb.append("\nLRFU eviction list: ");
-    LlapCacheableBuffer listHeadLocal = listHead, listTailLocal = listTail;
-    if (listHeadLocal == null) {
-      sb.append("0 items");
-    } else {
-      LlapCacheableBuffer listItem = listHeadLocal;
-      int c = 0;
-      while (listItem != null) {
-        ++c;
-        if (listItem == listTailLocal) break;
-        listItem = listItem.next;
-      }
-      sb.append(c + " items");
-    }
-    sb.append("\nLRFU eviction heap: " + heapSize + " items");
-    if (parentDebugDump != null) {
-      parentDebugDump.debugDumpShort(sb);
-    }
   }
 }

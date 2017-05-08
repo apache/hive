@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.thrift.TException;
 
-public class VerifyingObjectStore extends ObjectStore {
+class VerifyingObjectStore extends ObjectStore {
   private static final Logger LOG = LoggerFactory.getLogger(VerifyingObjectStore.class);
 
   public VerifyingObjectStore() {

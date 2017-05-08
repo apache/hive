@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
@@ -31,7 +30,7 @@ import com.google.common.base.Preconditions;
 
 // Supports random access.
 
-public class VectorMapJoinFastValueStore implements MemoryEstimate {
+public class VectorMapJoinFastValueStore {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastValueStore.class.getName());
 
@@ -112,11 +111,6 @@ public class VectorMapJoinFastValueStore implements MemoryEstimate {
 
   public WriteBuffers writeBuffers() {
     return writeBuffers;
-  }
-
-  @Override
-  public long getEstimatedMemorySize() {
-    return writeBuffers == null ? 0 : writeBuffers.getEstimatedMemorySize();
   }
 
   public static class HashMapResult extends VectorMapJoinHashMapResult {

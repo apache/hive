@@ -57,7 +57,7 @@ public class VectorAggregationBufferBatch {
   /**
    * Memory consumed by a set of aggregation buffers
    */
-  private long aggregatorsFixedSize;
+  private int aggregatorsFixedSize;
 
   /**
    * Array of indexes for aggregators that have variable size
@@ -76,7 +76,7 @@ public class VectorAggregationBufferBatch {
    * Returns the fixed size consumed by the aggregation buffers
    * @return
    */
-  public long getAggregatorsFixedSize() {
+  public int getAggregatorsFixedSize() {
     return aggregatorsFixedSize;
   }
 
