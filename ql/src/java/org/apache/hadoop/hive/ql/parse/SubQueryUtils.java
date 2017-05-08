@@ -95,7 +95,7 @@ public class SubQueryUtils {
 
   static ASTNode isNull(ASTNode expr) {
     ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
-    node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_ISNULL, "TOK_ISNULL"));
+    node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, "isnull"));
     node.addChild(expr);
     return node;
   }

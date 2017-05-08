@@ -198,7 +198,6 @@ public class TypeCheckProcFactory {
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
         + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
-        + HiveParser.TOK_LIKEALL + "%|" + HiveParser.TOK_LIKEANY + "%|"
         + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
         tf.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
@@ -715,18 +714,12 @@ public class TypeCheckProcFactory {
   public static class DefaultExprProcessor implements NodeProcessor {
 
     static HashMap<Integer, String> specialUnaryOperatorTextHashMap;
-    static HashMap<Integer, String> specialFunctionTextHashMap;
     static HashMap<Integer, String> conversionFunctionTextHashMap;
     static HashSet<Integer> windowingTokens;
     static {
       specialUnaryOperatorTextHashMap = new HashMap<Integer, String>();
       specialUnaryOperatorTextHashMap.put(HiveParser.PLUS, "positive");
       specialUnaryOperatorTextHashMap.put(HiveParser.MINUS, "negative");
-      specialFunctionTextHashMap = new HashMap<Integer, String>();
-      specialFunctionTextHashMap.put(HiveParser.TOK_ISNULL, "isnull");
-      specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
-      specialFunctionTextHashMap.put(HiveParser.TOK_LIKEANY, "likeany");
-      specialFunctionTextHashMap.put(HiveParser.TOK_LIKEALL, "likeall");
       conversionFunctionTextHashMap = new HashMap<Integer, String>();
       conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN,
           serdeConstants.BOOLEAN_TYPE_NAME);
@@ -818,7 +811,6 @@ public class TypeCheckProcFactory {
         // special dictionary.
         assert (expr.getChildCount() >= 1);
         int funcType = ((ASTNode) expr.getChild(0)).getType();
-        funcText = specialFunctionTextHashMap.get(funcType);
         if (funcText == null) {
           funcText = conversionFunctionTextHashMap.get(funcType);
         }
@@ -1305,7 +1297,6 @@ public class TypeCheckProcFactory {
 
       // Return nulls for conversion operators
       if (conversionFunctionTextHashMap.keySet().contains(expr.getType())
-          || specialFunctionTextHashMap.keySet().contains(expr.getType())
           || expr.getToken().getType() == HiveParser.CharSetName
           || expr.getToken().getType() == HiveParser.CharSetLiteral) {
         return null;

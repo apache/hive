@@ -121,8 +121,12 @@ initcap
 inline
 instr
 internal_interval
+isfalse
+isnotfalse
 isnotnull
+isnottrue
 isnull
+istrue
 java_method
 json_tuple
 lag
@@ -327,6 +331,10 @@ floor_minute
 from_unixtime
 in_file
 inline
+isfalse
+isnotfalse
+isnottrue
+istrue
 json_tuple
 last_value
 lcase
