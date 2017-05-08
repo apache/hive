@@ -71,7 +71,7 @@ import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.StatusGetOpts;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -305,7 +305,9 @@ public class TezTask extends Task<TezWork> {
     DAG dag = DAG.create(work.getName());
 
     // set some info for the query
-    JSONObject json = new JSONObject().put("context", "Hive").put("description", ctx.getCmd());
+    JSONObject json = new JSONObject();
+    json.put("context", "Hive");
+    json.put("description", ctx.getCmd());
     String dagInfo = json.toString();
 
     if (LOG.isDebugEnabled()) {

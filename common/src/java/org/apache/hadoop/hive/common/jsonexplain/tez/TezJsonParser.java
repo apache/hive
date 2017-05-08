@@ -28,13 +28,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.sun.jersey.api.json.JSONUnmarshaller;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
+import org.apache.hadoop.hive.common.jsonexplain.JsonUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 public class TezJsonParser implements JsonParser {
   JSONObject inputObject;
@@ -49,27 +50,26 @@ public class TezJsonParser implements JsonParser {
     super();
     LOG = LogFactory.getLog(this.getClass().getName());
   }
-  public void extractStagesAndPlans() throws JSONException, JsonParseException,
-      JsonMappingException, Exception, IOException {
+  public void extractStagesAndPlans() throws Exception {
     // extract stages
     this.stages = new HashMap<String, Stage>();
-    JSONObject dependency = inputObject.getJSONObject("STAGE DEPENDENCIES");
-    if (dependency.length() > 0) {
+    JSONObject dependency = (JSONObject) inputObject.get("STAGE DEPENDENCIES");
+    if (dependency.size() > 0) {
       // iterate for the first time to get all the names of stages.
-      for (String stageName : JSONObject.getNames(dependency)) {
+      for (String stageName : JsonUtils.getNames(dependency)) {
         this.stages.put(stageName, new Stage(stageName));
       }
       // iterate for the second time to get all the dependency.
-      for (String stageName : JSONObject.getNames(dependency)) {
-        JSONObject dependentStageNames = dependency.getJSONObject(stageName);
+      for (String stageName : JsonUtils.getNames(dependency)) {
+        JSONObject dependentStageNames = (JSONObject) dependency.get(stageName);
         this.stages.get(stageName).addDependency(dependentStageNames, this.stages);
       }
     }
     // extract stage plans
-    JSONObject stagePlans = inputObject.getJSONObject("STAGE PLANS");
-    if (stagePlans.length() > 0) {
-      for (String stageName : JSONObject.getNames(stagePlans)) {
-        JSONObject stagePlan = stagePlans.getJSONObject(stageName);
+    JSONObject stagePlans = (JSONObject) inputObject.get("STAGE PLANS");
+    if (stagePlans.size() > 0) {
+      for (String stageName : JsonUtils.getNames(stagePlans)) {
+        JSONObject stagePlan = (JSONObject) stagePlans.get(stageName);
         this.stages.get(stageName).extractVertex(stagePlan);
       }
     }
@@ -116,8 +116,8 @@ public class TezJsonParser implements JsonParser {
     this.outputStream = outputStream;
     this.extractStagesAndPlans();
     // print out the cbo info
-    if (inputObject.has("cboInfo")) {
-      outputStream.println(inputObject.getString("cboInfo"));
+    if (inputObject.keySet().contains("cboInfo")) {
+      outputStream.println(inputObject.get("cboInfo"));
       outputStream.println();
     }
     // print out the vertex dependency in root stage

@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.jsonexplain.JsonUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class Stage {
   String name;
@@ -56,9 +56,9 @@ public class Stage {
     vertexs = new LinkedHashMap<>();
   }
 
-  public void addDependency(JSONObject object, Map<String, Stage> stages) throws JSONException {
-    if (!object.has("ROOT STAGE")) {
-      String names = object.getString("DEPENDENT STAGES");
+  public void addDependency(JSONObject object, Map<String, Stage> stages) {
+    if (!object.keySet().contains("ROOT STAGE")) {
+      String names = object.get("DEPENDENT STAGES").toString();
       for (String name : names.split(",")) {
         Stage parent = stages.get(name.trim());
         this.parentStages.add(parent);
@@ -75,30 +75,30 @@ public class Stage {
    *           and/or attributes.
    */
   public void extractVertex(JSONObject object) throws Exception {
-    if (object.has("Tez")) {
+    if (object.keySet().contains("Tez")) {
       this.tezStageDependency = new LinkedHashMap<>();
       JSONObject tez = (JSONObject) object.get("Tez");
-      JSONObject vertices = tez.getJSONObject("Vertices:");
-      if (tez.has("Edges:")) {
-        JSONObject edges = tez.getJSONObject("Edges:");
+      JSONObject vertices = (JSONObject) tez.get("Vertices:");
+      if (tez.keySet().contains("Edges:")) {
+        JSONObject edges = (JSONObject) tez.get("Edges:");
         // iterate for the first time to get all the vertices
-        for (String to : JSONObject.getNames(edges)) {
-          vertexs.put(to, new Vertex(to, vertices.getJSONObject(to)));
+        for (String to : JsonUtils.getNames(edges)) {
+          vertexs.put(to, new Vertex(to, (JSONObject) vertices.get(to)));
         }
         // iterate for the second time to get all the vertex dependency
-        for (String to : JSONObject.getNames(edges)) {
+        for (String to : JsonUtils.getNames(edges)) {
           Object o = edges.get(to);
           Vertex v = vertexs.get(to);
           // 1 to 1 mapping
           if (o instanceof JSONObject) {
             JSONObject obj = (JSONObject) o;
-            String parent = obj.getString("parent");
+            String parent = obj.get("parent").toString();
             Vertex parentVertex = vertexs.get(parent);
             if (parentVertex == null) {
-              parentVertex = new Vertex(parent, vertices.getJSONObject(parent));
+              parentVertex = new Vertex(parent, (JSONObject) vertices.get(parent));
               vertexs.put(parent, parentVertex);
             }
-            String type = obj.getString("type");
+            String type = obj.get("type").toString();
             // for union vertex, we reverse the dependency relationship
             if (!"CONTAINS".equals(type)) {
               v.addDependency(new Connection(type, parentVertex));
@@ -112,15 +112,15 @@ public class Stage {
             // 1 to many mapping
             JSONArray from = (JSONArray) o;
             List<Connection> list = new ArrayList<>();
-            for (int index = 0; index < from.length(); index++) {
-              JSONObject obj = from.getJSONObject(index);
-              String parent = obj.getString("parent");
+            for (int index = 0; index < from.size(); index++) {
+              JSONObject obj = (JSONObject) from.get(index);
+              String parent = obj.get("parent").toString();
               Vertex parentVertex = vertexs.get(parent);
               if (parentVertex == null) {
-                parentVertex = new Vertex(parent, vertices.getJSONObject(parent));
+                parentVertex = new Vertex(parent, (JSONObject) vertices.get(parent));
                 vertexs.put(parent, parentVertex);
               }
-              String type = obj.getString("type");
+              String type = obj.get("type").toString();
               if (!"CONTAINS".equals(type)) {
                 v.addDependency(new Connection(type, parentVertex));
                 parentVertex.children.add(v);
@@ -134,8 +134,8 @@ public class Stage {
           }
         }
       } else {
-        for (String vertexName : JSONObject.getNames(vertices)) {
-          vertexs.put(vertexName, new Vertex(vertexName, vertices.getJSONObject(vertexName)));
+        for (String vertexName : JsonUtils.getNames(vertices)) {
+          vertexs.put(vertexName, new Vertex(vertexName, (JSONObject) vertices.get(vertexName)));
         }
       }
       // The opTree in vertex is extracted
@@ -146,10 +146,10 @@ public class Stage {
         }
       }
     } else {
-      String[] names = JSONObject.getNames(object);
+      String[] names = JsonUtils.getNames(object);
       for (String name : names) {
         if (name.contains("Operator")) {
-          this.op = extractOp(name, object.getJSONObject(name));
+          this.op = extractOp(name, (JSONObject) object.get(name));
         } else {
           attrs.add(new Attr(name, object.get(name).toString()));
         }
@@ -161,7 +161,6 @@ public class Stage {
    * @param opName
    * @param opObj
    * @return
-   * @throws JSONException
    * @throws JsonParseException
    * @throws JsonMappingException
    * @throws IOException
@@ -169,26 +168,25 @@ public class Stage {
    *           This method address the create table operator, fetch operator,
    *           etc
    */
-  Op extractOp(String opName, JSONObject opObj) throws JSONException, JsonParseException,
-      JsonMappingException, IOException, Exception {
+  Op extractOp(String opName, JSONObject opObj) throws Exception {
     List<Attr> attrs = new ArrayList<>();
     Vertex v = null;
-    if (opObj.length() > 0) {
-      String[] names = JSONObject.getNames(opObj);
+    if (opObj.size() > 0) {
+      String[] names = JsonUtils.getNames(opObj);
       for (String name : names) {
         Object o = opObj.get(name);
         if (isPrintable(o)) {
           attrs.add(new Attr(name, o.toString()));
         } else if (o instanceof JSONObject) {
           JSONObject attrObj = (JSONObject) o;
-          if (attrObj.length() > 0) {
+          if (attrObj.size() > 0) {
             if (name.equals("Processor Tree:")) {
               JSONObject object = new JSONObject();
               object.put(name, attrObj);
               v = new Vertex(null, object);
               v.extractOpTree();
             } else {
-              for (String attrName : JSONObject.getNames(attrObj)) {
+              for (String attrName : JsonUtils.getNames(attrObj)) {
                 attrs.add(new Attr(attrName, attrObj.get(attrName).toString()));
               }
             }
@@ -217,7 +215,7 @@ public class Stage {
     return false;
   }
 
-  public void print(PrintStream out, List<Boolean> indentFlag) throws JSONException, Exception {
+  public void print(PrintStream out, List<Boolean> indentFlag) throws Exception {
     // print stagename
     if (TezJsonParser.printSet.contains(this)) {
       out.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "

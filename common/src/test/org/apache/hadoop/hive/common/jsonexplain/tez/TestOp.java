@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -32,13 +33,14 @@ import static org.junit.Assert.assertEquals;
 public class TestOp {
 
   private ObjectMapper objectMapper = new ObjectMapper();
+  private JSONParser parser = new JSONParser();
 
   @Test
   public void testInlineJoinOpJsonShouldMatch() throws Exception {
     String jsonString = "{\"Map Join Operator\":{" +
             "\"input vertices:\":{\"a\":\"AVERTEX\"}," +
             "\"keys:\":{\"a\":\"AKEY\",\"b\":\"BKEY\"}}}";
-    JSONObject mapJoin = new JSONObject(jsonString);
+    JSONObject mapJoin = (JSONObject) parser.parse(jsonString);
 
     Vertex vertex = new Vertex("vertex-name", null);
 

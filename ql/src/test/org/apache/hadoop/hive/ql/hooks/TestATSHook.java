@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
 import org.junit.Before;
 import org.junit.Test;
+import org.json.simple.JSONObject;
 
 import static org.junit.Assert.assertEquals;
 
@@ -39,7 +40,7 @@ public class TestATSHook {
   @Test
   public void testCreatePreHookEventJsonShhouldMatch() throws Exception {
     TimelineEntity timelineEntity =  uut.createPreHookEvent(
-            "test-query-id", "test-query", new org.json.JSONObject(), 0L,
+            "test-query-id", "test-query", new JSONObject(), 0L,
             "test-user", "test-request-user", 0, 0, "test-opid");
     String resultStr = (String) timelineEntity.getOtherInfo()
             .get(ATSHook.OtherInfoTypes.QUERY.name());

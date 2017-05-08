@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.hadoop.hive.common.jsonexplain.JsonUtils;
+import org.json.simple.JSONObject;
 
 public class Op {
   String name;
@@ -44,7 +44,7 @@ public class Op {
   String outputVertexName;
 
   public Op(String name, String id, String outputVertexName, List<Op> children, List<Attr> attrs,
-      JSONObject opObject, Vertex vertex) throws JSONException {
+      JSONObject opObject, Vertex vertex) {
     super();
     this.name = name;
     this.operatorId = id;
@@ -59,12 +59,12 @@ public class Op {
   void inlineJoinOp() throws Exception {
     // inline map join operator
     if (this.name.equals("Map Join Operator")) {
-      JSONObject mapjoinObj = opObject.getJSONObject("Map Join Operator");
+      JSONObject mapjoinObj = (JSONObject) opObject.get("Map Join Operator");
       // get the map for posToVertex
-      JSONObject verticeObj = mapjoinObj.getJSONObject("input vertices:");
+      JSONObject verticeObj = (JSONObject) mapjoinObj.get("input vertices:");
       Map<String, String> posToVertex = new HashMap<>();
-      for (String pos : JSONObject.getNames(verticeObj)) {
-        String vertexName = verticeObj.getString(pos);
+      for (String pos : JsonUtils.getNames(verticeObj)) {
+        String vertexName = verticeObj.get(pos).toString();
         posToVertex.put(pos, vertexName);
         // update the connection
         Connection c = null;
@@ -81,10 +81,10 @@ public class Op {
       // update the attrs
       removeAttr("input vertices:");
       // update the keys to use vertex name
-      JSONObject keys = mapjoinObj.getJSONObject("keys:");
-      if (keys.length() != 0) {
+      JSONObject keys = (JSONObject) mapjoinObj.get("keys:");
+      if (keys.size() != 0) {
         JSONObject newKeys = new JSONObject();
-        for (String key : JSONObject.getNames(keys)) {
+        for (String key : JsonUtils.getNames(keys)) {
           String vertexName = posToVertex.get(key);
           if (vertexName != null) {
             newKeys.put(vertexName, keys.get(key));

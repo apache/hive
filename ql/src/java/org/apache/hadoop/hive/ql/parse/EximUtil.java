@@ -52,9 +52,10 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.*;
 
 import javax.annotation.Nullable;
 
@@ -302,8 +303,9 @@ public class EximUtil {
         read = mdstream.read(buffer);
       }
       String md = new String(sb.toByteArray(), "UTF-8");
-      JSONObject jsonContainer = new JSONObject(md);
-      String version = jsonContainer.getString("version");
+      JSONParser parser = new JSONParser();
+      JSONObject jsonContainer = (JSONObject) parser.parse(md);
+      String version = jsonContainer.get("version").toString();
       String fcversion = getJSONStringEntry(jsonContainer, "fcversion");
       checkCompatibility(version, fcversion);
       String tableDesc = getJSONStringEntry(jsonContainer,"table");
@@ -314,10 +316,11 @@ public class EximUtil {
         TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
         deserializer.deserialize(table, tableDesc, "UTF-8");
         // TODO : jackson-streaming-iterable-redo this
-        JSONArray jsonPartitions = new JSONArray(jsonContainer.getString("partitions"));
-        partitionsList = new ArrayList<Partition>(jsonPartitions.length());
-        for (int i = 0; i < jsonPartitions.length(); ++i) {
-          String partDesc = jsonPartitions.getString(i);
+
+        JSONArray jsonPartitions = (JSONArray) parser.parse(jsonContainer.get("partitions").toString());
+        partitionsList = new ArrayList<Partition>(jsonPartitions.size());
+        for (int i = 0; i < jsonPartitions.size(); ++i) {
+          String partDesc = jsonPartitions.get(i).toString();
           Partition partition = new Partition();
           deserializer.deserialize(partition, partDesc, "UTF-8");
           partitionsList.add(partition);
@@ -325,7 +328,7 @@ public class EximUtil {
       }
 
       return new ReadMetaData(table, partitionsList,readReplicationSpec(jsonContainer));
-    } catch (JSONException e) {
+    } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg("Error in serializing metadata"), e);
@@ -349,9 +352,9 @@ public class EximUtil {
   @VisibleForTesting
   static String getJSONStringEntry(JSONObject jsonContainer, String name) {
     String retval = null;
-    try {
-      retval = jsonContainer.getString(name);
-    } catch (JSONException ignored) {}
+    if (jsonContainer.get(name) != null) {
+      retval = jsonContainer.get(name).toString();
+    }
     return retval;
   }
 

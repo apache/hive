@@ -144,7 +144,7 @@
     <jms.version>1.1</jms.version>
     <joda.version>2.5</joda.version>
     <jodd.version>3.5.2</jodd.version>
-    <json.version>20090211</json.version>
+    <json-simple.version>1.1.1</json-simple.version>
     <junit.version>4.11</junit.version>
     <kryo.version>2.22</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
@@ -254,6 +254,11 @@
         <groupId>com.googlecode.javaewah</groupId>
         <artifactId>JavaEWAH</artifactId>
         <version>${javaewah.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.googlecode.json-simple</groupId>
+        <artifactId>json-simple</artifactId>
+        <version>${json-simple.version}</version>
       </dependency>
       <dependency>
         <groupId>com.jolbox</groupId>
@@ -563,11 +568,6 @@
         <groupId>org.iq80.snappy</groupId>
         <artifactId>snappy</artifactId>
         <version>${snappy.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.json</groupId>
-        <artifactId>json</artifactId>
-        <version>${json.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>

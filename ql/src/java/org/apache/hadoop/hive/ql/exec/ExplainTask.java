@@ -43,6 +43,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
+import org.apache.hadoop.hive.common.jsonexplain.JsonUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -64,9 +65,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  * ExplainTask implementation.
@@ -255,7 +255,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private Object toJson(String header, List<String> messages, PrintStream out, ExplainWork work)
       throws Exception {
     if (work.isFormatted()) {
-      return new JSONArray(messages);
+      JSONArray result = new JSONArray();
+      result.addAll(messages);
+      return result;
     }
     out.print(header);
     out.println(": ");
@@ -448,7 +450,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               JSONObject jsonDep = new JSONObject();
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getType());
-              json.accumulate(ent.getKey().toString(), jsonDep);
+              JsonUtils.accumulate(json, ent.getKey().toString(), jsonDep);
             }
           }
         } else if (ent.getValue() != null && !((List<?>) ent.getValue()).isEmpty()
@@ -478,7 +480,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               jsonDep.put("parent", dep.getName());
               jsonDep.put("type", dep.getShuffleType());
               jsonDep.put("partitions", dep.getNumPartitions());
-              json.accumulate(ent.getKey().toString(), jsonDep);
+              JsonUtils.accumulate(json, ent.getKey().toString(), jsonDep);
             }
           }
         } else {
@@ -536,7 +538,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
 
         if (jsonOutput) {
-          outputArray.put(o);
+          outputArray.add(o);
         }
         nl = true;
       }
@@ -547,7 +549,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonOut = outputPlan(o, out, extended,
             jsonOutput, jsonOutput ? 0 : (hasHeader ? indent + 2 : indent));
         if (jsonOutput) {
-          outputArray.put(jsonOut);
+          outputArray.add(jsonOut);
         }
       }
 
@@ -624,8 +626,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
             jsonOutput, jsonOutput ? 0 : indent, appender);
         if (this.work != null && this.work.isUserLevelExplain()) {
-          if (jsonOut != null && jsonOut.length() > 0) {
-            ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
+          if (jsonOut != null && jsonOut.size() > 0) {
+            ((JSONObject) jsonOut.get(JsonUtils.getNames(jsonOut)[0])).put("OperatorId:",
                 operator.getOperatorId());
           }
         }
@@ -641,7 +643,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
             JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, cindent);
             if (jsonOutput) {
-              ((JSONObject)json.get(JSONObject.getNames(json)[0])).accumulate("children", jsonOut);
+              JsonUtils.accumulate((JSONObject)json.get(JsonUtils.getNames(json)[0]), "children", jsonOut);
             }
           }
         }
@@ -767,7 +769,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
               if (!skipHeader) {
                 json.put(header, jsonOut);
               } else {
-                for(String k: JSONObject.getNames(jsonOut)) {
+                for(String k: JsonUtils.getNames(jsonOut)) {
                   json.put(k, jsonOut.get(k));
                 }
               }
@@ -928,7 +930,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   }
 
   public String outputAST(String treeString, PrintStream out,
-      boolean jsonOutput, int indent) throws JSONException {
+      boolean jsonOutput, int indent) {
     if (out != null) {
       out.print(indentString(indent));
       out.println("ABSTRACT SYNTAX TREE:");

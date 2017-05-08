@@ -36,7 +36,7 @@ import org.apache.hadoop.yarn.api.records.timeline.TimelineEntity;
 import org.apache.hadoop.yarn.api.records.timeline.TimelineEvent;
 import org.apache.hadoop.yarn.client.api.TimelineClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 

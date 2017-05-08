@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +28,8 @@ import static org.junit.Assert.assertEquals;
 public class TestTezJsonParser {
 
   private TezJsonParser uut;
+
+  private JSONParser parser = new JSONParser();
 
   @Before
   public void setUp() throws Exception {
@@ -37,7 +40,7 @@ public class TestTezJsonParser {
   public void testExtractStagesAndPlans() throws Exception {
     String jsonString = "{\"STAGE DEPENDENCIES\":{\"s1\":{\"ROOT STAGE\":\"\"}," +
             "\"s2\":{\"DEPENDENT STAGES\":\"s1\"}},\"STAGE PLANS\":{}}";
-    JSONObject input = new JSONObject(jsonString);
+    JSONObject input = (JSONObject) parser.parse(jsonString);
 
     uut.inputObject = input;
     uut.extractStagesAndPlans();

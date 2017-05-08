@@ -23,11 +23,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.jsonexplain.JsonUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class Vertex {
   public String name;
@@ -67,12 +67,11 @@ public class Vertex {
     this.hasMultiReduceOp = false;
   }
 
-  public void addDependency(Connection connection) throws JSONException {
+  public void addDependency(Connection connection) {
     this.parentConnections.add(connection);
   }
 
   /**
-   * @throws JSONException
    * @throws JsonParseException
    * @throws JsonMappingException
    * @throws IOException
@@ -80,21 +79,20 @@ public class Vertex {
    *           We assume that there is a single top-level Map Operator Tree or a
    *           Reduce Operator Tree in a vertex
    */
-  public void extractOpTree() throws JSONException, JsonParseException, JsonMappingException,
-      IOException, Exception {
-    if (vertexObject.length() != 0) {
-      for (String key : JSONObject.getNames(vertexObject)) {
+  public void extractOpTree() throws Exception {
+    if (vertexObject.size() != 0) {
+      for (String key : JsonUtils.getNames(vertexObject)) {
         if (key.equals("Map Operator Tree:")) {
-          extractOp(vertexObject.getJSONArray(key).getJSONObject(0));
+          extractOp((JSONObject) ((JSONArray)vertexObject.get(key)).get(0));
         } else if (key.equals("Reduce Operator Tree:") || key.equals("Processor Tree:")) {
-          extractOp(vertexObject.getJSONObject(key));
+          extractOp((JSONObject) vertexObject.get(key));
         }
         // this is the case when we have a map-side SMB join
         // one input of the join is treated as a dummy vertex
         else if (key.equals("Join:")) {
-          JSONArray array = vertexObject.getJSONArray(key);
-          for (int index = 0; index < array.length(); index++) {
-            JSONObject mpOpTree = array.getJSONObject(index);
+          JSONArray array = (JSONArray) vertexObject.get(key);
+          for (int index = 0; index < array.size(); index++) {
+            JSONObject mpOpTree = (JSONObject) array.get(index);
             Vertex v = new Vertex("", mpOpTree);
             v.extractOpTree();
             v.dummy = true;
@@ -109,19 +107,12 @@ public class Vertex {
 
   /**
    * @param operator
-   * @param parent
-   * @return
-   * @throws JSONException
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
    * @throws Exception
    *           assumption: each operator only has one parent but may have many
    *           children
    */
-  Op extractOp(JSONObject operator) throws JSONException, JsonParseException, JsonMappingException,
-      IOException, Exception {
-    String[] names = JSONObject.getNames(operator);
+  Op extractOp(JSONObject operator) throws Exception {
+    String[] names = JsonUtils.getNames(operator);
     if (names.length != 1) {
       throw new Exception("Expect only one operator in " + operator.toString());
     } else {
@@ -131,18 +122,18 @@ public class Vertex {
       List<Op> children = new ArrayList<>();
       String id = null;
       String outputVertexName = null;
-      for (String attrName : JSONObject.getNames(attrObj)) {
+      for (String attrName : JsonUtils.getNames(attrObj)) {
         if (attrName.equals("children")) {
           Object childrenObj = attrObj.get(attrName);
           if (childrenObj instanceof JSONObject) {
-            if (((JSONObject) childrenObj).length() != 0) {
+            if (((JSONObject) childrenObj).size() != 0) {
               children.add(extractOp((JSONObject) childrenObj));
             }
           } else if (childrenObj instanceof JSONArray) {
-            if (((JSONArray) childrenObj).length() != 0) {
+            if (((JSONArray) childrenObj).size() != 0) {
               JSONArray array = ((JSONArray) childrenObj);
-              for (int index = 0; index < array.length(); index++) {
-                children.add(extractOp(array.getJSONObject(index)));
+              for (int index = 0; index < array.size(); index++) {
+                children.add(extractOp((JSONObject)array.get(index)));
               }
             }
           } else {
@@ -172,7 +163,7 @@ public class Vertex {
   }
 
   public void print(PrintStream out, List<Boolean> indentFlag, String type, Vertex callingVertex)
-      throws JSONException, Exception {
+      throws Exception {
     // print vertexname
     if (TezJsonParser.printSet.contains(this) && !hasMultiReduceOp) {
       if (type != null) {

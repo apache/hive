@@ -24,7 +24,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -41,6 +42,8 @@ import static org.mockito.Mockito.when;
  *
  */
 public class TestEximUtil extends TestCase {
+
+  private JSONParser parser = new JSONParser();
 
   private class FakeSeekableInputStream extends DataInputStream
           implements Seekable, PositionedReadable {
@@ -131,7 +134,7 @@ public class TestEximUtil extends TestCase {
   @Test
   public void testGetJSONStringEntry() throws Exception {
     String jsonString = "{\"string-key\":\"string-value\",\"non-string-key\":1}";
-    JSONObject jsonObject = new JSONObject(jsonString);
+    JSONObject jsonObject = (JSONObject) parser.parse(jsonString);
     assertEquals("string-value", EximUtil.getJSONStringEntry(jsonObject, "string-key"));
     assertEquals("1", EximUtil.getJSONStringEntry(jsonObject, "non-string-key"));
     assertNull(EximUtil.getJSONStringEntry(jsonObject, "no-such-key"));

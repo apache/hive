@@ -293,14 +293,13 @@
       <version>${gson.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.iq80.snappy</groupId>
       <artifactId>snappy</artifactId>
       <version>${snappy.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>${json.version}</version>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
@@ -705,7 +704,6 @@
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
                   <include>org.jodd:jodd-core</include>
-                  <include>org.json:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
                   <include>org.apache.hive.shims:hive-shims-0.20S</include>
@@ -719,6 +717,7 @@
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
+                  <include>com.googlecode.json-simple:json-simple</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:spark-client</include>
                   <include>joda-time:joda-time</include>

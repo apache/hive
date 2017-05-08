@@ -165,7 +165,7 @@ public class TestExplainTask {
     map.put("spark-list-2", sparkList2);
 
     // inner Map
-    Map<Object, Object> innerMap = new HashMap<>();
+    Map<Object, Object> innerMap = new LinkedHashMap<>();
     innerMap.put("inner-key-1", "inner-value-1");
     innerMap.put("inner-key-2", tezList1);
     map.put("map-1", innerMap);
@@ -173,13 +173,13 @@ public class TestExplainTask {
     JsonNode result = objectMapper.readTree(
             uut.outputMap(map, false, null, false, true, 0).toString());
     JsonNode expected = objectMapper.readTree("{\"key-1\":\"value-1\",\"tez-list-2\":" +
-            "[{\"parent\":\"name\"}," + "{\"parent\":\"name\"}],\"tez-list-1\":" +
-            "{\"parent\":\"name\"},\"empty-list\":\"[]\",\"spark-list-2\":" +
-            "[{\"parent\":\"mock-name\"},{\"parent\":\"mock-name\"}]," +
-            "\"spark-list-1\":{\"parent\":" +
-            "\"mock-name\"}, \"map-1\":\"{inner-key-1=inner-value-1, " +
-            "inner-key-2=[mock-tez-dependency]}\",\"spark-work\":" +
-            "{\"Spark\":{\"DagName:\":\"spark-work:2\"}}}");
+            "[{\"parent\":\"name\",\"type\":null},{\"parent\":\"name\",\"type\":null}]," +
+            "\"tez-list-1\":{\"parent\":\"name\",\"type\":null},\"empty-list\":\"[]\"," +
+            "\"spark-list-2\":[{\"partitions\":null,\"parent\":\"mock-name\",\"type\":null}," +
+            "{\"partitions\":null,\"parent\":\"mock-name\",\"type\":null}],\"spark-list-1\":" +
+            "{\"partitions\":null,\"parent\":\"mock-name\",\"type\":null},\"map-1\":" +
+            "\"{inner-key-1=inner-value-1, inner-key-2=[mock-tez-dependency]}\"," +
+            "\"spark-work\":{\"Spark\":{\"DagName:\":\"spark-work:2\"}}}");
 
     assertEquals(expected, result);
   }

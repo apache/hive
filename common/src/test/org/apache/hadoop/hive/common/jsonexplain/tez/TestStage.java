@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,6 +36,8 @@ public class TestStage {
   private Stage stageA;
   private Stage stageB;
 
+  private JSONParser parser = new JSONParser();
+
   @Before
   public void setUp() {
     this.uut = new Stage("uut");
@@ -50,7 +53,7 @@ public class TestStage {
 
 
     String jsonString = "{\"DEPENDENT STAGES\":\"a,b\"}";
-    JSONObject names = new JSONObject(jsonString);
+    JSONObject names = (JSONObject) parser.parse(jsonString);
 
     uut.addDependency(names, children);
 
@@ -72,7 +75,7 @@ public class TestStage {
     children.put("b", stageB);
 
     String jsonString = "{\"ROOT STAGE\":\"X\",\"DEPENDENT STAGES\":\"a,b\"}";
-    JSONObject names = new JSONObject(jsonString);
+    JSONObject names = (JSONObject) parser.parse(jsonString);
 
     uut.addDependency(names, children);
 
@@ -86,7 +89,7 @@ public class TestStage {
   public void testExtractVertexNonTez() throws Exception {
     String jsonString = "{\"OperatorName\":{\"a\":\"A\",\"b\":\"B\"}," +
             "\"attr1\":\"ATTR1\"}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);
 
     uut.extractVertex(object);
 
@@ -99,7 +102,7 @@ public class TestStage {
   @Test
   public void testExtractVertexTezNoEdges() throws Exception {
     String jsonString = "{\"Tez\":{\"a\":\"A\",\"Vertices:\":{\"v1\":{}}}}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);
     uut.extractVertex(object);
 
     assertEquals(1, uut.vertexs.size());
@@ -111,7 +114,7 @@ public class TestStage {
     String jsonString = "{\"Tez\":{\"a\":\"A\"," +
             "\"Vertices:\":{\"v1\":{},\"v2\":{}}," +
             "\"Edges:\":{\"v2\":{\"parent\":\"v1\",\"type\":\"TYPE\"}}}}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);;
     uut.extractVertex(object);
 
     assertEquals(2, uut.vertexs.size());
@@ -132,7 +135,7 @@ public class TestStage {
             "\"Vertices:\":{\"v1\":{},\"v2\":{},\"v3\":{}}," +
             "\"Edges:\":{\"v1\":[{\"parent\":\"v2\",\"type\":\"TYPE1\"}," +
             "{\"parent\":\"v3\",\"type\":\"TYPE2\"}]}}}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);;
 
     uut.extractVertex(object);
 
@@ -164,7 +167,7 @@ public class TestStage {
   @Test
   public void testExtractOpSimple() throws Exception {
     String jsonString = "{\"a\":\"A\",\"b\":\"B\"}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);;
 
     Op result = uut.extractOp("op-name", object);
 
@@ -177,7 +180,7 @@ public class TestStage {
   public void testExtract() throws Exception {
     String jsonString = "{\"b\":{\"b2\":\"B2\",\"b1\":\"B1\"}," +
             "\"Processor Tree:\":{\"a1\":{\"t1\":\"T1\"}}}";
-    JSONObject object = new JSONObject(jsonString);
+    JSONObject object = (JSONObject) parser.parse(jsonString);;
 
     Op result = uut.extractOp("op-name", object);
     assertEquals("op-name", result.name);

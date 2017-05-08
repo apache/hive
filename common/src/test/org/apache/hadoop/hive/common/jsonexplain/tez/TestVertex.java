@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestVertex {
 
+  private JSONParser parser = new JSONParser();
+
   @Test
   public void testExtractOpTree() throws Exception {
-    JSONObject object = new JSONObject("{\"Join:\":[{},{}]}");
+    String jsonString = "{\"Join:\":[{},{}]}";
+    JSONObject object = (JSONObject) parser.parse(jsonString);
 
     Vertex uut = new Vertex("name", object);
     uut.extractOpTree();
@@ -46,7 +50,7 @@ public class TestVertex {
   @Test
   public void testExtractOpNonJsonChildrenShouldThrow() throws Exception {
     String jsonString = "{\"opName\":{\"children\":\"not-json\"}}";
-    JSONObject operator = new JSONObject(jsonString);
+    JSONObject operator = (JSONObject) parser.parse(jsonString);;
 
     Vertex uut = new Vertex("name", null);
 
@@ -60,7 +64,7 @@ public class TestVertex {
   @Test
   public void testExtractOpNoChildrenOperatorId() throws Exception {
     String jsonString = "{\"opName\":{\"OperatorId:\":\"operator-id\"}}";
-    JSONObject operator = new JSONObject(jsonString);
+    JSONObject operator = (JSONObject) parser.parse(jsonString);;
 
     Vertex uut = new Vertex("name", null);
 
@@ -75,7 +79,7 @@ public class TestVertex {
   public void testExtractOpOneChild() throws Exception {
     String jsonString = "{\"opName\":{\"children\":{\"childName\":" +
             "{\"OperatorId:\":\"child-operator-id\"}}}}";
-    JSONObject operator = new JSONObject(jsonString);
+    JSONObject operator = (JSONObject) parser.parse(jsonString);;
 
     Vertex uut = new Vertex("name", null);
 
@@ -91,7 +95,7 @@ public class TestVertex {
     String jsonString = "{\"opName\":{\"children\":[" +
             "{\"childName1\":{\"OperatorId:\":\"child-operator-id1\"}}," +
             "{\"childName2\":{\"OperatorId:\":\"child-operator-id2\"}}]}}";
-    JSONObject operator = new JSONObject(jsonString);
+    JSONObject operator = (JSONObject) parser.parse(jsonString);;
 
     Vertex uut = new Vertex("name", null);
 
