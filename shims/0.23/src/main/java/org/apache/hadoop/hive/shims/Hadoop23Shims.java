@@ -1261,20 +1261,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       DistributedFileSystem dfs = (DistributedFileSystem)FileSystem.get(uri, conf);
 
       this.conf = conf;
-      this.keyProvider = isEncryptionEnabled(dfs.getClient(), dfs.getConf()) ?
-          dfs.getClient().getKeyProvider() : null;
       this.hdfsAdmin = new HdfsAdmin(uri, conf);
-    }
-
-    private boolean isEncryptionEnabled(DFSClient client, Configuration conf) {
-      try {
-        DFSClient.class.getMethod("isHDFSEncryptionEnabled");
-      } catch (NoSuchMethodException e) {
-        // the method is available since Hadoop-2.7.1
-        // if we run with an older Hadoop, check this ourselves
-        return !conf.getTrimmed(DFSConfigKeys.DFS_ENCRYPTION_KEY_PROVIDER_URI, "").isEmpty();
-      }
-      return client.isHDFSEncryptionEnabled();
+      this.keyProvider = hdfsAdmin.getKeyProvider();
     }
 
     @Override
