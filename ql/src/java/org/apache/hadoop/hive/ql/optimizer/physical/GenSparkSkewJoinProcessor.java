@@ -240,7 +240,8 @@ public class GenSparkSkewJoinProcessor {
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
           newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc, joinDescriptor
           .getOutputColumnNames(), i, joinDescriptor.getConds(),
-          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
+          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix,
+          joinDescriptor.getNoConditionalTaskSize());
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
       mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());

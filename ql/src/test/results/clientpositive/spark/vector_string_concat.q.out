@@ -15,7 +15,7 @@ PREHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -31,7 +31,7 @@ POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -55,7 +55,7 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -70,7 +70,7 @@ POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
@@ -367,10 +367,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkOperator
-                            native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
@@ -407,10 +406,9 @@ STAGE PLANS:
                   key expressions: _col0 (type: string)
                   sort order: +
                   Reduce Sink Vectorization:
-                      className: VectorReduceSinkOperator
-                      native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
         Reducer 3 

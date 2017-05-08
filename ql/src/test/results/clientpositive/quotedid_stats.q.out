@@ -1,0 +1,86 @@
+PREHOOK: query: create table t4(`x+1``` string, `y&y` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
+POSTHOOK: query: create table t4(`x+1``` string, `y&y` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4
+PREHOOK: query: describe formatted t4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t4
+POSTHOOK: query: describe formatted t4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t4
+# col_name            	data_type           	comment             
+	 	 
+x+1`                	string              	                    
+y&y                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table t4 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table t4 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted t4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t4
+POSTHOOK: query: describe formatted t4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t4
+# col_name            	data_type           	comment             
+	 	 
+x+1`                	string              	                    
+y&y                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"x+1`\":\"true\",\"y&y\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

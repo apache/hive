@@ -10,7 +10,7 @@ load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bu
 CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket_big;
 load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket_big;
-
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 select /*+ MAPJOIN(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;

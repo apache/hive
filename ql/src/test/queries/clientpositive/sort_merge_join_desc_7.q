@@ -20,7 +20,7 @@ ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key, value) SORTED BY (value 
 
 set hive.optimize.bucketmapjoin=true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-
+set hive.cbo.enable=false;
 -- The table sorting metadata matches but the partition metadata does not, sorted merge join should not be used
 
 EXPLAIN EXTENDED

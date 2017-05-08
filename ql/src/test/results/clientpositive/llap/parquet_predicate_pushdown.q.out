@@ -7,7 +7,7 @@ PREHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -22,7 +22,7 @@ POSTHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
@@ -37,7 +37,7 @@ PREHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -53,7 +53,7 @@ POSTHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -726,7 +726,7 @@ STAGE PLANS:
                   alias: tbl_pred
                   Statistics: Num rows: 1049 Data size: 11539 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -802,10 +802,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
-                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 11539 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)

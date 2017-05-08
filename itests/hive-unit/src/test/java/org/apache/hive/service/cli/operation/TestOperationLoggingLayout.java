@@ -100,22 +100,6 @@ public class TestOperationLoggingLayout {
       String row = iter.next()[0].toString();
       Assert.assertEquals(true, row.matches("^.*(FATAL|ERROR|WARN|INFO|DEBUG|TRACE).*$"));
     }
-
-    String queryString = "set hive.server2.logging.operation.level=verbose";
-    client.executeStatement(sessionHandle, queryString, null);
-    operationHandle = client.executeStatement(sessionHandle, sqlCntStar, null);
-    // just check for first few lines, some log lines are multi-line strings which can break format
-    // checks below
-    rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 10,
-        FetchType.LOG);
-    iter = rowSetLog.iterator();
-    // verbose pattern is "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n"
-    while (iter.hasNext()) {
-      String row = iter.next()[0].toString();
-      // just check if the log line starts with date
-      Assert.assertEquals(true,
-          row.matches("^\\d{2}[/](0[1-9]|1[012])[/](0[1-9]|[12][0-9]|3[01]).*$"));
-    }
   }
 
   private SessionHandle setupSession() throws Exception {

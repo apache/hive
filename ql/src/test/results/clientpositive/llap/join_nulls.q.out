@@ -277,7 +277,7 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	35	NULL	35	NULL	35
 NULL	NULL	NULL	NULL	48	NULL
-Warning: Shuffle Join MERGEJOIN[7][tables = [a, b]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1

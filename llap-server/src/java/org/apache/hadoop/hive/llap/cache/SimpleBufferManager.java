@@ -102,4 +102,14 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   public void notifyEvicted(MemoryBuffer buffer) {
     throw new UnsupportedOperationException("Buffer manager doesn't have cache");
   }
+
+  @Override
+  public String debugDumpForOom() {
+    return "";
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    // TODO Auto-generated method stub
+  }
 }

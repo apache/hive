@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 
 /**
  * A servlet to print out the running configuration data.
@@ -81,11 +82,14 @@ public class ConfServlet extends HttpServlet {
    * Guts of the servlet - extracted for easy testing.
    */
   static void writeResponse(Configuration conf, Writer out, String format)
-    throws IOException, BadFormatException {
+      throws IOException, BadFormatException {
+    //redact the sensitive information from the configuration values
+    Configuration hconf = new Configuration(conf);
+    HiveConfUtil.stripConfigurations(hconf);
     if (FORMAT_JSON.equals(format)) {
-      Configuration.dumpConfiguration(conf, out);
+      Configuration.dumpConfiguration(hconf, out);
     } else if (FORMAT_XML.equals(format)) {
-      conf.writeXml(out);
+      hconf.writeXml(out);
     } else {
       throw new BadFormatException("Bad format: " + format);
     }

@@ -125,6 +125,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ctx.setExplainConfig(config);
+    ctx.setExplainPlan(true);
 
     ASTNode input = (ASTNode) ast.getChild(0);
     // explain analyze is composed of two steps
@@ -137,7 +138,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       Context runCtx = null;
       try {
         runCtx = new Context(conf);
-        // runCtx and ctx share the configuration
+        // runCtx and ctx share the configuration, but not isExplainPlan()
         runCtx.setExplainConfig(config);
         Driver driver = new Driver(conf, runCtx);
         CommandProcessorResponse ret = driver.run(query);
@@ -161,6 +162,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Explain analyze (analyzing phase) for query " + query);
       config.setAnalyze(AnalyzeState.ANALYZING);
     }
+    //Creating new QueryState unfortunately causes all .q.out to change - do this in a separate ticket
+    //Sharing QueryState between generating the plan and executing the query seems bad
+    //BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(new QueryState(queryState.getConf()), input);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
@@ -187,8 +191,20 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         && !config.isDependency()
         && !config.isLogical()
         && !config.isAuthorize()
-        && (HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER) && HiveConf
-            .getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")));
+        && (
+             (
+               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER)
+               &&
+               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
+             )
+             ||
+             (
+               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_SPARK_EXPLAIN_USER)
+               &&
+               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
+             )
+           )
+        );
 
     ExplainWork work = new ExplainWork(ctx.getResFile(),
         pCtx,

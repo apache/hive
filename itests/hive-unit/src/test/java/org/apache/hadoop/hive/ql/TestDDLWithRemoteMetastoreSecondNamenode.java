@@ -52,6 +52,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
   private static final String Table4Name = "table4_nondefault_nn";
   private static final String Table5Name = "table5_nondefault_nn";
   private static final String Table6Name = "table6_nondefault_nn";
+  private static final String Table7Name = "table7_nondefault_nn";
   private static final String Index1Name = "index1_table1_nondefault_nn";
   private static final String Index2Name = "index2_table1_nondefault_nn";
   private static final String tmpdir = System.getProperty("test.tmp.dir");
@@ -197,6 +198,27 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     }
   }
 
+  private void alterPartitionAndCheck(Table table, String column,
+      String value, String location) throws CommandNeedRetryException, HiveException {
+    assertNotNull(location);
+    executeQuery("ALTER TABLE " + table.getTableName() +
+        " PARTITION (" + column + "='" + value + "')" +
+        " SET LOCATION '" + location + "'");
+    HashMap<String, String> partitions = new HashMap<String, String>();
+    partitions.put(column, value);
+    Partition partition = db.getPartition(table, partitions, false);
+    assertNotNull("Partition object is expected for " + table.getTableName() , partition);
+    String locationActual = partition.getLocation();
+    if (new Path(location).toUri().getScheme() != null) {
+      assertEquals("Partition should be located in the first filesystem",
+          fs.makeQualified(new Path(location)).toString(), locationActual);
+    }
+    else {
+      assertEquals("Partition should be located in the second filesystem",
+          fs2.makeQualified(new Path(location)).toString(), locationActual);
+    }
+  }
+
   private Table createTableAndCheck(String tableName, String tableLocation)
           throws CommandNeedRetryException, HiveException, URISyntaxException {
     return createTableAndCheck(null, tableName, tableLocation);
@@ -292,6 +314,15 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
 
     // Create table without location
     createTableAndCheck(table1, Table6Name, null);
+  }
+
+  public void testAlterPartitionSetLocationNonDefaultNameNode() throws Exception {
+    assertTrue("Test suite should have been initialized", isInitialized);
+    String tableLocation = tmppathFs2 + "/" + "test_set_part_loc";
+    Table table = createTableAndCheck(Table7Name, tableLocation);
+
+    addPartitionAndCheck(table, "p", "p1", "/tmp/test/1");
+    alterPartitionAndCheck(table, "p", "p1", "/tmp/test/2");
   }
 
   public void testCreateDatabaseWithTableNonDefaultNameNode() throws Exception {

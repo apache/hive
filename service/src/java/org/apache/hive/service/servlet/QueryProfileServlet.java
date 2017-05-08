@@ -17,8 +17,8 @@
  */
 package org.apache.hive.service.servlet;
 
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hive.service.cli.operation.OperationManager;
-import org.apache.hive.service.cli.operation.SQLOperationDisplay;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.tmpl.QueryProfileTmpl;
 import org.slf4j.Logger;
@@ -46,12 +46,12 @@ public class QueryProfileServlet extends HttpServlet {
     SessionManager sessionManager =
       (SessionManager)ctx.getAttribute("hive.sm");
     OperationManager opManager = sessionManager.getOperationManager();
-    SQLOperationDisplay sod = opManager.getSQLOperationDisplay(opId);
-    if (sod == null) {
+    QueryInfo queryInfo = opManager.getQueryInfo(opId);
+    if (queryInfo == null) {
       LOG.debug("No display object found for operation {} ", opId);
       return;
     }
 
-    new QueryProfileTmpl().render(response.getWriter(), sod);
+    new QueryProfileTmpl().render(response.getWriter(), queryInfo);
   }
 }

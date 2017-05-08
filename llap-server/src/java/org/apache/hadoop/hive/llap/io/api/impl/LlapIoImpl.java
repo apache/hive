@@ -23,13 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +38,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
@@ -66,8 +65,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
 
 import com.google.common.primitives.Ints;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
@@ -85,6 +82,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
+  private final LlapOomDebugDump memoryDump;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
@@ -121,14 +119,36 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
-      LowLevelCachePolicy cachePolicy =
-          useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
+      long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+      int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+      float metadataFraction = HiveConf.getFloatVar(conf, ConfVars.LLAP_IO_METADATA_FRACTION);
+      long metaMem = 0;
+      // TODO: this split a workaround until HIVE-15665.
+      //       Technically we don't have to do it for on-heap data cache but we'd do for testing.
+      boolean isSplitCache = metadataFraction > 0f;
+      if (isSplitCache) {
+        metaMem = (long)(LlapDaemon.getTotalHeapSize() * metadataFraction);
+      }
+      LowLevelCachePolicy cachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+          minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       // Allocator uses memory manager to request memory, so create the manager next.
       LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-          conf, cachePolicy, cacheMetrics);
+          totalMemorySize, cachePolicy, cacheMetrics);
+      LowLevelCachePolicy metaCachePolicy = null;
+      LowLevelCacheMemoryManager metaMemManager = null;
+      if (isSplitCache) {
+        metaCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+            minAllocSize, metaMem, conf) : new LowLevelFifoCachePolicy();
+        metaMemManager = new LowLevelCacheMemoryManager(metaMem, metaCachePolicy, cacheMetrics);
+      } else {
+        metaCachePolicy = cachePolicy;
+        metaMemManager = memManager;
+      }
+      cacheMetrics.setCacheCapacityTotal(totalMemorySize + metaMem);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
-      EvictionAwareAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
+      this.memoryDump = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
           cacheMetrics, cachePolicy, allocator, true);
       cache = cacheImpl;
@@ -138,15 +158,21 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         serdeCache = serdeCacheImpl;
       }
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
-      metadataCache = new OrcMetadataCache(memManager, cachePolicy, useGapCache);
+      metadataCache = new OrcMetadataCache(metaMemManager, metaCachePolicy, useGapCache);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
-      cachePolicy.setEvictionListener(new EvictionDispatcher(
-          cache, serdeCache, metadataCache, allocator));
-      cachePolicy.setParentDebugDumper(cacheImpl);
+      EvictionDispatcher e = new EvictionDispatcher(cache, serdeCache, metadataCache, allocator);
+      if (isSplitCache) {
+        metaCachePolicy.setEvictionListener(e);
+        metaCachePolicy.setParentDebugDumper(e);
+      }
+      cachePolicy.setEvictionListener(e);
+      cachePolicy.setParentDebugDumper(e);
+
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = cacheImpl; // Cache also serves as buffer manager.
     } else {
       this.allocator = new SimpleAllocator(conf);
+      memoryDump = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = sbm;
       cache = sbm;
@@ -169,6 +195,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private void registerMXBeans() {
     buddyAllocatorMXBean = MBeans.register("LlapDaemon", "BuddyAllocatorInfo", allocator);
+  }
+
+  @Override
+  public String getMemoryInfo() {
+    if (memoryDump == null) return "\nNot using the allocator";
+    StringBuilder sb = new StringBuilder();
+    memoryDump.debugDumpShort(sb);
+    return sb.toString();
   }
 
   @SuppressWarnings("rawtypes")

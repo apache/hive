@@ -189,13 +189,13 @@ public class TestMetastoreVersion extends TestCase {
 
   //  write the given version to metastore
   private String getVersion(HiveConf conf) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
+    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, "derby");
     return getMetaStoreVersion();
   }
 
   //  write the given version to metastore
   private void setVersion(HiveConf conf, String version) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
+    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, "derby");
     setMetaStoreVersion(version, "setVersion test");
   }
 

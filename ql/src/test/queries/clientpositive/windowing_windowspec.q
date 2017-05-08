@@ -10,7 +10,7 @@ create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -30,6 +30,8 @@ select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding
 select s, sum(i) over(partition by ts order by s) from over10k limit 100;
 
 select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100;
+
+select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100;
 
 select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7;
 

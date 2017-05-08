@@ -805,8 +805,8 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: value (type: string), key (type: string)
-                    outputColumnNames: value, key
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(key)

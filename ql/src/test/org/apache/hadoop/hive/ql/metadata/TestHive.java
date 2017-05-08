@@ -318,7 +318,7 @@ public class TestHive extends TestCase {
       assertEquals("Table retention didn't match for table: " + tableName,
           tbl.getRetention(), ft.getRetention());
       assertEquals("Data location is not set correctly",
-          wh.getTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
+          wh.getDefaultTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
           ft.getDataLocation().toString());
       // now that URI and times are set correctly, set the original table's uri and times
       // and then compare the two tables

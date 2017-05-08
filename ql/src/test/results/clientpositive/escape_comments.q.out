@@ -106,6 +106,7 @@ Table Parameters:
 	comment             	a                   
 	                    	b                   
 	numFiles            	0                   
+	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   

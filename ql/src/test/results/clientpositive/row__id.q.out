@@ -56,23 +56,23 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 2936 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: ROW__ID.transactionid (type: bigint)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 2936 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
-                Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 2936 Basic stats: PARTIAL Column stats: NONE
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint)
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+          Statistics: Num rows: 1 Data size: 2936 Basic stats: PARTIAL Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 2936 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -98,14 +98,14 @@ POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-1
-2
 3
+4
+5
 PREHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -117,17 +117,17 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hello_acid
-            Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 2936 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ROW__ID.transactionid = 1) (type: boolean)
-              Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+              predicate: (ROW__ID.transactionid = 3) (type: boolean)
+              Statistics: Num rows: 1 Data size: 2936 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ROW__ID.transactionid (type: bigint)
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 2936 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 2936 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -139,18 +139,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hello_acid
 PREHOOK: Input: default@hello_acid@load_date=2016-03-01
 PREHOOK: Input: default@hello_acid@load_date=2016-03-02
 PREHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hello_acid
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
 POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
 #### A masked pattern was here ####
-1
+3

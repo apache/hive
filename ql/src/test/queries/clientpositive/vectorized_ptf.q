@@ -43,7 +43,7 @@ insert into table part_orc select * from part_staging;
 
 --1. test1
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -64,7 +64,7 @@ from noop(on part_orc
 
 -- 2. testJoinWithNoop
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
@@ -81,7 +81,7 @@ sort by j.p_name)
 
 -- 3. testOnlyPTF
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
@@ -94,7 +94,7 @@ order by p_name);
 
 -- 4. testPTFAlias
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -115,7 +115,7 @@ from noop(on part_orc
 
 -- 5. testPTFAndWhereWithWindowing
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -138,7 +138,7 @@ from noop(on part_orc
 
 -- 6. testSWQAndPTFAndGBy
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -163,7 +163,7 @@ group by p_mfgr, p_name, p_size
 
 -- 7. testJoin
 
-explain vectorization extended
+explain vectorization detail
 select abc.* 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -178,7 +178,7 @@ order by p_name
 
 -- 8. testJoinRight
 
-explain vectorization extended
+explain vectorization detail
 select abc.* 
 from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
@@ -193,7 +193,7 @@ order by p_name
 
 -- 9. testNoopWithMap
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part_orc
@@ -208,7 +208,7 @@ order by p_name, p_size desc);
 
 -- 10. testNoopWithMapWithWindowing 
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -227,7 +227,7 @@ from noopwithmap(on part_orc
   
 -- 11. testHavingWithWindowingPTFNoGBY
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -248,7 +248,7 @@ order by p_name)
   
 -- 12. testFunctionChain
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -269,7 +269,7 @@ order by p_mfgr, p_name
  
 -- 13. testPTFAndWindowingInSubQ
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
@@ -296,7 +296,7 @@ window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2
 
 -- 14. testPTFJoinWithWindowingWithCount
 
-explain vectorization extended
+explain vectorization detail
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
@@ -323,7 +323,7 @@ order by p_name
 
 -- 15. testDistinctInSelectWithPTF
 
-explain vectorization extended
+explain vectorization detail
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -342,7 +342,7 @@ round(sum(p_retailprice),2) as s
 from part_orc 
 group by p_mfgr, p_brand;
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
@@ -376,7 +376,7 @@ dr INT,
 cud DOUBLE, 
 fv1 INT);
 
-explain vectorization extended
+explain vectorization detail
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -413,7 +413,7 @@ select * from part_5;
 
 -- 18. testMulti2OperatorsFunctionChainWithMap
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -448,7 +448,7 @@ from noop(on
 
 -- 19. testMulti3OperatorsFunctionChain
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -483,7 +483,7 @@ from noop(on
         
 -- 20. testMultiOperatorChainWithNoWindowing
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -515,7 +515,7 @@ from noop(on
 
 -- 21. testMultiOperatorChainEndsWithNoopMap
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -550,7 +550,7 @@ from noopwithmap(on
 
 -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -583,7 +583,7 @@ from noop(on
 
 -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 
-explain vectorization extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 

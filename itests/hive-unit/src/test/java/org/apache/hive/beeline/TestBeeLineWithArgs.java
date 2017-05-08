@@ -1069,4 +1069,17 @@ public class TestBeeLineWithArgs {
       this.shouldMatch = shouldMatch;
     }
   }
+
+  /**
+   * Test that Beeline can handle \\ characters within a string literal. Either at the beginning, middle, or end of the
+   * literal.
+   */
+  @Test
+  public void testBackslashInLiteral() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello\\\\', '\\\\hello', 'hel\\\\lo', '\\\\' as literal;";
+    final String EXPECTED_PATTERN = "hello\\\\\t\\\\hello\thel\\\\lo\t\\\\";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
 }

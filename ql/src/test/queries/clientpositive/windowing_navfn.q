@@ -10,7 +10,7 @@ create table over10k(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -19,11 +19,11 @@ load data local inpath '../../data/files/over10k' into table over10k;
 
 select row_number() over()  from src where key = '238';
 
-select s, row_number() over (partition by d order by dec) from over10k limit 100;
+select s, row_number() over (partition by d order by `dec`) from over10k limit 100;
 
 select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100;
 
-select i, lag(dec) over (partition by i order by s,i,dec) from over10k limit 100;
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100;
 
 select s, last_value(t) over (partition by d order by f) from over10k limit 100;
 

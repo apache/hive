@@ -6,11 +6,11 @@ PREHOOK: query: DROP TABLE IF EXISTS `decimal`
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS `decimal`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE decimal_txt (dec decimal)
+PREHOOK: query: CREATE TABLE decimal_txt (`dec` decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_txt
-POSTHOOK: query: CREATE TABLE decimal_txt (dec decimal)
+POSTHOOK: query: CREATE TABLE decimal_txt (`dec` decimal)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_txt
@@ -34,10 +34,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL
 POSTHOOK: Lineage: decimal.dec SIMPLE [(decimal_txt)decimal_txt.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
 PREHOOK: query: EXPLAIN
-SELECT dec FROM `DECIMAL` order by dec
+SELECT `dec` FROM `DECIMAL` order by `dec`
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT dec FROM `DECIMAL` order by dec
+SELECT `dec` FROM `DECIMAL` order by `dec`
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -87,11 +87,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT dec FROM `DECIMAL` order by dec
+PREHOOK: query: SELECT `dec` FROM `DECIMAL` order by `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dec FROM `DECIMAL` order by dec
+POSTHOOK: query: SELECT `dec` FROM `DECIMAL` order by `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal
 #### A masked pattern was here ####

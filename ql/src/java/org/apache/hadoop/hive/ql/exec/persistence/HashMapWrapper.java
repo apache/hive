@@ -53,7 +53,7 @@ import org.apache.hadoop.io.Writable;
 public class HashMapWrapper extends AbstractMapJoinTableContainer implements Serializable {
   private static final long serialVersionUID = 1L;
   protected static final Logger LOG = LoggerFactory.getLogger(HashMapWrapper.class);
-
+  private static final long DEFAULT_HASHMAP_ENTRY_SIZE = 1024L;
   // default threshold for using main memory based HashMap
   private static final int THRESHOLD = 1000000;
   private static final float LOADFACTOR = 0.75f;
@@ -138,6 +138,14 @@ public class HashMapWrapper extends AbstractMapJoinTableContainer implements Ser
   @Override
   public ReusableGetAdaptor createGetter(MapJoinKey keyTypeFromLoader) {
     return new GetAdaptor(keyTypeFromLoader);
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    // TODO: Key and Values are Object[] which can be eagerly deserialized or lazily deserialized. To accurately
+    // estimate the entry size, every possible Objects in Key, Value should implement MemoryEstimate interface which
+    // is very intrusive. So assuming default entry size here.
+    return size() * DEFAULT_HASHMAP_ENTRY_SIZE;
   }
 
   private class GetAdaptor implements ReusableGetAdaptor {

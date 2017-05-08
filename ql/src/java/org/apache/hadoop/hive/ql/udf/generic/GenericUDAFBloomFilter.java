@@ -72,7 +72,10 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
     private SelectOperator sourceOperator;
+    private long hintEntries = -1;
     private long maxEntries = 0;
+    private long minEntries = 0;
+    private float factor = 1;
 
     // ObjectInspector for input data.
     private PrimitiveObjectInspector inputOI;
@@ -252,6 +255,10 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     }
 
     public long getExpectedEntries() {
+      // If hint is provided use that size.
+      if (hintEntries > 0 )
+        return hintEntries;
+
       long expectedEntries = -1;
       if (sourceOperator != null && sourceOperator.getStatistics() != null) {
         Statistics stats = sourceOperator.getStatistics();
@@ -278,6 +285,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         }
       }
 
+      // Update expectedEntries based on factor and minEntries configurations
+      expectedEntries = (long) (expectedEntries * factor);
+      expectedEntries = expectedEntries > minEntries ? expectedEntries : minEntries;
       return expectedEntries;
     }
 
@@ -289,10 +299,33 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       this.sourceOperator = sourceOperator;
     }
 
+    public void setHintEntries(long hintEntries) {
+      this.hintEntries = hintEntries;
+    }
+
+    public boolean hasHintEntries() {
+      return hintEntries != -1;
+    }
+
     public void setMaxEntries(long maxEntries) {
       this.maxEntries = maxEntries;
     }
 
+    public void setMinEntries(long minEntries) {
+      this.minEntries = minEntries;
+    }
+
+    public long getMinEntries() {
+      return minEntries;
+    }
+
+    public void setFactor(float factor) {
+      this.factor = factor;
+    }
+
+    public float getFactor() {
+      return factor;
+    }
     @Override
     public String getExprString() {
       return "expectedEntries=" + getExpectedEntries();

@@ -619,7 +619,7 @@ public class HBaseUtils {
    * @param md message descriptor to use to generate the hash
    * @return the hash as a byte array
    */
-  static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
     // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
     // results for hashes based on the OS or JVM being used.
     md.reset();

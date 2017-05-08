@@ -84,7 +84,6 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     runStatementOnDriver("create table acidTblLegacy (a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("alter table acidTblLegacy SET TBLPROPERTIES ('transactional_properties' = 'default')");
   }
-
   /**
    * Test the query correctness and directory layout for ACID table conversion with split-update
    * enabled.
@@ -96,7 +95,8 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
    * @throws Exception
    */
   @Test
-  public void testNonAcidToAcidSplitUpdateConversion1() throws Exception {
+  @Override
+  public void testNonAcidToAcidConversion1() throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status;
 
@@ -226,7 +226,8 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
    * @throws Exception
    */
   @Test
-  public void testNonAcidToAcidSplitUpdateConversion2() throws Exception {
+  @Override
+  public void testNonAcidToAcidConversion2() throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status;
 
@@ -360,7 +361,8 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
    * @throws Exception
    */
   @Test
-  public void testNonAcidToAcidSplitUpdateConversion3() throws Exception {
+  @Override
+  public void testNonAcidToAcidConversion3() throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] status;
 
@@ -442,11 +444,11 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000001_0000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000022_0000022_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000002_0000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000023_0000023_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -455,7 +457,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_0000001_0000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_0000022_0000022_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -502,7 +504,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000002", status[i].getPath().getName());
+          Assert.assertEquals("base_0000023", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -528,7 +530,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
         (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000002", status[0].getPath().getName());
+    Assert.assertEquals("base_0000023", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(1, buckets.length);
@@ -540,4 +542,45 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
   }
+  @Ignore("HIVE-14947")
+  @Test
+  @Override
+  public void testDynamicPartitionsMerge() throws Exception {}
+  @Ignore("HIVE-14947")
+  @Test
+  @Override
+  public void testDynamicPartitionsMerge2() throws Exception {}
+  @Ignore("HIVE-14947")
+  @Test
+  @Override
+  public void testMerge() throws Exception {}
+
+  /**
+   * todo: remove this test once HIVE-14947 is done (parent class has a better version)
+   */
+  @Test
+  @Override
+  public void testMerge2() throws Exception {
+    int[][] baseValsOdd = {{5,5},{11,11}};
+    int[][] baseValsEven = {{2,2},{4,44}};
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
+    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='even') " + makeValuesClause(baseValsEven));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(vals), r);
+    String query = "merge into " + Table.ACIDTBL +
+      " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = source.a2 " +
+      "WHEN MATCHED THEN UPDATE set b = source.b2 ";
+    r = runStatementOnDriver(query);
+
+    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,2},{4,44},{5,5},{7,8}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+
+  }
+  @Ignore("HIVE-14947")
+  @Test
+  @Override
+  public void testMergeWithPredicate() throws Exception {}
 }

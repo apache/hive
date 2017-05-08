@@ -1359,7 +1359,7 @@ public class VectorizationContext {
     return "arguments: " + Arrays.toString(args) + ", argument classes: " + argClasses.toString();
   }
 
-  private static int STACK_LENGTH_LIMIT = 15;
+  private static final int STACK_LENGTH_LIMIT = 15;
 
   public static String getStackTraceAsSingleLine(Throwable e) {
     StringBuilder sb = new StringBuilder();
@@ -1461,6 +1461,8 @@ public class VectorizationContext {
       ve = getBetweenFilterExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFIn) {
       ve = getInExpression(childExpr, mode, returnType);
+    } else if (udf instanceof GenericUDFWhen) {
+      ve = getWhenExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFOPPositive) {
       ve = getIdentityExpression(childExpr);
     } else if (udf instanceof GenericUDFCoalesce || udf instanceof GenericUDFNvl) {
@@ -2318,6 +2320,54 @@ public class VectorizationContext {
       cl = FilterLongColumnNotBetween.class;
     }
     return createVectorExpression(cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
+  }
+
+  private boolean isColumnOrNonNullConst(ExprNodeDesc exprNodeDesc) {
+    if (exprNodeDesc instanceof ExprNodeColumnDesc) {
+      return true;
+    }
+    if (exprNodeDesc instanceof ExprNodeConstantDesc) {
+      String typeString = exprNodeDesc.getTypeString();
+      if (!typeString.equalsIgnoreCase("void")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private VectorExpression getWhenExpression(List<ExprNodeDesc> childExpr,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
+
+    if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
+      return null;
+    }
+    if (childExpr.size() != 3) {
+      // For now, we only optimize the 2 value case.
+      return null;
+    }
+
+    /*
+     * When we have 2 simple values:
+     *                          CASE WHEN boolExpr THEN column | const ELSE column | const END
+     * then we can convert to:        IF (boolExpr THEN column | const ELSE column | const)
+     */
+    // CONSIDER: Adding a version of IfExpr* than can handle a non-column/const expression in the
+    //           THEN or ELSE.
+    ExprNodeDesc exprNodeDesc1 = childExpr.get(1);
+    ExprNodeDesc exprNodeDesc2 = childExpr.get(2);
+    if (isColumnOrNonNullConst(exprNodeDesc1) &&
+        isColumnOrNonNullConst(exprNodeDesc2)) {
+      // Yes.
+      GenericUDFIf genericUDFIf = new GenericUDFIf();
+      return
+          getVectorExpressionForUdf(
+            genericUDFIf,
+            GenericUDFIf.class,
+            childExpr,
+            mode,
+            returnType);
+    }
+    return null;   // Not handled by vector classes yet.
   }
 
   /*

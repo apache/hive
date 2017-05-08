@@ -197,11 +197,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -212,11 +216,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
@@ -227,11 +235,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -242,11 +254,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 7 
@@ -257,11 +273,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 8 
@@ -272,11 +292,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 9 
@@ -287,11 +311,15 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -306,13 +334,13 @@ STAGE PLANS:
                      Inner Join 0 to 5
                      Inner Join 0 to 6
                 keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                  2 key (type: int)
-                  3 key (type: int)
-                  4 key (type: int)
-                  5 key (type: int)
-                  6 key (type: int)
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                  2 _col0 (type: int)
+                  3 _col0 (type: int)
+                  4 _col0 (type: int)
+                  5 _col0 (type: int)
+                  6 _col0 (type: int)
                 Statistics: Num rows: 66 Data size: 462 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()

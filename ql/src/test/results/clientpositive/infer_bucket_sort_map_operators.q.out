@@ -79,14 +79,18 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
+                Select Operator
+                  expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table_out
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.test_table_out
 
   Stage: Stage-7
     Conditional Operator
@@ -265,14 +269,18 @@ STAGE PLANS:
             1 UDFToDouble(_col0) (type: double)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
+          Select Operator
+            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.test_table_out
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.test_table_out
 
   Stage: Stage-0
     Move Operator
@@ -549,13 +557,16 @@ STAGE PLANS:
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.test_table_out
+          Select Operator
+            expressions: _col0 (type: string), UDFToString(_col1) (type: string)
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.test_table_out
 
   Stage: Stage-0
     Move Operator

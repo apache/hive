@@ -10,7 +10,7 @@ create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|';
@@ -20,7 +20,7 @@ load data local inpath '../../data/files/over10k' into table over10k;
 select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k limit 100;
 
 select s, 
-rank() over (partition by s order by dec desc), 
+rank() over (partition by s order by `dec` desc), 
 sum(b) over (partition by s order by ts desc) 
 from over10k
 where s = 'tom allen' or s = 'bob steinbeck';
@@ -37,6 +37,6 @@ rank() over w2
 from over10k 
 where s = 'tom allen' or s = 'bob steinbeck'
 window 
-w1 as (partition by s order by dec), 
+w1 as (partition by s order by `dec`), 
 w2 as (partition by si order by f) 
 ;

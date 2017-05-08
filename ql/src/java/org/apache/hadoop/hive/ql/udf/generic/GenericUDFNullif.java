@@ -86,16 +86,20 @@ public class GenericUDFNullif extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object arg0 = arguments[0].get();
     Object arg1 = arguments[1].get();
+    Object value0 = null;
+    if (arg0 != null) {
+      value0 = returnOIResolver.convertIfNecessary(arg0, argumentOIs[0], false);
+    }
     if (arg0 == null || arg1 == null) {
-      return arg0;
+      return value0;
     }
     PrimitiveObjectInspector compareOI = (PrimitiveObjectInspector) returnOIResolver.get();
     if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
-        arg0, compareOI,
+        value0, compareOI,
         returnOIResolver.convertIfNecessary(arg1, argumentOIs[1], false), compareOI)) {
       return null;
     }
-    return arg0;
+    return value0;
   }
 
   @Override

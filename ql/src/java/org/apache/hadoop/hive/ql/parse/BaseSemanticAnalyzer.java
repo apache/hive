@@ -119,10 +119,10 @@ public abstract class BaseSemanticAnalyzer {
   // whether any ACID table is involved in a query
   protected boolean acidInQuery;
 
-  public static int HIVE_COLUMN_ORDER_ASC = 1;
-  public static int HIVE_COLUMN_ORDER_DESC = 0;
-  public static int HIVE_COLUMN_NULLS_FIRST = 0;
-  public static int HIVE_COLUMN_NULLS_LAST = 1;
+  public static final int HIVE_COLUMN_ORDER_ASC = 1;
+  public static final int HIVE_COLUMN_ORDER_DESC = 0;
+  public static final int HIVE_COLUMN_NULLS_FIRST = 0;
+  public static final int HIVE_COLUMN_NULLS_LAST = 1;
 
   /**
    * ReadEntities that are passed to the hooks.

@@ -152,11 +152,6 @@ public class Warehouse {
     return whRoot;
   }
 
-  public Path getTablePath(String whRootString, String tableName) throws MetaException {
-    Path whRoot = getDnsPath(new Path(whRootString));
-    return new Path(whRoot, MetaStoreUtils.encodeTableName(tableName.toLowerCase()));
-  }
-
   public Path getDatabasePath(Database db) throws MetaException {
     if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
@@ -171,7 +166,14 @@ public class Warehouse {
     return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
-  public Path getTablePath(Database db, String tableName)
+  /**
+   * Returns the default location of the table path using the parent database's location
+   * @param db Database where the table is created
+   * @param tableName table name
+   * @return
+   * @throws MetaException
+   */
+  public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
     return getDnsPath(new Path(getDatabasePath(db), MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
@@ -184,13 +186,11 @@ public class Warehouse {
     return partition.getDbName() + "." + partition.getTableName() + partition.getValues();
   }
 
-  public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
-    boolean inheritPerms = HiveConf.getBoolVar(conf,
-      HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS) && inheritPermCandidate;
+  public boolean mkdirs(Path f) throws MetaException {
     FileSystem fs = null;
     try {
       fs = getFs(f);
-      return FileUtils.mkdir(fs, f, inheritPerms, conf);
+      return FileUtils.mkdir(fs, f, conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -198,13 +198,9 @@ public class Warehouse {
   }
 
   public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
-    return renameDir(sourcePath, destPath, false);
-  }
-
-  public boolean renameDir(Path sourcePath, Path destPath, boolean inheritPerms) throws MetaException {
     try {
       FileSystem fs = getFs(sourcePath);
-      return FileUtils.renameWithPerms(fs, sourcePath, destPath, inheritPerms, conf);
+      return FileUtils.rename(fs, sourcePath, destPath, conf);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }
@@ -459,14 +455,65 @@ public class Warehouse {
     return partSpec;
   }
 
-  public Path getPartitionPath(Database db, String tableName,
+  /**
+   * Returns the default partition path of a table within a given database and partition key value
+   * pairs. It uses the database location and appends it the table name and the partition key,value
+   * pairs to create the Path for the partition directory
+   *
+   * @param db - parent database which is used to get the base location of the partition directory
+   * @param tableName - table name for the partitions
+   * @param pm - Partition key value pairs
+   * @return
+   * @throws MetaException
+   */
+  public Path getDefaultPartitionPath(Database db, String tableName,
       Map<String, String> pm) throws MetaException {
-    return new Path(getTablePath(db, tableName), makePartPath(pm));
+    return getPartitionPath(getDefaultTablePath(db, tableName), pm);
   }
 
+  /**
+   * Returns the path object for the given partition key-value pairs and the base location
+   *
+   * @param tblPath - the base location for the partitions. Typically the table location
+   * @param pm - Partition key value pairs
+   * @return
+   * @throws MetaException
+   */
   public Path getPartitionPath(Path tblPath, Map<String, String> pm)
       throws MetaException {
     return new Path(tblPath, makePartPath(pm));
+  }
+
+  /**
+   * Given a database, a table and the partition key value pairs this method returns the Path object
+   * corresponding to the partition key value pairs. It uses the table location if available else
+   * uses the database location for constructing the path corresponding to the partition key-value
+   * pairs
+   *
+   * @param db - Parent database of the given table
+   * @param table - Table for which the partition key-values are given
+   * @param vals - List of values for the partition keys
+   * @return Path corresponding to the partition key-value pairs
+   * @throws MetaException
+   */
+  public Path getPartitionPath(Database db, Table table, List<String> vals)
+      throws MetaException {
+    List<FieldSchema> partKeys = table.getPartitionKeys();
+    if (partKeys == null || (partKeys.size() != vals.size())) {
+      throw new MetaException("Invalid number of partition keys found for " + table.getTableName());
+    }
+    Map<String, String> pm = new LinkedHashMap<>(vals.size());
+    int i = 0;
+    for (FieldSchema key : partKeys) {
+      pm.put(key.getName(), vals.get(i));
+      i++;
+    }
+
+    if (table.getSd().getLocation() != null) {
+      return getPartitionPath(getDnsPath(new Path(table.getSd().getLocation())), pm);
+    } else {
+      return getDefaultPartitionPath(db, table.getTableName(), pm);
+    }
   }
 
   public boolean isDir(Path f) throws MetaException {

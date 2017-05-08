@@ -23,19 +23,19 @@ ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
+              predicate: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -51,7 +51,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
+              predicate: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -73,22 +73,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col2 <> '10') or (_col0 <> '10')) (type: boolean)
+            predicate: ((_col0 <> '10') or (_col2 <> '10')) (type: boolean)
             Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
-              outputColumnNames: _col0, _col1, _col3
-              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -104,24 +107,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col1 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string)
-            1 _col1 (type: string)
-          outputColumnNames: _col1, _col4
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col1, _col2
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: string), _col4 (type: string)
+            expressions: _col2 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1707,19 +1703,19 @@ ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-1
     Map Reduce
       Map Operator Tree:
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
+              predicate: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -1735,7 +1731,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key <> '305') and (key <> '302') and (key < '400') and (key <> '14') and (key <> '311')) (type: boolean)
+              predicate: ((key <> '302') and (key < '400') and (key <> '305') and (key <> '311') and ((value <> 'val_50') or (key > '1')) and (key <> '14') and value is not null) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -1757,22 +1753,25 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((_col2 <> '10') or (_col0 <> '10')) (type: boolean)
+            predicate: ((_col0 <> '10') or (_col2 <> '10')) (type: boolean)
             Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string)
-              outputColumnNames: _col0, _col1, _col3
-              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col3 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col3 (type: string)
+              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1788,24 +1787,17 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col1 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col1 (type: string)
-              Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col0 (type: string), _col3 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string)
-            1 _col1 (type: string)
-          outputColumnNames: _col1, _col4
+            0 _col3 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col1, _col2
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: string), _col4 (type: string)
+            expressions: _col2 (type: string), _col1 (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

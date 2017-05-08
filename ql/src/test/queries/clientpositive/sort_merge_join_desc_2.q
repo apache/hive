@@ -11,6 +11,7 @@ sorted by (key DESC, value DESC) into 1 BUCKETS;
 insert overwrite table table_desc1 select key, value from src;
 insert overwrite table table_desc2 select key, value from src;
 
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;

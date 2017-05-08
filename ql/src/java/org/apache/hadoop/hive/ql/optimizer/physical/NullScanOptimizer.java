@@ -19,7 +19,11 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -75,6 +79,32 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
     return pctx;
   }
 
+  //We need to make sure that Null Operator (LIM or FIL) is present in all branches of multi-insert query before
+  //applying the optimization. This method does full tree traversal starting from TS and will return true only if
+  //it finds target Null operator on each branch.
+  static private boolean isNullOpPresentInAllBranches(TableScanOperator ts, Node causeOfNullNode) {
+    Node curNode = null;
+    List<? extends Node> curChd = null;
+    LinkedList<Node> middleNodes = new LinkedList<Node>();
+    middleNodes.addLast(ts);
+    while (!middleNodes.isEmpty()) {
+      curNode = middleNodes.remove();
+      curChd = curNode.getChildren();
+      for (Node chd: curChd) {
+        if (chd.getChildren() == null || chd.getChildren().isEmpty() || chd == causeOfNullNode) {
+          if (chd != causeOfNullNode) { // If there is an end node that not the limit0/wherefalse..
+            return false;
+          }
+        }
+        else {
+          middleNodes.addLast(chd);
+        }
+      }
+
+    }
+    return true;
+  }
+
   static private class WhereFalseProcessor implements NodeProcessor {
 
     @Override
@@ -91,22 +121,13 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
         return null;
       }
 
-      int numOfndPeers = 0;
-      if (filter.getParentOperators() != null) {
-        for (Operator<?> fParent : filter.getParentOperators()) {
-          if (fParent.getChildOperators() != null) {
-            numOfndPeers += fParent.getChildOperators().size();
-            if (numOfndPeers > 1)
-              return null;
-          }
-        }
-      }
-
       WalkerCtx ctx = (WalkerCtx) procCtx;
       for (Node op : stack) {
         if (op instanceof TableScanOperator) {
-          ctx.setMayBeMetadataOnly((TableScanOperator)op);
-          LOG.info("Found where false TableScan. " + op);
+          if (isNullOpPresentInAllBranches((TableScanOperator)op, filter)) {
+            ctx.setMayBeMetadataOnly((TableScanOperator)op);
+            LOG.info("Found where false TableScan. " + op);
+          }
         }
       }
       ctx.convertMetadataOnly();
@@ -120,8 +141,17 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      if(!(((LimitOperator)nd).getConf().getLimit() == 0)) {
+      LimitOperator limitOp = (LimitOperator)nd;
+      if(!(limitOp.getConf().getLimit() == 0)) {
         return null;
+      }
+
+      HashSet<TableScanOperator> tsOps = ((WalkerCtx)procCtx).getMayBeMetadataOnlyTableScans();
+      if (tsOps != null) {
+        for (Iterator<TableScanOperator> tsOp = tsOps.iterator(); tsOp.hasNext();) {
+          if (!isNullOpPresentInAllBranches(tsOp.next(),limitOp))
+            tsOp.remove();
+        }
       }
       LOG.info("Found Limit 0 TableScan. " + nd);
       ((WalkerCtx)procCtx).convertMetadataOnly();

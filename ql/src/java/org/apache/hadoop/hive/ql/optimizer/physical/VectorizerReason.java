@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class VectorizerReason  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   public static enum VectorizerNodeIssue {
     NONE,

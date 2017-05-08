@@ -1,10 +1,11 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -14,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.accumulo.mr;
 
 import java.io.IOException;
@@ -27,8 +29,11 @@ import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.accumulo.AccumuloConnectionParameters;
+import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
+import org.apache.hadoop.hive.accumulo.serde.AccumuloIndexParameters;
 import org.apache.hadoop.hive.accumulo.HiveAccumuloHelper;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
@@ -42,7 +47,7 @@ import com.google.common.base.Preconditions;
 /**
  *
  */
-public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
+public class HiveAccumuloTableOutputFormat extends AccumuloIndexedOutputFormat {
 
   protected final HiveAccumuloHelper helper = new HiveAccumuloHelper();
 
@@ -54,7 +59,8 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
   }
 
   @Override
-  public RecordWriter<Text,Mutation> getRecordWriter(FileSystem ignored, JobConf job, String name, Progressable progress) throws IOException {
+  public RecordWriter<Text, Mutation> getRecordWriter(FileSystem ignored, JobConf job, String name,
+                                                     Progressable progress) throws IOException {
     configureAccumuloOutputFormat(job);
 
     return super.getRecordWriter(ignored, job, name, progress);
@@ -117,6 +123,16 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
       // Set the table where we're writing this data
       setDefaultAccumuloTableName(job, tableName);
+
+      // Set the index table information
+      final String indexTableName = job.get(AccumuloIndexParameters.INDEXTABLE_NAME);
+      final String indexedColumns = job.get(AccumuloIndexParameters.INDEXED_COLUMNS);
+      final String columnTypes = job.get(serdeConstants.LIST_COLUMN_TYPES);
+      final boolean binaryEncoding = ColumnEncoding.BINARY.getName()
+          .equalsIgnoreCase(job.get(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE));
+      setAccumuloIndexTableName(job, indexTableName);
+      setAccumuloIndexColumns(job, indexedColumns);
+      setAccumuloStringEncoding(job, !binaryEncoding);
     } catch (AccumuloSecurityException e) {
       log.error("Could not connect to Accumulo with provided credentials", e);
       throw new IOException(e);
@@ -125,10 +141,10 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
   // Non-static methods to wrap the static AccumuloOutputFormat methods to enable testing
 
-  protected void setConnectorInfoWithErrorChecking(JobConf conf, String username, AuthenticationToken token)
-      throws AccumuloSecurityException {
+  protected void setConnectorInfoWithErrorChecking(JobConf conf, String username,
+                                     AuthenticationToken token) throws AccumuloSecurityException {
     try {
-      AccumuloOutputFormat.setConnectorInfo(conf, username, token);
+      AccumuloIndexedOutputFormat.setConnectorInfo(conf, username, token);
     } catch (IllegalStateException e) {
       // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
       log.debug("Ignoring exception setting Accumulo Connector instance for user " + username, e);
@@ -136,8 +152,8 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
   }
 
   @SuppressWarnings("deprecation")
-  protected void setZooKeeperInstanceWithErrorChecking(JobConf conf, String instanceName, String zookeepers,
-      boolean isSasl) throws IOException {
+  protected void setZooKeeperInstanceWithErrorChecking(JobConf conf, String instanceName,
+                                           String zookeepers, boolean isSasl) throws IOException {
     try {
       if (isSasl) {
         // Reflection to support Accumulo 1.5. Remove when Accumulo 1.5 support is dropped
@@ -146,7 +162,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
         getHelper().setZooKeeperInstance(conf, AccumuloOutputFormat.class, zookeepers, instanceName,
             isSasl);
       } else {
-        AccumuloOutputFormat.setZooKeeperInstance(conf, instanceName, zookeepers);
+        AccumuloIndexedOutputFormat.setZooKeeperInstance(conf, instanceName, zookeepers);
       }
     } catch (IllegalStateException ise) {
       // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
@@ -157,7 +173,7 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
 
   protected void setMockInstanceWithErrorChecking(JobConf conf, String instanceName) {
     try {
-      AccumuloOutputFormat.setMockInstance(conf, instanceName);
+      AccumuloIndexedOutputFormat.setMockInstance(conf, instanceName);
     } catch (IllegalStateException e) {
       // AccumuloOutputFormat complains if you re-set an already set value. We just don't care.
       log.debug("Ignoring exception setting mock instance of " + instanceName, e);
@@ -165,7 +181,19 @@ public class HiveAccumuloTableOutputFormat extends AccumuloOutputFormat {
   }
 
   protected void setDefaultAccumuloTableName(JobConf conf, String tableName) {
-    AccumuloOutputFormat.setDefaultTableName(conf, tableName);
+    AccumuloIndexedOutputFormat.setDefaultTableName(conf, tableName);
+  }
+
+  protected void setAccumuloIndexTableName(JobConf conf, String indexTableName) {
+    AccumuloIndexedOutputFormat.setIndexTableName(conf, indexTableName);
+  }
+
+  protected void setAccumuloIndexColumns(JobConf conf, String indexColumns) {
+    AccumuloIndexedOutputFormat.setIndexColumns(conf, indexColumns);
+  }
+
+  protected void setAccumuloStringEncoding(JobConf conf, Boolean isStringEncoded) {
+    AccumuloIndexedOutputFormat.setStringEncoding(conf, isStringEncoded);
   }
 
   HiveAccumuloHelper getHelper() {

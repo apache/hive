@@ -113,7 +113,6 @@ public class TestTxnCommands2 {
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
@@ -663,11 +662,11 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000001_0000001_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000022_0000022_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000002_0000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000023_0000023_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
           Assert.assertEquals("bucket_00001", buckets[1].getPath().getName());
@@ -712,7 +711,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000002", status[i].getPath().getName());
+          Assert.assertEquals("base_0000023", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
           Assert.assertEquals("bucket_00001", buckets[1].getPath().getName());
@@ -739,7 +738,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
         (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000002", status[0].getPath().getName());
+    Assert.assertEquals("base_0000023", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(BUCKET_COUNT, buckets.length);
@@ -761,11 +760,6 @@ public class TestTxnCommands2 {
     runStatementOnDriver("select * from " + Table.NONACIDORCTBL);
     String value = hiveConf.get(ValidTxnList.VALID_TXNS_KEY);
     Assert.assertNull("The entry should be null for query that doesn't involve ACID tables", value);
-
-    // 2. Run a query against an ACID table, and we should have txn logged in conf
-    runStatementOnDriver("select * from " + Table.ACIDTBL);
-    value = hiveConf.get(ValidTxnList.VALID_TXNS_KEY);
-    Assert.assertNotNull("The entry shouldn't be null for query that involves ACID tables", value);
   }
 
   @Test
@@ -774,10 +768,14 @@ public class TestTxnCommands2 {
     int[][] tableData = {{1,2},{3,3}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData));
     int[][] tableData2 = {{5,3}};
+    //this will cause next txn to be marked aborted but the data is still written to disk
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData2));
-    hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "0:");
+    assert hiveConf.get(ValidTxnList.VALID_TXNS_KEY) == null : "previous txn should've cleaned it";
+    //so now if HIVEFETCHTASKCONVERSION were to use a stale value, it would use a
+    //ValidTxnList with HWM=MAX_LONG, i.e. include the data for aborted txn
     List<String> rs = runStatementOnDriver("select * from " + Table.ACIDTBL);
-    Assert.assertEquals("Missing data", 3, rs.size());
+    Assert.assertEquals("Extra data", 2, rs.size());
   }
   @Test
   public void testUpdateMixedCase() throws Exception {
@@ -1676,7 +1674,7 @@ public class TestTxnCommands2 {
       return 0;
     }
   }
-  private String makeValuesClause(int[][] rows) {
+  String makeValuesClause(int[][] rows) {
     assert rows.length > 0;
     StringBuilder sb = new StringBuilder("values");
     for(int[] row : rows) {

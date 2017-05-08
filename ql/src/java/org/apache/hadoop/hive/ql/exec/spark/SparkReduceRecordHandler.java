@@ -95,6 +95,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   // number of columns pertaining to keys in a vectorized row batch
   private int keysColumnOffset;
   private static final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
+  private static final int BATCH_BYTES = VectorizedRowBatch.DEFAULT_BYTES;
   private StructObjectInspector keyStructInspector;
   private StructObjectInspector[] valueStructInspectors;
   /* this is only used in the error code path */
@@ -373,6 +374,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     }
 
     int rowIdx = 0;
+    int batchBytes = 0;
     try {
       while (values.hasNext()) {
         /* deserialize value into columns */
@@ -381,11 +383,13 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
         VectorizedBatchUtil.addRowToBatchFrom(valueObj, valueStructInspectors[tag], rowIdx,
             keysColumnOffset, batch, buffer);
+        batchBytes += valueWritable.getLength();
         rowIdx++;
-        if (rowIdx >= BATCH_SIZE) {
+        if (rowIdx >= BATCH_SIZE || batchBytes > BATCH_BYTES) {
           VectorizedBatchUtil.setBatchSize(batch, rowIdx);
           reducer.process(batch, tag);
           rowIdx = 0;
+          batchBytes = 0;
           if (isLogInfoEnabled) {
             logMemoryInfo();
           }

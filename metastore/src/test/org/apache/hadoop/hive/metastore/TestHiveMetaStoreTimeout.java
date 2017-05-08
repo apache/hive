@@ -42,7 +42,6 @@ public class TestHiveMetaStoreTimeout {
   public static void setUp() throws Exception {
     HiveMetaStore.TEST_TIMEOUT_ENABLED = true;
     hiveConf = new HiveConf(TestHiveMetaStoreTimeout.class);
-    hiveConf.setBoolean(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS.varname, true);
     hiveConf.set(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS.varname,
         MockPartitionExpressionForMetastore.class.getCanonicalName());
     hiveConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 10 * 1000,

@@ -1,39 +1,39 @@
-PREHOOK: query: DROP TABLE IF EXISTS dec
+PREHOOK: query: DROP TABLE IF EXISTS `dec`
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS dec
+POSTHOOK: query: DROP TABLE IF EXISTS `dec`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dec (
+PREHOOK: query: CREATE TABLE `dec` (
   name string,
   value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dec
-POSTHOOK: query: CREATE TABLE dec (
+POSTHOOK: query: CREATE TABLE `dec` (
   name string,
   value decimal(8,4))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dec
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE dec
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE `dec`
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@dec
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE dec
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE `dec`
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@dec
-PREHOOK: query: ANALYZE TABLE dec COMPUTE STATISTICS FOR COLUMNS value
+PREHOOK: query: ANALYZE TABLE `dec` COMPUTE STATISTICS FOR COLUMNS value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
 #### A masked pattern was here ####
-POSTHOOK: query: ANALYZE TABLE dec COMPUTE STATISTICS FOR COLUMNS value
+POSTHOOK: query: ANALYZE TABLE `dec` COMPUTE STATISTICS FOR COLUMNS value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec
 #### A masked pattern was here ####
-PREHOOK: query: DESC FORMATTED dec value
+PREHOOK: query: DESC FORMATTED `dec` value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@dec
-POSTHOOK: query: DESC FORMATTED dec value
+POSTHOOK: query: DESC FORMATTED `dec` value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dec
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -68,11 +68,11 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@avro_dec
 name                	string              	                    
 value               	decimal(5,2)        	                    
-PREHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec
+PREHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@avro_dec
-POSTHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec
+POSTHOOK: query: INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec
 POSTHOOK: Output: default@avro_dec
@@ -150,11 +150,11 @@ POSTHOOK: Input: default@avro_dec1
 19.0
 3.2
 79.9
-PREHOOK: query: DROP TABLE dec
+PREHOOK: query: DROP TABLE `dec`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@dec
-POSTHOOK: query: DROP TABLE dec
+POSTHOOK: query: DROP TABLE `dec`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec
 POSTHOOK: Output: default@dec

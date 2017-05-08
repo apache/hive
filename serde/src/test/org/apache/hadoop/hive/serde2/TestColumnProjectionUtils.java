@@ -85,6 +85,20 @@ public class TestColumnProjectionUtils {
   }
 
   @Test
+  public void testMultipleIdsWithEmpty() {
+    List<Integer> ids1 = Arrays.asList(1, 2);
+    List<Integer> ids2 = new ArrayList<Integer>();
+    List<Integer> ids3 = Arrays.asList(2, 3);
+
+    ColumnProjectionUtils.appendReadColumns(conf, ids1);
+    ColumnProjectionUtils.appendReadColumns(conf, ids2);
+    ColumnProjectionUtils.appendReadColumns(conf, ids3);
+
+    List<Integer> actual = ColumnProjectionUtils.getReadColumnIDs(conf);
+    assertEquals(Arrays.asList(2, 3, 1), actual);
+  }
+
+  @Test
   public void testDeprecatedMethods() {
     List<Integer> columnIds = new ArrayList<Integer>();
     List<Integer> actual;

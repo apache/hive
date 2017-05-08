@@ -87,7 +87,7 @@ public class TestMergeStatement {
             "(tok_update " +
               "(tok_set_columns_clause " +
                 "(= (tok_table_or_col a) (. (tok_table_or_col source) b)) " +
-                "(= (tok_table_or_col b) (tok_function when (tok_function tok_isnull (tok_table_or_col c1)) (tok_table_or_col c1) (tok_table_or_col c1)))" +
+                "(= (tok_table_or_col b) (tok_function when (tok_function isnull (tok_table_or_col c1)) (tok_table_or_col c1) (tok_table_or_col c1)))" +
               ")" +
             ") " +
           "(< (. (tok_table_or_col source) c2) (tok_function current_time)))" +
@@ -129,7 +129,7 @@ public class TestMergeStatement {
             "(tok_value_row " +
               "(. (tok_table_or_col source) a) " +
                 "(tok_function when " +
-                  "(tok_function tok_isnull (. (tok_table_or_col source) b)) (. (tok_table_or_col target) b) " +
+                  "(tok_function isnull (. (tok_table_or_col source) b)) (. (tok_table_or_col target) b) " +
                   "(. (tok_table_or_col source) b)" +
                 ")" +
               ")" +

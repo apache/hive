@@ -27,7 +27,7 @@ public enum HiveOperation {
   IMPORT("IMPORT", null, new Privilege[]{Privilege.ALTER_METADATA, Privilege.ALTER_DATA}),
   CREATEDATABASE("CREATEDATABASE", null, new Privilege[]{Privilege.CREATE}),
   DROPDATABASE("DROPDATABASE", null, new Privilege[]{Privilege.DROP}),
-  SWITCHDATABASE("SWITCHDATABASE", null, null),
+  SWITCHDATABASE("SWITCHDATABASE", null, null, true, false),
   LOCKDB("LOCKDATABASE",  new Privilege[]{Privilege.LOCK}, null),
   UNLOCKDB("UNLOCKDATABASE",  new Privilege[]{Privilege.LOCK}, null),
   DROPTABLE ("DROPTABLE", null, new Privilege[]{Privilege.DROP}),
@@ -60,19 +60,19 @@ public enum HiveOperation {
       new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERPARTITION_BUCKETNUM("ALTERPARTITION_BUCKETNUM",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
-  SHOWDATABASES("SHOWDATABASES", new Privilege[]{Privilege.SHOW_DATABASE}, null),
-  SHOWTABLES("SHOWTABLES", null, null),
-  SHOWCOLUMNS("SHOWCOLUMNS", null, null),
-  SHOW_TABLESTATUS("SHOW_TABLESTATUS", null, null),
-  SHOW_TBLPROPERTIES("SHOW_TBLPROPERTIES", null, null),
+  SHOWDATABASES("SHOWDATABASES", new Privilege[]{Privilege.SHOW_DATABASE}, null, true, false),
+  SHOWTABLES("SHOWTABLES", null, null, true, false),
+  SHOWCOLUMNS("SHOWCOLUMNS", null, null, true, false),
+  SHOW_TABLESTATUS("SHOW_TABLESTATUS", null, null, true, false),
+  SHOW_TBLPROPERTIES("SHOW_TBLPROPERTIES", null, null, true, false),
   SHOW_CREATEDATABASE("SHOW_CREATEDATABASE", new Privilege[]{Privilege.SELECT}, null),
   SHOW_CREATETABLE("SHOW_CREATETABLE", new Privilege[]{Privilege.SELECT}, null),
-  SHOWFUNCTIONS("SHOWFUNCTIONS", null, null),
-  SHOWINDEXES("SHOWINDEXES", null, null),
+  SHOWFUNCTIONS("SHOWFUNCTIONS", null, null, true, false),
+  SHOWINDEXES("SHOWINDEXES", null, null, true, false),
   SHOWPARTITIONS("SHOWPARTITIONS", null, null),
-  SHOWLOCKS("SHOWLOCKS", null, null),
+  SHOWLOCKS("SHOWLOCKS", null, null, true, false),
   SHOWCONF("SHOWCONF", null, null),
-  SHOWVIEWS("SHOWVIEWS", null, null),
+  SHOWVIEWS("SHOWVIEWS", null, null, true, false),
   CREATEFUNCTION("CREATEFUNCTION", null, null),
   DROPFUNCTION("DROPFUNCTION", null, null),
   RELOADFUNCTION("RELOADFUNCTION", null, null),
@@ -94,12 +94,12 @@ public enum HiveOperation {
   DROPROLE("DROPROLE", null, null),
   GRANT_PRIVILEGE("GRANT_PRIVILEGE", null, null),
   REVOKE_PRIVILEGE("REVOKE_PRIVILEGE", null, null),
-  SHOW_GRANT("SHOW_GRANT", null, null),
+  SHOW_GRANT("SHOW_GRANT", null, null, true, false),
   GRANT_ROLE("GRANT_ROLE", null, null),
   REVOKE_ROLE("REVOKE_ROLE", null, null),
-  SHOW_ROLES("SHOW_ROLES", null, null),
-  SHOW_ROLE_PRINCIPALS("SHOW_ROLE_PRINCIPALS", null, null),
-  SHOW_ROLE_GRANT("SHOW_ROLE_GRANT", null, null),
+  SHOW_ROLES("SHOW_ROLES", null, null, true, false),
+  SHOW_ROLE_PRINCIPALS("SHOW_ROLE_PRINCIPALS", null, null, true, false),
+  SHOW_ROLE_GRANT("SHOW_ROLE_GRANT", null, null, true, false),
   ALTERTABLE_FILEFORMAT("ALTERTABLE_FILEFORMAT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERPARTITION_FILEFORMAT("ALTERPARTITION_FILEFORMAT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_LOCATION("ALTERTABLE_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
@@ -128,8 +128,8 @@ public enum HiveOperation {
   ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERVIEW_AS("ALTERVIEW_AS", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERTABLE_COMPACT("ALTERTABLE_COMPACT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA}),
-  SHOW_COMPACTIONS("SHOW COMPACTIONS", null, null),
-  SHOW_TRANSACTIONS("SHOW TRANSACTIONS", null, null),
+  SHOW_COMPACTIONS("SHOW COMPACTIONS", null, null, true, false),
+  SHOW_TRANSACTIONS("SHOW TRANSACTIONS", null, null, true, false),
   START_TRANSACTION("START TRANSACTION", null, null, false, false),
   COMMIT("COMMIT", null, null, true, true),
   ROLLBACK("ROLLBACK", null, null, true, true),
@@ -143,7 +143,10 @@ public enum HiveOperation {
   private Privilege[] outputRequiredPrivileges;
 
   /**
-   * Only a small set of operations is allowed inside an open transactions, e.g. DML
+   * Only a small set of operations is allowed inside an explicit transactions, e.g. DML on
+   * Acid tables or ops w/o persistent side effects like USE DATABASE, SHOW TABLES, etc so
+   * that rollback is meaningful
+   * todo: mark all operations appropriately
    */
   private final boolean allowedInTransaction;
   private final boolean requiresOpenTransaction;

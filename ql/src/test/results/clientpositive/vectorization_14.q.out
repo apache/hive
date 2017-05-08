@@ -139,10 +139,15 @@ STAGE PLANS:
               sort order: ++++
               Statistics: Num rows: 303 Data size: 65146 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: boolean), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: float), _col10 (type: float), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: bigint), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double)
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

@@ -3,6 +3,8 @@ CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMIN
 
 LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1;
 
+-- SORT_QUERY_RESULTS
+
 set hive.optimize.ppd = false;
 
 -- This filter is not pushed down

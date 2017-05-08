@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+-- SORT_QUERY_RESULTS
 
 create table tnull(i int, c char(2));
 insert into tnull values(NULL, NULL), (NULL, NULL);

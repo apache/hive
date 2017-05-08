@@ -442,7 +442,7 @@ POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=1/partcol2=1
-POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol SIMPLE []
+POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol EXPRESSION []
 PREHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol1 int)
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: pt@alterdynamic_part_table

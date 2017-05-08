@@ -8,7 +8,8 @@ set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
-
+set hive.tez.bigtable.minsize.semijoin.reduction=1;
+set hive.tez.min.bloom.filter.entries=1;
 
 select distinct ds from srcpart;
 select distinct hr from srcpart;

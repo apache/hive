@@ -284,7 +284,7 @@ STAGE DEPENDENCIES:
   Stage-10 depends on stages: Stage-9
   Stage-3 depends on stages: Stage-10
   Stage-11 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-10
+  Stage-4 depends on stages: Stage-9
   Stage-12 depends on stages: Stage-4
 
 STAGE PLANS:

@@ -23,7 +23,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.SystemVariables;
@@ -33,7 +37,6 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import com.google.common.collect.Lists;
 
 public class ResetProcessor implements CommandProcessor {
 
@@ -45,8 +48,11 @@ public class ResetProcessor implements CommandProcessor {
 
   @Override
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    SessionState ss = SessionState.get();
+    return run(SessionState.get(), command);
+  }
 
+  @VisibleForTesting
+  CommandProcessorResponse run(SessionState ss, String command) throws CommandNeedRetryException {
     CommandProcessorResponse authErrResp =
         CommandUtil.authorizeCommand(ss, HiveOperationType.RESET, Arrays.asList(command));
     if (authErrResp != null) {
@@ -88,7 +94,7 @@ public class ResetProcessor implements CommandProcessor {
         ? Lists.newArrayList("Resetting " + message + " to default values") : null);
   }
 
-  private void resetOverridesOnly(SessionState ss) {
+  private static void resetOverridesOnly(SessionState ss) {
     if (ss.getOverriddenConfigurations().isEmpty()) return;
     HiveConf conf = new HiveConf();
     for (String key : ss.getOverriddenConfigurations().keySet()) {
@@ -97,21 +103,20 @@ public class ResetProcessor implements CommandProcessor {
     ss.getOverriddenConfigurations().clear();
   }
 
-  private void resetOverrideOnly(SessionState ss, String varname) {
+  private static void resetOverrideOnly(SessionState ss, String varname) {
     if (!ss.getOverriddenConfigurations().containsKey(varname)) return;
     setSessionVariableFromConf(ss, varname, new HiveConf());
     ss.getOverriddenConfigurations().remove(varname);
   }
 
-  private void setSessionVariableFromConf(SessionState ss, String varname,
-      HiveConf conf) {
+  private static void setSessionVariableFromConf(SessionState ss, String varname, HiveConf conf) {
     String value = conf.get(varname);
     if (value != null) {
-      ss.getConf().set(varname, value);
+      SetProcessor.setConf(ss, varname, varname, value, false);
     }
   }
 
-  private CommandProcessorResponse resetToDefault(SessionState ss, String varname) {
+  private static CommandProcessorResponse resetToDefault(SessionState ss, String varname) {
     varname = varname.trim();
     try {
       String nonErrorMessage = null;

@@ -1,0 +1,146 @@
+PREHOOK: query: drop table if exists t
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists t
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t (a int,v int, b boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int,v int, b boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (1,null, true)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1,null, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.v EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into t values (2,1,    false)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (2,1,    false)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.v EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into t values (3,2,    null)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (3,2,    null)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.b EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: t.v EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select assert_true(sum(a*a) = 1) from t
+	where v is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1) from t
+	where v is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2+3*3) from t
+	where v is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2+3*3) from t
+	where v is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 1) from t
+	where b is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1) from t
+	where b is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2 + 3*3) from t
+	where b is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2 + 3*3) from t
+	where b is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 4) from t
+	where b is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 4) from t
+	where b is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 1*1 + 3*3) from t
+	where b is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1*1 + 3*3) from t
+	where b is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2) from t
+	where (v>0 and v<2) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2) from t
+	where (v>0 and v<2) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2) from t
+	where (v<2) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2) from t
+	where (v<2) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select  NULL is true,
+        NULL is not true,
+        NULL is false,
+        NULL is not false
+from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select  NULL is true,
+        NULL is not true,
+        NULL is false,
+        NULL is not false
+from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+false	true	false	true
+false	true	false	true
+false	true	false	true

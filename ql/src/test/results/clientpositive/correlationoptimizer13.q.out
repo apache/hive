@@ -52,8 +52,8 @@ STAGE PLANS:
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: c3 (type: string), c1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)
@@ -74,8 +74,8 @@ STAGE PLANS:
               predicate: ((c2 > 100) and (c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: c3 (type: string), c1 (type: int)
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count(1)

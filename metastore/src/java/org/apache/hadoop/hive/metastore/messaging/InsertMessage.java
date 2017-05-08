@@ -37,6 +37,12 @@ public abstract class InsertMessage extends EventMessage {
   public abstract String getTable();
 
   /**
+   * Getter for the replace flag being insert into/overwrite
+   * @return Replace flag to represent INSERT INTO or INSERT OVERWRITE (Boolean).
+   */
+  public abstract boolean isReplace();
+
+  /**
    * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a
    * partition.
    * @return Map of partition keyvalues, or null.

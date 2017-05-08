@@ -15,7 +15,7 @@ PREHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -31,7 +31,7 @@ POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -55,7 +55,7 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -70,7 +70,7 @@ POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
@@ -95,9 +95,9 @@ POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:s
 POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: false
@@ -156,11 +156,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1korc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
@@ -185,19 +185,19 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
 -1	300	65663	4294967343	71.26	34.62	true	calvin ovid	2013-03-01 09:11:58.703262	78.56	study skills
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 -17045922556
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -235,10 +235,9 @@ STAGE PLANS:
                       key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                       sort order: +++
                       Reduce Sink Vectorization:
-                          className: VectorReduceSinkOperator
-                          native: false
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                          className: VectorReduceSinkObjectHashOperator
+                          native: true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
@@ -249,7 +248,7 @@ STAGE PLANS:
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
@@ -293,11 +292,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1korc
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
@@ -322,12 +321,12 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
 -1	300	65663	4294967343	71.26	34.62	true	calvin ovid	2013-03-01 09:11:58.703262	78.56	study skills
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####

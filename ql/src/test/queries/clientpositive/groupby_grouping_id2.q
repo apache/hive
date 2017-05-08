@@ -1,3 +1,7 @@
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
+set hive.cli.print.header=true;
+
 CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1;

@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
@@ -24,8 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,7 +53,6 @@ public class TestReplicationSemanticAnalyzer {
   static ArrayList<String> cols =  new ArrayList<String>(Arrays.asList("col1", "col2"));
   ParseDriver pd;
   SemanticAnalyzer sA;
-
 
   @BeforeClass
   public static void initialize() throws HiveException {
@@ -271,5 +272,20 @@ public class TestReplicationSemanticAnalyzer {
 
     FetchTask fetchTask = rs.getFetchTask();
     assertNotNull(fetchTask);
+  }
+
+  @Test
+  public void removeTemporaryTablesForMetadataDump() {
+    List<String> validTables = ImmutableList.copyOf(
+        ReplicationSemanticAnalyzer.removeValuesTemporaryTables(new ArrayList<String>() {{
+          add(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX + "a");
+          add(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX + "b");
+          add(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX + "c");
+          add("c");
+          add("b");
+          add("a");
+        }}));
+    assertThat(validTables.size(), is(equalTo(3)));
+    assertThat(validTables, hasItems("a", "b", "c"));
   }
 }

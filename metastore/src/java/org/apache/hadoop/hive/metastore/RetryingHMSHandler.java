@@ -153,8 +153,6 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
         return new Result(object, retryCount);
 
-      } catch (javax.jdo.JDOException e) {
-        caughtException = e;
       } catch (UndeclaredThrowableException e) {
         if (e.getCause() != null) {
           if (e.getCause() instanceof javax.jdo.JDOException) {

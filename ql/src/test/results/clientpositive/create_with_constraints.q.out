@@ -1039,36 +1039,36 @@ Parent Column Name:default.table1.a	Column Name:y       	Key Sequence:1
 Constraint Name:    	#### A masked pattern was here ####	 
 Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
 	 	 
-PREHOOK: query: CREATE DATABASE dbconstraint
+PREHOOK: query: CREATE DATABASE DbConstraint
 PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:dbconstraint
-POSTHOOK: query: CREATE DATABASE dbconstraint
+PREHOOK: Output: database:DbConstraint
+POSTHOOK: query: CREATE DATABASE DbConstraint
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:dbconstraint
-PREHOOK: query: USE dbconstraint
+POSTHOOK: Output: database:DbConstraint
+PREHOOK: query: USE DbConstraint
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:dbconstraint
-POSTHOOK: query: USE dbconstraint
+POSTHOOK: query: USE DbConstraint
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:dbconstraint
-PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+PREHOOK: query: CREATE TABLE Table2 (a STRING, b STRING, constraint Pk1 primary key (a) disable novalidate)
 PREHOOK: type: CREATETABLE
+PREHOOK: Output: DbConstraint@Table2
 PREHOOK: Output: database:dbconstraint
-PREHOOK: Output: dbconstraint@table2
-POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+POSTHOOK: query: CREATE TABLE Table2 (a STRING, b STRING, constraint Pk1 primary key (a) disable novalidate)
 POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: DbConstraint@Table2
 POSTHOOK: Output: database:dbconstraint
-POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: DESCRIBE EXTENDED dbconstraint.table2
+PREHOOK: query: DESCRIBE EXTENDED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE EXTENDED dbconstraint.table2
+POSTHOOK: query: DESCRIBE EXTENDED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 a                   	string              	                    
@@ -1076,10 +1076,10 @@ b                   	string
 	 	 
 #### A masked pattern was here ####
 Constraints	Primary Key for dbconstraint.table2:[a], Constraint Name: pk1	 
-PREHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
@@ -1118,24 +1118,24 @@ Storage Desc Params:
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
 Column Names:       	a                   	 
-PREHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: DESCRIBE EXTENDED dbconstraint.table2
+PREHOOK: query: DESCRIBE EXTENDED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE EXTENDED dbconstraint.table2
+POSTHOOK: query: DESCRIBE EXTENDED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 a                   	string              	                    
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
@@ -1167,14 +1167,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE dbconstraint.table2 ADD CONSTRAINT pk1 primary key (a) disable novalidate
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 primary key (a) disable novalidate
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE dbconstraint.table2 ADD CONSTRAINT pk1 primary key (a) disable novalidate
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 primary key (a) disable novalidate
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             
@@ -1213,14 +1213,14 @@ Storage Desc Params:
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
 Column Names:       	a                   	 
-PREHOOK: query: ALTER TABLE dbconstraint.table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE DbConstraint.Table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE dbconstraint.table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
-POSTHOOK: query: DESCRIBE FORMATTED dbconstraint.table2
+POSTHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dbconstraint@table2
 # col_name            	data_type           	comment             

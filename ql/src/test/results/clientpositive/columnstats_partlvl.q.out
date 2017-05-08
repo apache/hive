@@ -539,8 +539,8 @@ STAGE PLANS:
             alias: employee_part
             Statistics: Num rows: 2 Data size: 210 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: employeesalary (type: double), employeeid (type: int), employeename (type: string)
-              outputColumnNames: employeesalary, employeeid, employeename
+              expressions: employeeid (type: int), employeename (type: string), employeesalary (type: double)
+              outputColumnNames: employeeid, employeename, employeesalary
               Statistics: Num rows: 2 Data size: 210 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)

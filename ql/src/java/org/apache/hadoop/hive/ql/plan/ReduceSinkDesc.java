@@ -109,7 +109,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     UNSET(0), // unset
     FIXED(1), // distribution of keys is fixed
     AUTOPARALLEL(2), // can change reducer count (ORDER BY can concat adjacent buckets)
-    UNIFORM(3); // can redistribute into buckets uniformly (GROUP BY can)
+    UNIFORM(3), // can redistribute into buckets uniformly (GROUP BY can)
+    QUICKSTART(4); // do not wait for downstream tasks
 
     private final int trait;
 
@@ -441,6 +442,15 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
   }
 
+  public final boolean isSlowStart() {
+    return !(this.reduceTraits.contains(ReducerTraits.QUICKSTART));
+  }
+
+  @Explain(displayName = "quick start", displayOnlyOnTrue = true, explainLevels = {Explain.Level.EXTENDED })
+  public final boolean isQuickStart() {
+    return !isSlowStart();
+  }
+
   public final EnumSet<ReducerTraits> getReducerTraits() {
     return this.reduceTraits;
   }
@@ -482,7 +492,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   // Use LinkedHashSet to give predictable display order.
-  private static Set<String> vectorizableReduceSinkNativeEngines =
+  private static final Set<String> vectorizableReduceSinkNativeEngines =
       new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
 
   public class ReduceSinkOperatorExplainVectorization extends OperatorExplainVectorization {
@@ -534,14 +544,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               engineInSupported,
               engineInSupportedCondName),
           new VectorizationCondition(
-              !vectorReduceSinkDesc.getHasBuckets(),
-              "No buckets"),
-          new VectorizationCondition(
-              !vectorReduceSinkDesc.getHasTopN(),
-              "No TopN"),
-          new VectorizationCondition(
-              vectorReduceSinkDesc.getUseUniformHash(),
-              "Uniform Hash"),
+              !vectorReduceSinkDesc.getHasPTFTopN(),
+              "No PTF TopN"),
           new VectorizationCondition(
               !vectorReduceSinkDesc.getHasDistinctColumns(),
               "No DISTINCT columns"),
@@ -552,6 +556,15 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               vectorReduceSinkDesc.getIsValueLazyBinary(),
               "LazyBinarySerDe for values")
       };
+      if (vectorReduceSinkDesc.getIsUnexpectedCondition()) {
+        VectorizationCondition[] newConditions = new VectorizationCondition[conditions.length + 1];
+        System.arraycopy(conditions, 0, newConditions, 0, conditions.length);
+        newConditions[conditions.length] =
+            new VectorizationCondition(
+                false,
+                "NOT UnexpectedCondition");
+        conditions = newConditions;
+      }
       return conditions;
     }
 

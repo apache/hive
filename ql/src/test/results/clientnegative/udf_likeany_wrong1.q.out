@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:7 Argument type mismatch '120': likeany only takes STRING_GROUP, VOID_GROUP types as 1st argument, got INT

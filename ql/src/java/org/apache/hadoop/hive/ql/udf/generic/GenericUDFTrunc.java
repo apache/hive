@@ -63,12 +63,13 @@ import org.apache.hadoop.io.Text;
  */
 @Description(name = "trunc", value = "_FUNC_(date, fmt) / _FUNC_(N,D) - Returns If input is date returns date with the time portion of the day truncated "
     + "to the unit specified by the format model fmt. If you omit fmt, then date is truncated to "
-    + "the nearest day. It now only supports 'MONTH'/'MON'/'MM' and 'YEAR'/'YYYY'/'YY' as format."
+    + "the nearest day. It currently only supports 'MONTH'/'MON'/'MM', 'QUARTER'/'Q' and 'YEAR'/'YYYY'/'YY' as format."
     + "If input is a number group returns N truncated to D decimal places. If D is omitted, then N is truncated to 0 places."
     + "D can be negative to truncate (make zero) D digits left of the decimal point."
     , extended = "date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'."
         + " The time part of date is ignored.\n" + "Example:\n "
         + " > SELECT _FUNC_('2009-02-12', 'MM');\n" + "OK\n" + " '2009-02-01'" + "\n"
+        + " > SELECT _FUNC_('2017-03-15', 'Q');\n" + "OK\n" + " '2017-01-01'" + "\n"
         + " > SELECT _FUNC_('2015-10-27', 'YEAR');\n" + "OK\n" + " '2015-01-01'"
         + " > SELECT _FUNC_(1234567891.1234567891,4);\n" + "OK\n" + " 1234567891.1234" + "\n"
         + " > SELECT _FUNC_(1234567891.1234567891,-4);\n" + "OK\n" + " 1234560000"
@@ -429,6 +430,13 @@ public class GenericUDFTrunc extends GenericUDF {
   private Calendar evalDate(Date d) throws UDFArgumentException {
     calendar.setTime(d);
     if ("MONTH".equals(fmtInput) || "MON".equals(fmtInput) || "MM".equals(fmtInput)) {
+      calendar.set(Calendar.DAY_OF_MONTH, 1);
+      return calendar;
+    } else if ("QUARTER".equals(fmtInput) || "Q".equals(fmtInput)) {
+      int month = calendar.get(Calendar.MONTH);
+      int quarter = month / 3;
+      int monthToSet = quarter * 3;
+      calendar.set(Calendar.MONTH, monthToSet);
       calendar.set(Calendar.DAY_OF_MONTH, 1);
       return calendar;
     } else if ("YEAR".equals(fmtInput) || "YYYY".equals(fmtInput) || "YY".equals(fmtInput)) {

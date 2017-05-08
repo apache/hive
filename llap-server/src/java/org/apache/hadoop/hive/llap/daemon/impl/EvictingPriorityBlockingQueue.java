@@ -53,6 +53,11 @@ public class EvictingPriorityBlockingQueue<E> {
       currentSize++;
       return null;
     } else {
+      if (isEmpty()) {
+        // Empty queue. But no capacity available, due to waitQueueSize and additionalElementsAllowed
+        // Return the element.
+        return e;
+      }
       // No capacity. Check if an element needs to be evicted.
       E last = deque.peekLast();
       if (comparator.compare(e, last) < 0) {

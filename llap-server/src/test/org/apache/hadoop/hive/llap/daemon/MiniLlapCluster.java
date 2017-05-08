@@ -15,6 +15,7 @@
 package org.apache.hadoop.hive.llap.daemon;
 
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -26,6 +27,7 @@ import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.shufflehandler.ShuffleHandler;
 import org.apache.hadoop.service.AbstractService;
@@ -117,6 +119,9 @@ public class MiniLlapCluster extends AbstractService {
     this.ioIsDirect = ioIsDirect;
     this.llapIoEnabled = llapIoEnabled;
     this.ioBytesPerService = ioBytesPerService;
+
+    LlapDaemonInfo.initialize("mini-llap-cluster", numExecutorsPerService, execMemoryPerService,
+        ioBytesPerService, ioIsDirect, llapIoEnabled);
 
     // Setup Local Dirs
     localDirs = new String[numLocalDirs];

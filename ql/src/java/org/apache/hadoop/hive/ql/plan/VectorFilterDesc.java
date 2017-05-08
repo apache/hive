@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
  */
 public class VectorFilterDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   private VectorExpression predicateExpression;
 

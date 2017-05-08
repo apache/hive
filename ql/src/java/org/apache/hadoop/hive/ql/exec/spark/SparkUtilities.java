@@ -78,7 +78,7 @@ public class SparkUtilities {
     Path localFile = new Path(source.getPath());
     Path remoteFile = new Path(SessionState.get().getSparkSession().getHDFSSessionDir(),
         getFileName(source));
-    FileSystem fileSystem = FileSystem.get(conf);
+    FileSystem fileSystem = FileSystem.get(remoteFile.toUri(), conf);
     // Overwrite if the remote file already exists. Whether the file can be added
     // on executor is up to spark, i.e. spark.files.overwrite
     fileSystem.copyFromLocalFile(false, true, localFile, remoteFile);
@@ -92,7 +92,7 @@ public class SparkUtilities {
     String deployMode = sparkConf.contains("spark.submit.deployMode") ?
         sparkConf.get("spark.submit.deployMode") : null;
     return SparkClientUtilities.isYarnClusterMode(master, deployMode) &&
-        !source.getScheme().equals("hdfs");
+        !(source.getScheme().equals("hdfs") || source.getScheme().equals("viewfs"));
   }
 
   private static String getFileName(URI uri) {

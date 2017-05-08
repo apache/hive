@@ -382,7 +382,7 @@ public abstract class TaskCompiler {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
       Warehouse wh = new Warehouse(conf);
-      return wh.getTablePath(db.getDatabase(names[0]), names[1]);
+      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1]);
     } catch (HiveException e) {
       throw new SemanticException(e);
     } catch (MetaException e) {
@@ -557,7 +557,9 @@ public abstract class TaskCompiler {
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
     clone.setRsToRuntimeValuesInfoMap(pCtx.getRsToRuntimeValuesInfoMap());
-    clone.setRsOpToTsOpMap(pCtx.getRsOpToTsOpMap());
+    clone.setRsToSemiJoinBranchInfo(pCtx.getRsToSemiJoinBranchInfo());
+    clone.setColExprToGBMap(pCtx.getColExprToGBMap());
+    clone.setSemiJoinHints(pCtx.getSemiJoinHints());
 
     return clone;
   }

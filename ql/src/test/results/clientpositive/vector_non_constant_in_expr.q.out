@@ -18,7 +18,7 @@ STAGE PLANS:
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (cint) IN (ctinyint, cbigint) (type: boolean)
+              predicate: (cint) IN (UDFToInteger(ctinyint), UDFToInteger(cbigint)) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -35,7 +35,7 @@ STAGE PLANS:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Predicate expression for FILTER operator: Cannot vectorize IN() - casting a column is not supported. Column type is int but the common type is bigint
+          notVectorizedReason: Predicate expression for FILTER operator: Vectorizing IN expression only supported for constant values
           vectorized: false
 
   Stage: Stage-0

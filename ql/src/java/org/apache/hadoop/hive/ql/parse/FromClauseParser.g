@@ -110,9 +110,8 @@ atomjoinSource
 
 joinSource
     :
-    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}?)?)*
+    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}? | KW_USING! columnParenthesesList {$joinToken.start.getType() != COMMA}?)?)*
     ;
-
 
 joinSourcePart
 @init { gParent.pushMsg("joinSourcePart", state); }

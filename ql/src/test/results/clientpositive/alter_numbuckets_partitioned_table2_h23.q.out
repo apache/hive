@@ -31,6 +31,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	0                   
+	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -129,6 +130,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	1                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -227,6 +229,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	8                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -325,6 +328,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	8                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -423,6 +427,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	8                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -521,6 +526,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -619,6 +625,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -717,6 +724,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -815,6 +823,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 #### A masked pattern was here ####
 	numFiles            	4                   
+	numPartitions       	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                

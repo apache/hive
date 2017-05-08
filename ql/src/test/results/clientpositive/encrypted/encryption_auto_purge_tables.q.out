@@ -1,0 +1,157 @@
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_table
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_table
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+encrypted_table
+src
+PREHOOK: query: ALTER TABLE encrypted_table SET TBLPROPERTIES("auto.purge"="true")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@encrypted_table
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: ALTER TABLE encrypted_table SET TBLPROPERTIES("auto.purge"="true")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) from encrypted_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+POSTHOOK: query: SELECT COUNT(*) from encrypted_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+500
+PREHOOK: query: TRUNCATE TABLE encrypted_table
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: TRUNCATE TABLE encrypted_table
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@encrypted_table
+PREHOOK: query: SELECT COUNT(*) FROM encrypted_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+POSTHOOK: query: SELECT COUNT(*) FROM encrypted_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+0
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@encrypted_table
+POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) FROM encrypted_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+POSTHOOK: query: SELECT COUNT(*) FROM encrypted_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+500
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_ext_table
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_ext_table
+PREHOOK: query: ALTER TABLE encrypted_ext_table SET TBLPROPERTIES("auto.purge"="true")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@encrypted_ext_table
+PREHOOK: Output: default@encrypted_ext_table
+POSTHOOK: query: ALTER TABLE encrypted_ext_table SET TBLPROPERTIES("auto.purge"="true")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@encrypted_ext_table
+POSTHOOK: Output: default@encrypted_ext_table
+PREHOOK: query: INSERT OVERWRITE TABLE encrypted_ext_table SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@encrypted_ext_table
+POSTHOOK: query: INSERT OVERWRITE TABLE encrypted_ext_table SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@encrypted_ext_table
+POSTHOOK: Lineage: encrypted_ext_table.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_ext_table.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) from encrypted_ext_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_ext_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+POSTHOOK: query: SELECT COUNT(*) from encrypted_ext_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_ext_table
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
+500
+PREHOOK: query: DROP TABLE encrypted_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encrypted_table
+PREHOOK: Output: default@encrypted_table
+POSTHOOK: query: DROP TABLE encrypted_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encrypted_table
+POSTHOOK: Output: default@encrypted_table
+PREHOOK: query: DROP TABLE encrypted_ext_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encrypted_ext_table
+PREHOOK: Output: default@encrypted_ext_table
+POSTHOOK: query: DROP TABLE encrypted_ext_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encrypted_ext_table
+POSTHOOK: Output: default@encrypted_ext_table
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+src
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table PURGE
+POSTHOOK: type: DROPTABLE

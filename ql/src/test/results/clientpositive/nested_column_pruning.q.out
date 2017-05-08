@@ -1377,8 +1377,8 @@ STAGE PLANS:
             Pruned Column Paths: s1.f6, s5.f16
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: s5 (type: struct<f16:array<struct<f17:string,f18:struct<f19:int>>>>), s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
-              outputColumnNames: s5, s1
+              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s5 (type: struct<f16:array<struct<f17:string,f18:struct<f19:int>>>>)
+              outputColumnNames: s1, s5
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(s1.f6)
@@ -1529,8 +1529,8 @@ STAGE PLANS:
             Pruned Column Paths: s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: s6 (type: map<string,struct<f20:array<struct<f21:struct<f22:int>>>>>), s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
-              outputColumnNames: s6, s1
+              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s6 (type: map<string,struct<f20:array<struct<f21:struct<f22:int>>>>>)
+              outputColumnNames: s1, s6
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count(s1.f6)

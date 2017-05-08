@@ -435,10 +435,13 @@ precedenceUnaryOperator
     PLUS | MINUS | TILDE
     ;
 
-nullCondition
-    :
-    KW_NULL -> ^(TOK_ISNULL)
-    | KW_NOT KW_NULL -> ^(TOK_ISNOTNULL)
+isCondition
+    : KW_NULL -> Identifier["isnull"]
+    | KW_TRUE -> Identifier["istrue"]
+    | KW_FALSE -> Identifier["isfalse"]
+    | KW_NOT KW_NULL -> Identifier["isnotnull"]
+    | KW_NOT KW_TRUE -> Identifier["isnottrue"]
+    | KW_NOT KW_FALSE -> Identifier["isnotfalse"]
     ;
 
 precedenceUnaryPrefixExpression
@@ -447,8 +450,8 @@ precedenceUnaryPrefixExpression
     ;
 
 precedenceUnarySuffixExpression
-    : precedenceUnaryPrefixExpression (a=KW_IS nullCondition)?
-    -> {$a != null}? ^(TOK_FUNCTION nullCondition precedenceUnaryPrefixExpression)
+    : precedenceUnaryPrefixExpression (a=KW_IS isCondition)?
+    -> {$a != null}? ^(TOK_FUNCTION isCondition precedenceUnaryPrefixExpression)
     -> precedenceUnaryPrefixExpression
     ;
 
@@ -567,6 +570,12 @@ precedenceSimilarExpressionAtom[CommonTree t]
     |
     KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression)
     -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE {$t} $min $max)
+    |
+    KW_LIKE KW_ANY (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION Identifier["likeany"] {$t} {$expr.tree})
+    |
+    KW_LIKE KW_ALL (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION Identifier["likeall"] {$t} {$expr.tree})
     ;
 
 precedenceSimilarExpressionIn[CommonTree t]
@@ -585,14 +594,27 @@ precedenceSimilarExpressionPartNot[CommonTree t]
     precedenceSimilarExpressionAtom[$t]
     ;
 
+precedenceDistinctOperator
+    :
+    KW_IS KW_DISTINCT KW_FROM
+    ;
+
 precedenceEqualOperator
     :
-    EQUAL | EQUAL_NS | NOTEQUAL
+    EQUAL | EQUAL_NS | NOTEQUAL | KW_IS KW_NOT KW_DISTINCT KW_FROM -> EQUAL_NS["<=>"]
     ;
 
 precedenceEqualExpression
     :
-    precedenceSimilarExpression (precedenceEqualOperator^ precedenceSimilarExpression)*
+    (precedenceSimilarExpression -> precedenceSimilarExpression)
+    (
+        equal=precedenceEqualOperator p=precedenceSimilarExpression
+        -> ^($equal {$precedenceEqualExpression.tree} $p)
+        |
+        dist=precedenceDistinctOperator p=precedenceSimilarExpression
+        -> ^(KW_NOT["not"] ^(EQUAL_NS["<=>"] {$precedenceEqualExpression.tree} $p))
+    )*
+    -> {$precedenceEqualExpression.tree}
     ;
     
 precedenceNotOperator

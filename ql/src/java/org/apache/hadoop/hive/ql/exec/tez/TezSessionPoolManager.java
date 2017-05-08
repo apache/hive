@@ -76,6 +76,7 @@ public class TezSessionPoolManager {
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
   private static final Random rdm = new Random();
 
+  private volatile SessionState initSessionState;
   private BlockingQueue<TezSessionPoolSession> defaultQueuePool;
 
   /** Priority queue sorted by expiration time of live sessions that could be expired. */
@@ -136,6 +137,8 @@ public class TezSessionPoolManager {
 
   public void startPool() throws Exception {
     if (initialSessions.isEmpty()) return;
+    // Hive SessionState available at this point.
+    initSessionState = SessionState.get();
     int threadCount = Math.min(initialSessions.size(),
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
@@ -259,13 +262,27 @@ public class TezSessionPoolManager {
       expirationThread = new Thread(new Runnable() {
         @Override
         public void run() {
-          runExpirationThread();
+          try {
+            SessionState.setCurrentSessionState(initSessionState);
+            runExpirationThread();
+          } catch (Exception e) {
+            LOG.warn("Exception in TezSessionPool-expiration thread. Thread will shut down", e);
+          } finally {
+            LOG.info("TezSessionPool-expiration thread exiting");
+          }
         }
       }, "TezSessionPool-expiration");
       restartThread = new Thread(new Runnable() {
         @Override
         public void run() {
-          runRestartThread();
+          try {
+            SessionState.setCurrentSessionState(initSessionState);
+            runRestartThread();
+          } catch (Exception e) {
+            LOG.warn("Exception in TezSessionPool-cleanup thread. Thread will shut down", e);
+          } finally {
+            LOG.info("TezSessionPool-cleanup thread exiting");
+          }
         }
       }, "TezSessionPool-cleanup");
     }

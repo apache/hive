@@ -4968,21 +4968,24 @@ class GetOpenTxnsResponse {
 
   GetOpenTxnsResponse(const GetOpenTxnsResponse&);
   GetOpenTxnsResponse& operator=(const GetOpenTxnsResponse&);
-  GetOpenTxnsResponse() : txn_high_water_mark(0), min_open_txn(0) {
+  GetOpenTxnsResponse() : txn_high_water_mark(0), min_open_txn(0), abortedBits() {
   }
 
   virtual ~GetOpenTxnsResponse() throw();
   int64_t txn_high_water_mark;
-  std::set<int64_t>  open_txns;
+  std::vector<int64_t>  open_txns;
   int64_t min_open_txn;
+  std::string abortedBits;
 
   _GetOpenTxnsResponse__isset __isset;
 
   void __set_txn_high_water_mark(const int64_t val);
 
-  void __set_open_txns(const std::set<int64_t> & val);
+  void __set_open_txns(const std::vector<int64_t> & val);
 
   void __set_min_open_txn(const int64_t val);
+
+  void __set_abortedBits(const std::string& val);
 
   bool operator == (const GetOpenTxnsResponse & rhs) const
   {
@@ -4993,6 +4996,8 @@ class GetOpenTxnsResponse {
     if (__isset.min_open_txn != rhs.__isset.min_open_txn)
       return false;
     else if (__isset.min_open_txn && !(min_open_txn == rhs.min_open_txn))
+      return false;
+    if (!(abortedBits == rhs.abortedBits))
       return false;
     return true;
   }
@@ -6588,7 +6593,8 @@ inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEven
 }
 
 typedef struct _InsertEventRequestData__isset {
-  _InsertEventRequestData__isset() : filesAddedChecksum(false) {}
+  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false) {}
+  bool replace :1;
   bool filesAddedChecksum :1;
 } _InsertEventRequestData__isset;
 
@@ -6597,14 +6603,17 @@ class InsertEventRequestData {
 
   InsertEventRequestData(const InsertEventRequestData&);
   InsertEventRequestData& operator=(const InsertEventRequestData&);
-  InsertEventRequestData() {
+  InsertEventRequestData() : replace(0) {
   }
 
   virtual ~InsertEventRequestData() throw();
+  bool replace;
   std::vector<std::string>  filesAdded;
   std::vector<std::string>  filesAddedChecksum;
 
   _InsertEventRequestData__isset __isset;
+
+  void __set_replace(const bool val);
 
   void __set_filesAdded(const std::vector<std::string> & val);
 
@@ -6612,6 +6621,10 @@ class InsertEventRequestData {
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
+    if (__isset.replace != rhs.__isset.replace)
+      return false;
+    else if (__isset.replace && !(replace == rhs.replace))
+      return false;
     if (!(filesAdded == rhs.filesAdded))
       return false;
     if (__isset.filesAddedChecksum != rhs.__isset.filesAddedChecksum)

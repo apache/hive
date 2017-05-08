@@ -25,35 +25,23 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public class HiveMetaStoreFsImpl implements MetaStoreFS {
 
   public static final Logger LOG = LoggerFactory
-      .getLogger("hive.metastore.hivemetastoressimpl");
+      .getLogger("hive.metastore.hivemetastoreFsimpl");
 
   @Override
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
       boolean ifPurge, Configuration conf) throws MetaException {
-    LOG.debug("deleting  " + f);
-
     try {
-      if (ifPurge) {
-        LOG.info("Not moving "+ f +" to trash");
-      } else if (Trash.moveToAppropriateTrash(fs, f, conf)) {
-        LOG.info("Moved to trash: " + f);
-        return true;
-      }
-
-      if (fs.delete(f, true)) {
-        LOG.debug("Deleted the diretory " + f);
-        return true;
-      }
-
+      FileUtils.moveToTrash(fs, f, conf, ifPurge);
       if (fs.exists(f)) {
         throw new MetaException("Unable to delete directory: " + f);
       }
+      return true;
     } catch (FileNotFoundException e) {
       return true; // ok even if there is not data
     } catch (Exception e) {
@@ -61,5 +49,4 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
     }
     return false;
   }
-
 }

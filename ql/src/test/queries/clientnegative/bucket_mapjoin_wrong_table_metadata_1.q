@@ -17,6 +17,6 @@ load data local inpath '../../data/files/T2.txt' overwrite into table table2;
 
 set hive.optimize.bucketmapjoin = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
+set hive.cbo.enable=false;
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value;
 

@@ -103,6 +103,8 @@ public class ReduceRecordSource implements RecordSource {
   // number of columns pertaining to keys in a vectorized row batch
   private int firstValueColumnOffset;
 
+  private final int BATCH_BYTES = VectorizedRowBatch.DEFAULT_BYTES;
+
   private StructObjectInspector keyStructInspector;
   private StructObjectInspector valueStructInspectors;
 
@@ -190,7 +192,9 @@ public class ReduceRecordSource implements RecordSource {
                                   VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                                       keyStructInspector),
                                   /* useExternalBuffer */ true,
-                                  binarySortableSerDe.getSortOrders()));
+                                  binarySortableSerDe.getSortOrders(),
+                                  binarySortableSerDe.getNullMarkers(),
+                                  binarySortableSerDe.getNotNullMarkers()));
         keyBinarySortableDeserializeToRow.init(0);
 
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
@@ -435,6 +439,7 @@ public class ReduceRecordSource implements RecordSource {
     final int maxSize = batch.getMaxSize();
     Preconditions.checkState(maxSize > 0);
     int rowIdx = 0;
+    int batchBytes = keyBytes.length;
     try {
       for (Object value : values) {
         if (valueLazyBinaryDeserializeToRow != null) {
@@ -442,6 +447,7 @@ public class ReduceRecordSource implements RecordSource {
           BytesWritable valueWritable = (BytesWritable) value;
           byte[] valueBytes = valueWritable.getBytes();
           int valueLength = valueWritable.getLength();
+          batchBytes += valueLength;
 
           // l4j.info("ReduceRecordSource processVectorGroup valueBytes " + valueLength + " " +
           //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
@@ -450,7 +456,7 @@ public class ReduceRecordSource implements RecordSource {
           valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);
         }
         rowIdx++;
-        if (rowIdx >= maxSize) {
+        if (rowIdx >= maxSize || batchBytes >= BATCH_BYTES) {
 
           // Batch is full.
           batch.size = rowIdx;
@@ -462,6 +468,7 @@ public class ReduceRecordSource implements RecordSource {
             batch.cols[i].reset();
           }
           rowIdx = 0;
+          batchBytes = 0;
         }
       }
       if (rowIdx > 0) {

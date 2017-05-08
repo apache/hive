@@ -39,8 +39,8 @@ public class CuckooSetBytes {
   private int salt = 0;
   private Random gen = new Random(676983475);
   private int rehashCount = 0;
-  private static long INT_MASK  = 0x00000000ffffffffL;
-  private static long BYTE_MASK = 0x00000000000000ffL;
+  private static final long INT_MASK  = 0x00000000ffffffffL;
+  private static final long BYTE_MASK = 0x00000000000000ffL;
 
   /**
    * Allocate a new set to hold expectedSize values. Re-allocation to expand

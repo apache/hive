@@ -1,4 +1,5 @@
 
+set hive.cbo.enable=false;
 
 
 

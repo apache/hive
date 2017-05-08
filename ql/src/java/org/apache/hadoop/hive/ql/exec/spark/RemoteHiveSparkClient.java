@@ -356,12 +356,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     private void logConfigurations(JobConf localJobConf) {
       if (LOG.isInfoEnabled()) {
         LOG.info("Logging job configuration: ");
-        StringWriter outWriter = new StringWriter();
-        try {
-          Configuration.dumpConfiguration(localJobConf, outWriter);
-        } catch (IOException e) {
-          LOG.warn("Error logging job configuration", e);
-        }
+        StringBuilder outWriter = new StringBuilder();
+        // redact sensitive information before logging
+        HiveConfUtil.dumpConfig(localJobConf, outWriter);
         LOG.info(outWriter.toString());
       }
     }

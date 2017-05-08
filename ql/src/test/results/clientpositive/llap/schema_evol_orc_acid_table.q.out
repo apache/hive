@@ -55,6 +55,17 @@ POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE [(values__tmp__table__1
 POSTHOOK: Lineage: table_add_int_permute_select.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
+PREHOOK: query: explain vectorization only detail
+select insert_num,a,b,c from table_add_int_permute_select
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,a,b,c from table_add_int_permute_select
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
 PREHOOK: query: select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select

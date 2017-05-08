@@ -43,8 +43,8 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=8 width=16)
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=8 width=16)
           Output:["_col0","_col1"]
           TableScan [TS_0] (rows=8 width=16)
             default@test_vector_bround,test_vector_bround,Tbl:COMPLETE,Col:NONE,Output:["v0","v1"]

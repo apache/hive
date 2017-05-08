@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryDisplay;
+import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -57,7 +59,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -67,7 +68,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -96,8 +96,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private AbstractSerDe serde = null;
   private boolean fetchStarted = false;
   private volatile MetricsScope currentSQLStateScope;
-  // Display for WebUI.
-  private SQLOperationDisplay sqlOpDisplay;
+  private QueryInfo queryInfo;
   private long queryTimeout;
   private ScheduledExecutorService timeoutExecutor;
   private final boolean runAsync;
@@ -122,11 +121,9 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
 
     setupSessionIO(parentSession.getSessionState());
-    try {
-      sqlOpDisplay = new SQLOperationDisplay(this);
-    } catch (HiveSQLException e) {
-      LOG.warn("Error calcluating SQL Operation Display for webui", e);
-    }
+
+    queryInfo = new QueryInfo(getState().toString(), getParentSession().getUserName(),
+            getExecutionEngine(), getHandle().getHandleIdentifier().toString());
 
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
@@ -156,13 +153,13 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   /**
    * Compile the query and extract metadata
-   * @param sqlOperationConf
+   *
    * @throws HiveSQLException
    */
   public void prepare(QueryState queryState) throws HiveSQLException {
     setState(OperationState.RUNNING);
     try {
-      driver = new Driver(queryState, getParentSession().getUserName());
+      driver = new Driver(queryState, getParentSession().getUserName(), queryInfo);
 
       // Start the timer thread for cancelling the query when query timeout is reached
       // queryTimeout == 0 means no timeout
@@ -172,8 +169,9 @@ public class SQLOperation extends ExecuteStatementOperation {
           @Override
           public void run() {
             try {
+              String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
               LOG.info("Query timed out after: " + queryTimeout
-                  + " seconds. Cancelling the execution now.");
+                  + " seconds. Cancelling the execution now: " + queryId);
               SQLOperation.this.cancel(OperationState.TIMEDOUT);
             } catch (HiveSQLException e) {
               LOG.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
@@ -186,7 +184,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(timeoutTask, queryTimeout, TimeUnit.SECONDS);
       }
 
-      sqlOpDisplay.setQueryDisplay(driver.getQueryDisplay());
+      queryInfo.setQueryDisplay(driver.getQueryDisplay());
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
@@ -337,9 +335,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(parentPerfLogger);
-          // Set current OperationLog in this async thread for keeping on saving query log.
-          registerCurrentOperationLog();
-          registerLoggingContext();
+          LogUtils.registerLoggingContext(queryState.getConf());
           try {
             if (asyncPrepare) {
               prepare(queryState);
@@ -350,8 +346,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             setOperationException(e);
             LOG.error("Error running hive query: ", e);
           } finally {
-            unregisterLoggingContext();
-            unregisterOperationLog();
+            LogUtils.unregisterLoggingContext();
           }
           return null;
         }
@@ -380,8 +375,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   /**
    * Returns the current UGI on the stack
-   * @param opConfig
+   *
    * @return UserGroupInformation
+   *
    * @throws HiveSQLException
    */
   private UserGroupInformation getCurrentUGI() throws HiveSQLException {
@@ -392,27 +388,20 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private void registerCurrentOperationLog() {
-    if (isOperationLogEnabled) {
-      if (operationLog == null) {
-        LOG.warn("Failed to get current OperationLog object of Operation: " +
-            getHandle().getHandleIdentifier());
-        isOperationLogEnabled = false;
-        return;
-      }
-      OperationLog.setCurrentOperationLog(operationLog);
-    }
-  }
-
   private synchronized void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
 
-    if (shouldRunAsync()) {
+    //Need shut down background thread gracefully, driver.close will inform background thread
+    //a cancel request is sent.
+    if (shouldRunAsync() && state != OperationState.CANCELED && state != OperationState.TIMEDOUT) {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
+        String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
         if (success) {
-          LOG.info("The running operation has been successfully interrupted.");
+          LOG.info("The running operation has been successfully interrupted: " + queryId);
+        } else if (state == OperationState.CANCELED) {
+          LOG.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
         }
       }
     }
@@ -439,8 +428,16 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public void cancel(OperationState stateAfterCancel) throws HiveSQLException {
+    String queryId = null;
+    if (stateAfterCancel == OperationState.CANCELED) {
+      queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      LOG.info("Cancelling the query execution: " + queryId);
+    }
     cleanup(stateAfterCancel);
     cleanupOperationLog();
+    if (stateAfterCancel == OperationState.CANCELED) {
+      LOG.info("Successfully cancelled the query: " + queryId);
+    }
   }
 
   @Override
@@ -623,8 +620,8 @@ public class SQLOperation extends ExecuteStatementOperation {
   /**
    * Get summary information of this SQLOperation for display in WebUI.
    */
-  public SQLOperationDisplay getSQLOperationDisplay() {
-    return sqlOpDisplay;
+  public QueryInfo getQueryInfo() {
+    return queryInfo;
   }
 
   @Override
@@ -649,17 +646,17 @@ public class SQLOperation extends ExecuteStatementOperation {
 
     if (state == OperationState.FINISHED || state == OperationState.CANCELED || state == OperationState.ERROR) {
       //update runtime
-      sqlOpDisplay.setRuntime(getOperationComplete() - getOperationStart());
+      queryInfo.setRuntime(getOperationComplete() - getOperationStart());
       if (metrics != null && submittedQryScp != null) {
         metrics.endScope(submittedQryScp);
       }
     }
 
     if (state == OperationState.CLOSED) {
-      sqlOpDisplay.closed();
+      queryInfo.setEndTime();
     } else {
       //CLOSED state not interesting, state before (FINISHED, ERROR) is.
-      sqlOpDisplay.updateState(state);
+      queryInfo.updateState(state.toString());
     }
 
     if (state == OperationState.ERROR) {

@@ -208,8 +208,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 14)(children: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp) -> boolean) -> boolean
-                    predicate: (s is not null and (dt - CAST( ts AS DATE)) is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                    predicate: (s is not null and dt is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -274,8 +274,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 14)(children: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp) -> boolean) -> boolean
-                    predicate: (s is not null and (dt - CAST( ts AS DATE)) is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                    predicate: (s is not null and dt is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -293,7 +293,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs

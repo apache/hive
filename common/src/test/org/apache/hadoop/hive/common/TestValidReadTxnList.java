@@ -26,6 +26,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.BitSet;
 
 /**
  * Tests for {@link ValidReadTxnList}
@@ -34,9 +35,9 @@ public class TestValidReadTxnList {
 
   @Test
   public void noExceptions() throws Exception {
-    ValidTxnList txnList = new ValidReadTxnList(new long[0], 1, Long.MAX_VALUE);
+    ValidTxnList txnList = new ValidReadTxnList(new long[0], new BitSet(), 1, Long.MAX_VALUE);
     String str = txnList.writeToString();
-    Assert.assertEquals("1:" + Long.MAX_VALUE + ":", str);
+    Assert.assertEquals("1:" + Long.MAX_VALUE + "::", str);
     ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
     Assert.assertTrue(newList.isTxnValid(1));
@@ -45,9 +46,9 @@ public class TestValidReadTxnList {
 
   @Test
   public void exceptions() throws Exception {
-    ValidTxnList txnList = new ValidReadTxnList(new long[]{2L,4L}, 5, 4L);
+    ValidTxnList txnList = new ValidReadTxnList(new long[]{2L,4L}, new BitSet(), 5, 4L);
     String str = txnList.writeToString();
-    Assert.assertEquals("5:4:2:4", str);
+    Assert.assertEquals("5:4:2,4:", str);
     ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
     Assert.assertTrue(newList.isTxnValid(1));
@@ -62,7 +63,7 @@ public class TestValidReadTxnList {
   public void longEnoughToCompress() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidReadTxnList(exceptions, 2000, 900);
+    ValidTxnList txnList = new ValidReadTxnList(exceptions, new BitSet(), 2000, 900);
     String str = txnList.writeToString();
     ValidTxnList newList = new ValidReadTxnList();
     newList.readFromString(str);
@@ -76,7 +77,7 @@ public class TestValidReadTxnList {
   public void readWriteConfig() throws Exception {
     long[] exceptions = new long[1000];
     for (int i = 0; i < 1000; i++) exceptions[i] = i + 100;
-    ValidTxnList txnList = new ValidReadTxnList(exceptions, 2000, 900);
+    ValidTxnList txnList = new ValidReadTxnList(exceptions, new BitSet(), 2000, 900);
     String str = txnList.writeToString();
     Configuration conf = new Configuration();
     conf.set(ValidTxnList.VALID_TXNS_KEY, str);
@@ -88,5 +89,21 @@ public class TestValidReadTxnList {
     Configuration newConf = new Configuration();
     newConf.readFields(in);
     Assert.assertEquals(str, newConf.get(ValidTxnList.VALID_TXNS_KEY));
+  }
+
+  @Test
+  public void testAbortedTxn() throws Exception {
+    long[] exceptions = {2L, 4L, 6L, 8L, 10L};
+    BitSet bitSet = new BitSet(exceptions.length);
+    bitSet.set(0);  // mark txn "2L" aborted
+    bitSet.set(3);  // mark txn "8L" aborted
+    ValidTxnList txnList = new ValidReadTxnList(exceptions, bitSet, 11, 4L);
+    String str = txnList.writeToString();
+    Assert.assertEquals("11:4:4,6,10:2,8", str);
+    Assert.assertTrue(txnList.isTxnAborted(2L));
+    Assert.assertFalse(txnList.isTxnAborted(4L));
+    Assert.assertFalse(txnList.isTxnAborted(6L));
+    Assert.assertTrue(txnList.isTxnAborted(8L));
+    Assert.assertFalse(txnList.isTxnAborted(10L));
   }
 }

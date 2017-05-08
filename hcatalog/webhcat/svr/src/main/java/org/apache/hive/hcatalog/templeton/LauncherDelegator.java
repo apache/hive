@@ -23,16 +23,19 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
@@ -50,9 +53,26 @@ public class LauncherDelegator extends TempletonDelegator {
   static public enum JobType {JAR, STREAMING, PIG, HIVE, SQOOP}
   private boolean secureMeatastoreAccess = false;
   private final String HIVE_SHIMS_FILENAME_PATTERN = ".*hive-shims.*";
+  private final String JOB_SUBMIT_EXECUTE_THREAD_PREFIX = "JobSubmitExecute";
+  private final int jobTimeoutTaskRetryCount;
+  private final int jobTimeoutTaskRetryIntervalInSec;
+
+  /**
+   * Current thread used to set in execution threads.
+   */
+  private final String submitThreadId = Thread.currentThread().getName();
+
+  /**
+   * Job request executor to submit job requests.
+   */
+  private static JobRequestExecutor<EnqueueBean> jobRequest =
+                   new JobRequestExecutor<EnqueueBean>(JobRequestExecutor.JobRequestType.Submit,
+                   AppConfig.JOB_SUBMIT_MAX_THREADS, AppConfig.JOB_SUBMIT_TIMEOUT, false);
 
   public LauncherDelegator(AppConfig appConf) {
     super(appConf);
+    jobTimeoutTaskRetryCount = appConf.getInt(AppConfig.JOB_TIMEOUT_TASK_RETRY_COUNT, 0);
+    jobTimeoutTaskRetryIntervalInSec = appConf.getInt(AppConfig.JOB_TIMEOUT_TASK_RETRY_INTERVAL, 0);
   }
 
   public void registerJob(String id, String user, String callback,
@@ -70,19 +90,102 @@ public class LauncherDelegator extends TempletonDelegator {
     }
   }
 
+  /*
+   * Submit job request. If maximum concurrent job submit requests are configured then submit
+   * request will be executed on a thread from thread pool. If job submit request time out is
+   * configured then request execution thread will be interrupted if thread times out. Also
+   * does best efforts to identify if job is submitted and kill it quietly.
+   */
+  public EnqueueBean enqueueController(final String user, final Map<String, Object> userArgs,
+                     final String callback, final List<String> args)
+    throws NotAuthorizedException, BusyException, IOException, QueueException, TooManyRequestsException {
+
+    EnqueueBean bean = null;
+    final TempletonControllerJob controllerJob = getTempletonController();
+
+    if (jobRequest.isThreadPoolEnabled()) {
+      JobCallable<EnqueueBean> jobExecuteCallable = getJobSubmitTask(user, userArgs, callback,
+                                                                     args, controllerJob);
+      try {
+        bean = jobRequest.execute(jobExecuteCallable);
+      } catch (TimeoutException ex) {
+       /*
+        * Job request got timed out. Job kill should have started. Return to client with
+        * QueueException.
+        */
+        throw new QueueException(ex.getMessage());
+      } catch (InterruptedException ex) {
+       /*
+        * Job request got interrupted. Job kill should have started. Return to client with
+        * with QueueException.
+        */
+        throw new QueueException(ex.getMessage());
+      } catch (ExecutionException ex) {
+        /*
+         * ExecutionException is raised if job execution gets an exception. Return to client
+         * with the exception.
+         */
+        throw new QueueException(ex.getMessage());
+      }
+    } else {
+      LOG.info("No thread pool configured for submit job request. Executing "
+                      + "the job request in current thread.");
+
+      bean = enqueueJob(user, userArgs, callback, args, controllerJob);
+    }
+
+    return bean;
+  }
+
+  /*
+   * Job callable task for job submit operation. Overrides behavior of execute()
+   * to submit job. Also, overrides the behavior of cleanup() to kill the job in case
+   * job submission request is timed out or interrupted.
+   */
+  private JobCallable<EnqueueBean> getJobSubmitTask(final String user,
+                     final Map<String, Object> userArgs, final String callback,
+                     final List<String> args, final TempletonControllerJob controllerJob) {
+      return new JobCallable<EnqueueBean>() {
+        @Override
+        public EnqueueBean execute() throws NotAuthorizedException, BusyException, IOException,
+                                       QueueException {
+         /*
+          * Change the current thread name to include parent thread Id if it is executed
+          * in thread pool. Useful to extract logs specific to a job request and helpful
+          * to debug job issues.
+          */
+          Thread.currentThread().setName(String.format("%s-%s-%s", JOB_SUBMIT_EXECUTE_THREAD_PREFIX,
+                                       submitThreadId, Thread.currentThread().getId()));
+
+          return enqueueJob(user, userArgs, callback, args, controllerJob);
+        }
+
+        @Override
+        public void cleanup() {
+          /*
+           * Failed to set job status as COMPLETED which mean the main thread would have
+           * exited and not waiting for the result. Kill the submitted job.
+           */
+          LOG.info("Job kill not done by main thread. Trying to kill now.");
+          killTempletonJobWithRetry(user, controllerJob.getSubmittedId());
+        }
+      };
+  }
+
   /**
    * Enqueue the TempletonControllerJob directly calling doAs.
    */
-  public EnqueueBean enqueueController(String user, Map<String, Object> userArgs, String callback,
-                     List<String> args)
+  public EnqueueBean enqueueJob(String user, Map<String, Object> userArgs, String callback,
+                     List<String> args, TempletonControllerJob controllerJob)
     throws NotAuthorizedException, BusyException,
     IOException, QueueException {
+    UserGroupInformation ugi = null;
     try {
-      UserGroupInformation ugi = UgiFactory.getUgi(user);
+      ugi = UgiFactory.getUgi(user);
 
       final long startTime = System.nanoTime();
 
-      String id = queueAsUser(ugi, args);
+      String id = queueAsUser(ugi, args, controllerJob);
 
       long elapsed = ((System.nanoTime() - startTime) / ((int) 1e6));
       LOG.debug("queued job " + id + " in " + elapsed + " ms");
@@ -96,22 +199,89 @@ public class LauncherDelegator extends TempletonDelegator {
       return new EnqueueBean(id);
     } catch (InterruptedException e) {
       throw new QueueException("Unable to launch job " + e);
+    } finally {
+      if (ugi != null) {
+        FileSystem.closeAllForUGI(ugi);
+      }
     }
   }
 
-  private String queueAsUser(UserGroupInformation ugi, final List<String> args)
+  private String queueAsUser(UserGroupInformation ugi, final List<String> args,
+                            final TempletonControllerJob controllerJob)
     throws IOException, InterruptedException {
     if(LOG.isDebugEnabled()) {
       LOG.debug("Launching job: " + args);
     }
     return ugi.doAs(new PrivilegedExceptionAction<String>() {
       public String run() throws Exception {
-        String[] array = new String[args.size()];
-        TempletonControllerJob ctrl = new TempletonControllerJob(secureMeatastoreAccess, appConf);
-        ToolRunner.run(ctrl, args.toArray(array));
-        return ctrl.getSubmittedId();
+        runTempletonControllerJob(controllerJob, args);
+        return controllerJob.getSubmittedId();
       }
     });
+  }
+
+  /*
+   * Kills templeton job with multiple retries if job exists. Returns true if kill job
+   * attempt is success. Otherwise returns false.
+   */
+  private boolean killTempletonJobWithRetry(String user, String jobId) {
+    /*
+     * Make null safe Check if the job submission has gone through and if job is valid.
+     */
+    if (StringUtils.startsWith(jobId, "job_")) {
+      LOG.info("Started killing the job " + jobId);
+
+      boolean success = false;
+      int count = 0;
+      do {
+        try {
+          count++;
+          killJob(user, jobId);
+          success = true;
+          LOG.info("Kill job attempt succeeded.");
+         } catch (Exception e) {
+          LOG.info("Failed to kill the job due to exception: " + e.getMessage());
+          LOG.info("Waiting for " + jobTimeoutTaskRetryIntervalInSec + "s before retrying "
+                       + "the operation. Iteration: " + count);
+          try {
+            Thread.sleep(jobTimeoutTaskRetryIntervalInSec * 1000);
+          } catch (InterruptedException ex) {
+            LOG.info("Got interrupted while waiting for next retry.");
+          }
+        }
+      } while (!success && count < jobTimeoutTaskRetryCount);
+
+      return success;
+    } else {
+      LOG.info("Couldn't find a valid job id after job request is timed out.");
+      return false;
+    }
+  }
+
+  /*
+   * Gets new templeton controller objects.
+   */
+  protected TempletonControllerJob getTempletonController() {
+    return new TempletonControllerJob(secureMeatastoreAccess, appConf);
+  }
+
+  /*
+   * Runs the templeton controller job with 'args'. Utilizes ToolRunner to run
+   * the actual job.
+   */
+  protected int runTempletonControllerJob(TempletonControllerJob controllerJob, List<String> args)
+    throws IOException, InterruptedException, TimeoutException, Exception {
+    String[] array = new String[args.size()];
+    return ToolRunner.run(controllerJob, args.toArray(array));
+  }
+
+  /*
+   * Uses DeleteDelegator to kill a job and ignores all exceptions.
+   */
+  protected void killJob(String user, String jobId)
+  throws NotAuthorizedException, BadParam, IOException, InterruptedException {
+    DeleteDelegator d = new DeleteDelegator(appConf);
+    d.run(user, jobId);
   }
 
   public List<String> makeLauncherArgs(AppConfig appConf, String statusdir,
@@ -180,24 +350,35 @@ public class LauncherDelegator extends TempletonDelegator {
    */
   private String getShimLibjars() {
     WebHCatJTShim shim = null;
+    UserGroupInformation ugi = null;
     try {
-      shim = ShimLoader.getHadoopShims().getWebHCatShim(appConf, UserGroupInformation.getCurrentUser());
+      ugi = UserGroupInformation.getCurrentUser();
+      shim = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
+
+      // Besides the HiveShims jar which is Hadoop version dependent we also
+      // always need to include hive shims common jars.
+      Path shimCommonJar = new Path(
+          TempletonUtils.findContainingJar(ShimLoader.class, HIVE_SHIMS_FILENAME_PATTERN));
+      Path shimCommonSecureJar = new Path(
+          TempletonUtils.findContainingJar(HadoopShimsSecure.class, HIVE_SHIMS_FILENAME_PATTERN));
+      Path shimJar = new Path(
+          TempletonUtils.findContainingJar(shim.getClass(), HIVE_SHIMS_FILENAME_PATTERN));
+
+      return String.format(
+          "%s,%s,%s",
+          shimCommonJar.toString(), shimCommonSecureJar.toString(), shimJar.toString());
     } catch (IOException e) {
-      throw new RuntimeException("Failed to get WebHCatShim", e);
+      throw new RuntimeException("Failed to get shimLibJars", e);
+    } finally {
+      try {
+        if (ugi != null) {
+          FileSystem.closeAllForUGI(ugi);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to closeAllForUGI", e);
+      }
     }
 
-    // Besides the HiveShims jar which is Hadoop version dependent we also
-    // always need to include hive shims common jars.
-    Path shimCommonJar = new Path(
-        TempletonUtils.findContainingJar(ShimLoader.class, HIVE_SHIMS_FILENAME_PATTERN));
-    Path shimCommonSecureJar = new Path(
-        TempletonUtils.findContainingJar(HadoopShimsSecure.class, HIVE_SHIMS_FILENAME_PATTERN));
-    Path shimJar = new Path(
-        TempletonUtils.findContainingJar(shim.getClass(), HIVE_SHIMS_FILENAME_PATTERN));
-
-    return String.format(
-        "%s,%s,%s",
-        shimCommonJar.toString(), shimCommonSecureJar.toString(), shimJar.toString());
   }
 
   // Storage vars
@@ -263,7 +444,7 @@ public class LauncherDelegator extends TempletonDelegator {
   }
   /**
    * This is called by subclasses when they determined that the sumbmitted job requires
-   * metastore access (e.g. Pig job that uses HCatalog).  This then determines if 
+   * metastore access (e.g. Pig job that uses HCatalog).  This then determines if
    * secure access is required and causes TempletonControllerJob to set up a delegation token.
    * @see TempletonControllerJob
    */

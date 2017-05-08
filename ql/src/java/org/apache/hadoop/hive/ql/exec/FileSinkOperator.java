@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -147,7 +148,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
   protected transient int rowIndex = 0;
-  private transient boolean inheritPerms = false;
   /**
    * Counters.
    */
@@ -185,7 +185,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       } else {
         tmpPath = specPath;
         taskOutputTempPath = null; // Should not be used.
-      } 
+      }
       Utilities.LOG14535.info("new FSPaths for " + numFiles + " files, dynParts = " + bDynParts
           + ": tmpPath " + tmpPath + ", task path " + taskOutputTempPath
           + " (spec path " + specPath + ")"/*, new Exception()*/);
@@ -256,7 +256,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if ((bDynParts || isSkewedStoredAsSubDirectories)
           && !fs.exists(finalPaths[idx].getParent())) {
         Utilities.LOG14535.info("commit making path for dyn/skew: " + finalPaths[idx].getParent());
-        FileUtils.mkdir(fs, finalPaths[idx].getParent(), inheritPerms, hconf);
+        FileUtils.mkdir(fs, finalPaths[idx].getParent(), hconf);
       }
       // If we're updating or deleting there may be no file to close.  This can happen
       // because the where clause strained out all of the records for a given bucket.  So
@@ -501,7 +501,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties());
       outputClass = serializer.getSerializedClass();
-      inheritPerms = HiveConf.getBoolVar(hconf, ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
 
       if (isLogInfoEnabled) {
         LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat +
@@ -601,13 +600,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void logOutputFormatError(Configuration hconf, HiveException ex) {
-    StringWriter errorWriter = new StringWriter();
+    StringBuilder errorWriter = new StringBuilder();
     errorWriter.append("Failed to create output format; configuration: ");
-    try {
-      Configuration.dumpConfiguration(hconf, errorWriter);
-    } catch (IOException ex2) {
-      errorWriter.append("{ failed to dump configuration: " + ex2.getMessage() + " }");
-    }
+    // redact sensitive information before logging
+    HiveConfUtil.dumpConfig(hconf, errorWriter);
     Properties tdp = null;
     if (this.conf.getTableInfo() != null
         && (tdp = this.conf.getTableInfo().getProperties()) != null) {
@@ -739,7 +735,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
         Path outPath = fsp.outPaths[filesIdx];
         if ((conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY || conf.isMmTable())
-            && inheritPerms && !FileUtils.mkdir(fs, outPath.getParent(), inheritPerms, hconf)) {
+            && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
           LOG.warn("Unable to create directory with inheritPerms: " + outPath);
         }
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),

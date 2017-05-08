@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -363,8 +366,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Map<CombinePathInputFormat, CombineFilter> poolMap =
       new HashMap<CombinePathInputFormat, CombineFilter>();
     Set<Path> poolSet = new HashSet<Path>();
+    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
 
     for (Path path : paths) {
+      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        throw new IOException("Operation is Canceled. ");
+
       PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();

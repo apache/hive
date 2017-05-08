@@ -111,6 +111,43 @@ public class AppConfig extends Configuration {
   public static final String MR_AM_MEMORY_MB     = "templeton.mr.am.memory.mb";
   public static final String TEMPLETON_JOBSLIST_ORDER = "templeton.jobs.listorder";
 
+  /*
+   * These parameters controls the maximum number of concurrent job submit/status/list
+   * operations in templeton service. If more number of concurrent requests comes then
+   * they will be rejected with BusyException.
+   */
+  public static final String JOB_SUBMIT_MAX_THREADS = "templeton.parallellism.job.submit";
+  public static final String JOB_STATUS_MAX_THREADS = "templeton.parallellism.job.status";
+  public static final String JOB_LIST_MAX_THREADS = "templeton.parallellism.job.list";
+
+  /*
+   * These parameters controls the maximum time job submit/status/list operation is
+   * executed in templeton service. On time out, the execution is interrupted and
+   * TimeoutException is returned to client. On time out
+   *   For list and status operation, there is no action needed as they are read requests.
+   *   For submit operation, we do best effort to kill the job if its generated. Enabling
+   *     this parameter may have following side effects
+   *     1) There is a possibility for having active job for some time when the client gets
+   *        response for submit operation and a list operation from client could potential
+   *        show the newly created job which may eventually be killed with no guarantees.
+   *     2) If submit operation retried by client then there is a possibility of duplicate
+   *        jobs triggered.
+   *
+   * Time out configs should be configured in seconds.
+   *
+   */
+  public static final String JOB_SUBMIT_TIMEOUT   = "templeton.job.submit.timeout";
+  public static final String JOB_STATUS_TIMEOUT   = "templeton.job.status.timeout";
+  public static final String JOB_LIST_TIMEOUT   = "templeton.job.list.timeout";
+
+  /*
+   * If task execution time out is configured for submit operation then job may need to
+   * be killed on execution time out. These parameters controls the maximum number of
+   * retries and retry wait time in seconds for executing the time out task.
+   */
+  public static final String JOB_TIMEOUT_TASK_RETRY_COUNT = "templeton.job.timeout.task.retry.count";
+  public static final String JOB_TIMEOUT_TASK_RETRY_INTERVAL = "templeton.job.timeout.task.retry.interval";
+
   /**
    * see webhcat-default.xml
    */

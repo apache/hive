@@ -579,8 +579,6 @@ public class TestVectorSerDeRow extends TestCase {
         for (int i = 0; i < fieldCount; i++) {
           columnSortOrderIsDesc[i] = r.nextBoolean();
         }
-        deserializeRead = new BinarySortableDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer,
-            columnSortOrderIsDesc);
 
         byte[] columnNullMarker = new byte[fieldCount];
         byte[] columnNotNullMarker = new byte[fieldCount];
@@ -598,6 +596,9 @@ public class TestVectorSerDeRow extends TestCase {
           }
         }
         serializeWrite = new BinarySortableSerializeWrite(columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
+        deserializeRead = new BinarySortableDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer,
+            columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
+
       }
       boolean useBinarySortableCharsNeedingEscape = alternate2;
       if (useBinarySortableCharsNeedingEscape) {

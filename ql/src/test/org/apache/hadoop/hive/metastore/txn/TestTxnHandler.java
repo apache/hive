@@ -713,7 +713,7 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
-
+  @Ignore("now that every op has a txn ctx, we don't produce the error expected here....")
   @Test
   public void testWrongLockForOperation() throws Exception {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");

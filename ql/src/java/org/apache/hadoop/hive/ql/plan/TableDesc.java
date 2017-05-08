@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -67,7 +68,7 @@ public class TableDesc implements Serializable, Cloneable {
     this.inputFileFormatClass = inputFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
         .getOutputFormatSubstitute(outputFormatClass);
-    this.properties = properties;
+    setProperties(properties);
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
@@ -129,6 +130,7 @@ public class TableDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
+    StringInternUtils.internValuesInMap((Map) properties);
     this.properties = properties;
   }
 

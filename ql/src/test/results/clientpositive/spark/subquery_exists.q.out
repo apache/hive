@@ -246,22 +246,22 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (value = value) (type: boolean)
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: _col0 (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -929,7 +929,7 @@ POSTHOOK: query: insert into t values(0)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from t where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t where exists (select count(*) from src where 1=2)
@@ -943,7 +943,7 @@ STAGE PLANS:
     Spark
       Edges:
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 4 (PARTITION-LEVEL SORT, 1)
-        Reducer 4 <- Map 3 (GROUP PARTITION-LEVEL SORT, 1)
+        Reducer 4 <- Map 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -975,9 +975,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: true (type: boolean)
-                          sort order: +
-                          Map-reduce partition columns: true (type: boolean)
+                          sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
         Reducer 2 
@@ -989,10 +987,10 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1006,16 +1004,9 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: true (type: boolean)
-                    mode: complete
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -1023,7 +1014,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: select * from t where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -356,9 +356,7 @@ public class Context {
 
       if (mkdir) {
         try {
-          boolean inheritPerms = HiveConf.getBoolVar(conf,
-              HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-          if (!FileUtils.mkdir(fs, dir, inheritPerms, conf)) {
+          if (!FileUtils.mkdir(fs, dir, conf)) {
             throw new IllegalStateException("Cannot create staging directory  '" + dir.toString() + "'");
           }
 
@@ -950,6 +948,13 @@ public class Context {
 
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
+  }
+  private boolean isExplainPlan = false;
+  public boolean isExplainPlan() {
+    return isExplainPlan;
+  }
+  public void setExplainPlan(boolean t) {
+    this.isExplainPlan = t;
   }
 
   public void setExplainConfig(ExplainConfiguration explainConfig) {

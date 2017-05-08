@@ -1023,7 +1023,7 @@ STAGE PLANS:
             alias: subq1:a
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key + 1) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: (key + 1) (type: int)
@@ -1126,7 +1126,7 @@ STAGE PLANS:
             alias: subq2:a
             Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (key + 1) is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: (key + 1) (type: int)

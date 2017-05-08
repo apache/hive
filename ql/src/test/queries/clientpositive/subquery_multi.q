@@ -109,6 +109,21 @@ having count(*) in (select count(*) from src s1 where s1.key > '9' and exists (s
 explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1');
 select * from part where p_name IN (select p_name from part p where part.p_type <> '1');
 
+-- OR subqueries
+insert into tnull values(1, 'c');
+explain select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull);
+select * from part where p_partkey = 3 OR p_size NOT IN (select i from tnull);
+
+explain select count(*)  from src
+    where src.key in (select key from src s1 where s1.key > '9')
+        or src.value is not null
+        or exists(select key from src);
+
+select count(*)  from src
+    where src.key in (select key from src s1 where s1.key > '9')
+        or src.value is not null
+        or exists(select key from src);
+
 drop table tnull;
 drop table tempty;
 drop table part_null;

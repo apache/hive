@@ -5,7 +5,9 @@ PREHOOK: query: create table t (
 	i int,
 	ii integer,
 	si smallint,
-	bi bigint
+	bi bigint,
+        de  dec,
+        dc  dec(3,2)
 	)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -17,7 +19,9 @@ POSTHOOK: query: create table t (
 	i int,
 	ii integer,
 	si smallint,
-	bi bigint
+	bi bigint,
+        de  dec,
+        dc  dec(3,2)
 	)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -35,3 +39,5 @@ i                   	int
 ii                  	int                 	                    
 si                  	smallint            	                    
 bi                  	bigint              	                    
+de                  	decimal(10,0)       	                    
+dc                  	decimal(3,2)        	                    

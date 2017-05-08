@@ -46,7 +46,7 @@ public class JarDelegator extends LauncherDelegator {
                boolean usesHcatalog, String completedUrl,
                boolean enablelog, Boolean enableJobReconnect, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,

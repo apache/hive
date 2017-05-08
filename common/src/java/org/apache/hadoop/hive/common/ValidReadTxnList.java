@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.common;
 import com.google.common.annotations.VisibleForTesting;
 
 import java.util.Arrays;
+import java.util.BitSet;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by readers.
@@ -30,32 +31,27 @@ import java.util.Arrays;
 public class ValidReadTxnList implements ValidTxnList {
 
   protected long[] exceptions;
+  protected BitSet abortedBits; // BitSet for flagging aborted transactions. Bit is true if aborted, false if open
   //default value means there are no open txn in the snapshot
   private long minOpenTxn = Long.MAX_VALUE;
   protected long highWatermark;
 
   public ValidReadTxnList() {
-    this(new long[0], Long.MAX_VALUE, Long.MAX_VALUE);
+    this(new long[0], new BitSet(), Long.MAX_VALUE, Long.MAX_VALUE);
   }
 
   /**
    * Used if there are no open transactions in the snapshot
    */
-  public ValidReadTxnList(long[] exceptions, long highWatermark) {
-    this(exceptions, highWatermark, Long.MAX_VALUE);
+  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark) {
+    this(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
-  public ValidReadTxnList(long[] exceptions, long highWatermark, long minOpenTxn) {
-    if (exceptions.length == 0) {
-      this.exceptions = exceptions;
-    } else {
-      this.exceptions = exceptions.clone();
-      Arrays.sort(this.exceptions);
+  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenTxn) {
+    if (exceptions.length > 0) {
       this.minOpenTxn = minOpenTxn;
-      if(this.exceptions[0] <= 0) {
-        //should never happen of course
-        throw new IllegalArgumentException("Invalid txnid: " + this.exceptions[0] + " found");
-      }
     }
+    this.exceptions = exceptions;
+    this.abortedBits = abortedBits;
     this.highWatermark = highWatermark;
   }
 
@@ -118,12 +114,28 @@ public class ValidReadTxnList implements ValidTxnList {
     buf.append(':');
     buf.append(minOpenTxn);
     if (exceptions.length == 0) {
-      buf.append(':');
+      buf.append(':');  // separator for open txns
+      buf.append(':');  // separator for aborted txns
     } else {
-      for(long except: exceptions) {
-        buf.append(':');
-        buf.append(except);
+      StringBuilder open = new StringBuilder();
+      StringBuilder abort = new StringBuilder();
+      for (int i = 0; i < exceptions.length; i++) {
+        if (abortedBits.get(i)) {
+          if (abort.length() > 0) {
+            abort.append(',');
+          }
+          abort.append(exceptions[i]);
+        } else {
+          if (open.length() > 0) {
+            open.append(',');
+          }
+          open.append(exceptions[i]);
+        }
       }
+      buf.append(':');
+      buf.append(open);
+      buf.append(':');
+      buf.append(abort);
     }
     return buf.toString();
   }
@@ -133,13 +145,41 @@ public class ValidReadTxnList implements ValidTxnList {
     if (src == null || src.length() == 0) {
       highWatermark = Long.MAX_VALUE;
       exceptions = new long[0];
+      abortedBits = new BitSet();
     } else {
       String[] values = src.split(":");
       highWatermark = Long.parseLong(values[0]);
       minOpenTxn = Long.parseLong(values[1]);
-      exceptions = new long[values.length - 2];
-      for(int i = 2; i < values.length; ++i) {
-        exceptions[i-2] = Long.parseLong(values[i]);
+      String[] openTxns = new String[0];
+      String[] abortedTxns = new String[0];
+      if (values.length < 3) {
+        openTxns = new String[0];
+        abortedTxns = new String[0];
+      } else if (values.length == 3) {
+        if (!values[2].isEmpty()) {
+          openTxns = values[2].split(",");
+        }
+      } else {
+        if (!values[2].isEmpty()) {
+          openTxns = values[2].split(",");
+        }
+        if (!values[3].isEmpty()) {
+          abortedTxns = values[3].split(",");
+        }
+      }
+      exceptions = new long[openTxns.length + abortedTxns.length];
+      int i = 0;
+      for (String open : openTxns) {
+        exceptions[i++] = Long.parseLong(open);
+      }
+      for (String abort : abortedTxns) {
+        exceptions[i++] = Long.parseLong(abort);
+      }
+      Arrays.sort(exceptions);
+      abortedBits = new BitSet(exceptions.length);
+      for (String abort : abortedTxns) {
+        int index = Arrays.binarySearch(exceptions, Long.parseLong(abort));
+        abortedBits.set(index);
       }
     }
   }
@@ -156,6 +196,41 @@ public class ValidReadTxnList implements ValidTxnList {
   @VisibleForTesting
   public long getMinOpenTxn() {
     return minOpenTxn;
+  }
+
+  @Override
+  public boolean isTxnAborted(long txnid) {
+    int index = Arrays.binarySearch(exceptions, txnid);
+    return index >= 0 && abortedBits.get(index);
+  }
+
+  @Override
+  public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId) {
+    // check the easy cases first
+    if (highWatermark < minTxnId) {
+      return RangeResponse.NONE;
+    }
+
+    int count = 0;  // number of aborted txns found in exceptions
+
+    // traverse the aborted txns list, starting at first aborted txn index
+    for (int i = abortedBits.nextSetBit(0); i >= 0; i = abortedBits.nextSetBit(i + 1)) {
+      long abortedTxnId = exceptions[i];
+      if (abortedTxnId > maxTxnId) {  // we've already gone beyond the specified range
+        break;
+      }
+      if (abortedTxnId >= minTxnId && abortedTxnId <= maxTxnId) {
+        count++;
+      }
+    }
+
+    if (count == 0) {
+      return RangeResponse.NONE;
+    } else if (count == (maxTxnId - minTxnId + 1)) {
+      return RangeResponse.ALL;
+    } else {
+      return RangeResponse.SOME;
+    }
   }
 }
 

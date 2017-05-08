@@ -192,6 +192,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
+                  COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                   bucket_count -1
                   column.name.delimiter ,
                   columns key
@@ -200,9 +201,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                   location ### test.blobstore.path ###/write_final_output_blobstore
                   name default.blobstore_table
+                  numFiles 0
+                  numRows 0
+                  rawDataSize 0
                   serialization.ddl struct blobstore_table { i32 key}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  totalSize 0
 #### A masked pattern was here ####
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.blobstore_table
@@ -219,6 +224,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
@@ -227,9 +233,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/write_final_output_blobstore
                 name default.blobstore_table
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct blobstore_table { i32 key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.blobstore_table
@@ -406,6 +416,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
+                  COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                   bucket_count -1
                   column.name.delimiter ,
                   columns key
@@ -414,9 +425,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                   location ### test.blobstore.path ###/write_final_output_blobstore
                   name default.blobstore_table
+                  numFiles 0
+                  numRows 0
+                  rawDataSize 0
                   serialization.ddl struct blobstore_table { i32 key}
                   serialization.format 1
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  totalSize 0
 #### A masked pattern was here ####
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.blobstore_table
@@ -433,6 +448,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key
@@ -441,9 +457,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/write_final_output_blobstore
                 name default.blobstore_table
+                numFiles 0
+                numRows 0
+                rawDataSize 0
                 serialization.ddl struct blobstore_table { i32 key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.blobstore_table

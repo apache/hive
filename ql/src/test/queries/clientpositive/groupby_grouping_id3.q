@@ -6,6 +6,12 @@ set hive.cbo.enable = false;
 
 -- SORT_QUERY_RESULTS
 
+EXPLAIN
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1;
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1
 GROUP BY key, value
@@ -14,6 +20,12 @@ HAVING GROUPING__ID = 1;
 
 set hive.cbo.enable = true;
 
+EXPLAIN
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1;
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1
 GROUP BY key, value

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.druid.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
@@ -170,7 +172,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // Create Select query
     SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
     builder.dataSource(dataSource);
-    builder.intervals(Arrays.asList(DruidTable.DEFAULT_INTERVAL));
+    final List<Interval> intervals = Arrays.asList();
+    builder.intervals(intervals);
     builder.pagingSpec(PagingSpec.newSpec(1));
     Map<String, Object> context = new HashMap<>();
     context.put(Constants.DRUID_QUERY_FETCH, false);
@@ -191,33 +194,15 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
               new String[]{address} ) };
     }
 
-    // Properties from configuration
-    final int numConnection = HiveConf.getIntVar(conf,
-            HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
-    final Period readTimeout = new Period(
-            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
-
-    // Create request to obtain nodes that are holding data for the given datasource and intervals
-    final Lifecycle lifecycle = new Lifecycle();
-    final HttpClient client = HttpClientInit.createClient(
-            HttpClientConfig.builder().withNumConnections(numConnection)
-                    .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
-    try {
-      lifecycle.start();
-    } catch (Exception e) {
-      LOG.error("Lifecycle start issue");
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-    }
     final String intervals =
             StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
     final String request = String.format(
             "http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
-            address, query.getDataSource().getNames().get(0), intervals);
+            address, query.getDataSource().getNames().get(0), URLEncoder.encode(intervals, "UTF-8"));
     final InputStream response;
     try {
-      response = DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, new URL(request)));
+      response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(), new Request(HttpMethod.GET, new URL(request)));
     } catch (Exception e) {
-      lifecycle.stop();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
 
@@ -229,8 +214,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     } catch (Exception e) {
       response.close();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-    } finally {
-      lifecycle.stop();
     }
 
     // Create one input split for each segment
@@ -258,12 +241,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   private static HiveDruidSplit[] splitSelectQuery(Configuration conf, String address,
           SelectQuery query, Path dummyPath
   ) throws IOException {
-    final int selectThreshold = (int) HiveConf.getIntVar(
+    final int selectThreshold = HiveConf.getIntVar(
             conf, HiveConf.ConfVars.HIVE_DRUID_SELECT_THRESHOLD);
-    final int numConnection = HiveConf
-            .getIntVar(conf, HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
-    final Period readTimeout = new Period(
-            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
 
     final boolean isFetch = query.getContextBoolean(Constants.DRUID_QUERY_FETCH, false);
     if (isFetch) {
@@ -281,23 +260,12 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     metadataBuilder.merge(true);
     metadataBuilder.analysisTypes();
     SegmentMetadataQuery metadataQuery = metadataBuilder.build();
-    Lifecycle lifecycle = new Lifecycle();
-    HttpClient client = HttpClientInit.createClient(
-            HttpClientConfig.builder().withNumConnections(numConnection)
-                    .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
-    try {
-      lifecycle.start();
-    } catch (Exception e) {
-      LOG.error("Lifecycle start issue");
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-    }
     InputStream response;
     try {
-      response = DruidStorageHandlerUtils.submitRequest(client,
+      response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
               DruidStorageHandlerUtils.createRequest(address, metadataQuery)
       );
     } catch (Exception e) {
-      lifecycle.stop();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
 
@@ -311,8 +279,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     } catch (Exception e) {
       response.close();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-    } finally {
-      lifecycle.stop();
     }
     if (metadataList == null) {
       throw new IOException("Connected to Druid but could not retrieve datasource information");
@@ -348,23 +314,11 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       TimeBoundaryQueryBuilder timeBuilder = new Druids.TimeBoundaryQueryBuilder();
       timeBuilder.dataSource(query.getDataSource());
       TimeBoundaryQuery timeQuery = timeBuilder.build();
-
-      lifecycle = new Lifecycle();
-      client = HttpClientInit.createClient(
-              HttpClientConfig.builder().withNumConnections(numConnection)
-                      .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
       try {
-        lifecycle.start();
-      } catch (Exception e) {
-        LOG.error("Lifecycle start issue");
-        throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      }
-      try {
-        response = DruidStorageHandlerUtils.submitRequest(client,
+        response = DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
                 DruidStorageHandlerUtils.createRequest(address, timeQuery)
         );
       } catch (Exception e) {
-        lifecycle.stop();
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
 
@@ -378,8 +332,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       } catch (Exception e) {
         response.close();
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      } finally {
-        lifecycle.stop();
       }
       if (timeList == null || timeList.isEmpty()) {
         throw new IOException(
@@ -413,11 +365,15 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   private static List<List<Interval>> createSplitsIntervals(List<Interval> intervals, int numSplits
   ) {
-    final long totalTime = DruidDateTimeUtils.extractTotalTime(intervals);
+
     long startTime = intervals.get(0).getStartMillis();
     long endTime = startTime;
     long currTime = 0;
     List<List<Interval>> newIntervals = new ArrayList<>();
+    long totalTime = 0;
+    for (Interval interval: intervals) {
+      totalTime += interval.getEndMillis() - interval.getStartMillis();
+    }
     for (int i = 0, posIntervals = 0; i < numSplits; i++) {
       final long rangeSize = Math.round((double) (totalTime * (i + 1)) / numSplits) -
               Math.round((double) (totalTime * i) / numSplits);

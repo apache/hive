@@ -3330,20 +3330,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (tbl.isPartitioned() && part == null) {
           // No partitioned specified for partitioned table, lets fetch all.
           Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
-          PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          Map<String, Long> valueMap = new HashMap<>();
+          Map<String, Boolean> stateMap = new HashMap<>();
           for (String stat : StatsSetupConst.supportedStats) {
-            boolean state = true;
-            long statVal = 0l;
-            for (Partition partition : parts) {
-              Map<String,String> props = partition.getParameters();
-              state &= StatsSetupConst.areBasicStatsUptoDate(props);
+            valueMap.put(stat, 0L);
+            stateMap.put(stat, true);
+          }
+          PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          int numParts = 0;
+          for (Partition partition : parts) {
+            Map<String, String> props = partition.getParameters();
+            Boolean state = StatsSetupConst.areBasicStatsUptoDate(props);
+            for (String stat : StatsSetupConst.supportedStats) {
+              stateMap.put(stat, stateMap.get(stat) && state);
               if (props != null && props.get(stat) != null) {
-                statVal += Long.parseLong(props.get(stat));
+                valueMap.put(stat, valueMap.get(stat) + Long.parseLong(props.get(stat)));
               }
             }
-            StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(state));
-            tblProps.put(stat, String.valueOf(statVal));
+            numParts++;
           }
+          for (String stat : StatsSetupConst.supportedStats) {
+            StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(stateMap.get(stat)));
+            tblProps.put(stat, valueMap.get(stat).toString());
+          }
+          tblProps.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(numParts));
           tbl.setParameters(tblProps);
         }
       } else {
@@ -4866,32 +4876,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tableName = truncateTableDesc.getTableName();
     Map<String, String> partSpec = truncateTableDesc.getPartSpec();
 
-    Table table = db.getTable(tableName, true);
-
     try {
-      // this is not transactional
-      for (Path location : getLocations(db, table, partSpec)) {
-        FileSystem fs = location.getFileSystem(conf);
-        HadoopShims.HdfsEncryptionShim shim
-          = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
-        if (!shim.isPathEncrypted(location)) {
-          HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
-          FileStatus targetStatus = fs.getFileStatus(location);
-          String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-          FileUtils.moveToTrash(fs, location, conf);
-          fs.mkdirs(location);
-          HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
-        } else {
-          FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-          if (statuses == null || statuses.length == 0) {
-            continue;
-          }
-          boolean success = Hive.trashFiles(fs, statuses, conf);
-          if (!success) {
-            throw new HiveException("Error in deleting the contents of " + location.toString());
-          }
-        }
-      }
+      db.truncateTable(tableName, partSpec);
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
@@ -4920,58 +4906,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
-  }
-
-  private List<Path> getLocations(Hive db, Table table, Map<String, String> partSpec)
-      throws HiveException, InvalidOperationException {
-    List<Path> locations = new ArrayList<Path>();
-    if (partSpec == null) {
-      if (table.isPartitioned()) {
-        for (Partition partition : db.getPartitions(table)) {
-          locations.add(partition.getDataLocation());
-          EnvironmentContext environmentContext = new EnvironmentContext();
-          if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-            db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-          }
-        }
-      } else {
-        locations.add(table.getPath());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(table.getParameters(), environmentContext)) {
-          db.alterTable(table.getDbName()+"."+table.getTableName(), table, environmentContext);
-        }
-      }
-    } else {
-      for (Partition partition : db.getPartitionsByNames(table, partSpec)) {
-        locations.add(partition.getDataLocation());
-        EnvironmentContext environmentContext = new EnvironmentContext();
-        if (needToUpdateStats(partition.getParameters(), environmentContext)) {
-          db.alterPartition(table.getDbName(), table.getTableName(), partition, environmentContext);
-        }
-      }
-    }
-    return locations;
-  }
-
-  private boolean needToUpdateStats(Map<String,String> props, EnvironmentContext environmentContext) {
-    if (null == props) {
-      return false;
-    }
-    boolean statsPresent = false;
-    for (String stat : StatsSetupConst.supportedStats) {
-      String statVal = props.get(stat);
-      if (statVal != null && Long.parseLong(statVal) > 0) {
-        statsPresent = true;
-        //In the case of truncate table, we set the stats to be 0.
-        props.put(stat, "0");
-      }
-    }
-    //first set basic stats to true
-    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
-    return statsPresent;
   }
 
   @Override

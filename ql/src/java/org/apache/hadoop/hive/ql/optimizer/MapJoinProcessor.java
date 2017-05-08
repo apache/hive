@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.GenMapRedWalker;
-import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -79,8 +78,6 @@ import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-
-import com.clearspring.analytics.util.Lists;
 
 /**
  * Implementation of one of the rule-based map join optimization. User passes hints to specify
@@ -434,7 +431,8 @@ public class MapJoinProcessor extends Transform {
         smbJoinDesc.getValueTblDescs(), smbJoinDesc.getValueTblDescs(),
         smbJoinDesc.getOutputColumnNames(),
         bigTablePos, smbJoinDesc.getConds(),
-        smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix());
+        smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix(),
+        smbJoinDesc.getNoConditionalTaskSize());
 
     mapJoinDesc.setStatistics(smbJoinDesc.getStatistics());
 
@@ -1187,7 +1185,7 @@ public class MapJoinProcessor extends Transform {
     MapJoinDesc mapJoinDescriptor =
         new MapJoinDesc(keyExprMap, keyTableDesc, newValueExprs, valueTableDescs,
             valueFilteredTableDescs, outputColumnNames, mapJoinPos, joinCondns, filters, op
-                .getConf().getNoOuterJoin(), dumpFilePrefix);
+                .getConf().getNoOuterJoin(), dumpFilePrefix, op.getConf().getNoConditionalTaskSize());
     mapJoinDescriptor.setStatistics(op.getConf().getStatistics());
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());

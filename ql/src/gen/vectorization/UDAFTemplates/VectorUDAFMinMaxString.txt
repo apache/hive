@@ -81,7 +81,7 @@ public class <ClassName> extends VectorAggregateExpression {
       @Override
       public int getVariableSize() {
         JavaDataModel model = JavaDataModel.get();
-        return model.lengthForByteArrayOfSize(bytes.length);
+        return (int) model.lengthForByteArrayOfSize(bytes.length);
       }
 
       @Override
@@ -388,7 +388,7 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     @Override
-    public int getAggregationBufferFixedSize() {
+    public long getAggregationBufferFixedSize() {
       JavaDataModel model = JavaDataModel.get();
       return JavaDataModel.alignUp(
         model.object() +

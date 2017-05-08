@@ -446,7 +446,7 @@ STAGE PLANS:
                   alias: table3
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 100) and (id = 100) is not null) (type: boolean)
+                    predicate: (id = 100) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 100 (type: int), true (type: boolean)
@@ -517,7 +517,7 @@ STAGE PLANS:
                   alias: table1
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((dimid = 100) and (dimid = 100) is not null) (type: boolean)
+                    predicate: (dimid = 100) (type: boolean)
                     Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), val (type: string), val1 (type: string)
@@ -535,7 +535,7 @@ STAGE PLANS:
                   alias: table3
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 100) and (id = 100) is not null) (type: boolean)
+                    predicate: (id = 100) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 100 (type: int), true (type: boolean)
@@ -626,7 +626,7 @@ STAGE PLANS:
                   alias: table3
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 100) and (id = 100) is not null) (type: boolean)
+                    predicate: (id = 100) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 100 (type: int), true (type: boolean)
@@ -697,7 +697,7 @@ STAGE PLANS:
                   alias: table1
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((dimid = 100) and (dimid = 100) is not null) (type: boolean)
+                    predicate: (dimid = 100) (type: boolean)
                     Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), val (type: string), val1 (type: string)
@@ -715,7 +715,7 @@ STAGE PLANS:
                   alias: table3
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 100) and (id = 100) is not null) (type: boolean)
+                    predicate: (id = 100) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 100 (type: int), true (type: boolean)
@@ -788,7 +788,7 @@ STAGE PLANS:
                   alias: table1
                   Statistics: Num rows: 10 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((dimid = 100) and (dimid = 100) is not null) (type: boolean)
+                    predicate: (dimid = 100) (type: boolean)
                     Statistics: Num rows: 5 Data size: 100 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), val (type: string), val1 (type: string)
@@ -806,7 +806,7 @@ STAGE PLANS:
                   alias: table3
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 100) and (id = 100) is not null) (type: boolean)
+                    predicate: (id = 100) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 100 (type: int), true (type: boolean)

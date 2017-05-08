@@ -128,8 +128,8 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=2 width=40)
+      File Output Operator [FS_2]
+        Select Operator [SEL_1] (rows=2 width=40)
           Output:["_col0"]
           TableScan [TS_0] (rows=2 width=40)
             default@test,test,Tbl:COMPLETE,Col:NONE,Output:["ts"]
@@ -160,16 +160,16 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized, llap
-      File Output Operator [FS_12]
-        Select Operator [SEL_11] (rows=1 width=80)
+      File Output Operator [FS_6]
+        Select Operator [SEL_5] (rows=1 width=80)
           Output:["_col0","_col1","_col2"]
-          Group By Operator [GBY_10] (rows=1 width=80)
+          Group By Operator [GBY_4] (rows=1 width=80)
             Output:["_col0","_col1"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"]
           <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
-            PARTITION_ONLY_SHUFFLE [RS_9]
-              Group By Operator [GBY_8] (rows=1 width=80)
+            PARTITION_ONLY_SHUFFLE [RS_3]
+              Group By Operator [GBY_2] (rows=1 width=80)
                 Output:["_col0","_col1"],aggregations:["min(ts)","max(ts)"]
-                Select Operator [SEL_7] (rows=2 width=40)
+                Select Operator [SEL_1] (rows=2 width=40)
                   Output:["ts"]
                   TableScan [TS_0] (rows=2 width=40)
                     default@test,test,Tbl:COMPLETE,Col:NONE,Output:["ts"]
@@ -196,10 +196,10 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_7]
-        Select Operator [SEL_6] (rows=1 width=40)
+      File Output Operator [FS_3]
+        Select Operator [SEL_2] (rows=1 width=40)
           Output:["_col0"]
-          Filter Operator [FIL_5] (rows=1 width=40)
+          Filter Operator [FIL_4] (rows=1 width=40)
             predicate:(ts) IN (0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0)
             TableScan [TS_0] (rows=2 width=40)
               default@test,test,Tbl:COMPLETE,Col:NONE,Output:["ts"]

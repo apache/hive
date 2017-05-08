@@ -43,6 +43,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -85,6 +87,7 @@ ewah_bitmap_empty
 ewah_bitmap_or
 exp
 explode
+extract_union
 factorial
 field
 find_in_set
@@ -118,8 +121,12 @@ initcap
 inline
 instr
 internal_interval
+isfalse
+isnotfalse
 isnotnull
+isnottrue
 isnull
+istrue
 java_method
 json_tuple
 lag
@@ -131,6 +138,8 @@ least
 length
 levenshtein
 like
+likeall
+likeany
 ln
 locate
 log
@@ -169,6 +178,7 @@ not
 ntile
 nullif
 nvl
+octet_length
 or
 parse_url
 parse_url_tuple
@@ -191,6 +201,15 @@ reflect2
 regexp
 regexp_extract
 regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
 repeat
 replace
 replicate_rows
@@ -248,6 +267,7 @@ variance
 version
 weekofyear
 when
+width_bucket
 windowingtablefunction
 xpath
 xpath_boolean
@@ -270,6 +290,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -309,6 +331,10 @@ floor_minute
 from_unixtime
 in_file
 inline
+isfalse
+isnotfalse
+isnottrue
+istrue
 json_tuple
 last_value
 lcase
@@ -322,6 +348,7 @@ percentile
 posexplode
 positive
 regexp_replace
+regr_slope
 replace
 reverse
 rlike

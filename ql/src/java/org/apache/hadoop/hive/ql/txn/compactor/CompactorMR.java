@@ -233,7 +233,7 @@ public class CompactorMR {
         launchCompactionJob(jobMinorCompact,
           null, CompactionType.MINOR, null,
           parsedDeltas.subList(jobSubId * maxDeltastoHandle, (jobSubId + 1) * maxDeltastoHandle),
-          maxDeltastoHandle, -1, conf, txnHandler, ci.id);
+          maxDeltastoHandle, -1, conf, txnHandler, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
       dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, txns);
@@ -271,7 +271,7 @@ public class CompactorMR {
     }
 
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
-      dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, txnHandler, ci.id);
+      dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, txnHandler, ci.id, jobName);
 
     su.gatherStats();
   }
@@ -279,7 +279,7 @@ public class CompactorMR {
                                    StringableList dirsToSearch,
                                    List<AcidUtils.ParsedDelta> parsedDeltas,
                                    int curDirNumber, int obsoleteDirNumber, HiveConf hiveConf,
-                                   TxnStore txnHandler, long id) throws IOException {
+                                   TxnStore txnHandler, long id, String jobName) throws IOException {
     job.setBoolean(IS_MAJOR, compactionType == CompactionType.MAJOR);
     if(dirsToSearch == null) {
       dirsToSearch = new StringableList();
@@ -313,6 +313,10 @@ public class CompactorMR {
     LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID() + " compaction ID=" + id);
     txnHandler.setHadoopJobId(rj.getID().toString(), id);
     rj.waitForCompletion();
+    if (!rj.isSuccessful()) {
+      throw new IOException(compactionType == CompactionType.MAJOR ? "Major" : "Minor" +
+          " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID() );
+    }
   }
   /**
    * Set the column names and types into the job conf for the input format

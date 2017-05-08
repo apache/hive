@@ -8,4 +8,4 @@ STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_native1
-FAILED: SemanticException [Error 10134]: ALTER TABLE cannot be used for a non-native table non_native1
+FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS] to a non-native table  non_native1

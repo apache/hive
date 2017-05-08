@@ -125,10 +125,12 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
             && ts.tableHandle.isTemporary()){
           // No replication for temporary tables either
           ts = null;
+        } else if (ts.tableHandle.isView()) {
+          replicationSpec.setIsMetadataOnly(true);
         }
 
       } catch (SemanticException e) {
-        // table was a view, a non-native table or an offline table.
+        // table was a non-native table or an offline table.
         // ignore for replication, error if not.
         if (replicationSpec.isInReplicationScope()){
           ts = null; // null out ts so we can't use it.
