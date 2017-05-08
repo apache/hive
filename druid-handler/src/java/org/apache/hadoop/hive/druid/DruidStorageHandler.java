@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -91,12 +92,22 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   protected static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
 
   public static final String SEGMENTS_DESCRIPTOR_DIR_NAME = "segmentsDescriptorDir";
+  private static final HttpClient HTTP_CLIENT;
+  static {
+    final Lifecycle lifecycle = new Lifecycle();
+    try {
+      lifecycle.start();
+    } catch (Exception e) {
+      LOG.error("Issues with lifecycle start", e);
+    }
+    HTTP_CLIENT = makeHttpClient(lifecycle);
+    ShutdownHookManager.addShutdownHook(()-> lifecycle.stop());
+  }
+
 
   private final SQLMetadataConnector connector;
 
   private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
-
-  private HttpClient httpClient;
 
   private String uniqueId = null;
 
@@ -151,12 +162,10 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @VisibleForTesting
   public DruidStorageHandler(SQLMetadataConnector connector,
-          MetadataStorageTablesConfig druidMetadataStorageTablesConfig,
-          HttpClient httpClient
+          MetadataStorageTablesConfig druidMetadataStorageTablesConfig
   ) {
     this.connector = connector;
     this.druidMetadataStorageTablesConfig = druidMetadataStorageTablesConfig;
-    this.httpClient = httpClient;
   }
 
   @Override
@@ -280,19 +289,12 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
       LOG.info(String.format("checking load status from coordinator [%s]", coordinatorAddress));
 
-      // check if the coordinator is up
-      httpClient = makeHttpClient(lifecycle);
-      try {
-        lifecycle.start();
-      } catch (Exception e) {
-        Throwables.propagate(e);
-      }
       String coordinatorResponse = null;
       try {
         coordinatorResponse = RetryUtils.retry(new Callable<String>() {
           @Override
           public String call() throws Exception {
-            return DruidStorageHandlerUtils.getURL(httpClient,
+            return DruidStorageHandlerUtils.getURL(getHttpClient(),
                     new URL(String.format("http://%s/status", coordinatorAddress))
             );
           }
@@ -347,7 +349,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
           @Override
           public boolean apply(URL input) {
             try {
-              String result = DruidStorageHandlerUtils.getURL(httpClient, input);
+              String result = DruidStorageHandlerUtils.getURL(getHttpClient(), input);
               LOG.debug(String.format("Checking segment [%s] response is [%s]", input, result));
               return Strings.isNullOrEmpty(result);
             } catch (IOException e) {
@@ -586,20 +588,27 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     return rootWorkingDir;
   }
 
-  private HttpClient makeHttpClient(Lifecycle lifecycle) {
+  private static HttpClient makeHttpClient(Lifecycle lifecycle) {
     final int numConnection = HiveConf
-            .getIntVar(getConf(),
+            .getIntVar(SessionState.getSessionConf(),
                     HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION
             );
     final Period readTimeout = new Period(
-            HiveConf.getVar(getConf(),
+            HiveConf.getVar(SessionState.getSessionConf(),
                     HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT
             ));
+    LOG.info("Creating Druid HTTP client with {} max parallel connections and {}ms read timeout",
+            numConnection, readTimeout.toStandardDuration().getMillis()
+    );
 
     return HttpClientInit.createClient(
             HttpClientConfig.builder().withNumConnections(numConnection)
                     .withReadTimeout(new Period(readTimeout).toStandardDuration()).build(),
             lifecycle
     );
+  }
+
+  public static HttpClient getHttpClient() {
+    return HTTP_CLIENT;
   }
 }

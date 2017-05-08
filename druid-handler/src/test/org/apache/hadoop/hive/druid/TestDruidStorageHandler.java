@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import io.druid.indexer.JobHelper;
 import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
 import io.druid.metadata.MetadataStorageTablesConfig;
-import io.druid.metadata.SQLMetadataSegmentManager;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.NoneShardSpec;
@@ -94,8 +93,7 @@ public class TestDruidStorageHandler {
   public void testPreCreateTableWillCreateSegmentsTable() throws MetaException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            derbyConnectorRule.metadataTablesConfigSupplier().get(),
-            null
+            derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
 
     try (Handle handle = derbyConnectorRule.getConnector().getDBI().open()) {
@@ -122,8 +120,7 @@ public class TestDruidStorageHandler {
     );
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            derbyConnectorRule.metadataTablesConfigSupplier().get(),
-            null
+            derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
     druidStorageHandler.preCreateTable(tableMock);
   }
@@ -133,8 +130,7 @@ public class TestDruidStorageHandler {
           throws MetaException, IOException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            derbyConnectorRule.metadataTablesConfigSupplier().get(),
-            null
+            derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
     druidStorageHandler.preCreateTable(tableMock);
     Configuration config = new Configuration();
@@ -164,8 +160,7 @@ public class TestDruidStorageHandler {
   public void testCommitInsertTable() throws MetaException, IOException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            derbyConnectorRule.metadataTablesConfigSupplier().get(),
-            null
+            derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
     druidStorageHandler.preCreateTable(tableMock);
     Configuration config = new Configuration();
@@ -189,8 +184,7 @@ public class TestDruidStorageHandler {
   public void testDeleteSegment() throws IOException, SegmentLoadingException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            derbyConnectorRule.metadataTablesConfigSupplier().get(),
-            null
+            derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
 
     String segmentRootPath = temporaryFolder.newFolder().getAbsolutePath();
@@ -234,8 +228,7 @@ public class TestDruidStorageHandler {
 
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
         connector,
-        metadataStorageTablesConfig,
-        null
+        metadataStorageTablesConfig
     );
     druidStorageHandler.preCreateTable(tableMock);
     Configuration config = new Configuration();
