@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class AlterTableHandler extends AbstractHandler {
+class AlterTableHandler extends AbstractEventHandler {
   private final org.apache.hadoop.hive.metastore.api.Table after;
   private final boolean isTruncateOp;
   private final Scenario scenario;

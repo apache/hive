@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-class DefaultHandler extends AbstractMessageHandler {
+public class DefaultHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context withinContext)
       throws SemanticException {

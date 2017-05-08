@@ -30,7 +30,7 @@ import java.io.OutputStreamWriter;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
-class CreateTableHandler extends AbstractHandler {
+class CreateTableHandler extends AbstractEventHandler {
 
   CreateTableHandler(NotificationEvent event) {
     super(event);

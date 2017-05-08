@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-class TableHandler extends AbstractMessageHandler {
+public class TableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
