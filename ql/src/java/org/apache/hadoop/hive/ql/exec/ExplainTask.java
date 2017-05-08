@@ -54,11 +54,9 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -117,7 +115,6 @@ import org.slf4j.LoggerFactory;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
-  public static final String OUTPUT_OPERATORS = "OutputOperators:";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
   protected final Logger LOG;
@@ -400,6 +397,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         } else {
           JSONObject jsonPlan = getJSONPlan(out, work);
           if (work.isFormatted()) {
+            // use the parser to get the output operators of RS
+            JsonParser jsonParser = JsonParserFactory.getParser(conf);
+            if (jsonParser != null) {
+              jsonParser.print(jsonPlan, null);
+              LOG.info("JsonPlan is augmented to " + jsonPlan.toString());
+            } 
             out.print(jsonPlan);
           }
         }
@@ -797,17 +800,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (jsonOut != null && jsonOut.length() > 0) {
             ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
                 operator.getOperatorId());
-            if (!this.work.isUserLevelExplain()
-                && this.work.isFormatted()
-                && (operator instanceof ReduceSinkOperator
-                    || operator instanceof VectorReduceSinkOperator || operator instanceof VectorReduceSinkCommonOperator)) {
-              List<String> outputOperators = ((ReduceSinkDesc) operator.getConf())
-                  .getOutputOperators();
-              if (outputOperators != null) {
-                ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put(OUTPUT_OPERATORS,
-                    Arrays.toString(outputOperators.toArray()));
-              }
-            }
+          }
+          if (!this.work.isUserLevelExplain() && this.work.isFormatted()
+              && operator.getConf() instanceof ReduceSinkDesc ) {
+            ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("outputname:",
+                ((ReduceSinkDesc) operator.getConf()).getOutputName());
           }
         }
         if (jsonOutput) {

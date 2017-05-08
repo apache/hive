@@ -45,16 +45,16 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized, llap
-      File Output Operator [FS_7]
-        Group By Operator [GBY_5] (rows=1 width=188)
+      File Output Operator [FS_14]
+        Group By Operator [GBY_13] (rows=1 width=188)
           Output:["_col0","_col1"],aggregations:["max(VALUE._col0)","max(VALUE._col1)"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
-          PARTITION_ONLY_SHUFFLE [RS_4]
-            Group By Operator [GBY_3] (rows=1 width=188)
+          PARTITION_ONLY_SHUFFLE [RS_12]
+            Group By Operator [GBY_11] (rows=1 width=188)
               Output:["_col0","_col1"],aggregations:["max(dt)","max(greg_dt)"]
-              Select Operator [SEL_2] (rows=3 width=102)
+              Select Operator [SEL_10] (rows=3 width=102)
                 Output:["dt","greg_dt"]
-                Filter Operator [FIL_8] (rows=3 width=102)
+                Filter Operator [FIL_9] (rows=3 width=102)
                   predicate:(id = 5)
                   TableScan [TS_0] (rows=7 width=102)
                     default@testvec,testvec,Tbl:COMPLETE,Col:NONE,Output:["id","dt","greg_dt"]

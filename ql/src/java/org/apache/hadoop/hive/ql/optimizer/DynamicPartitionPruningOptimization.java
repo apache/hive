@@ -679,14 +679,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
-    // for explain purpose
-    if (parseContext.getContext().getExplainConfig() != null
-        && parseContext.getContext().getExplainConfig().isFormatted()) {
-      List<String> outputOperators = new ArrayList<>();
-      outputOperators.add(groupByOpFinal.getOperatorId());
-      rsOp.getConf().setOutputOperators(outputOperators);
-    }
-
     createFinalRsForSemiJoinOp(parseContext, ts, groupByOpFinal, key,
             keyBaseAlias, ctx.parent.getChildren().get(0), sjHint != null);
 
@@ -728,16 +720,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     LOG.debug("DynamicSemiJoinPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
     SemiJoinBranchInfo sjInfo = new SemiJoinBranchInfo(ts, isHint);
     parseContext.getRsToSemiJoinBranchInfo().put(rsOpFinal, sjInfo);
-
-    // for explain purpose
-    if (parseContext.getContext().getExplainConfig() != null &&
-            parseContext.getContext().getExplainConfig().isFormatted()) {
-      List<String> outputOperators = rsOpFinal.getConf().getOutputOperators();
-      if (outputOperators == null) {
-        outputOperators = new ArrayList<>();
-      }
-      outputOperators.add(ts.getOperatorId());
-    }
 
     // Save the info that is required at query time to resolve dynamic/runtime values.
     RuntimeValuesInfo runtimeValuesInfo = new RuntimeValuesInfo();

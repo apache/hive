@@ -40,12 +40,12 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=10 width=101)
+      File Output Operator [FS_8]
+        Select Operator [SEL_7] (rows=10 width=101)
           Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized
-          SHUFFLE [RS_2]
-            Select Operator [SEL_1] (rows=10 width=101)
+          SHUFFLE [RS_6]
+            Select Operator [SEL_5] (rows=10 width=101)
               Output:["_col0","_col1"]
               TableScan [TS_0] (rows=10 width=101)
                 default@acid_vectorized,acid_vectorized, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
@@ -276,9 +276,9 @@ Stage-3
           Dependency Collection{}
             Stage-1
               Map 1 vectorized
-              File Output Operator [FS_2]
+              File Output Operator [FS_4]
                 table:{"name:":"default.src_autho_test"}
-                Select Operator [SEL_1] (rows=500 width=178)
+                Select Operator [SEL_3] (rows=500 width=178)
                   Output:["_col0","_col1"]
                   TableScan [TS_0] (rows=500 width=178)
                     default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -462,14 +462,14 @@ Stage-0
     limit:5
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_5]
-        Limit [LIM_4] (rows=5 width=178)
+      File Output Operator [FS_10]
+        Limit [LIM_9] (rows=5 width=178)
           Number of rows:5
-          Select Operator [SEL_3] (rows=500 width=178)
+          Select Operator [SEL_8] (rows=500 width=178)
             Output:["_col0","_col1"]
           <-Map 1 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_2]
-              Select Operator [SEL_1] (rows=500 width=178)
+            SHUFFLE [RS_7]
+              Select Operator [SEL_6] (rows=500 width=178)
                 Output:["_col0","_col1"]
                 TableScan [TS_0] (rows=500 width=178)
                   default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -509,11 +509,11 @@ Stage-3
                   Conditional Operator
                     Stage-1
                       Map 1 vectorized
-                      File Output Operator [FS_3]
+                      File Output Operator [FS_10]
                         table:{"name:":"default.orc_merge5"}
-                        Select Operator [SEL_2] (rows=306 width=268)
+                        Select Operator [SEL_9] (rows=306 width=268)
                           Output:["_col0","_col1","_col2","_col3","_col4"]
-                          Filter Operator [FIL_4] (rows=306 width=268)
+                          Filter Operator [FIL_8] (rows=306 width=268)
                             predicate:(userid <= 13)
                             TableScan [TS_0] (rows=919 width=268)
                               default@orc_merge5,orc_merge5,Tbl:COMPLETE,Col:NONE,Output:["userid","string1","subtype","decimal1","ts"]
@@ -662,23 +662,23 @@ Stage-0
     limit:-1
     Stage-1
       Map 2 vectorized
-      File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=550 width=18)
+      File Output Operator [FS_34]
+        Select Operator [SEL_33] (rows=550 width=18)
           Output:["_col0","_col1","_col2"]
-          Map Join Operator [MAPJOIN_25] (rows=550 width=18)
-            BucketMapJoin:true,Conds:RS_6._col0=SEL_5._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col3"]
+          Map Join Operator [MAPJOIN_32] (rows=550 width=18)
+            BucketMapJoin:true,Conds:RS_29._col0=SEL_31._col0(Inner),HybridGraceHashJoin:true,Output:["_col0","_col1","_col3"]
           <-Map 1 [CUSTOM_EDGE] vectorized
-            MULTICAST [RS_6]
+            MULTICAST [RS_29]
               PartitionCols:_col0
-              Select Operator [SEL_2] (rows=242 width=18)
+              Select Operator [SEL_28] (rows=242 width=18)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_13] (rows=242 width=18)
+                Filter Operator [FIL_27] (rows=242 width=18)
                   predicate:key is not null
                   TableScan [TS_0] (rows=242 width=18)
                     default@tab,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-          <-Select Operator [SEL_5] (rows=500 width=18)
+          <-Select Operator [SEL_31] (rows=500 width=18)
               Output:["_col0","_col1"]
-              Filter Operator [FIL_14] (rows=500 width=18)
+              Filter Operator [FIL_30] (rows=500 width=18)
                 predicate:key is not null
                 TableScan [TS_3] (rows=500 width=18)
                   default@tab_part,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]

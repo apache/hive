@@ -36,7 +36,7 @@ public final class Op {
   public final String name;
   // tezJsonParser
   public final DagJsonParser parser;
-  public final String operatorId;
+  public String operatorId;
   public Op parent;
   public final List<Op> children;
   public final Map<String, String> attrs;
@@ -45,15 +45,15 @@ public final class Op {
   // the vertex that this operator belongs to
   public final Vertex vertex;
   // the vertex that this operator output to
-  public final String outputVertexName;
+  public String outputVertexName;
   // the Operator type
-  public final OpType type;
+  public OpType type;
 
   public enum OpType {
     MAPJOIN, MERGEJOIN, RS, OTHERS
   };
 
-  public Op(String name, String id, String outputVertexName, List<Op> children,
+  public Op(String name, String id, String outputVertexName, Op parent, List<Op> children,
       Map<String, String> attrs, JSONObject opObject, Vertex vertex, DagJsonParser tezJsonParser)
       throws JSONException {
     super();
@@ -61,6 +61,7 @@ public final class Op {
     this.operatorId = id;
     this.type = deriveOpType(operatorId);
     this.outputVertexName = outputVertexName;
+    this.parent = parent;
     this.children = children;
     this.attrs = attrs;
     this.opObject = opObject;
@@ -87,11 +88,10 @@ public final class Op {
   private void inlineJoinOp() throws Exception {
     // inline map join operator
     if (this.type == OpType.MAPJOIN) {
-      JSONObject joinObj = opObject.getJSONObject(this.name);
       // get the map for posToVertex
       Map<String, Vertex> posToVertex = new LinkedHashMap<>();
-      if (joinObj.has("input vertices:")) {
-        JSONObject verticeObj = joinObj.getJSONObject("input vertices:");
+      if (opObject.has("input vertices:")) {
+        JSONObject verticeObj = opObject.getJSONObject("input vertices:");
         for (String pos : JSONObject.getNames(verticeObj)) {
           String vertexName = verticeObj.getString(pos);
           // update the connection
@@ -111,7 +111,7 @@ public final class Op {
         this.attrs.remove("input vertices:");
       }
       // update the keys to use operator name
-      JSONObject keys = joinObj.getJSONObject("keys:");
+      JSONObject keys = opObject.getJSONObject("keys:");
       // find out the vertex for the big table
       Set<Vertex> parentVertexes = new HashSet<>();
       for (Connection connection : vertex.parentConnections) {
@@ -124,9 +124,9 @@ public final class Op {
           // first search from the posToVertex
           if (posToVertex.containsKey(key)) {
             Vertex v = posToVertex.get(key);
-            if (v.rootOps.size() == 1) {
-              posToOpId.put(key, v.rootOps.get(0).operatorId);
-            } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
+            if (v.outputOps.size() == 1) {
+              posToOpId.put(key, v.outputOps.get(0).operatorId);
+            } else if ((v.outputOps.size() == 0 && v.vertexType == VertexType.UNION)) {
               posToOpId.put(key, v.name);
             } else {
               Op joinRSOp = v.getJoinRSOp(vertex);
@@ -147,9 +147,9 @@ public final class Op {
           else if (parentVertexes.size() == 1) {
             Vertex v = parentVertexes.iterator().next();
             parentVertexes.clear();
-            if (v.rootOps.size() == 1) {
-              posToOpId.put(key, v.rootOps.get(0).operatorId);
-            } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
+            if (v.outputOps.size() == 1) {
+              posToOpId.put(key, v.outputOps.get(0).operatorId);
+            } else if ((v.outputOps.size() == 0 && v.vertexType == VertexType.UNION)) {
               posToOpId.put(key, v.name);
             } else {
               Op joinRSOp = v.getJoinRSOp(vertex);
@@ -171,7 +171,7 @@ public final class Op {
       }
       this.attrs.remove("keys:");
       StringBuffer sb = new StringBuffer();
-      JSONArray conditionMap = joinObj.getJSONArray("condition map:");
+      JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
         String k = (String) cond.keys().next();
@@ -203,9 +203,9 @@ public final class Op {
           for (Connection connection : vertex.parentConnections) {
             if (connection.from.name.equals(entry.getValue())) {
               Vertex v = connection.from;
-              if (v.rootOps.size() == 1) {
-                posToOpId.put(entry.getKey(), v.rootOps.get(0).operatorId);
-              } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
+              if (v.outputOps.size() == 1) {
+                posToOpId.put(entry.getKey(), v.outputOps.get(0).operatorId);
+              } else if ((v.outputOps.size() == 0 && v.vertexType == VertexType.UNION)) {
                 posToOpId.put(entry.getKey(), v.name);
               } else {
                 Op joinRSOp = v.getJoinRSOp(vertex);
@@ -229,16 +229,15 @@ public final class Op {
       } else {
         posToOpId.put(vertex.tag, this.parent.operatorId);
         for (Vertex v : vertex.mergeJoinDummyVertexs) {
-          if (v.rootOps.size() != 1) {
+          if (v.outputOps.size() != 1) {
             throw new Exception("Can not find a single root operators in a single vertex " + v.name
                 + " when hive explain user is trying to identify the operator id.");
           }
-          posToOpId.put(v.tag, v.rootOps.get(0).operatorId);
+          posToOpId.put(v.tag, v.outputOps.get(0).operatorId);
         }
       }
-      JSONObject joinObj = opObject.getJSONObject(this.name);
       // update the keys to use operator name
-      JSONObject keys = joinObj.getJSONObject("keys:");
+      JSONObject keys = opObject.getJSONObject("keys:");
       if (keys.length() != 0) {
         for (String key : JSONObject.getNames(keys)) {
           if (!posToOpId.containsKey(key)) {
@@ -256,7 +255,7 @@ public final class Op {
       // update the attrs
       this.attrs.remove("keys:");
       StringBuffer sb = new StringBuffer();
-      JSONArray conditionMap = joinObj.getJSONArray("condition map:");
+      JSONArray conditionMap = opObject.getJSONArray("condition map:");
       for (int index = 0; index < conditionMap.length(); index++) {
         JSONObject cond = conditionMap.getJSONObject(index);
         String k = (String) cond.keys().next();
@@ -354,5 +353,10 @@ public final class Op {
         connection.from.print(printer, indentFlag, connection.type, this.vertex);
       }
     }
+  }
+
+  public void setOperatorId(String operatorId) {
+    this.operatorId = operatorId;
+    this.type = deriveOpType(operatorId);
   }
 }
