@@ -544,8 +544,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               engineInSupported,
               engineInSupportedCondName),
           new VectorizationCondition(
-              !vectorReduceSinkDesc.getHasTopN(),
-              "No TopN"),
+              !vectorReduceSinkDesc.getHasPTFTopN(),
+              "No PTF TopN"),
           new VectorizationCondition(
               !vectorReduceSinkDesc.getHasDistinctColumns(),
               "No DISTINCT columns"),

@@ -177,7 +177,6 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       nonPartitionRandom = new Random(12345);
     } else {
       partitionObjectInspectors = getObjectInspectorArray(reduceSinkPartitionTypeInfos);
-      LOG.debug("*NEW* partitionObjectInspectors " + Arrays.toString(partitionObjectInspectors));
       partitionVectorExtractRow = new VectorExtractRow();
       partitionVectorExtractRow.init(reduceSinkPartitionTypeInfos, reduceSinkPartitionColumnMap);
       partitionFieldValues = new Object[reduceSinkPartitionTypeInfos.length];

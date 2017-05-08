@@ -143,7 +143,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -368,7 +368,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -593,7 +593,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -812,7 +812,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1005,7 +1005,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1198,7 +1198,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1391,7 +1391,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -1626,7 +1626,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 12792 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_retailprice (type: decimal(38,18))
             Execution mode: vectorized, llap
@@ -1819,7 +1819,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 12792 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: decimal(38,18))
             Execution mode: vectorized, llap
@@ -2032,7 +2032,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_bigint (type: bigint)
             Execution mode: vectorized, llap
@@ -2225,7 +2225,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_bigint (type: bigint)
             Execution mode: vectorized, llap
@@ -2412,7 +2412,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2576,7 +2576,7 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2741,7 +2741,7 @@ STAGE PLANS:
                         className: VectorReduceSinkMultiKeyOperator
                         keyExpressions: VectorUDFAdaptor(CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean) -> 4:timestamp
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_name (type: string), p_retailprice (type: double)
             Execution mode: vectorized, llap
@@ -2907,7 +2907,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyExpressions: VectorUDFAdaptor(CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean) -> 4:timestamp
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
             Execution mode: vectorized, llap

@@ -64,7 +64,7 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
   private boolean isVectorizationReduceSinkNativeEnabled;
   private String engine;
-  private boolean hasTopN;
+  private boolean hasPTFTopN;
   private boolean hasDistinctColumns;
   private boolean isKeyBinarySortable;
   private boolean isValueLazyBinary;
@@ -85,11 +85,11 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   public String getEngine() {
     return engine;
   }
-  public void setHasTopN(boolean hasTopN) {
-    this.hasTopN = hasTopN;
+  public void setHasPTFTopN(boolean hasPTFTopN) {
+    this.hasPTFTopN = hasPTFTopN;
   }
-  public boolean getHasTopN() {
-    return hasTopN;
+  public boolean getHasPTFTopN() {
+    return hasPTFTopN;
   }
   public void setHasDistinctColumns(boolean hasDistinctColumns) {
     this.hasDistinctColumns = hasDistinctColumns;

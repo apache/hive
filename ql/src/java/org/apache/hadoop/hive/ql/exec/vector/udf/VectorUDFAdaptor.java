@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.udf;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
+import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -336,6 +340,25 @@ public class VectorUDFAdaptor extends VectorExpression {
       BytesWritable bw = (BytesWritable) value;
       BytesColumnVector bv = (BytesColumnVector) colVec;
       bv.setVal(i, bw.getBytes(), 0, bw.getLength());
+    } else if (outputOI instanceof WritableHiveIntervalYearMonthObjectInspector) {
+      LongColumnVector lv = (LongColumnVector) colVec;
+      HiveIntervalYearMonth iym;
+      if (value instanceof HiveIntervalYearMonth) {
+        iym = (HiveIntervalYearMonth) value;
+      } else {
+        iym = ((WritableHiveIntervalYearMonthObjectInspector) outputOI).getPrimitiveJavaObject(value);
+      }
+      long l = iym.getTotalMonths();
+      lv.vector[i] = l;
+    } else if (outputOI instanceof WritableHiveIntervalDayTimeObjectInspector) {
+      IntervalDayTimeColumnVector idtv = (IntervalDayTimeColumnVector) colVec;
+      HiveIntervalDayTime idt;
+      if (value instanceof HiveIntervalDayTime) {
+        idt = (HiveIntervalDayTime) value;
+      } else {
+        idt = ((WritableHiveIntervalDayTimeObjectInspector) outputOI).getPrimitiveJavaObject(value);
+      }
+      idtv.set(i, idt);
     } else {
       throw new RuntimeException("Unhandled object type " + outputOI.getTypeName() +
           " inspector class " + outputOI.getClass().getName() +

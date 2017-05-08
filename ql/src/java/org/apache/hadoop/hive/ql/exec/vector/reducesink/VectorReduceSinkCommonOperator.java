@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.reducesink;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator.Counter;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
+import org.apache.hadoop.hive.ql.exec.TopNHash;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -57,11 +59,13 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hive.common.util.HashCodeUtil;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class is common operator class for native vectorized reduce sink.
  */
 public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<ReduceSinkDesc>
-    implements VectorizationContextRegion {
+    implements Serializable, TopNHash.BinaryCollector, VectorizationContextRegion {
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkCommonOperator.class.getName();
@@ -121,6 +125,9 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   // The hive key and bytes writable value needed to pass the key and value to the collector.
   protected transient HiveKey keyWritable;
   protected transient BytesWritable valueBytesWritable;
+
+  // Picks topN K:V pairs from input.
+  protected transient TopNHash reducerHash;
 
   // Where to write our key and value pairs.
   private transient OutputCollector out;
@@ -329,10 +336,46 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
     valueBytesWritable = new BytesWritable();
 
+    int limit = conf.getTopN();
+    float memUsage = conf.getTopNMemoryUsage();
+
+    if (limit >= 0 && memUsage > 0) {
+      reducerHash = new TopNHash();
+      reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this, conf, hconf);
+    }
+
     batchCounter = 0;
   }
 
-  protected void collect(BytesWritable keyWritable, Writable valueWritable) throws IOException {
+  // The collect method override for TopNHash.BinaryCollector
+  @Override
+  public void collect(byte[] key, byte[] value, int hash) throws IOException {
+    HiveKey keyWritable = new HiveKey(key, hash);
+    BytesWritable valueWritable = new BytesWritable(value);
+    doCollect(keyWritable, valueWritable);
+  }
+
+  protected void collect(HiveKey keyWritable, BytesWritable valueWritable)
+      throws HiveException, IOException {
+    if (reducerHash != null) {
+      // NOTE: partColsIsNull is only used for PTF, which isn't supported yet.
+      final int firstIndex =
+          reducerHash.tryStoreKey(keyWritable, /* partColsIsNull */ false);
+
+      if (firstIndex == TopNHash.EXCLUDE) return;   // Nothing to do.
+
+      if (firstIndex == TopNHash.FORWARD) {
+        doCollect(keyWritable, valueWritable);
+      } else {
+        Preconditions.checkState(firstIndex >= 0);
+        reducerHash.storeValue(firstIndex, keyWritable.hashCode(), valueWritable, false);
+      }
+    } else {
+      doCollect(keyWritable, valueWritable);
+    }
+  }
+
+  private void doCollect(HiveKey keyWritable, BytesWritable valueWritable) throws IOException {
     // Since this is a terminal operator, update counters explicitly -
     // forward is not called
     if (null != out) {
@@ -360,8 +403,12 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
+    if (!abort && reducerHash != null) {
+      reducerHash.flush();
+    }
     super.closeOp(abort);
     out = null;
+    reducerHash = null;
     if (isLogInfoEnabled) {
       LOG.info(toString() + ": records written - " + numRows);
     }
