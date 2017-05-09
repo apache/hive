@@ -65,6 +65,115 @@ Found 1 items
 2val_2
 5val_5
 9val_9
+PREHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ex_table
+PREHOOK: Input: default@ex_table@part=part1
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ex_table
+POSTHOOK: Input: default@ex_table@part=part1
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED ex_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	10                  
+	rawDataSize         	70                  
+	totalSize           	80                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part1]             	 
+Database:           	default             	 
+Table:              	ex_table            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	70                  
+	totalSize           	80                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	5                   	5.0                 	5                   	                    	                    	from deserializer   
 PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@ex_table
@@ -114,3 +223,102 @@ Found 1 items
 2val_2
 5val_5
 9val_9
+PREHOOK: query: DESCRIBE FORMATTED ex_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	numFiles            	1                   
+	numPartitions       	1                   
+	numRows             	10                  
+	rawDataSize         	70                  
+	totalSize           	80                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part2]             	 
+Database:           	default             	 
+Table:              	ex_table            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	70                  
+	totalSize           	80                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ex_table
+POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ex_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	5                   	5.0                 	5                   	                    	                    	from deserializer   
