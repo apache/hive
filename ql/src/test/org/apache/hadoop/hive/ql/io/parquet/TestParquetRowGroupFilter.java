@@ -21,11 +21,13 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -103,6 +105,7 @@ public class TestParquetRowGroupFilter extends AbstractTestParquetDirect {
     ExprNodeGenericFuncDesc genericFuncDesc = new ExprNodeGenericFuncDesc(inspector, udf, children);
     String searchArgumentStr = SerializationUtilities.serializeExpression(genericFuncDesc);
     conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, searchArgumentStr);
+    conf.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY, TimeZone.getDefault().getID());
 
     ParquetRecordReaderWrapper recordReader = (ParquetRecordReaderWrapper)
         new MapredParquetInputFormat().getRecordReader(

@@ -42,6 +42,9 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
@@ -368,6 +371,9 @@ public class FetchOperator implements Serializable {
 
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
+      if (ParquetHiveSerDe.class.getName().equals(currDesc.getTableDesc().getSerdeClassName())) {
+        ParquetTableUtils.setParquetTimeZoneIfAbsent(job, currDesc.getTableDesc().getProperties());
+      }
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
 
       InputSplit[] splits = inputFormat.getSplits(job, 1);
