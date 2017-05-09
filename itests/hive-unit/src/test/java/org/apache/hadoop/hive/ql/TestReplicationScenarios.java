@@ -1059,6 +1059,113 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testInsertToMultiKeyPartition() throws IOException {
+    String testName = "insertToMultiKeyPartition";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".namelist(name string) partitioned by (year int, month int, day int) STORED AS TEXTFILE");
+    run("USE " + dbName);
+
+    String[] ptn_data_1 = new String[] { "abraham", "bob", "carter" };
+    String[] ptn_year_1980 = new String[] { "abraham", "bob" };
+    String[] ptn_day_1 = new String[] { "abraham", "carter" };
+    String[] ptn_year_1984_month_4_day_1_1 = new String[] { "carter" };
+    String[] ptn_list_1 = new String[] { "year=1980/month=4/day=1", "year=1980/month=5/day=5", "year=1984/month=4/day=1" };
+
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=4,day=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=5,day=5) values('" + ptn_data_1[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_1[2] + "')");
+
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980);
+    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1);
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1984 and month=4 and day=1) ORDER BY name",
+                                                                                ptn_year_1984_month_4_day_1_1);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_1);
+    verifySetup("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_1);
+    verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1980,month=4,day=1)",
+                              "location", "namelist/year=1980/month=4/day=1");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1984 and month=4 and day=1) ORDER BY name",
+                                                                                   ptn_year_1984_month_4_day_1_1);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_1);
+    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_1);
+
+    run("USE " + dbName + "_dupe");
+    verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1980,month=4,day=1)",
+            "location", "namelist/year=1980/month=4/day=1");
+    run("USE " + dbName);
+
+    String[] ptn_data_2 = new String[] { "abraham", "bob", "carter", "david", "eugene" };
+    String[] ptn_year_1984_month_4_day_1_2 = new String[] { "carter", "david" };
+    String[] ptn_day_1_2 = new String[] { "abraham", "carter", "david" };
+    String[] ptn_list_2 = new String[] { "year=1980/month=4/day=1", "year=1980/month=5/day=5",
+                                         "year=1984/month=4/day=1", "year=1990/month=5/day=25" };
+
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_2[3] + "')");
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + ptn_data_2[4] + "')");
+
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980);
+    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1_2);
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1984 and month=4 and day=1) ORDER BY name",
+                                                                                ptn_year_1984_month_4_day_1_2);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_2);
+    verifyRun("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_2);
+    verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1990,month=5,day=25)",
+            "location", "namelist/year=1990/month=5/day=25");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1_2);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1984 and month=4 and day=1) ORDER BY name",
+                                                                                   ptn_year_1984_month_4_day_1_2);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_2);
+    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_2);
+    run("USE " + dbName + "_dupe");
+    verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1990,month=5,day=25)",
+            "location", "namelist/year=1990/month=5/day=25");
+    run("USE " + dbName);
+
+    String[] ptn_data_3 = new String[] { "abraham", "bob", "carter", "david", "fisher" };
+    String[] data_after_ovwrite = new String[] { "fisher" };
+    // Insert overwrite on existing partition
+    run("INSERT OVERWRITE TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + data_after_ovwrite[0] + "')");
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_3);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+
+    verifySetup("SELECT name from " + dbName + "_dupe.namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite);
+    verifySetup("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_3);
+  }
+
+  @Test
   public void testViewsReplication() throws IOException {
     String testName = "viewsReplication";
     String dbName = createDB(testName);
@@ -1806,6 +1913,21 @@ public class TestReplicationScenarios {
     }
 
     assertFalse(success);
+  }
+
+  private void verifyRunWithPatternMatch(String cmd, String key, String pattern) throws IOException {
+    run(cmd);
+    List<String> results = getOutput();
+    assertTrue(results.size() > 0);
+    boolean success = false;
+    for (int i = 0; i < results.size(); i++) {
+      if (results.get(i).contains(key) && results.get(i).contains(pattern)) {
+         success = true;
+         break;
+      }
+    }
+
+    assertTrue(success);
   }
 
   private static void run(String cmd) throws RuntimeException {
