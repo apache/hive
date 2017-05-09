@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -163,5 +164,13 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       stats.setRawDataSize(deserializedSize);
     }
     return stats;
+  }
+
+  /**
+   * @param table
+   * @return true if the table has the parquet serde defined
+   */
+  public static boolean isParquetTable(Table table) {
+    return  table == null ? false : ParquetHiveSerDe.class.getName().equals(table.getSerializationLib());
   }
 }
