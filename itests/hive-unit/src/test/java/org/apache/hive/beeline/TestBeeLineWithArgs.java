@@ -1082,4 +1082,46 @@ public class TestBeeLineWithArgs {
     argList.add("--outputformat=tsv2");
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
   }
+
+  @Test
+  public void testCustomDelimiter() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$");
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testCustomMultiCharDelimiter() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$$");
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testCustomDelimiterWithMultiQuery() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$select 'world', 'world', 'world'$";
+    final String EXPECTED_PATTERN1 = "hello\thello\thello";
+    final String EXPECTED_PATTERN2 = "world\tworld\tworld";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$");
+    argList.add("--outputformat=tsv2");
+    List<Tuple<String>> expectedMatches = Arrays.asList(new Tuple<>(EXPECTED_PATTERN1, true),
+            new Tuple<>(EXPECTED_PATTERN2, true));
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, expectedMatches);
+  }
+
+  @Test
+  public void testCustomDelimiterBeelineCmd() throws Throwable {
+    String SCRIPT_TEXT = "!delimiter $\n select 'hello', 'hello', 'hello'$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
 }
