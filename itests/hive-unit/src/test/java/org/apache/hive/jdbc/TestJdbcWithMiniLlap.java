@@ -62,6 +62,7 @@ import org.apache.hadoop.mapred.RecordReader;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapRowRecordReader;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.hive.llap.Schema;
@@ -72,6 +73,12 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.llap.LlapRowInputFormat;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.NucleusContext;
@@ -160,6 +167,40 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
+  private void createTableWithComplexTypes(String tableName) throws Exception {
+    Statement stmt = hs2Conn.createStatement();
+
+    // create table
+    stmt.execute("DROP TABLE IF EXISTS " + tableName);
+    stmt.execute("CREATE TABLE " + tableName
+        + " (c0 int, c1 array<int>, c2 map<int, string>, c3 struct<f1:int, f2:string, f3:array<int>>, c4 array<struct<f1:int, f2:string, f3:array<int>>>)");
+
+    // load data
+    stmt.execute("insert into " + tableName
+        + " select 1"
+        + ", array(1, 2, 3)"
+        + ", map(1, 'one', 2, 'two')"
+        + ", named_struct('f1', 1, 'f2', 'two', 'f3', array(1,2,3))"
+        + ", array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4)))");
+
+    // Inserting nulls into complex columns doesn't work without this CASE workaround - what a hack.
+    stmt.execute("insert into " + tableName
+        + " select 2"
+        + ", case when 2 = 2 then null else array(1, 2, 3) end"
+        + ", case when 2 = 2 then null else map(1, 'one', 2, 'two') end"
+        + ", case when 2 = 2 then null else named_struct('f1', 1, 'f2', 'two', 'f3', array(1,2,3)) end"
+        + ", case when 2 = 2 then null else array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4))) end");
+
+    // TODO: test nested nulls in complex types. Currently blocked by HIVE-16587.
+    //stmt.execute("insert into " + tableName
+    //    + " select 3"
+    //    + ", array(1, 2, null)"
+    //    + ", map(1, 'one', 2, null)"
+    //    + ", named_struct('f1', cast(null as int), 'f2', cast(null as string), 'f3', array(1,2,null))"
+    //    + ", array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4)))");
+    stmt.close();
+  }
+
   @Test(timeout = 60000)
   public void testLlapInputFormatEndToEnd() throws Exception {
     createTestTable("testtab1");
@@ -212,6 +253,105 @@ public class TestJdbcWithMiniLlap {
     assertArrayEquals(new String[] {"val_0", expectedVal1, expectedVal2}, rowCollector.rows.get(2));
   }
 
+  @Test(timeout = 60000)
+  public void testComplexTypes() throws Exception {
+    createTableWithComplexTypes("complex1");
+    RowCollector2 rowCollector = new RowCollector2();
+    String query = "select * from complex1";
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(2, rowCount);
+
+    // Verify schema
+    FieldDesc c0Desc = rowCollector.schema.getColumns().get(0);
+    assertEquals("complex1.c0", c0Desc.getName());
+    assertEquals("int", c0Desc.getTypeInfo().getTypeName());
+
+    FieldDesc c1Desc = rowCollector.schema.getColumns().get(1);
+    assertEquals("complex1.c1", c1Desc.getName());
+    assertEquals("array<int>", c1Desc.getTypeInfo().getTypeName());
+
+    FieldDesc c2Desc = rowCollector.schema.getColumns().get(2);
+    assertEquals("complex1.c2", c2Desc.getName());
+    assertEquals("map<int,string>", c2Desc.getTypeInfo().getTypeName());
+
+    FieldDesc c3Desc = rowCollector.schema.getColumns().get(3);
+    assertEquals("complex1.c3", c3Desc.getName());
+    assertEquals(Category.STRUCT, c3Desc.getTypeInfo().getCategory());
+    verifyStructFieldSchema((StructTypeInfo) c3Desc.getTypeInfo());
+
+    FieldDesc c4Desc = rowCollector.schema.getColumns().get(4);
+    assertEquals("complex1.c4", c4Desc.getName());
+    assertEquals(Category.LIST, c4Desc.getTypeInfo().getCategory());
+    TypeInfo c4ElementType = ((ListTypeInfo) c4Desc.getTypeInfo()).getListElementTypeInfo();
+    assertEquals(Category.STRUCT, c4ElementType.getCategory());
+    verifyStructFieldSchema((StructTypeInfo) c4ElementType);
+
+    // First row
+    Object[] rowValues = rowCollector.rows.get(0);
+    assertEquals(Integer.valueOf(1), ((Integer) rowValues[0]));
+
+    // assertEquals("[1, 2, 3]", rowValues[1]);
+    List<?> c1Value = (List<?>) rowValues[1];
+    assertEquals(3, c1Value.size());
+    assertEquals(Integer.valueOf(1), c1Value.get(0));
+    assertEquals(Integer.valueOf(2), c1Value.get(1));
+    assertEquals(Integer.valueOf(3), c1Value.get(2));
+
+    // assertEquals("{1=one, 2=two}", rowValues[2]);
+    Map<?,?> c2Value = (Map<?,?>) rowValues[2];
+    assertEquals(2, c2Value.size());
+    assertEquals("one", c2Value.get(Integer.valueOf(1)));
+    assertEquals("two", c2Value.get(Integer.valueOf(2)));
+
+    //  assertEquals("[1, two, [1, 2, 3]]", rowValues[3]);
+    List<?> c3Value = (List<?>) rowValues[3];
+    assertEquals(Integer.valueOf(1), c3Value.get(0));
+    assertEquals("two", c3Value.get(1));
+    List<?> f3Value = (List<?>) c3Value.get(2);
+    assertEquals(Integer.valueOf(1), f3Value.get(0));
+    assertEquals(Integer.valueOf(2), f3Value.get(1));
+    assertEquals(Integer.valueOf(3), f3Value.get(2));
+
+    // assertEquals("[[11, two, [2, 3, 4]]]", rowValues[4]);
+    List<?> c4Value = (List<?>) rowValues[4];
+    assertEquals(1, c4Value.size());
+    List<?> c4Element = (List<?>) c4Value.get(0);
+    assertEquals(Integer.valueOf(11), c4Element.get(0));
+    assertEquals("two", c4Element.get(1));
+    f3Value = (List<?>) c4Element.get(2);
+    assertEquals(3, f3Value.size());
+    assertEquals(Integer.valueOf(2), f3Value.get(0));
+    assertEquals(Integer.valueOf(3), f3Value.get(1));
+    assertEquals(Integer.valueOf(4), f3Value.get(2));
+
+    // Second row
+    rowValues = rowCollector.rows.get(1);
+    assertEquals(Integer.valueOf(2), ((Integer) rowValues[0]));
+    assertEquals(null, rowValues[1]);
+    assertEquals(null, rowValues[2]);
+    assertEquals(null, rowValues[3]);
+    assertEquals(null, rowValues[4]);
+  }
+
+  private void verifyStructFieldSchema(StructTypeInfo structType) {
+    assertEquals("f1", structType.getAllStructFieldNames().get(0));
+    TypeInfo f1Type = structType.getStructFieldTypeInfo("f1");
+    assertEquals(Category.PRIMITIVE, f1Type.getCategory());
+    assertEquals(PrimitiveCategory.INT, ((PrimitiveTypeInfo) f1Type).getPrimitiveCategory());
+
+    assertEquals("f2", structType.getAllStructFieldNames().get(1));
+    TypeInfo f2Type = structType.getStructFieldTypeInfo("f2");
+    assertEquals(Category.PRIMITIVE, f2Type.getCategory());
+    assertEquals(PrimitiveCategory.STRING, ((PrimitiveTypeInfo) f2Type).getPrimitiveCategory());
+
+    assertEquals("f3", structType.getAllStructFieldNames().get(2));
+    TypeInfo f3Type = structType.getStructFieldTypeInfo("f3");
+    assertEquals(Category.LIST, f3Type.getCategory());
+    assertEquals(
+        PrimitiveCategory.INT,
+        ((PrimitiveTypeInfo) ((ListTypeInfo) f3Type).getListElementTypeInfo()).getPrimitiveCategory());
+  }
+
   private interface RowProcessor {
     void process(Row row);
   }
@@ -230,6 +370,26 @@ public class TestJdbcWithMiniLlap {
       String[] arr = new String[numColumns];
       for (int idx = 0; idx < numColumns; ++idx) {
         arr[idx] = row.getValue(idx).toString();
+      }
+      rows.add(arr);
+    }
+  }
+
+  // Save the actual values from each row as opposed to the String representation.
+  private static class RowCollector2 implements RowProcessor {
+    ArrayList<Object[]> rows = new ArrayList<Object[]>();
+    Schema schema = null;
+    int numColumns = 0;
+
+    public void process(Row row) {
+      if (schema == null) {
+        schema = row.getSchema();
+        numColumns = schema.getColumns().size();
+      }
+
+      Object[] arr = new Object[numColumns];
+      for (int idx = 0; idx < numColumns; ++idx) {
+        arr[idx] = row.getValue(idx);
       }
       rows.add(arr);
     }
