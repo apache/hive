@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-class TruncateTableHandler extends AbstractMessageHandler {
+public class TruncateTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     AlterTableMessage msg = deserializer.getAlterTableMessage(context.dmd.getPayload());

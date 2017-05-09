@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DropTableHandler extends AbstractHandler {
+class DropTableHandler extends AbstractEventHandler {
 
   DropTableHandler(NotificationEvent event) {
     super(event);

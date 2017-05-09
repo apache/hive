@@ -37,7 +37,7 @@ import java.util.Iterator;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
-class AddPartitionHandler extends AbstractHandler {
+class AddPartitionHandler extends AbstractEventHandler {
   protected AddPartitionHandler(NotificationEvent notificationEvent) {
     super(notificationEvent);
   }

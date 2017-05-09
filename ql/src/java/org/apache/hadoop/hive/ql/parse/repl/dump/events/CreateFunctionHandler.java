@@ -10,7 +10,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
-class CreateFunctionHandler extends AbstractHandler {
+class CreateFunctionHandler extends AbstractEventHandler {
   CreateFunctionHandler(NotificationEvent event) {
     super(event);
   }
@@ -27,6 +27,7 @@ class CreateFunctionHandler extends AbstractHandler {
       new FunctionSerializer(createFunctionMessage.getFunctionObj())
           .writeTo(jsonWriter, withinContext.replicationSpec);
     }
+    withinContext.createDmd(this).write();
   }
 
   @Override

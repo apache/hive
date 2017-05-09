@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
-import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandlerFactory;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
@@ -696,12 +695,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private List<Task<? extends Serializable>> analyzeEventLoad(
-      String dbName, String tblName, String locn, Task<? extends Serializable> precursor,
+      String dbName, String tblName, String location, Task<? extends Serializable> precursor,
       Map<String, Long> dbsUpdated, Map<String, Long> tablesUpdated, DumpMetaData dmd)
       throws SemanticException {
     MessageHandler.Context context =
-        new MessageHandler.Context(dbName, tblName, locn, precursor, dmd, conf, db, ctx, LOG);
-    MessageHandler messageHandler = MessageHandlerFactory.handlerFor(dmd.getDumpType());
+        new MessageHandler.Context(dbName, tblName, location, precursor, dmd, conf, db, ctx, LOG);
+    MessageHandler messageHandler = dmd.getDumpType().handler();
     List<Task<? extends Serializable>> tasks = messageHandler.handle(context);
 
     if (precursor != null) {

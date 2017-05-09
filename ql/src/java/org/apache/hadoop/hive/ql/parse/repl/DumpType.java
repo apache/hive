@@ -17,22 +17,110 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DefaultHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DropPartitionHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DropTableHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.InsertHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.RenamePartitionHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.RenameTableHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.TableHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncatePartitionHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncateTableHandler;
+
 public enum DumpType {
-  BOOTSTRAP("BOOTSTRAP"),
-  INCREMENTAL("INCREMENTAL"),
-  EVENT_CREATE_TABLE("EVENT_CREATE_TABLE"),
-  EVENT_ADD_PARTITION("EVENT_ADD_PARTITION"),
-  EVENT_DROP_TABLE("EVENT_DROP_TABLE"),
-  EVENT_DROP_PARTITION("EVENT_DROP_PARTITION"),
-  EVENT_ALTER_TABLE("EVENT_ALTER_TABLE"),
-  EVENT_RENAME_TABLE("EVENT_RENAME_TABLE"),
-  EVENT_TRUNCATE_TABLE("EVENT_TRUNCATE_TABLE"),
-  EVENT_ALTER_PARTITION("EVENT_ALTER_PARTITION"),
-  EVENT_RENAME_PARTITION("EVENT_RENAME_PARTITION"),
-  EVENT_TRUNCATE_PARTITION("EVENT_TRUNCATE_PARTITION"),
-  EVENT_INSERT("EVENT_INSERT"),
-  EVENT_CREATE_FUNCTION("EVENT_CREATE_FUNCTION"),
-  EVENT_UNKNOWN("EVENT_UNKNOWN");
+
+  EVENT_CREATE_TABLE("EVENT_CREATE_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new TableHandler();
+    }
+  },
+  EVENT_ADD_PARTITION("EVENT_ADD_PARTITION") {
+    @Override
+    public MessageHandler handler() {
+      return new TableHandler();
+    }
+  },
+  EVENT_DROP_TABLE("EVENT_DROP_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new DropTableHandler();
+    }
+  },
+  EVENT_DROP_PARTITION("EVENT_DROP_PARTITION") {
+    @Override
+    public MessageHandler handler() {
+      return new DropPartitionHandler();
+    }
+  },
+  EVENT_ALTER_TABLE("EVENT_ALTER_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new TableHandler();
+    }
+  },
+  EVENT_RENAME_TABLE("EVENT_RENAME_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new RenameTableHandler();
+    }
+  },
+  EVENT_TRUNCATE_TABLE("EVENT_TRUNCATE_TABLE") {
+    @Override
+    public MessageHandler handler() {
+      return new TruncateTableHandler();
+    }
+  },
+  EVENT_ALTER_PARTITION("EVENT_ALTER_PARTITION") {
+    @Override
+    public MessageHandler handler() {
+      return new TableHandler();
+    }
+  },
+  EVENT_RENAME_PARTITION("EVENT_RENAME_PARTITION") {
+    @Override
+    public MessageHandler handler() {
+      return new RenamePartitionHandler();
+    }
+  },
+  EVENT_TRUNCATE_PARTITION("EVENT_TRUNCATE_PARTITION") {
+    @Override
+    public MessageHandler handler() {
+      return new TruncatePartitionHandler();
+    }
+  },
+  EVENT_INSERT("EVENT_INSERT") {
+    @Override
+    public MessageHandler handler() {
+      return new InsertHandler();
+    }
+  },
+  EVENT_CREATE_FUNCTION("EVENT_CREATE_FUNCTION") {
+    @Override
+    public MessageHandler handler() {
+      return new CreateFunctionHandler();
+    }
+  },
+  EVENT_UNKNOWN("EVENT_UNKNOWN") {
+    @Override
+    public MessageHandler handler() {
+      return new DefaultHandler();
+    }
+  },
+  BOOTSTRAP("BOOTSTRAP") {
+    @Override
+    public MessageHandler handler() {
+      return new DefaultHandler();
+    }
+  },
+  INCREMENTAL("INCREMENTAL") {
+    @Override
+    public MessageHandler handler() {
+      return new DefaultHandler();
+    }
+  };
 
   String type = null;
   DumpType(String type) {
@@ -43,4 +131,6 @@ public enum DumpType {
   public String toString(){
     return type;
   }
+
+  public abstract MessageHandler handler();
 }
