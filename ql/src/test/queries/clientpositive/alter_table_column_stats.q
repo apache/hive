@@ -76,14 +76,26 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
 
+-- rename a partition should not change its table, partition, and column stats
+alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11');
+describe formatted statsdb1.testpart1;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part2');
+describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
+
 -- when cascade replacing columns in a partitioned table, the table and partition stats should not change,
 -- but the stats of the changed columns are removed
 alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade;
 describe formatted statsdb1.testpart1;
-describe formatted statsdb1.testpart1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col4;
 describe formatted statsdb1.testpart1 partition (part = 'part2');
 describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
@@ -93,10 +105,10 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col4;
 -- but the stats of the type-changed columns are removed
 alter table statsdb1.testpart1 change column col1 col1 string cascade;
 describe formatted statsdb1.testpart1;
-describe formatted statsdb1.testpart1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col4;
 describe formatted statsdb1.testpart1 partition (part = 'part2');
 describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
@@ -105,9 +117,9 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col4;
 -- change database of a partition should not change table, partition and columns stats
 alter table statsdb1.testpart1 rename to statsdb2.testpart2;
 describe formatted statsdb2.testpart2;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col1;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col2;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col4;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col1;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col2;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col4;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col1;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col2;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col4;
@@ -196,14 +208,26 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
 
+-- rename a partition should not change its table, partition, and column stats
+alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11');
+describe formatted statsdb1.testpart1;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col3;
+describe formatted statsdb1.testpart1 partition (part = 'part2');
+describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part2') col3;
+
 -- when cascade replacing columns in a partitioned table, the table and partition stats should not change,
 -- but the stats of the changed columns are removed
 alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade;
 describe formatted statsdb1.testpart1;
-describe formatted statsdb1.testpart1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col4;
 describe formatted statsdb1.testpart1 partition (part = 'part2');
 describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
@@ -213,10 +237,10 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col4;
 -- but the stats of the type-changed columns are removed
 alter table statsdb1.testpart1 change column col1 col1 string cascade;
 describe formatted statsdb1.testpart1;
-describe formatted statsdb1.testpart1 partition (part = 'part1');
-describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col2;
-describe formatted statsdb1.testpart1 partition (part = 'part1') col4;
+describe formatted statsdb1.testpart1 partition (part = 'part11');
+describe formatted statsdb1.testpart1 partition (part = 'part11') col1;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col2;
+describe formatted statsdb1.testpart1 partition (part = 'part11') col4;
 describe formatted statsdb1.testpart1 partition (part = 'part2');
 describe formatted statsdb1.testpart1 partition (part = 'part2') col1;
 describe formatted statsdb1.testpart1 partition (part = 'part2') col2;
@@ -225,9 +249,9 @@ describe formatted statsdb1.testpart1 partition (part = 'part2') col4;
 -- change database of a partition should not change table, partition and columns stats
 alter table statsdb1.testpart1 rename to statsdb2.testpart2;
 describe formatted statsdb2.testpart2;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col1;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col2;
-describe formatted statsdb2.testpart2 partition (part = 'part1') col4;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col1;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col2;
+describe formatted statsdb2.testpart2 partition (part = 'part11') col4;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col1;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col2;
 describe formatted statsdb2.testpart2 partition (part = 'part2') col4;
