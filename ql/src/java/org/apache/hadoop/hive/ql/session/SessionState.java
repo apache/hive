@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -214,7 +215,7 @@ public class SessionState {
   /**
    * Gets information about HDFS encryption
    */
-  private HadoopShims.HdfsEncryptionShim hdfsEncryptionShim;
+  private Map<URI, HadoopShims.HdfsEncryptionShim> hdfsEncryptionShims = Maps.newHashMap();
 
   /**
    * Lineage state.
@@ -440,11 +441,22 @@ public class SessionState {
   }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
-    if (hdfsEncryptionShim == null) {
+    try {
+      return getHdfsEncryptionShim(FileSystem.get(conf));
+    }
+    catch(HiveException hiveException) {
+      throw hiveException;
+    }
+    catch(Exception exception) {
+      throw new HiveException(exception);
+    }
+  }
+
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
+    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
       try {
-        FileSystem fs = FileSystem.get(conf);
         if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShim = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf));
         } else {
           LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
         }
@@ -453,10 +465,10 @@ public class SessionState {
       }
     }
 
-    return hdfsEncryptionShim;
+    return hdfsEncryptionShims.get(fs.getUri());
   }
 
-  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call 
+  // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
   private static class SessionStates {
     private SessionState state;
     private HiveConf conf;
@@ -472,7 +484,7 @@ public class SessionState {
       }
     }
   }
-  
+
   /**
    * Singleton Session object per thread.
    *
