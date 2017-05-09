@@ -178,8 +178,7 @@ public class ParquetRecordReaderBase {
     } else {
       // TABLE_PARQUET_INT96_TIMEZONE is a table property used to detect what timezone conversion
       // to use when reading Parquet timestamps.
-      timeZoneID = configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
-          TimeZone.getDefault().getID());
+      timeZoneID = configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
       NanoTimeUtils.validateTimeZone(timeZoneID);
     }
 

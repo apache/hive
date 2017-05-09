@@ -1,0 +1,13 @@
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: alter table timestamps set tblproperties ('parquet.mr.int96.write.zone'='Invalid')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unexpected timezone id found for parquet int96 conversion: Invalid

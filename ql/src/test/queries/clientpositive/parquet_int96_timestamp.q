@@ -37,9 +37,30 @@ drop table timestamps;
 -- read/write timestamps with timezone specified in table properties
 create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST');
 insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1;
+insert into table timestamps values('2017-01-01 01:01:01');
+-- parquet timezone flag set in the fetch operator
 select * from timestamps;
+-- parquet timezone flag set in MapredParquetInputFormat
+select * from timestamps order by ts;
+select * from timestamps where ts = cast('2016-01-01 01:01:01' as timestamp);
+-- using udfs
+select year(ts), day(ts), hour(ts), ts from timestamps;
 describe formatted timestamps;
 drop table timestamps;
+
+-- read timestamps with different timezones specified in two table properties
+create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST');
+insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1;
+insert into table timestamps values('2017-01-01 01:01:01');
+create table timestamps2 (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+2');
+insert into table timestamps2 select cast('2016-01-01 01:01:01' as timestamp) limit 1;
+insert into table timestamps2 values('2017-01-01 01:01:01');
+-- parquet timezone flag set in the MapredLocalTask
+select * from timestamps a inner join timestamps2 b on a.ts = b.ts;
+describe formatted timestamps;
+drop table timestamps;
+describe formatted timestamps2;
+drop table timestamps2;
 
 -- read timestamps written by Impala
 create table timestamps (ts timestamp) stored as parquet;

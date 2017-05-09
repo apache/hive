@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -257,6 +259,9 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
                 numFiles += 1;
                 statsAvailable = true;
               } else {
+                if (ParquetHiveSerDe.isParquetTable(table)) {
+                  ParquetTableUtils.setParquetTimeZoneIfAbsent(jc, table.getParameters());
+                }
                 org.apache.hadoop.mapred.RecordReader<?, ?> recordReader =
                     inputFormat.getRecordReader(dummySplit, jc, Reporter.NULL);
                 StatsProvidingRecordReader statsRR;
