@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -42,6 +44,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import com.google.common.collect.Lists;
 
 public class ExprNodeDescUtils {
 
@@ -89,6 +93,55 @@ public class ExprNodeDescUtils {
     }
     // constant or null, just return it
     return origin;
+  }
+
+  private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
+    if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
+        ((ExprNodeConstantDesc)origin).getValue().equals(defaultPartitionName)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static void replaceEqualDefaultPartition(ExprNodeDesc origin,
+      String defaultPartitionName) throws SemanticException {
+    ExprNodeColumnDesc column = null;
+    ExprNodeConstantDesc defaultPartition = null;
+    if (origin instanceof ExprNodeGenericFuncDesc
+        && (((ExprNodeGenericFuncDesc) origin)
+            .getGenericUDF() instanceof GenericUDFOPEqual
+            || ((ExprNodeGenericFuncDesc) origin)
+                .getGenericUDF() instanceof GenericUDFOPNotEqual)) {
+      if (isDefaultPartition(origin.getChildren().get(0),
+          defaultPartitionName)) {
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(0);
+        column = (ExprNodeColumnDesc) origin.getChildren().get(1);
+      } else if (isDefaultPartition(origin.getChildren().get(1),
+          defaultPartitionName)) {
+        column = (ExprNodeColumnDesc) origin.getChildren().get(0);
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(1);
+      }
+    }
+    // Found
+    if (column != null) {
+      origin.getChildren().remove(defaultPartition);
+      String fnName;
+      if (((ExprNodeGenericFuncDesc) origin)
+          .getGenericUDF() instanceof GenericUDFOPEqual) {
+        fnName = "isnull";
+      } else {
+        fnName = "isnotnull";
+      }
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+          FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
   }
 
   /**

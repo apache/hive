@@ -89,6 +89,26 @@ Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__' or lower(p1)='a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_partition_change_col1
+PREHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__' or lower(p1)='a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_partition_change_col1
+POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0.0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
 PREHOOK: query: alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
