@@ -56,6 +56,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 /**
@@ -99,11 +100,12 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                     final int fieldCount = builder.peek().getRowType().getFieldCount();
 
                     assert(filter instanceof HiveFilter);
-                    Set<RelNode> corrScalarQueries = filter.getCluster().getPlanner().getContext().unwrap(Set.class);
-                    boolean isCorrScalarQuery = corrScalarQueries.contains(e.rel);
+                    SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+                    boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+                    boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
                     final RexNode target = apply(e, HiveFilter.getVariablesSet(e), logic,
-                        builder, 1, fieldCount, isCorrScalarQuery);
+                        builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
                     final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
                     builder.filter(shuttle.apply(filter.getCondition()));
                     builder.project(fields(builder, filter.getRowType().getFieldCount()));
@@ -122,11 +124,12 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                     builder.push(project.getInput());
                     final int fieldCount = builder.peek().getRowType().getFieldCount();
 
-                    Set<RelNode> corrScalarQueries = project.getCluster().getPlanner().getContext().unwrap(Set.class);
-                    boolean isCorrScalarQuery = corrScalarQueries.contains(e.rel);
+                    SubqueryConf subqueryConfig = project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+                    boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+                    boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
                     final RexNode target = apply(e, HiveFilter.getVariablesSet(e),
-                        logic, builder, 1, fieldCount, isCorrScalarQuery);
+                        logic, builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
                     final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
                     builder.project(shuttle.apply(project.getProjects()),
                         project.getRowType().getFieldNames());
@@ -165,28 +168,32 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
     protected RexNode apply(RexSubQuery e, Set<CorrelationId> variablesSet,
                             RelOptUtil.Logic logic,
                             HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
-                            boolean isCorrScalarAgg) {
+                            boolean isCorrScalarAgg,
+                            boolean hasNoWindowingAndNoGby ) {
         switch (e.getKind()) {
             case SCALAR_QUERY:
-                builder.push(e.rel);
-                // returns single row/column
-                builder.aggregate(builder.groupKey(),
-                        builder.count(false, "cnt"));
+                // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
+                // since it is guaranteed to produce at most one row
+                if(!hasNoWindowingAndNoGby) {
+                    builder.push(e.rel);
+                    // returns single row/column
+                    builder.aggregate(builder.groupKey(), builder.count(false, "cnt"));
 
-                SqlFunction countCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
-                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+                    SqlFunction countCheck =
+                        new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                            InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
 
-                // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
-                //  ends up getting rid of Project since it is not used further up the tree
-                builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-                        builder.call(countCheck, builder.field("cnt")),
-                        builder.literal(1)));
-                if( !variablesSet.isEmpty())
-                {
-                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                    // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
+                    //  ends up getting rid of Project since it is not used further up the tree
+                    builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                        builder.call(countCheck, builder.field("cnt")), builder.literal(1)));
+                    if (!variablesSet.isEmpty()) {
+                        builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                    } else
+                        builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+
+                    offset++;
                 }
-                else
-                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
                 if(isCorrScalarAgg) {
                     // Transformation :
                     // Outer Query Left Join (inner query) on correlated predicate and preserve rows only from left side.
@@ -218,10 +225,8 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
 
                 //Transformation is to left join for correlated predicates and inner join otherwise,
                 // but do a count on inner side before that to make sure it generates atmost 1 row.
-
                 builder.push(e.rel);
                 builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                offset++;
                 return field(builder, inputCount, offset);
 
             case IN:
