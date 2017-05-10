@@ -194,10 +194,6 @@ public final class Op {
     else {
       Map<String, String> posToOpId = new LinkedHashMap<>();
       if (vertex.mergeJoinDummyVertexs.size() == 0) {
-        if (vertex.tagToInput.size() != vertex.parentConnections.size()) {
-          throw new Exception("tagToInput size " + vertex.tagToInput.size()
-              + " is different from parentConnections size " + vertex.parentConnections.size());
-        }
         for (Entry<String, String> entry : vertex.tagToInput.entrySet()) {
           Connection c = null;
           for (Connection connection : vertex.parentConnections) {
