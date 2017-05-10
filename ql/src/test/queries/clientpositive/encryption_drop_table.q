@@ -4,7 +4,8 @@
 
 set hive.cli.errors.ignore=true;
 
-DROP TABLE IF EXISTS encrypted_table PURGE;
+DROP TABLE IF EXISTS encrypted_table;
+
 CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
 CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table;
@@ -20,6 +21,4 @@ SHOW TABLES;
 DROP TABLE default.encrypted_table;
 SHOW TABLES;
 
-DROP TABLE default.encrypted_table PURGE;
-SHOW TABLES;
 CRYPTO DELETE_KEY --keyName key_128;
