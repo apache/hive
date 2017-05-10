@@ -44,6 +44,7 @@ public final class SparkClientFactory {
   static final String CONF_KEY_SECRET = "spark.client.authentication.secret";
 
   private static RpcServer server = null;
+  private static final Object stopLock = new Object();
 
   /**
    * Initializes the SparkClient library. Must be called before creating client instances.
@@ -61,10 +62,14 @@ public final class SparkClientFactory {
   }
 
   /** Stops the SparkClient library. */
-  public static synchronized void stop() {
+  public static void stop() {
     if (server != null) {
-      server.close();
-      server = null;
+      synchronized (stopLock) {
+        if (server != null) {
+          server.close();
+          server = null;
+        }
+      }
     }
   }
 
