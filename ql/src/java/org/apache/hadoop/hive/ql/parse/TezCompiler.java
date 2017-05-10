@@ -671,7 +671,6 @@ public class TezCompiler extends TaskCompiler {
           continue;
         }
 
-        assert parent instanceof SelectOperator;
         while (parent != null) {
           if (parent instanceof TableScanOperator) {
             tsOps.add((TableScanOperator) parent);
@@ -685,10 +684,11 @@ public class TezCompiler extends TaskCompiler {
     // a semijoin filter on any of them, if so, remove it.
 
     ParseContext pctx = procCtx.parseContext;
+    Set<ReduceSinkOperator> rsSet = new HashSet<>(pctx.getRsToSemiJoinBranchInfo().keySet());
     for (TableScanOperator ts : tsOps) {
-      for (ReduceSinkOperator rs : pctx.getRsToSemiJoinBranchInfo().keySet()) {
+      for (ReduceSinkOperator rs : rsSet) {
         SemiJoinBranchInfo sjInfo = pctx.getRsToSemiJoinBranchInfo().get(rs);
-        if (ts == sjInfo.getTsOp()) {
+        if (sjInfo != null && ts == sjInfo.getTsOp()) {
           // match!
           if (LOG.isDebugEnabled()) {
             LOG.debug("Semijoin optimization found going to SMB join. Removing semijoin "

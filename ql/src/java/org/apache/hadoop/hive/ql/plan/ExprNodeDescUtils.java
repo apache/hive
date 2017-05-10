@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -843,7 +844,12 @@ public class ExprNodeDescUtils {
       ExprNodeColumnDesc parentCol = ExprNodeDescUtils.getColumnExpr(parentExpr);
       if (parentCol != null) {
         for (Operator<?> currParent : op.getParentOperators()) {
-          if (currParent.getSchema().getTableNames().contains(parentCol.getTabAlias())) {
+          RowSchema schema = currParent.getSchema();
+          if (schema == null) {
+            // Happens in case of TezDummyStoreOperator
+            return null;
+          }
+          if (schema.getTableNames().contains(parentCol.getTabAlias())) {
             parentOp = currParent;
             break;
           }
