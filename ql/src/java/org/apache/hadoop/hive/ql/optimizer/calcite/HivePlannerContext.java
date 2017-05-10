@@ -22,6 +22,7 @@ import org.apache.calcite.plan.Context;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
+
 import java.util.Set;
 
 
@@ -29,17 +30,18 @@ public class HivePlannerContext implements Context {
   private HiveAlgorithmsConf algoConfig;
   private HiveRulesRegistry registry;
   private CalciteConnectionConfig calciteConfig;
-  private Set<RelNode> corrScalarRexSQWithAgg;
+  private SubqueryConf subqueryConfig;
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
-      CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg) {
+      CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
+      Set<RelNode> scalarAggNoGbyWindowing) {
     this.algoConfig = algoConfig;
     this.registry = registry;
     this.calciteConfig = calciteConfig;
     // this is to keep track if a subquery is correlated and contains aggregate
     // this is computed in CalcitePlanner while planning and is later required by subuery remove rule
     // hence this is passed using HivePlannerContext
-    this.corrScalarRexSQWithAgg = corrScalarRexSQWithAgg;
+    this.subqueryConfig = new SubqueryConf(corrScalarRexSQWithAgg, scalarAggNoGbyWindowing);
   }
 
   public <T> T unwrap(Class<T> clazz) {
@@ -52,8 +54,8 @@ public class HivePlannerContext implements Context {
     if (clazz.isInstance(calciteConfig)) {
       return clazz.cast(calciteConfig);
     }
-    if(clazz.isInstance(corrScalarRexSQWithAgg)) {
-      return clazz.cast(corrScalarRexSQWithAgg);
+    if(clazz.isInstance(subqueryConfig)) {
+      return clazz.cast(subqueryConfig);
     }
     return null;
   }
