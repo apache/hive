@@ -47,21 +47,20 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandler;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandlerFactory;
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
-import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
-import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +76,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FROM;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
@@ -377,11 +377,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        Path functionMetadataRoot =
-            new Path(new Path(functionsRoot, functionName), FUNCTION_METADATA_DIR_NAME);
+        Path functionRoot = new Path(functionsRoot, functionName);
+        Path functionMetadataRoot = new Path(functionRoot, FUNCTION_METADATA_DIR_NAME);
         try (JsonWriter jsonWriter = new JsonWriter(functionMetadataRoot.getFileSystem(conf),
             functionMetadataRoot)) {
-          new FunctionSerializer(tuple.object).writeTo(jsonWriter, tuple.replicationSpec);
+          FunctionSerializer serializer =
+              new FunctionSerializer(tuple.object, conf);
+          serializer.writeTo(jsonWriter, tuple.replicationSpec);
         }
         REPL_STATE_LOG.info("Repl Dump: Dumped metadata for function: {}", functionName);
       }
@@ -839,31 +841,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         .getValidatedURI(conf, stripQuotes(functionDir.getPath().toUri().toString()));
     Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
 
-    FileSystem fs = FileSystem.get(fromURI, conf);
-    inputs.add(toReadEntity(fromPath, conf));
-
     try {
-      MetaData metaData = EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
-      ReplicationSpec replicationSpec = metaData.getReplicationSpec();
-      if (replicationSpec.isNoop()) {
-        // nothing to do here, silently return.
-        return;
-      }
-      CreateFunctionDesc desc = new CreateFunctionDesc(
-          dbName + "." + metaData.function.getFunctionName(),
-          false,
-          metaData.function.getClassName(),
-          metaData.function.getResourceUris()
+      CreateFunctionHandler handler = new CreateFunctionHandler();
+      List<Task<? extends Serializable>> tasksList = handler.handle(
+          new MessageHandler.Context(
+              dbName, null, fromPath.toString(), createDbTask, null, conf, db,
+              null, LOG)
       );
 
-      Task<FunctionWork> currentTask = TaskFactory.get(new FunctionWork(desc), conf);
-      if (createDbTask != null) {
-        createDbTask.addDependentTask(currentTask);
+      tasksList.forEach(task -> {
+        createDbTask.addDependentTask(task);
         LOG.debug("Added {}:{} as a precursor of {}:{}",
-            createDbTask.getClass(), createDbTask.getId(), currentTask.getClass(),
-            currentTask.getId());
-      }
-    } catch (IOException e) {
+            createDbTask.getClass(), createDbTask.getId(), task.getClass(),
+            task.getId());
+
+      });
+      inputs.addAll(handler.readEntities());
+    } catch (Exception e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }

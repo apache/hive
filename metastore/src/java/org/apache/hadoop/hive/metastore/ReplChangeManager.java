@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -100,6 +101,34 @@ public class ReplChangeManager {
     }
   };
 
+  void addFile(Path path) throws MetaException {
+    if (!enabled) {
+      return;
+    }
+    try {
+      if (fs.isDirectory(path)) {
+        throw new IllegalArgumentException(path + " cannot be a directory");
+      }
+      Path cmPath = getCMPath(hiveConf, getChksumString(path, fs));
+      boolean copySuccessful = FileUtils
+          .copy(path.getFileSystem(hiveConf), path, cmPath.getFileSystem(hiveConf), cmPath, false,
+              false, hiveConf);
+      if (!copySuccessful) {
+        LOG.debug("A file with the same content of " + path.toString() + " already exists, ignore");
+      } else {
+        fs.setOwner(cmPath, msUser, msGroup);
+        try {
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+        } catch (UnsupportedOperationException e) {
+          LOG.warn("Error setting xattr for " + path.toString());
+        }
+      }
+    } catch (Exception exception) {
+      throw new MetaException(StringUtils.stringifyException(exception));
+    }
+  }
+
+
   /***
    * Move a path into cmroot. If the path is a directory (of a partition, or table if nonpartitioned),
    *   recursively move files inside directory to cmroot. Note the table must be managed table
@@ -122,7 +151,7 @@ public class ReplChangeManager {
           count += recycle(file.getPath(), ifPurge);
         }
       } else {
-        Path cmPath = getCMPath(path, hiveConf, getChksumString(path, fs));
+        Path cmPath = getCMPath(hiveConf, getChksumString(path, fs));
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
@@ -198,16 +227,15 @@ public class ReplChangeManager {
    * Convert a path of file inside a partition or table (if non-partitioned)
    *   to a deterministic location of cmroot. So user can retrieve the file back
    *   with the original location plus checksum.
-   * @param path original path inside partition or table
    * @param conf
-   * @param chksum checksum of the file, can be retrieved by {@link getCksumString}
+   * @param checkSum checksum of the file, can be retrieved by {@link getCksumString}
    * @return
    * @throws IOException
    * @throws MetaException
    */
-  static public Path getCMPath(Path path, Configuration conf, String chksum)
+  static Path getCMPath(Configuration conf, String checkSum)
       throws IOException, MetaException {
-    String newFileName = chksum;
+    String newFileName = checkSum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
 
@@ -215,9 +243,7 @@ public class ReplChangeManager {
       newFileName = newFileName.substring(0, maxLength-1);
     }
 
-    Path cmPath = new Path(cmroot, newFileName);
-
-    return cmPath;
+    return new Path(cmroot, newFileName);
   }
 
   /***
@@ -238,14 +264,14 @@ public class ReplChangeManager {
       }
 
       if (!srcFs.exists(src)) {
-        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(conf, chksumString));
       }
 
       String currentChksumString = getChksumString(src, srcFs);
       if (currentChksumString == null || chksumString.equals(currentChksumString)) {
         return srcFs.getFileStatus(src);
       } else {
-        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(conf, chksumString));
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));
@@ -281,6 +307,11 @@ public class ReplChangeManager {
       result[1] = uriAndFragment[1];
     }
     return result;
+  }
+
+  public static boolean isCMFileUri(Path fromPath, FileSystem srcFs) {
+    String[] result = getFileWithChksumFromURI(fromPath.toString());
+    return result[1] != null;
   }
 
   /**
