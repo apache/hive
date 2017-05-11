@@ -123,7 +123,7 @@ public class ParseContext {
   private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =
           new HashMap<>();
 
-  private Map<String, SemiJoinHint> semiJoinHints;
+  private Map<String, List<SemiJoinHint>> semiJoinHints;
   public ParseContext() {
   }
 
@@ -674,11 +674,11 @@ public class ParseContext {
     return colExprToGBMap;
   }
 
-  public void setSemiJoinHints(Map<String, SemiJoinHint> hints) {
+  public void setSemiJoinHints(Map<String, List<SemiJoinHint>> hints) {
     this.semiJoinHints = hints;
   }
 
-  public Map<String, SemiJoinHint> getSemiJoinHints() {
+  public Map<String, List<SemiJoinHint>> getSemiJoinHints() {
     return semiJoinHints;
   }
 }

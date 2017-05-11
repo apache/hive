@@ -42,7 +42,7 @@ set hive.cbo.returnpath.hiveop=true;
 -- disabling this test case for returnpath true as the aliases in case of union are mangled due to which hints are not excercised.
 --explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
 --        union all
---        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+--        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
 
 -- Query which creates semijoin
 explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
@@ -50,21 +50,18 @@ explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.k
 explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
 EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
-EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
+EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
 
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
-set hive.tez.dynamic.semijoin.reduction.hint.only=true;
--- This should NOT create a semijoin as the join is on different column
+-- This should NOT create a semijoin
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1);
-set hive.tez.dynamic.semijoin.reduction.hint.only=false;
-
 
 set hive.cbo.returnpath.hiveop=false;
 
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
 
 -- Query which creates semijoin
 explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
@@ -72,21 +69,20 @@ explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.k
 explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
 EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
-EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
+EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
 
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
-set hive.tez.dynamic.semijoin.reduction.hint.only=true;
--- This should NOT create a semijoin as the join is on different column
+-- This should NOT create a semijoin
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1);
-set hive.tez.dynamic.semijoin.reduction.hint.only=false;
+
 
 
 set hive.cbo.enable=false;
 
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
 
 -- Query which creates semijoin
 explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
@@ -94,11 +90,10 @@ explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.k
 explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
 EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
-EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
+EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
 
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
-set hive.tez.dynamic.semijoin.reduction.hint.only=true;
--- This should NOT create a semijoin as the join is on different column
+-- This should NOT create a semijoin
 explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1);
-set hive.tez.dynamic.semijoin.reduction.hint.only=false;
+

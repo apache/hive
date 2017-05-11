@@ -854,14 +854,13 @@ public class ExprNodeDescUtils {
   }
 
   private static ExprNodeDesc findParentExpr(ExprNodeColumnDesc col, Operator<?> op) {
-    if (op instanceof ReduceSinkOperator) {
-      return col;
-    }
-
     ExprNodeDesc parentExpr = col;
     Map<String, ExprNodeDesc> mapping = op.getColumnExprMap();
     if (mapping != null) {
       parentExpr = mapping.get(col.getColumn());
+      if (parentExpr == null && op instanceof ReduceSinkOperator) {
+        return col;
+      }
     }
     return parentExpr;
   }

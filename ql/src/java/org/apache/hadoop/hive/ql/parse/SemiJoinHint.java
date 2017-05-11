@@ -19,18 +19,12 @@
 package org.apache.hadoop.hive.ql.parse;
 
 public class SemiJoinHint {
-  private String tabAlias;
   private String colName;
   private Integer numEntries;
 
-  public SemiJoinHint(String tabAlias, String colName, Integer numEntries) {
-    this.tabAlias = tabAlias;
+  public SemiJoinHint(String colName, Integer numEntries) {
     this.colName = colName;
     this.numEntries = numEntries;
-  }
-
-  public String getTabAlias() {
-    return tabAlias;
   }
 
   public String getColName() {

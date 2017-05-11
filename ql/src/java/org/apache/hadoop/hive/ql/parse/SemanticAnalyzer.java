@@ -9018,14 +9018,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /** Parses semjoin hints in the query and returns the table names mapped to filter size, or -1 if not specified.
-   *  Hints can be in 3 formats
+   *  Hints can be in 2 formats
    *  1. TableName, ColumnName, bloom filter entries
-   *  2. TableName, bloom filter entries, and
-   *  3. TableName, ColumnName
+   *  2. TableName, ColumnName
    *  */
-  private Map<String, SemiJoinHint> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
+  private Map<String, List<SemiJoinHint>> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
     if (hints == null || hints.size() == 0) return null;
-    Map<String, SemiJoinHint> result = null;
+    Map<String, List<SemiJoinHint>> result = null;
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
@@ -9033,8 +9032,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (result == null) {
           result = new HashMap<>();
         }
-        String alias = null;
-        String colName = null;
         Tree args = hint.getChild(1);
         if (args.getChildCount() == 1) {
           String text = args.getChild(0).getText();
@@ -9043,46 +9040,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             return result;
           }
         }
-        for (int i = 0; i < args.getChildCount(); i++) {
-          // We can have table names, column names or sizes here (or incorrect hint if the user is so inclined).
-          String text = args.getChild(i).getText();
-          Integer number = null;
-          try {
-            number = Integer.parseInt(text);
-          } catch (NumberFormatException ex) { // Ignore.
-          }
-          if (number != null) {
-            if (alias == null) {
-              throw new SemanticException("Invalid semijoin hint - arg " + i + " ("
-                      + text + ") is a number but the previous one is not an alias");
-            }
-            if (result.get(alias) != null) {
-              // A hint with same alias already present, throw
-              throw new SemanticException("A hint with alias " + alias +
-                      " already present. Please use unique aliases");
-            }
-            SemiJoinHint sjHint = new SemiJoinHint(alias, colName, number);
-            result.put(alias, sjHint);
-            alias = null;
-            colName = null;
-          } else {
-            if (alias == null) {
-              alias = text;
-            } else if (colName == null) {
-              colName = text;
-            } else {
-              // No bloom filter entries provided.
-              if (result.get(alias) != null) {
-                // A hint with same alias already present, throw
-                throw new SemanticException("A hint with alias " + alias +
-                        " already present. Please use unique aliases");
-              }
-              SemiJoinHint sjHint = new SemiJoinHint(alias, colName, null);
-              result.put(alias, sjHint);
-              alias = text;
-              colName = null;
-            }
-          }
+        int curIdx = 0;
+        while(curIdx < args.getChildCount()) {
+          curIdx = parseSingleSemiJoinHint(args, curIdx, result);
         }
       }
     }
@@ -9090,6 +9050,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("Semijoin hint parsed: " + result);
     }
     return result;
+  }
+
+  private int parseSingleSemiJoinHint(Tree args, int curIdx, Map<String, List<SemiJoinHint>> result)
+    throws SemanticException {
+    // Check if there are enough entries in the tree to constitute a hint.
+    int numEntriesLeft = args.getChildCount() - curIdx;
+    if (numEntriesLeft < 2) {
+      throw new SemanticException("User provided only 1 entry for the hint with alias "
+              + args.getChild(curIdx).getText());
+    }
+
+    String alias = args.getChild(curIdx++).getText();
+    // validate
+    if (StringUtils.isNumeric(alias)) {
+      throw new SemanticException("User provided bloom filter entries when alias is expected");
+    }
+
+    String colName = args.getChild(curIdx++).getText();
+    // validate
+    if (StringUtils.isNumeric(colName)) {
+      throw new SemanticException("User provided bloom filter entries when column name is expected");
+    }
+
+    Integer number = null;
+    if (numEntriesLeft > 2) {
+      // Check if there exists bloom filter size entry
+      try {
+        number = Integer.parseInt(args.getChild(curIdx).getText());
+        curIdx++;
+      } catch (NumberFormatException e) { // Ignore
+      }
+    }
+    result.computeIfAbsent(alias, value -> new ArrayList<>()).add(new SemiJoinHint(colName, number));
+    return curIdx;
   }
 
   /**
