@@ -44,6 +44,12 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_USERNAME = CONFIG_PREFIX + ".dbcp.username";
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
+        JdbcStorageConfig.JDBC_URL,
+        JdbcStorageConfig.JDBC_DRIVER_CLASS,
+        JdbcStorageConfig.QUERY);
+
+  private static final EnumSet<JdbcStorageConfig> METASTORE_REQUIRED_PROPERTIES =
+    EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
         JdbcStorageConfig.QUERY);
 
   private JdbcStorageConfigManager() {
@@ -85,14 +91,16 @@ public class JdbcStorageConfigManager {
 
 
   private static void checkRequiredPropertiesAreDefined(Properties props) {
-    for (JdbcStorageConfig configKey : DEFAULT_REQUIRED_PROPERTIES) {
+    DatabaseType dbType = DatabaseType.valueOf(props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+
+    for (JdbcStorageConfig configKey : (DatabaseType.METASTORE.equals(dbType)
+            ? METASTORE_REQUIRED_PROPERTIES : DEFAULT_REQUIRED_PROPERTIES)) {
       String propertyKey = configKey.getPropertyName();
       if ((props == null) || (!props.containsKey(propertyKey)) || (isEmptyString(props.getProperty(propertyKey)))) {
         throw new IllegalArgumentException("Property " + propertyKey + " is required.");
       }
     }
 
-    DatabaseType dbType = DatabaseType.valueOf(props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
     CustomConfigManager configManager = CustomConfigManagerFactory.getCustomConfigManagerFor(dbType);
     configManager.checkRequiredProperties(props);
   }
