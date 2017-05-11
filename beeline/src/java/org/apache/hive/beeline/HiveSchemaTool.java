@@ -191,7 +191,7 @@ public class HiveSchemaTool {
     try(Statement stmt = metastoreConn.createStatement();
         ResultSet res = stmt.executeQuery(versionQuery)) {
       if (!res.next()) {
-        throw new HiveMetaException("Could not find version info in metastore VERSION table");
+        throw new HiveMetaException("Could not find version info in metastore VERSION table.");
       }
       String currentSchemaVersion = res.getString(1);
       if (checkDuplicatedVersion && res.next()) {
@@ -244,7 +244,6 @@ public class HiveSchemaTool {
     }
     if (numOfInvalid > 0) {
       isValid = false;
-      System.err.println("Total number of invalid DB locations is: "+ numOfInvalid);
     }
     return isValid;
   }
@@ -305,7 +304,6 @@ public class HiveSchemaTool {
     }
     if (numOfInvalid > 0) {
       isValid = false;
-      System.err.println("Total number of invalid TABLE locations is: "+ numOfInvalid);
     }
     return isValid;
   }
@@ -367,7 +365,6 @@ public class HiveSchemaTool {
     }
     if (numOfInvalid > 0) {
       isValid = false;
-      System.err.println("Total number of invalid PARTITION locations is: "+ numOfInvalid);
     }
     return isValid;
   }
@@ -384,11 +381,11 @@ public class HiveSchemaTool {
     }
 
     if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
-      skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\" from \"TBLS\" t, \"SDS\" s, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
-           + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? ";
+      skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\", db.\"NAME\", db.\"DB_ID\" from \"TBLS\" t, \"SDS\" s, \"DBS\" db, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
+           + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and t.\"DB_ID\" = db.\"DB_ID\" and sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? ";
     } else {
-      skewedColLoc = "select t.TBL_NAME, t.TBL_ID, sk.STRING_LIST_ID_KID, sk.LOCATION from TBLS t, SDS s, SKEWED_COL_VALUE_LOC_MAP sk "
-           + "where sk.SD_ID = s.SD_ID and s.SD_ID = t.SD_ID and sk.STRING_LIST_ID_KID >= ? and sk.STRING_LIST_ID_KID <= ? ";
+      skewedColLoc = "select t.TBL_NAME, t.TBL_ID, sk.STRING_LIST_ID_KID, sk.LOCATION, db.NAME, db.DB_ID from TBLS t, SDS s, DBS db, SKEWED_COL_VALUE_LOC_MAP sk "
+           + "where sk.SD_ID = s.SD_ID and s.SD_ID = t.SD_ID and t.DB_ID = db.DB_ID and sk.STRING_LIST_ID_KID >= ? and sk.STRING_LIST_ID_KID <= ? ";
     }
 
     long maxID = 0, minID = 0;
@@ -410,7 +407,8 @@ public class HiveSchemaTool {
         res = pStmt.executeQuery();
         while (res.next()) {
           String locValue = res.getString(4);
-          String entity = "Table "  + getNameOrID(res,1,2) +
+          String entity = "Database " + getNameOrID(res,5,6) +
+              ", Table " + getNameOrID(res,1,2) +
               ", String list " + res.getString(3);
           if (!checkLocation(entity, locValue, defaultServers)) {
             numOfInvalid++;
@@ -425,7 +423,6 @@ public class HiveSchemaTool {
     }
     if (numOfInvalid > 0) {
       isValid = false;
-      System.err.println("Total number of invalid SKEWED_COL_VALUE_LOC_MAP locations is: "+ numOfInvalid);
     }
     return isValid;
   }
@@ -445,14 +442,14 @@ public class HiveSchemaTool {
       URI[] defaultServers) {
     boolean isValid = true;
     if (entityLocation == null) {
-      System.err.println(entity + ", error: empty location");
+      System.err.println(entity + ", Error: empty location");
       isValid = false;
     } else {
       try {
         URI currentUri = new Path(entityLocation).toUri();
         String scheme = currentUri.getScheme();
         if (StringUtils.isEmpty(scheme)) {
-          System.err.println(entity + ", location: "+ entityLocation + ", error: missing location scheme");
+          System.err.println(entity + ", Location: "+ entityLocation + ", Error: missing location scheme");
           isValid = false;
         } else if (ArrayUtils.isNotEmpty(defaultServers) && currentUri.getAuthority() != null) {
           String authority = currentUri.getAuthority();
@@ -465,12 +462,12 @@ public class HiveSchemaTool {
             }
           }
           if (!matchServer) {
-            System.err.println(entity + ", location: " + entityLocation + ", error: mismatched server");
+            System.err.println(entity + ", Location: " + entityLocation + ", Error: mismatched server");
             isValid = false;
           }
         }
       } catch (Exception pe) {
-        System.err.println(entity + ", error: invalid location " + pe.getMessage());
+        System.err.println(entity + ", Error: invalid location - " + pe.getMessage());
         isValid =false;
       }
     }
@@ -722,11 +719,12 @@ public class HiveSchemaTool {
       if (hme.getMessage().contains("Metastore schema version is not compatible")
         || hme.getMessage().contains("Multiple versions were found in metastore")
         || hme.getMessage().contains("Could not find version info in metastore VERSION table")) {
-        System.out.println("Failed in schema version validation: " + hme.getMessage());
-          return false;
-        } else {
-          throw hme;
-        }
+        System.err.println(hme.getMessage());
+        System.out.println("Failed in schema version validation.");
+        return false;
+      } else {
+        throw hme;
+      }
     }
     System.out.println("Succeeded in schema version validation.");
     return true;
@@ -745,7 +743,8 @@ public class HiveSchemaTool {
     try {
       version = getMetaStoreSchemaVersion(hmsConn);
     } catch (HiveMetaException he) {
-      System.err.println("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
+      System.err.println("Failed to determine schema version from Hive Metastore DB. " + he.getMessage());
+      System.out.println("Failed in schema version validation.");
       LOG.debug("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
       return false;
     }
@@ -792,17 +791,16 @@ public class HiveSchemaTool {
       }
     } catch (Exception e) {
       System.err.println("Exception in parsing schema file. Cause:" + e.getMessage());
-      System.out.println("Schema table validation failed!!!");
+      System.out.println("Failed in schema table validation.");
       return false;
     }
 
     LOG.debug("Schema tables:[ " + Arrays.toString(schemaTables.toArray()) + " ]");
     LOG.debug("DB tables:[ " + Arrays.toString(dbTables.toArray()) + " ]");
     // now diff the lists
-    int schemaSize = schemaTables.size();
     schemaTables.removeAll(dbTables);
     if (schemaTables.size() > 0) {
-      System.out.println("Table(s) [ " + Arrays.toString(schemaTables.toArray())
+      System.err.println("Table(s) [ " + Arrays.toString(schemaTables.toArray())
           + " ] are missing from the metastore database schema.");
       System.out.println("Schema table validation failed!!!");
       return false;
@@ -1096,7 +1094,7 @@ public class HiveSchemaTool {
     Option dryRunOpt = new Option("dryRun", "list SQL scripts (no execute)");
     Option verboseOpt = new Option("verbose", "only print SQL statements");
     Option serversOpt = OptionBuilder.withArgName("serverList")
-        .hasArgs().withDescription("a comma-separated list of servers used in location validation")
+        .hasArgs().withDescription("a comma-separated list of servers used in location validation in the format of scheme://authority (e.g. hdfs://localhost:8000)")
         .create("servers");
     cmdLineOptions.addOption(help);
     cmdLineOptions.addOption(dryRunOpt);
