@@ -86,7 +86,10 @@ public class LogDivertAppenderForTest extends WriterAppender {
     public int decide(LoggingEvent event) {
       if (event.getLevel().equals(Level.INFO) && "SessionState".equals(event.getLoggerName())) {
         if (event.getRenderedMessage().startsWith("PREHOOK:")
-            || event.getRenderedMessage().startsWith("POSTHOOK:")) {
+            || event.getRenderedMessage().startsWith("POSTHOOK:")
+       	    || event.getRenderedMessage().startsWith("unix_timestamp(void)")
+          	|| event.getRenderedMessage().startsWith("Warning: ")
+            ) {
           return Filter.ACCEPT;
         }
       }
