@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiv
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampTZObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyVoidObjectInspector;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioBinary;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioBoolean;
@@ -128,6 +129,8 @@ public final class LazyFactory {
       return new LazyDate((LazyDateObjectInspector) oi);
     case TIMESTAMP:
       return new LazyTimestamp((LazyTimestampObjectInspector) oi);
+    case TIMESTAMPTZ:
+      return new LazyTimestampTZ((LazyTimestampTZObjectInspector) oi);
     case INTERVAL_YEAR_MONTH:
       return new LazyHiveIntervalYearMonth((LazyHiveIntervalYearMonthObjectInspector) oi);
     case INTERVAL_DAY_TIME:

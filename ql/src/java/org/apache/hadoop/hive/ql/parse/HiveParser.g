@@ -123,6 +123,7 @@ TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_TIMESTAMPLITERAL;
+TOK_TIMESTAMPTZ;
 TOK_INTERVAL_YEAR_MONTH;
 TOK_INTERVAL_YEAR_MONTH_LITERAL;
 TOK_INTERVAL_DAY_TIME;
@@ -490,6 +491,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DATE", "DATE");
     xlateMap.put("KW_DATETIME", "DATETIME");
     xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
+    xlateMap.put("KW_TIMESTAMPTZ", "TIMESTAMPTZ");
+    xlateMap.put("KW_TIME", "TIME");
+    xlateMap.put("KW_ZONE", "ZONE");
     xlateMap.put("KW_STRING", "STRING");
     xlateMap.put("KW_BINARY", "BINARY");
     xlateMap.put("KW_ARRAY", "ARRAY");
@@ -2356,6 +2360,8 @@ primitiveType
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
+    | KW_TIMESTAMPTZ   ->    TOK_TIMESTAMPTZ
+    | KW_TIMESTAMP KW_WITH KW_TIME KW_ZONE -> TOK_TIMESTAMPTZ
     // Uncomment to allow intervals as table column types
     //| KW_INTERVAL KW_YEAR KW_TO KW_MONTH -> TOK_INTERVAL_YEAR_MONTH
     //| KW_INTERVAL KW_DAY KW_TO KW_SECOND -> TOK_INTERVAL_DAY_TIME

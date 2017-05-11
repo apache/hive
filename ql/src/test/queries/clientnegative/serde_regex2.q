@@ -5,7 +5,7 @@ USE default;
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -21,4 +21,4 @@ LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_reg
 LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex;
 
 -- raise an exception 
-SELECT * FROM serde_regex ORDER BY time;
+SELECT * FROM serde_regex ORDER BY `time`;

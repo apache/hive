@@ -38,6 +38,7 @@ import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
@@ -223,6 +224,7 @@ public class SerializationUtilities {
       KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(TimestampTZ.class, new TimestampTZSerializer());
       kryo.register(Path.class, new PathSerializer());
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
@@ -304,6 +306,22 @@ public class SerializationUtilities {
     public void write(Kryo kryo, Output output, Timestamp ts) {
       output.writeLong(ts.getTime());
       output.writeInt(ts.getNanos());
+    }
+  }
+
+  private static class TimestampTZSerializer extends com.esotericsoftware.kryo.Serializer<TimestampTZ> {
+
+    @Override
+    public void write(Kryo kryo, Output output, TimestampTZ object) {
+      output.writeLong(object.getEpochSecond());
+      output.writeInt(object.getNanos());
+    }
+
+    @Override
+    public TimestampTZ read(Kryo kryo, Input input, Class<TimestampTZ> type) {
+      long seconds = input.readLong();
+      int nanos = input.readInt();
+      return new TimestampTZ(seconds, nanos);
     }
   }
 

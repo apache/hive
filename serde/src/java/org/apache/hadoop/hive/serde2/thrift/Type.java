@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.serde2.thrift;
 
 import java.sql.DatabaseMetaData;
+import java.sql.Types;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.service.rpc.thrift.TTypeId;
@@ -70,6 +72,9 @@ public enum Type {
   TIMESTAMP_TYPE("TIMESTAMP",
       java.sql.Types.TIMESTAMP,
       TTypeId.TIMESTAMP_TYPE),
+  TIMESTAMPTZ_TYPE(serdeConstants.TIMESTAMPTZ_TYPE_NAME.toUpperCase(),
+      Types.TIMESTAMP_WITH_TIMEZONE,
+      TTypeId.TIMESTAMPTZ_TYPE),
   INTERVAL_YEAR_MONTH_TYPE("INTERVAL_YEAR_MONTH",
       java.sql.Types.OTHER,
       TTypeId.INTERVAL_YEAR_MONTH_TYPE),
@@ -224,6 +229,9 @@ public enum Type {
       }
       case TIMESTAMP: {
         return Type.TIMESTAMP_TYPE;
+      }
+      case TIMESTAMPTZ: {
+        return Type.TIMESTAMPTZ_TYPE;
       }
       case INTERVAL_YEAR_MONTH: {
         return Type.INTERVAL_YEAR_MONTH_TYPE;

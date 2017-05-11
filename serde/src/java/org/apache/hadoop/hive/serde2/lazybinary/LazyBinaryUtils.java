@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
+import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -203,6 +204,10 @@ public final class LazyBinaryUtils {
       case TIMESTAMP:
         recordInfo.elementOffset = 0;
         recordInfo.elementSize = TimestampWritable.getTotalLength(bytes, offset);
+        break;
+      case TIMESTAMPTZ:
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = TimestampTZWritable.getTotalLength(bytes, offset);
         break;
       case INTERVAL_YEAR_MONTH:
         recordInfo.elementOffset = 0;

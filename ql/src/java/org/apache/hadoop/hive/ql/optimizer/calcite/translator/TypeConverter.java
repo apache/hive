@@ -200,6 +200,9 @@ public class TypeConverter {
     case TIMESTAMP:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
+    case TIMESTAMPTZ:
+      convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
+      break;
     case INTERVAL_YEAR_MONTH:
       convertedType = dtFactory.createSqlIntervalType(
           new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));

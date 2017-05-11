@@ -747,6 +747,8 @@ public class TypeCheckProcFactory {
           serdeConstants.DATE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
           serdeConstants.TIMESTAMP_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMPTZ,
+          serdeConstants.TIMESTAMPTZ_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INTERVAL_YEAR_MONTH,
           serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_INTERVAL_DAY_TIME,

@@ -28,6 +28,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   PRIMITIVE_TYPES.insert((TTypeId::type)19);
   PRIMITIVE_TYPES.insert((TTypeId::type)20);
   PRIMITIVE_TYPES.insert((TTypeId::type)21);
+  PRIMITIVE_TYPES.insert((TTypeId::type)22);
 
   COMPLEX_TYPES.insert((TTypeId::type)10);
   COMPLEX_TYPES.insert((TTypeId::type)11);
@@ -59,6 +60,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)19, "CHAR"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)20, "INTERVAL_YEAR_MONTH"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)21, "INTERVAL_DAY_TIME"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)22, "TIMESTAMP WITH TIME ZONE"));
 
   CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
 

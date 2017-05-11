@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -292,6 +293,28 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class TimestampTZConverter implements Converter {
+    final PrimitiveObjectInspector inputOI;
+    final SettableTimestampTZObjectInspector outputOI;
+    final Object r;
+
+    public TimestampTZConverter(PrimitiveObjectInspector inputOI,
+        SettableTimestampTZObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      r = outputOI.create(new TimestampTZ());
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampTZ(input, inputOI));
+    }
+  }
+
   public static class HiveIntervalYearMonthConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     SettableHiveIntervalYearMonthObjectInspector outputOI;
@@ -465,6 +488,9 @@ public class PrimitiveObjectInspectorConverter {
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
+        return t;
+      case TIMESTAMPTZ:
+        t.set(((TimestampTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       case INTERVAL_YEAR_MONTH:
         t.set(((HiveIntervalYearMonthObjectInspector) inputOI)

@@ -4,7 +4,7 @@ DROP TABLE src_events;
 CREATE TABLE src_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -23,7 +23,7 @@ DROP TABLE orc_events;
 CREATE TABLE orc_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -46,22 +46,22 @@ SELECT COUNT(*) FROM orc_events WHERE run_date=20120921;
 SELECT COUNT(*) FROM orc_events WHERE run_date=20121121;
 
 INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201211, game_id, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201211';
 SHOW PARTITIONS orc_events;
 SELECT COUNT(*) FROM orc_events;
 
 INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39;
 SELECT COUNT(*) FROM orc_events;
 
 INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change';
 SELECT COUNT(*) FROM orc_events;
 
 INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change';
 SELECT COUNT(*) FROM orc_events;

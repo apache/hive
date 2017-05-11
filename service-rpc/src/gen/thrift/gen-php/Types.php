@@ -26,6 +26,7 @@ final class TProtocolVersion {
   const HIVE_CLI_SERVICE_PROTOCOL_V8 = 7;
   const HIVE_CLI_SERVICE_PROTOCOL_V9 = 8;
   const HIVE_CLI_SERVICE_PROTOCOL_V10 = 9;
+  const HIVE_CLI_SERVICE_PROTOCOL_V11 = 10;
   static public $__names = array(
     0 => 'HIVE_CLI_SERVICE_PROTOCOL_V1',
     1 => 'HIVE_CLI_SERVICE_PROTOCOL_V2',
@@ -37,6 +38,7 @@ final class TProtocolVersion {
     7 => 'HIVE_CLI_SERVICE_PROTOCOL_V8',
     8 => 'HIVE_CLI_SERVICE_PROTOCOL_V9',
     9 => 'HIVE_CLI_SERVICE_PROTOCOL_V10',
+    10 => 'HIVE_CLI_SERVICE_PROTOCOL_V11',
   );
 }
 
@@ -63,6 +65,7 @@ final class TTypeId {
   const CHAR_TYPE = 19;
   const INTERVAL_YEAR_MONTH_TYPE = 20;
   const INTERVAL_DAY_TIME_TYPE = 21;
+  const TIMESTAMPTZ_TYPE = 22;
   static public $__names = array(
     0 => 'BOOLEAN_TYPE',
     1 => 'TINYINT_TYPE',
@@ -86,6 +89,7 @@ final class TTypeId {
     19 => 'CHAR_TYPE',
     20 => 'INTERVAL_YEAR_MONTH_TYPE',
     21 => 'INTERVAL_DAY_TIME_TYPE',
+    22 => 'TIMESTAMPTZ_TYPE',
   );
 }
 
@@ -10053,6 +10057,7 @@ final class Constant extends \Thrift\Type\TConstant {
             19 => true,
             20 => true,
             21 => true,
+            22 => true,
     );
   }
 
@@ -10096,6 +10101,7 @@ final class Constant extends \Thrift\Type\TConstant {
             19 => "CHAR",
             20 => "INTERVAL_YEAR_MONTH",
             21 => "INTERVAL_DAY_TIME",
+            22 => "TIMESTAMP WITH TIME ZONE",
     );
   }
 
