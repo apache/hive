@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.Schema;
+import org.apache.hadoop.hive.llap.io.ChunkedInputStream;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class LlapBaseRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseRecordReader.class);
 
+  protected final ChunkedInputStream cin;
   protected final DataInputStream din;
   protected final Schema schema;
   protected final Class<V> clazz;
@@ -58,7 +61,9 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   public LlapBaseRecordReader(InputStream in, Schema schema,
       Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
-    din = new DataInputStream(in);
+    this.cin = new ChunkedInputStream(in);  // Save so we can verify end of stream
+    // We need mark support - wrap with BufferedInputStream.
+    din = new DataInputStream(new BufferedInputStream(cin));
     this.schema = schema;
     this.clazz = clazz;
     this.readerThread = Thread.currentThread();
@@ -129,19 +134,27 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
       // Need a way to know what thread to interrupt, since this is a blocking thread.
       setReaderThread(Thread.currentThread());
 
-      value.readFields(din);
-      return true;
-    } catch (EOFException eof) {
-      // End of input. There should be a reader event available, or coming soon, so okay to be blocking call.
-      ReaderEvent event = getReaderEvent();
-      switch (event.getEventType()) {
-        case DONE:
-          break;
-        default:
-          throw new IOException("Expected reader event with done status, but got "
-              + event.getEventType() + " with message " + event.getMessage());
+      if (hasInput()) {
+        value.readFields(din);
+        return true;
+      } else {
+        // End of input. Confirm we got end of stream indicator from server,
+        // as well as DONE status from fragment execution.
+        if (!cin.isEndOfData()) {
+          throw new IOException("Hit end of input, but did not find expected end of data indicator");
+        }
+
+        // There should be a reader event available, or coming soon, so okay to be blocking call.
+        ReaderEvent event = getReaderEvent();
+        switch (event.getEventType()) {
+          case DONE:
+            break;
+          default:
+            throw new IOException("Expected reader event with done status, but got "
+                + event.getEventType() + " with message " + event.getMessage());
+        }
+        return false;
       }
-      return false;
     } catch (IOException io) {
       if (Thread.interrupted()) {
         // Either we were interrupted by one of:
@@ -230,6 +243,15 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
       default:
         throw new RuntimeException("Unhandled ReaderEvent type " + event.getEventType() + " with message " + event.getMessage());
     }
+  }
+
+  protected boolean hasInput() throws IOException {
+    din.mark(1);
+    if (din.read() >= 0) {
+      din.reset();
+      return true;
+    }
+    return false;
   }
 
   protected ReaderEvent getReaderEvent() throws IOException {
