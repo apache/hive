@@ -3762,7 +3762,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (outputColNames) {
         for (int i = 0; i < ccount; ++i) {
           String colAlias = unescapeIdentifier(((ASTNode) collist.getChild(i))
-              .getText());
+              .getText()).toLowerCase();
           failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
           String intName = getColumnInternalName(i);
           ColumnInfo colInfo = new ColumnInfo(intName,
@@ -3775,7 +3775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ASTNode child = (ASTNode) collist.getChild(i);
           assert child.getType() == HiveParser.TOK_TABCOL;
           String colAlias = unescapeIdentifier(((ASTNode) child.getChild(0))
-              .getText());
+              .getText()).toLowerCase();
           failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
           String intName = getColumnInternalName(i);
           ColumnInfo colInfo = new ColumnInfo(intName, TypeInfoUtils
