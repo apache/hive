@@ -954,7 +954,12 @@ public class HiveSchemaTool {
   private void runBeeLine(String scriptDir, String scriptFile)
       throws IOException, HiveMetaException {
     NestedScriptParser dbCommandParser = getDbCommandParser(dbType, metaDbType);
+
     // expand the nested script
+    // If the metaDbType is set, this is setting up the information
+    // schema in Hive. That specifically means that the sql commands need
+    // to be adjusted for the underlying RDBMS (correct quotation
+    // strings, etc).
     String sqlCommands = dbCommandParser.buildCommand(scriptDir, scriptFile, metaDbType != null);
     File tmpFile = File.createTempFile("schematool", ".sql");
     tmpFile.deleteOnExit();
@@ -1148,11 +1153,17 @@ public class HiveSchemaTool {
 
     if (line.hasOption("metaDbType")) {
       metaDbType = line.getOptionValue("metaDbType");
-      if ((!metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
+
+      if (!dbType.equals(HiveSchemaHelper.DB_HIVE)) {
+        System.err.println("metaDbType only supported for dbType = hive");
+        printAndExit(cmdLineOptions);
+      }
+
+      if (!metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
           !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_MSSQL) &&
           !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_MYSQL) &&
-          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) && !metaDbType
-          .equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE))) {
+          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) &&
+          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE)) {
         System.err.println("Unsupported metaDbType " + metaDbType);
         printAndExit(cmdLineOptions);
       }

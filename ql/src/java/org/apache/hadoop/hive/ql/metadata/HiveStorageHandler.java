@@ -99,7 +99,7 @@ public interface HiveStorageHandler extends Configurable {
     Map<String, String> jobProperties);
 
   /**
-   * This method is called to allw the StorageHandlers the chance to
+   * This method is called to allow the StorageHandlers the chance to
    * populate secret keys into the job's credentials.
    */
   public abstract void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets);

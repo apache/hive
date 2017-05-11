@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
+import java.lang.IllegalArgumentException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -77,23 +78,35 @@ public class JdbcStorageHandler implements HiveStorageHandler {
 
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
-    LOGGER.debug("Adding properties to input job conf");
-    Properties properties = tableDesc.getProperties();
-    JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+    try {
+      LOGGER.debug("Adding properties to input job conf");
+      Properties properties = tableDesc.getProperties();
+      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+    } catch (Exception e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
   @Override
   public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> jobSecrets) {
-    LOGGER.debug("Adding secrets to input job conf");
-    Properties properties = tableDesc.getProperties();
-    JdbcStorageConfigManager.copySecretsToJob(properties, jobSecrets);
+    try {
+      LOGGER.debug("Adding secrets to input job conf");
+      Properties properties = tableDesc.getProperties();
+      JdbcStorageConfigManager.copySecretsToJob(properties, jobSecrets);
+    } catch (Exception e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
   @Override
   public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
-    LOGGER.debug("Adding properties to input job conf");
-    Properties properties = tableDesc.getProperties();
-    JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+    try {
+      LOGGER.debug("Adding properties to input job conf");
+      Properties properties = tableDesc.getProperties();
+      JdbcStorageConfigManager.copyConfigurationToJob(properties, jobProperties);
+    } catch (Exception e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
   @Override

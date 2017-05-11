@@ -1926,6 +1926,15 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `VERSION` (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
+PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+PREHOOK: type: QUERY
+PREHOOK: Output: sys@version
+POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: sys@version
+POSTHOOK: Lineage: version.schema_version SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: version.ver_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: version.version_comment SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
@@ -3226,6 +3235,7 @@ POSTHOOK: query: select schema_version from version order by schema_version limi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
+3.0.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs

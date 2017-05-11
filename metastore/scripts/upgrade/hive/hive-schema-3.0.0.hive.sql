@@ -98,9 +98,6 @@ FROM
   DBS"
 );
 
--- ANALYZE TABLE DBS COMPUTE STATISTICS;
--- ANALYZE TABLE DBS COMPUTE STATISTICS FOR COLUMNS;
-
 CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `DB_GRANT_ID` bigint,
   `CREATE_TIME` int,
@@ -207,21 +204,6 @@ FROM
   \"INDEX_PARAMS\""
 );
 
--- CREATE TABLE IF NOT EXISTS `NUCLEUS_TABLES` (
---   `CLASS_NAME` string,
---   `TABLE_NAME` string,
---   `TYPE` string,
---   `OWNER` string,
---   `VERSION` string,
---   `INTERFACE_NAME` string,
---   CONSTRAINT `SYS_PK_NUCLEUS_TABLES` PRIMARY KEY (`CLASS_NAME`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM NUCLEUS_TABLES"
--- );
-
 CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
   `CREATE_TIME` int,
@@ -245,21 +227,6 @@ TBLPROPERTIES (
 FROM
   \"PARTITIONS\""
 );
-
--- CREATE TABLE IF NOT EXISTS `PARTITION_EVENTS` (
---   `PART_NAME_ID` bigint,
---   `DB_NAME` string,
---   `EVENT_TIME` bigint,
---   `EVENT_TYPE` int,
---   `PARTITION_NAME` string,
---   `TBL_NAME` string,
---   CONSTRAINT `SYS_PK_PATITION_EVENTS` PRIMARY KEY (`PART_NAME_ID`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM PARTITION_EVENTS"
--- );
 
 CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `TBL_ID` bigint,
@@ -852,63 +819,14 @@ FROM
   \"PART_COL_STATS\""
 );
 
--- CREATE TABLE IF NOT EXISTS `TYPES` (
---   `TYPES_ID` bigint,
---   `TYPE_NAME` string,
---   `TYPE1` string,
---   `TYPE2` string,
---   CONSTRAINT `SYS_PK_TYPES` PRIMARY KEY (`TYPES_ID`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM TYPES"
--- );
-
--- CREATE TABLE IF NOT EXISTS `TYPE_FIELDS` (
---   `TYPE_NAME` bigint,
---   `COMMENT` string,
---   `FIELD_NAME` string,
---   `FIELD_TYPE` string,
---   `INTEGER_IDX` int,
---   CONSTRAINT `SYS_PK_TYPE_FIELDS` PRIMARY KEY (`TYPE_NAME`,`FIELD_NAME`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM TYPE_FIELDS"
--- );
-
--- CREATE TABLE IF NOT EXISTS `MASTER_KEYS`
--- (
---     `KEY_ID` INTEGER,
---     `MASTER_KEY` binary,
---     CONSTRAINT `SYS_PK_MASTER_KEYS` PRIMARY KEY (`KEY_ID`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM MASTER_KEYS"
--- );
-
--- CREATE TABLE IF NOT EXISTS `DELEGATION_TOKENS`
--- (
---     `TOKEN_IDENT` string,
---     `TOKEN` string,
---     CONSTRAINT `SYS_PK_DELEGATION_TOKENS` PRIMARY KEY (`TOKEN_IDENT`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM DELEGATION_TOKENS"
--- );
-
 CREATE TABLE IF NOT EXISTS `VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
   `VERSION_COMMENT` string,
   CONSTRAINT `SYS_PK_VERSION` PRIMARY KEY (`VER_ID`) DISABLE NOVALIDATE
 );
+
+INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0');
 
 CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
@@ -967,35 +885,6 @@ FROM
 -- TBLPROPERTIES (
 -- "hive.sql.database.type" = "METASTORE",
 -- "hive.sql.query" = "SELECT * FROM FUNCS_RU"
--- );
-
--- CREATE TABLE IF NOT EXISTS `NOTIFICATION_LOG`
--- (
---     `NL_ID` bigint,
---     `EVENT_ID` bigint,
---     `EVENT_TIME` int,
---     `EVENT_TYPE` string,
---     `DB_NAME` string,
---     `TBL_NAME` string,
---     `MESSAGE` string,
---     CONSTRAINT `SYS_PK_NOTIFICATION_LOG` PRIMARY KEY (`NL_ID`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM NOTIFICATION_LOG"
--- );
-
--- CREATE TABLE IF NOT EXISTS `NOTIFICATION_SEQUENCE`
--- (
---     `NNI_ID` bigint,
---     `NEXT_EVENT_ID` bigint,
---     CONSTRAINT `SYS_PK_NOTIFICATION_SEQUENCE` PRIMARY KEY (`NNI_ID`) DISABLE NOVALIDATE
--- )
--- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
--- TBLPROPERTIES (
--- "hive.sql.database.type" = "METASTORE",
--- "hive.sql.query" = "SELECT * FROM NOTIFICATION_SEQUENCE"
 -- );
 
 CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`

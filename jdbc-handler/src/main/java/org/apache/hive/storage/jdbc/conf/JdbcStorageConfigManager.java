@@ -17,6 +17,7 @@ package org.apache.hive.storage.jdbc.conf;
 import java.io.IOException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.storage.jdbc.conf.DatabaseType;
 
@@ -40,6 +41,7 @@ public class JdbcStorageConfigManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorageConfigManager.class);
   public static final String CONFIG_PREFIX = "hive.sql";
   public static final String CONFIG_PWD = CONFIG_PREFIX + ".dbcp.password";
+  public static final String CONFIG_USERNAME = CONFIG_PREFIX + ".dbcp.username";
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
         JdbcStorageConfig.QUERY);
@@ -47,7 +49,8 @@ public class JdbcStorageConfigManager {
   private JdbcStorageConfigManager() {
   }
 
-  public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps) {
+  public static void copyConfigurationToJob(Properties props, Map<String, String> jobProps)
+    throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
     resolveMetadata(props);
     for (Entry<Object, Object> entry : props.entrySet()) {
@@ -57,7 +60,8 @@ public class JdbcStorageConfigManager {
     }
   }
 
-  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets) {
+  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets)
+    throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
     resolveMetadata(props);
     String secret = props.getProperty(CONFIG_PWD);
@@ -66,7 +70,8 @@ public class JdbcStorageConfigManager {
     }
   }
 
-  public static Configuration convertPropertiesToConfiguration(Properties props) {
+  public static Configuration convertPropertiesToConfiguration(Properties props)
+    throws HiveException, IOException {
     checkRequiredPropertiesAreDefined(props);
     resolveMetadata(props);
     Configuration conf = new Configuration();
@@ -113,33 +118,31 @@ public class JdbcStorageConfigManager {
     return ((value == null) || (value.trim().isEmpty()));
   }
 
-  private static void resolveMetadata(Properties props) {
-    try {
-      DatabaseType dbType = DatabaseType.valueOf(
-        props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+  private static void resolveMetadata(Properties props) throws HiveException, IOException {
+    DatabaseType dbType = DatabaseType.valueOf(
+      props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
 
-      LOGGER.debug("Resolving db type: {}", dbType.toString());
+    LOGGER.debug("Resolving db type: {}", dbType.toString());
 
-      if (dbType == DatabaseType.METASTORE) {
-        HiveConf hconf = Hive.get().getConf();
-        props.setProperty(JdbcStorageConfig.JDBC_URL.getPropertyName(),
-            getMetastoreConnectionURL(hconf));
-        props.setProperty(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(),
-            getMetastoreDriver(hconf));
+    if (dbType == DatabaseType.METASTORE) {
+      HiveConf hconf = Hive.get().getConf();
+      props.setProperty(JdbcStorageConfig.JDBC_URL.getPropertyName(),
+          getMetastoreConnectionURL(hconf));
+      props.setProperty(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(),
+          getMetastoreDriver(hconf));
 
-        String user = getMetastoreJdbcUser(hconf);
-        if (user != null) {
-          props.setProperty("hive.sql.dbcp.username", user);
-        }
-
-        String pwd = getMetastoreJdbcPasswd(hconf);
-        if (pwd != null) {
-          props.setProperty(CONFIG_PWD, pwd);
-        }
-        props.setProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(),
-            getMetastoreDatabaseType(hconf));
+      String user = getMetastoreJdbcUser(hconf);
+      if (user != null) {
+        props.setProperty(CONFIG_USERNAME, user);
       }
-    } catch (Exception e) {}
+
+      String pwd = getMetastoreJdbcPasswd(hconf);
+      if (pwd != null) {
+        props.setProperty(CONFIG_PWD, pwd);
+      }
+      props.setProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(),
+          getMetastoreDatabaseType(hconf));
+    }
   }
 
   private static String getMetastoreDatabaseType(HiveConf conf) {
@@ -158,12 +161,8 @@ public class JdbcStorageConfigManager {
     return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
   }
 
-  private static String getMetastoreJdbcPasswd(HiveConf conf) {
-    try {
-      return ShimLoader.getHadoopShims().getPassword(conf,
-          HiveConf.ConfVars.METASTOREPWD.varname);
-    } catch (IOException io) {
-    }
-    return null;
+  private static String getMetastoreJdbcPasswd(HiveConf conf) throws IOException {
+    return ShimLoader.getHadoopShims().getPassword(conf,
+        HiveConf.ConfVars.METASTOREPWD.varname);
   }
 }
