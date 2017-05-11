@@ -128,8 +128,7 @@ public class CrossProductCheck implements PhysicalPlanResolver, Dispatcher {
   }
 
   private void warn(String msg) {
-    SessionState.getConsole().getInfoStream().println(
-        String.format("Warning: %s", msg));
+    SessionState.getConsole().printInfo("Warning: " + msg, false);
   }
 
   private void checkMapJoins(MapRedTask mrTsk) throws SemanticException {

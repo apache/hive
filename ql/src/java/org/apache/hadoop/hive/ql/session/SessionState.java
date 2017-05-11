@@ -1068,57 +1068,126 @@ public class SessionState {
       this.isSilent = isSilent;
     }
 
+    /**
+     * Get the console output stream for HiveServer2 or HiveCli.
+     * @return The output stream
+     */
     public PrintStream getOutStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;
     }
 
+    /**
+     * Get the console info stream for HiveServer2 or HiveCli.
+     * @return The info stream
+     */
     public static PrintStream getInfoStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.info != null)) ? ss.info : getErrStream();
     }
 
+    /**
+     * Get the console error stream for HiveServer2 or HiveCli.
+     * @return The error stream
+     */
     public static PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
     }
 
+    /**
+     * Get the child process output stream for HiveServer2 or HiveCli.
+     * @return The child process output stream
+     */
     public PrintStream getChildOutStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.childOut != null)) ? ss.childOut : System.out;
     }
 
+    /**
+     * Get the child process error stream for HiveServer2 or HiveCli.
+     * @return The child process error stream
+     */
     public PrintStream getChildErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.childErr != null)) ? ss.childErr : System.err;
     }
 
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
     public boolean getIsSilent() {
       SessionState ss = SessionState.get();
       // use the session or the one supplied in constructor
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+    /**
+     * Logs into the log file.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     */
     public void logInfo(String info) {
       logInfo(info, null);
     }
 
+    /**
+     * Logs into the log file. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void logInfo(String info, String detail) {
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
+    /**
+     * Logs info into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     */
     public void printInfo(String info) {
       printInfo(info, null);
     }
 
+    /**
+     * Logs info into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. The isSilent parameter is used instead of the LogHelper isSilent attribute.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
     public void printInfo(String info, boolean isSilent) {
       printInfo(info, null, isSilent);
     }
 
+    /**
+     * Logs info into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void printInfo(String info, String detail) {
       printInfo(info, detail, getIsSilent());
     }
 
+    /**
+     * Logs info into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
     public void printInfo(String info, String detail, boolean isSilent) {
       if (!isSilent) {
         getInfoStream().println(info);
@@ -1126,16 +1195,24 @@ public class SessionState {
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
-    public void printInfoNoLog(String info) {
-      if (!getIsSilent()) {
-        getInfoStream().println(info);
-      }
-    }
-
+    /**
+     * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param error The log message
+     */
     public void printError(String error) {
       printError(error, null);
     }
 
+    /**
+     * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
+     * Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param error The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void printError(String error, String detail) {
       getErrStream().println(error);
       LOG.error(error + StringUtils.defaultString(detail));
