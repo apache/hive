@@ -69,67 +69,52 @@ import org.apache.hive.common.util.HashCodeUtil;
 import com.google.common.base.Preconditions;
 
 /**
- * This class is uniform hash (common) operator class for native vectorized reduce sink.
- * There are variation operators for Long, String, and MultiKey.  And, a special case operator
- * for no key (VectorReduceSinkEmptyKeyOperator).
+ * This class is the UniformHash empty key operator class for native vectorized reduce sink.
+ *
+ * Since there is no key, we initialize the keyWritable once with an empty value.
  */
-public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSinkCommonOperator {
+public class VectorReduceSinkEmptyKeyOperator extends VectorReduceSinkCommonOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final String CLASS_NAME = VectorReduceSinkUniformHashOperator.class.getName();
+  private static final String CLASS_NAME = VectorReduceSinkEmptyKeyOperator.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   // The above members are initialized by the constructor and must not be
   // transient.
   //---------------------------------------------------------------------------
 
-  // The serialized all null key and its hash code.
-  private transient byte[] nullBytes;
-  private transient int nullKeyHashCode;
-
-  // The object that determines equal key series.
-  protected transient VectorKeySeriesSerialized serializedKeySeries;
-
+  private transient boolean isKeyInitialized;
 
   /** Kryo ctor. */
-  protected VectorReduceSinkUniformHashOperator() {
+  protected VectorReduceSinkEmptyKeyOperator() {
     super();
   }
 
-  public VectorReduceSinkUniformHashOperator(CompilationOpContext ctx) {
+  public VectorReduceSinkEmptyKeyOperator(CompilationOpContext ctx) {
     super(ctx);
   }
 
-  public VectorReduceSinkUniformHashOperator(CompilationOpContext ctx,
+  public VectorReduceSinkEmptyKeyOperator(CompilationOpContext ctx,
       VectorizationContext vContext, OperatorDesc conf) throws HiveException {
     super(ctx, vContext, conf);
+
+    LOG.info("VectorReduceSinkEmptyKeyOperator constructor vectorReduceSinkInfo " + vectorReduceSinkInfo);
+
   }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    Preconditions.checkState(!isEmptyKey);
-    // Create all nulls key.
-    try {
-      Output nullKeyOutput = new Output();
-      keyBinarySortableSerializeWrite.set(nullKeyOutput);
-      for (int i = 0; i < reduceSinkKeyColumnMap.length; i++) {
-        keyBinarySortableSerializeWrite.writeNull();
-      }
-      int nullBytesLength = nullKeyOutput.getLength();
-      nullBytes = new byte[nullBytesLength];
-      System.arraycopy(nullKeyOutput.getData(), 0, nullBytes, 0, nullBytesLength);
-      nullKeyHashCode = HashCodeUtil.calculateBytesHashCode(nullBytes, 0, nullBytesLength);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
+    isKeyInitialized = false;
+
   }
 
   @Override
   public void process(Object row, int tag) throws HiveException {
 
     try {
+
       VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
       batchCounter++;
@@ -141,11 +126,10 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
         return;
       }
 
-      // Perform any key expressions.  Results will go into scratch columns.
-      if (reduceSinkKeyExpressions != null) {
-        for (VectorExpression ve : reduceSinkKeyExpressions) {
-          ve.evaluate(batch);
-        }
+      if (!isKeyInitialized) {
+        isKeyInitialized = true;
+        Preconditions.checkState(isEmptyKey);
+        initializeEmptyKey(tag);
       }
 
       // Perform any value expressions.  Results will go into scratch columns.
@@ -155,84 +139,37 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
         }
       }
 
-      serializedKeySeries.processBatch(batch);
+      final int size = batch.size;
+      if (!isEmptyValue) {
+        if (batch.selectedInUse) {
+          int[] selected = batch.selected;
+          for (int logical = 0; logical < size; logical++) {
+            final int batchIndex = selected[logical];
 
-      boolean selectedInUse = batch.selectedInUse;
-      int[] selected = batch.selected;
+            valueLazyBinarySerializeWrite.reset();
+            valueVectorSerializeRow.serializeWrite(batch, batchIndex);
 
-      int logical;
-      do {
-        if (serializedKeySeries.getCurrentIsAllNull()) {
+            valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
 
-          // Use the same logic as ReduceSinkOperator.toHiveKey.
-          //
-          if (tag == -1 || reduceSkipTag) {
-            keyWritable.set(nullBytes, 0, nullBytes.length);
-          } else {
-            keyWritable.setSize(nullBytes.length + 1);
-            System.arraycopy(nullBytes, 0, keyWritable.get(), 0, nullBytes.length);
-            keyWritable.get()[nullBytes.length] = reduceTagByte;
-          }
-          keyWritable.setDistKeyLength(nullBytes.length);
-          keyWritable.setHashCode(nullKeyHashCode);
-
-        } else {
-
-          // One serialized key for 1 or more rows for the duplicate keys.
-          // LOG.info("reduceSkipTag " + reduceSkipTag + " tag " + tag + " reduceTagByte " + (int) reduceTagByte + " keyLength " + serializedKeySeries.getSerializedLength());
-          // LOG.info("process offset " + serializedKeySeries.getSerializedStart() + " length " + serializedKeySeries.getSerializedLength());
-          final int keyLength = serializedKeySeries.getSerializedLength();
-          if (tag == -1 || reduceSkipTag) {
-            keyWritable.set(serializedKeySeries.getSerializedBytes(),
-                serializedKeySeries.getSerializedStart(), keyLength);
-          } else {
-            keyWritable.setSize(keyLength + 1);
-            System.arraycopy(serializedKeySeries.getSerializedBytes(),
-                serializedKeySeries.getSerializedStart(), keyWritable.get(), 0, keyLength);
-            keyWritable.get()[keyLength] = reduceTagByte;
-          }
-          keyWritable.setDistKeyLength(keyLength);
-          keyWritable.setHashCode(serializedKeySeries.getCurrentHashCode());
-        }
-
-        logical = serializedKeySeries.getCurrentLogical();
-        final int end = logical + serializedKeySeries.getCurrentDuplicateCount();
-        if (!isEmptyValue) {
-          if (selectedInUse) {
-            do {
-              final int batchIndex = selected[logical];
-
-              valueLazyBinarySerializeWrite.reset();
-              valueVectorSerializeRow.serializeWrite(batch, batchIndex);
-
-              valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
-
-              collect(keyWritable, valueBytesWritable);
-            } while (++logical < end);
-          } else {
-            do {
-              valueLazyBinarySerializeWrite.reset();
-              valueVectorSerializeRow.serializeWrite(batch, logical);
-
-              valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
-
-              collect(keyWritable, valueBytesWritable);
-            } while (++logical < end);
-
-          }
-        } else {
-
-          // Empty value, too.
-          do {
             collect(keyWritable, valueBytesWritable);
-          } while (++logical < end);
-        }
+          }
+        } else {
+          for (int batchIndex = 0; batchIndex < size; batchIndex++) {
+            valueLazyBinarySerializeWrite.reset();
+            valueVectorSerializeRow.serializeWrite(batch, batchIndex);
 
-        if (!serializedKeySeries.next()) {
-          break;
-        }
-      } while (true);
+            valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
 
+            collect(keyWritable, valueBytesWritable);
+          }
+        }
+      } else {
+
+        // Empty value, too.
+        for (int i = 0; i < size; i++) {
+          collect(keyWritable, valueBytesWritable);
+        }
+      }
     } catch (Exception e) {
       throw new HiveException(e);
     }

@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiString
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkEmptyKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkObjectHashOperator;
@@ -2930,13 +2931,15 @@ public class Vectorizer implements PhysicalPlanResolver {
       Operator<? extends OperatorDesc> op, VectorizationContext vContext, ReduceSinkDesc desc,
       VectorReduceSinkInfo vectorReduceSinkInfo) throws HiveException {
 
+    VectorReduceSinkDesc vectorDesc = (VectorReduceSinkDesc) desc.getVectorDesc();
+
     Type[] reduceSinkKeyColumnVectorTypes = vectorReduceSinkInfo.getReduceSinkKeyColumnVectorTypes();
 
     // By default, we can always use the multi-key class.
     VectorReduceSinkDesc.ReduceSinkKeyType reduceSinkKeyType = VectorReduceSinkDesc.ReduceSinkKeyType.MULTI_KEY;
 
     // Look for single column optimization.
-    if (reduceSinkKeyColumnVectorTypes.length == 1) {
+    if (reduceSinkKeyColumnVectorTypes != null && reduceSinkKeyColumnVectorTypes.length == 1) {
       LOG.info("Vectorizer vectorizeOperator groupby typeName " + vectorReduceSinkInfo.getReduceSinkKeyTypeInfos()[0]);
       Type columnVectorType = reduceSinkKeyColumnVectorTypes[0];
       switch (columnVectorType) {
@@ -2968,24 +2971,30 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     Class<? extends Operator<?>> opClass = null;
     if (vectorReduceSinkInfo.getUseUniformHash()) {
-      switch (reduceSinkKeyType) {
-      case LONG:
-        opClass = VectorReduceSinkLongOperator.class;
-        break;
-      case STRING:
-        opClass = VectorReduceSinkStringOperator.class;
-        break;
-      case MULTI_KEY:
-        opClass = VectorReduceSinkMultiKeyOperator.class;
-        break;
-      default:
-        throw new HiveException("Unknown reduce sink key type " + reduceSinkKeyType);
+      if (vectorDesc.getIsEmptyKey()) {
+        opClass = VectorReduceSinkEmptyKeyOperator.class;
+      } else {
+        switch (reduceSinkKeyType) {
+        case LONG:
+          opClass = VectorReduceSinkLongOperator.class;
+          break;
+        case STRING:
+          opClass = VectorReduceSinkStringOperator.class;
+          break;
+        case MULTI_KEY:
+          opClass = VectorReduceSinkMultiKeyOperator.class;
+          break;
+        default:
+          throw new HiveException("Unknown reduce sink key type " + reduceSinkKeyType);
+        }
       }
     } else {
-      opClass = VectorReduceSinkObjectHashOperator.class;
+      if (vectorDesc.getIsEmptyKey() && vectorDesc.getIsEmptyBuckets() && vectorDesc.getIsEmptyPartitions()) {
+        opClass = VectorReduceSinkEmptyKeyOperator.class;
+      } else {
+        opClass = VectorReduceSinkObjectHashOperator.class;
+      }
     }
-
-    VectorReduceSinkDesc vectorDesc = (VectorReduceSinkDesc) desc.getVectorDesc();
 
     vectorDesc.setReduceSinkKeyType(reduceSinkKeyType);
     vectorDesc.setVectorReduceSinkInfo(vectorReduceSinkInfo);
@@ -3044,88 +3053,87 @@ public class Vectorizer implements PhysicalPlanResolver {
     // So if we later decide not to specialize, we'll just waste any scratch columns allocated...
 
     List<ExprNodeDesc> keysDescs = desc.getKeyCols();
-    VectorExpression[] allKeyExpressions = vContext.getVectorExpressions(keysDescs);
+    final boolean isEmptyKey = (keysDescs.size() == 0);
+    if (!isEmptyKey) {
 
-    // Since a key expression can be a calculation and the key will go into a scratch column,
-    // we need the mapping and type information.
-    int[] reduceSinkKeyColumnMap = new int[allKeyExpressions.length];
-    TypeInfo[] reduceSinkKeyTypeInfos = new TypeInfo[allKeyExpressions.length];
-    Type[] reduceSinkKeyColumnVectorTypes = new Type[allKeyExpressions.length];
-    ArrayList<VectorExpression> groupByKeyExpressionsList = new ArrayList<VectorExpression>();
-    VectorExpression[] reduceSinkKeyExpressions;
-    for (int i = 0; i < reduceSinkKeyColumnMap.length; i++) {
-      VectorExpression ve = allKeyExpressions[i];
-      reduceSinkKeyColumnMap[i] = ve.getOutputColumn();
-      reduceSinkKeyTypeInfos[i] = keysDescs.get(i).getTypeInfo();
-      reduceSinkKeyColumnVectorTypes[i] =
-          VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkKeyTypeInfos[i]);
-      if (!IdentityExpression.isColumnOnly(ve)) {
-        groupByKeyExpressionsList.add(ve);
+      VectorExpression[] allKeyExpressions = vContext.getVectorExpressions(keysDescs);
+
+      final int[] reduceSinkKeyColumnMap = new int[allKeyExpressions.length];
+      final TypeInfo[] reduceSinkKeyTypeInfos = new TypeInfo[allKeyExpressions.length];
+      final Type[] reduceSinkKeyColumnVectorTypes = new Type[allKeyExpressions.length];
+      final VectorExpression[] reduceSinkKeyExpressions;
+
+      // Since a key expression can be a calculation and the key will go into a scratch column,
+      // we need the mapping and type information.
+      ArrayList<VectorExpression> groupByKeyExpressionsList = new ArrayList<VectorExpression>();
+      for (int i = 0; i < reduceSinkKeyColumnMap.length; i++) {
+        VectorExpression ve = allKeyExpressions[i];
+        reduceSinkKeyColumnMap[i] = ve.getOutputColumn();
+        reduceSinkKeyTypeInfos[i] = keysDescs.get(i).getTypeInfo();
+        reduceSinkKeyColumnVectorTypes[i] =
+            VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkKeyTypeInfos[i]);
+        if (!IdentityExpression.isColumnOnly(ve)) {
+          groupByKeyExpressionsList.add(ve);
+        }
       }
-    }
-    if (groupByKeyExpressionsList.size() == 0) {
-      reduceSinkKeyExpressions = null;
-    } else {
-      reduceSinkKeyExpressions = groupByKeyExpressionsList.toArray(new VectorExpression[0]);
+      if (groupByKeyExpressionsList.size() == 0) {
+        reduceSinkKeyExpressions = null;
+      } else {
+        reduceSinkKeyExpressions = groupByKeyExpressionsList.toArray(new VectorExpression[0]);
+      }
+
+      vectorReduceSinkInfo.setReduceSinkKeyColumnMap(reduceSinkKeyColumnMap);
+      vectorReduceSinkInfo.setReduceSinkKeyTypeInfos(reduceSinkKeyTypeInfos);
+      vectorReduceSinkInfo.setReduceSinkKeyColumnVectorTypes(reduceSinkKeyColumnVectorTypes);
+      vectorReduceSinkInfo.setReduceSinkKeyExpressions(reduceSinkKeyExpressions);
+
     }
 
     ArrayList<ExprNodeDesc> valueDescs = desc.getValueCols();
-    VectorExpression[] allValueExpressions = vContext.getVectorExpressions(valueDescs);
+    final boolean isEmptyValue = (valueDescs.size() == 0);
+    if (!isEmptyValue) {
+      VectorExpression[] allValueExpressions = vContext.getVectorExpressions(valueDescs);
 
-    int[] reduceSinkValueColumnMap = new int[valueDescs.size()];
-    TypeInfo[] reduceSinkValueTypeInfos = new TypeInfo[valueDescs.size()];
-    Type[] reduceSinkValueColumnVectorTypes = new Type[valueDescs.size()];
-    ArrayList<VectorExpression> reduceSinkValueExpressionsList = new ArrayList<VectorExpression>();
-    VectorExpression[] reduceSinkValueExpressions;
-    for (int i = 0; i < valueDescs.size(); ++i) {
-      VectorExpression ve = allValueExpressions[i];
-      reduceSinkValueColumnMap[i] = ve.getOutputColumn();
-      reduceSinkValueTypeInfos[i] = valueDescs.get(i).getTypeInfo();
-      reduceSinkValueColumnVectorTypes[i] =
-          VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkValueTypeInfos[i]);
-      if (!IdentityExpression.isColumnOnly(ve)) {
-        reduceSinkValueExpressionsList.add(ve);
+      final int[] reduceSinkValueColumnMap = new int[allValueExpressions.length];
+      final TypeInfo[] reduceSinkValueTypeInfos = new TypeInfo[allValueExpressions.length];
+      final Type[] reduceSinkValueColumnVectorTypes = new Type[allValueExpressions.length];
+      VectorExpression[] reduceSinkValueExpressions;
+
+      ArrayList<VectorExpression> reduceSinkValueExpressionsList = new ArrayList<VectorExpression>();
+      for (int i = 0; i < valueDescs.size(); ++i) {
+        VectorExpression ve = allValueExpressions[i];
+        reduceSinkValueColumnMap[i] = ve.getOutputColumn();
+        reduceSinkValueTypeInfos[i] = valueDescs.get(i).getTypeInfo();
+        reduceSinkValueColumnVectorTypes[i] =
+            VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkValueTypeInfos[i]);
+        if (!IdentityExpression.isColumnOnly(ve)) {
+          reduceSinkValueExpressionsList.add(ve);
+        }
       }
-    }
-    if (reduceSinkValueExpressionsList.size() == 0) {
-      reduceSinkValueExpressions = null;
-    } else {
-      reduceSinkValueExpressions = reduceSinkValueExpressionsList.toArray(new VectorExpression[0]);
-    }
+      if (reduceSinkValueExpressionsList.size() == 0) {
+        reduceSinkValueExpressions = null;
+      } else {
+        reduceSinkValueExpressions = reduceSinkValueExpressionsList.toArray(new VectorExpression[0]);
+      }
 
-    vectorReduceSinkInfo.setReduceSinkKeyColumnMap(reduceSinkKeyColumnMap);
-    vectorReduceSinkInfo.setReduceSinkKeyTypeInfos(reduceSinkKeyTypeInfos);
-    vectorReduceSinkInfo.setReduceSinkKeyColumnVectorTypes(reduceSinkKeyColumnVectorTypes);
-    vectorReduceSinkInfo.setReduceSinkKeyExpressions(reduceSinkKeyExpressions);
+      vectorReduceSinkInfo.setReduceSinkValueColumnMap(reduceSinkValueColumnMap);
+      vectorReduceSinkInfo.setReduceSinkValueTypeInfos(reduceSinkValueTypeInfos);
+      vectorReduceSinkInfo.setReduceSinkValueColumnVectorTypes(reduceSinkValueColumnVectorTypes);
+      vectorReduceSinkInfo.setReduceSinkValueExpressions(reduceSinkValueExpressions);
 
-    vectorReduceSinkInfo.setReduceSinkValueColumnMap(reduceSinkValueColumnMap);
-    vectorReduceSinkInfo.setReduceSinkValueTypeInfos(reduceSinkValueTypeInfos);
-    vectorReduceSinkInfo.setReduceSinkValueColumnVectorTypes(reduceSinkValueColumnVectorTypes);
-    vectorReduceSinkInfo.setReduceSinkValueExpressions(reduceSinkValueExpressions);
+    }
 
     boolean useUniformHash = desc.getReducerTraits().contains(UNIFORM);
     vectorReduceSinkInfo.setUseUniformHash(useUniformHash);
 
-    boolean hasEmptyBuckets = false;
-    boolean hasNoPartitions = false;
-    if (useUniformHash) {
+    List<ExprNodeDesc> bucketDescs = desc.getBucketCols();
+    final boolean isEmptyBuckets = (bucketDescs == null || bucketDescs.size() == 0);
+    List<ExprNodeDesc> partitionDescs = desc.getPartitionCols();
+    final boolean isEmptyPartitions = (partitionDescs == null || partitionDescs.size() == 0);
 
-      // Check for unexpected conditions...
-      hasEmptyBuckets =
-          (desc.getBucketCols() != null && !desc.getBucketCols().isEmpty()) ||
-          (desc.getPartitionCols().size() == 0);
+    if (useUniformHash || (isEmptyKey && isEmptyBuckets && isEmptyPartitions)) {
 
-      if (hasEmptyBuckets) {
-        LOG.info("Unexpected condition: UNIFORM hash and empty buckets");
-        isUnexpectedCondition = true;
-      }
-
-      hasNoPartitions = (desc.getPartitionCols() == null);
-
-      if (hasNoPartitions) {
-        LOG.info("Unexpected condition: UNIFORM hash and no partitions");
-        isUnexpectedCondition = true;
-      }
+      // NOTE: For Uniform Hash or no buckets/partitions, when the key is empty, we will use the VectorReduceSinkEmptyKeyOperator instead.
 
     } else {
 
@@ -3136,10 +3144,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       Type[] reduceSinkBucketColumnVectorTypes = null;
       VectorExpression[] reduceSinkBucketExpressions = null;
 
-      List<ExprNodeDesc> bucketDescs = desc.getBucketCols();
-      if (bucketDescs != null) {
+      if (!isEmptyBuckets) {
         VectorExpression[] allBucketExpressions = vContext.getVectorExpressions(bucketDescs);
-    
+
         reduceSinkBucketColumnMap = new int[bucketDescs.size()];
         reduceSinkBucketTypeInfos = new TypeInfo[bucketDescs.size()];
         reduceSinkBucketColumnVectorTypes = new Type[bucketDescs.size()];
@@ -3166,10 +3173,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       Type[] reduceSinkPartitionColumnVectorTypes = null;
       VectorExpression[] reduceSinkPartitionExpressions = null;
 
-      List<ExprNodeDesc> partitionDescs = desc.getPartitionCols();
-      if (partitionDescs != null) {
+      if (!isEmptyPartitions) {
         VectorExpression[] allPartitionExpressions = vContext.getVectorExpressions(partitionDescs);
-    
+
         reduceSinkPartitionColumnMap = new int[partitionDescs.size()];
         reduceSinkPartitionTypeInfos = new TypeInfo[partitionDescs.size()];
         reduceSinkPartitionColumnVectorTypes = new Type[partitionDescs.size()];
@@ -3205,6 +3211,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Remember the condition variables for EXPLAIN regardless.
     vectorDesc.setIsVectorizationReduceSinkNativeEnabled(isVectorizationReduceSinkNativeEnabled);
     vectorDesc.setEngine(engine);
+    vectorDesc.setIsEmptyKey(isEmptyKey);
+    vectorDesc.setIsEmptyValue(isEmptyValue);
+    vectorDesc.setIsEmptyBuckets(isEmptyBuckets);
+    vectorDesc.setIsEmptyPartitions(isEmptyPartitions);
     vectorDesc.setHasPTFTopN(hasPTFTopN);
     vectorDesc.setHasDistinctColumns(hasDistinctColumns);
     vectorDesc.setIsKeyBinarySortable(isKeyBinarySortable);
@@ -3217,7 +3227,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Many restrictions.
     if (!isVectorizationReduceSinkNativeEnabled ||
         !isTezOrSpark ||
-        (useUniformHash && (hasEmptyBuckets || hasNoPartitions)) ||
         hasPTFTopN ||
         hasDistinctColumns ||
         !isKeyBinarySortable ||

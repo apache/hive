@@ -522,10 +522,62 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return vectorExpressionsToStringList(vectorReduceSinkInfo.getReduceSinkValueExpressions());
     }
 
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "keyColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getKeyColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] keyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
+      if (keyColumnMap == null) {
+        // Always show an array.
+        keyColumnMap = new int[0];
+      }
+      return Arrays.toString(keyColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "valueColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getValueColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] valueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
+      if (valueColumnMap == null) {
+        // Always show an array.
+        valueColumnMap = new int[0];
+      }
+      return Arrays.toString(valueColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "bucketColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getBucketColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] bucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
+      if (bucketColumnMap == null || bucketColumnMap.length == 0) {
+        // Suppress empty column map.
+        return null;
+      }
+      return Arrays.toString(bucketColumnMap);
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getPartitionColumns() {
+      if (!isNative) {
+        return null;
+      }
+      int[] partitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
+      if (partitionColumnMap == null || partitionColumnMap.length == 0) {
+       // Suppress empty column map.
+        return null;
+      }
+      return Arrays.toString(partitionColumnMap);
+    }
+
     private VectorizationCondition[] createNativeConditions() {
 
       boolean enabled = vectorReduceSinkDesc.getIsVectorizationReduceSinkNativeEnabled();
- 
+
       String engine = vectorReduceSinkDesc.getEngine();
       String engineInSupportedCondName =
           HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname + " " + engine + " IN " + vectorizableReduceSinkNativeEngines;

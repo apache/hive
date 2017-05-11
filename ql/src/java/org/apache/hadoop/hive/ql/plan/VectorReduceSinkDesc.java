@@ -64,6 +64,10 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
   private boolean isVectorizationReduceSinkNativeEnabled;
   private String engine;
+  private boolean isEmptyKey;
+  private boolean isEmptyValue;
+  private boolean isEmptyBuckets;
+  private boolean isEmptyPartitions;
   private boolean hasPTFTopN;
   private boolean hasDistinctColumns;
   private boolean isKeyBinarySortable;
@@ -84,6 +88,30 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   }
   public String getEngine() {
     return engine;
+  }
+  public void setIsEmptyKey(boolean isEmptyKey) {
+    this.isEmptyKey = isEmptyKey;
+  }
+  public boolean getIsEmptyKey() {
+    return isEmptyKey;
+  }
+  public void setIsEmptyValue(boolean isEmptyValue) {
+    this.isEmptyValue = isEmptyValue;
+  }
+  public boolean getIsEmptyValue() {
+    return isEmptyValue;
+  }
+  public void setIsEmptyBuckets(boolean isEmptyBuckets) {
+    this.isEmptyBuckets = isEmptyBuckets;
+  }
+  public boolean getIsEmptyBuckets() {
+    return isEmptyBuckets;
+  }
+  public void setIsEmptyPartitions(boolean isEmptyPartitions) {
+    this.isEmptyPartitions = isEmptyPartitions;
+  }
+  public boolean getIsEmptyPartitions() {
+    return isEmptyPartitions;
   }
   public void setHasPTFTopN(boolean hasPTFTopN) {
     this.hasPTFTopN = hasPTFTopN;

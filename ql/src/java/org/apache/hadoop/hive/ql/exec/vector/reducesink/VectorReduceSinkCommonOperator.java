@@ -87,6 +87,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   // This is map of which vectorized row batch columns are the key columns.
   // And, their types.
+  protected boolean isEmptyKey;
   protected int[] reduceSinkKeyColumnMap;
   protected TypeInfo[] reduceSinkKeyTypeInfos;
 
@@ -95,6 +96,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
   // This is map of which vectorized row batch columns are the value columns.
   // And, their types.
+  protected boolean isEmptyValue;
   protected int[] reduceSinkValueColumnMap;
   protected TypeInfo[] reduceSinkValueTypeInfos;
 
@@ -166,15 +168,21 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     vectorReduceSinkInfo = vectorDesc.getVectorReduceSinkInfo();
     this.vContext = vContext;
 
-    // Since a key expression can be a calculation and the key will go into a scratch column,
-    // we need the mapping and type information.
-    reduceSinkKeyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
-    reduceSinkKeyTypeInfos = vectorReduceSinkInfo.getReduceSinkKeyTypeInfos();
-    reduceSinkKeyExpressions = vectorReduceSinkInfo.getReduceSinkKeyExpressions();
+    isEmptyKey = vectorDesc.getIsEmptyKey();
+    if (!isEmptyKey) {
+      // Since a key expression can be a calculation and the key will go into a scratch column,
+      // we need the mapping and type information.
+      reduceSinkKeyColumnMap = vectorReduceSinkInfo.getReduceSinkKeyColumnMap();
+      reduceSinkKeyTypeInfos = vectorReduceSinkInfo.getReduceSinkKeyTypeInfos();
+      reduceSinkKeyExpressions = vectorReduceSinkInfo.getReduceSinkKeyExpressions();
+    }
 
-    reduceSinkValueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
-    reduceSinkValueTypeInfos = vectorReduceSinkInfo.getReduceSinkValueTypeInfos();
-    reduceSinkValueExpressions = vectorReduceSinkInfo.getReduceSinkValueExpressions();
+    isEmptyValue = vectorDesc.getIsEmptyValue();
+    if (!isEmptyValue) {
+      reduceSinkValueColumnMap = vectorReduceSinkInfo.getReduceSinkValueColumnMap();
+      reduceSinkValueTypeInfos = vectorReduceSinkInfo.getReduceSinkValueTypeInfos();
+      reduceSinkValueExpressions = vectorReduceSinkInfo.getReduceSinkValueExpressions();
+    }
   }
 
   // Get the sort order
@@ -311,26 +319,33 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
       LOG.info("Using tag = " + (int) reduceTagByte);
     }
 
-    TableDesc keyTableDesc = conf.getKeySerializeInfo();
-    boolean[] columnSortOrder =
-        getColumnSortOrder(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length);
-    byte[] columnNullMarker =
-        getColumnNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
-    byte[] columnNotNullMarker =
-        getColumnNotNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
+    if (!isEmptyKey) {
+      TableDesc keyTableDesc = conf.getKeySerializeInfo();
+      boolean[] columnSortOrder =
+          getColumnSortOrder(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length);
+      byte[] columnNullMarker =
+          getColumnNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
+      byte[] columnNotNullMarker =
+          getColumnNotNullMarker(keyTableDesc.getProperties(), reduceSinkKeyColumnMap.length, columnSortOrder);
 
-    keyBinarySortableSerializeWrite = new BinarySortableSerializeWrite(columnSortOrder,
-            columnNullMarker, columnNotNullMarker);
+      keyBinarySortableSerializeWrite =
+          new BinarySortableSerializeWrite(
+              columnSortOrder,
+              columnNullMarker,
+              columnNotNullMarker);
+    }
 
-    valueLazyBinarySerializeWrite = new LazyBinarySerializeWrite(reduceSinkValueColumnMap.length);
+    if (!isEmptyValue) {
+      valueLazyBinarySerializeWrite = new LazyBinarySerializeWrite(reduceSinkValueColumnMap.length);
 
-    valueVectorSerializeRow =
-        new VectorSerializeRow<LazyBinarySerializeWrite>(
-            valueLazyBinarySerializeWrite);
-    valueVectorSerializeRow.init(reduceSinkValueTypeInfos, reduceSinkValueColumnMap);
+      valueVectorSerializeRow =
+          new VectorSerializeRow<LazyBinarySerializeWrite>(
+              valueLazyBinarySerializeWrite);
+      valueVectorSerializeRow.init(reduceSinkValueTypeInfos, reduceSinkValueColumnMap);
 
-    valueOutput = new Output();
-    valueVectorSerializeRow.setOutput(valueOutput);
+      valueOutput = new Output();
+      valueVectorSerializeRow.setOutput(valueOutput);
+    }
 
     keyWritable = new HiveKey();
 
@@ -345,6 +360,20 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     }
 
     batchCounter = 0;
+  }
+
+  protected void initializeEmptyKey(int tag) {
+
+    // Use the same logic as ReduceSinkOperator.toHiveKey.
+    //
+    if (tag == -1 || reduceSkipTag) {
+      keyWritable.setSize(0);
+    } else {
+      keyWritable.setSize(1);
+      keyWritable.get()[0] = reduceTagByte;
+    }
+    keyWritable.setDistKeyLength(0);
+    keyWritable.setHashCode(0);
   }
 
   // The collect method override for TopNHash.BinaryCollector
