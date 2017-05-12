@@ -71,29 +71,41 @@ public class HiveSchemaTool {
   private boolean dryRun = false;
   private boolean verbose = false;
   private String dbOpts = null;
+  private String url = null;
+  private String driver = null;
   private URI[] validationServers = null; // The list of servers the database/partition/table can locate on
   private final HiveConf hiveConf;
   private final String dbType;
+  private final String metaDbType;
   private final MetaStoreSchemaInfo metaStoreSchemaInfo;
 
   static final private Logger LOG = LoggerFactory.getLogger(HiveSchemaTool.class.getName());
 
-  public HiveSchemaTool(String dbType) throws HiveMetaException {
-    this(System.getenv("HIVE_HOME"), new HiveConf(HiveSchemaTool.class), dbType);
+  public HiveSchemaTool(String dbType, String metaDbType) throws HiveMetaException {
+    this(System.getenv("HIVE_HOME"), new HiveConf(HiveSchemaTool.class), dbType, metaDbType);
   }
 
-  public HiveSchemaTool(String hiveHome, HiveConf hiveConf, String dbType)
+  public HiveSchemaTool(String hiveHome, HiveConf hiveConf, String dbType, String metaDbType)
       throws HiveMetaException {
     if (hiveHome == null || hiveHome.isEmpty()) {
       throw new HiveMetaException("No Hive home directory provided");
     }
     this.hiveConf = hiveConf;
     this.dbType = dbType;
+    this.metaDbType = metaDbType;
     this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, dbType);
   }
 
   public HiveConf getHiveConf() {
     return hiveConf;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public void setDriver(String driver) {
+    this.driver = driver;
   }
 
   public void setUserName(String userName) {
@@ -135,7 +147,7 @@ public class HiveSchemaTool {
   Connection getConnectionToMetastore(boolean printInfo)
       throws HiveMetaException {
     return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, printInfo, hiveConf);
+        passWord, url, driver, printInfo, hiveConf);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType) {
@@ -938,7 +950,7 @@ public class HiveSchemaTool {
       throws IOException, HiveMetaException {
     NestedScriptParser dbCommandParser = getDbCommandParser(dbType);
     // expand the nested script
-    String sqlCommands = dbCommandParser.buildCommand(scriptDir, scriptFile);
+    String sqlCommands = dbCommandParser.buildCommand(scriptDir, scriptFile, metaDbType != null);
     File tmpFile = File.createTempFile("schematool", ".sql");
     tmpFile.deleteOnExit();
 
@@ -954,7 +966,8 @@ public class HiveSchemaTool {
 
   // Generate the beeline args per hive conf and execute the given script
   public void runBeeLine(String sqlScriptFile) throws IOException {
-    CommandBuilder builder = new CommandBuilder(hiveConf, userName, passWord, sqlScriptFile);
+    CommandBuilder builder = new CommandBuilder(hiveConf, url, driver,
+        userName, passWord, sqlScriptFile);
 
     // run the script using Beeline
     try (BeeLine beeLine = new BeeLine()) {
@@ -980,11 +993,16 @@ public class HiveSchemaTool {
     private final String userName;
     private final String password;
     private final String sqlScriptFile;
+    private final String driver;
+    private final String url;
 
-    CommandBuilder(HiveConf hiveConf, String userName, String password, String sqlScriptFile) {
+    CommandBuilder(HiveConf hiveConf, String url, String driver,
+        String userName, String password, String sqlScriptFile) {
       this.hiveConf = hiveConf;
       this.userName = userName;
       this.password = password;
+      this.url = url;
+      this.driver = driver;
       this.sqlScriptFile = sqlScriptFile;
     }
 
@@ -998,10 +1016,14 @@ public class HiveSchemaTool {
     }
 
     private String[] argsWith(String password) throws IOException {
-      return new String[] { "-u",
-          HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf), "-d",
-          HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf), "-n",
-          userName, "-p", password, "-f", sqlScriptFile };
+      return new String[]
+        {
+          "-u", url == null ? HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf) : url,
+          "-d", driver == null ? HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf) : driver,
+          "-n", userName,
+          "-p", password,
+          "-f", sqlScriptFile
+        };
     }
 
     private void logScript() throws IOException {
@@ -1072,6 +1094,7 @@ public class HiveSchemaTool {
     CommandLineParser parser = new GnuParser();
     CommandLine line = null;
     String dbType = null;
+    String metaDbType = null;
     String schemaVer = null;
     Options cmdLineOptions = new Options();
 
@@ -1093,6 +1116,7 @@ public class HiveSchemaTool {
     if (line.hasOption("dbType")) {
       dbType = line.getOptionValue("dbType");
       if ((!dbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
+          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MSSQL) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MYSQL) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) && !dbType
@@ -1105,9 +1129,25 @@ public class HiveSchemaTool {
       printAndExit(cmdLineOptions);
     }
 
+    if (line.hasOption("metaDbType")) {
+      metaDbType = line.getOptionValue("metaDbType");
+      if ((!metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
+          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_MSSQL) &&
+          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_MYSQL) &&
+          !metaDbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) && !metaDbType
+          .equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE))) {
+        System.err.println("Unsupported metaDbType " + metaDbType);
+        printAndExit(cmdLineOptions);
+      }
+    } else if (dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE)) {
+      System.err.println("no metaDbType supplied");
+      printAndExit(cmdLineOptions);
+    }
+
+
     System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.varname, "true");
     try {
-      HiveSchemaTool schemaTool = new HiveSchemaTool(dbType);
+      HiveSchemaTool schemaTool = new HiveSchemaTool(dbType, metaDbType);
 
       if (line.hasOption("userName")) {
         schemaTool.setUserName(line.getOptionValue("userName"));
@@ -1124,6 +1164,12 @@ public class HiveSchemaTool {
         } catch (IOException err) {
           throw new HiveMetaException("Error getting metastore password", err);
         }
+      }
+      if (line.hasOption("url")) {
+        schemaTool.setUrl(line.getOptionValue("url"));
+      }
+      if (line.hasOption("driver")) {
+        schemaTool.setDriver(line.getOptionValue("driver"));
       }
       if (line.hasOption("dryRun")) {
         schemaTool.setDryRun(true);

@@ -17,5 +17,6 @@ package org.apache.hive.storage.jdbc.conf;
 public enum DatabaseType {
   MYSQL,
   H2,
-  DERBY
+  DERBY,
+  METASTORE
 }

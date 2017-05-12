@@ -357,8 +357,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       taskId = Utilities.getTaskId(hconf);
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
+
+      if (hconf instanceof JobConf) {
+        jc = (JobConf) hconf;
+      } else {
+        // test code path
+        jc = new JobConf(hconf);
+      }
+
       try {
-        createHiveOutputFormat(hconf);
+        createHiveOutputFormat(jc);
       } catch (HiveException ex) {
         logOutputFormatError(hconf, ex);
         throw ex;
@@ -379,12 +387,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // half of the script.timeout but less than script.timeout, we will still
       // be able to report progress.
       timeOut = hconf.getInt("mapred.healthChecker.script.timeout", 600000) / 2;
-      if (hconf instanceof JobConf) {
-        jc = (JobConf) hconf;
-      } else {
-        // test code path
-        jc = new JobConf(hconf);
-      }
 
       if (multiFileSpray) {
         partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
@@ -1158,12 +1160,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  private void createHiveOutputFormat(Configuration hconf) throws HiveException {
+  private void createHiveOutputFormat(JobConf job) throws HiveException {
     if (hiveOutputFormat == null) {
-      Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), hconf);
+      Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), job);
     }
     try {
-      hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, getConf().getTableInfo());
+      hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(job, getConf().getTableInfo());
     } catch (Throwable t) {
       throw (t instanceof HiveException) ? (HiveException)t : new HiveException(t);
     }

@@ -57,7 +57,7 @@ public class TestSchemaTool extends TestCase {
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveConf = new HiveConf(this.getClass());
     schemaTool = new HiveSchemaTool(
-        System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby");
+        System.getProperty("test.tmp.dir", "target/tmp"), hiveConf, "derby", null);
     schemaTool.setUserName(
         schemaTool.getHiveConf().get(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
     schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),

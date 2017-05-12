@@ -8,12 +8,9 @@ type STRING,
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+"hive.sql.database.type" = "METASTORE",
 "hive.sql.query" = "SELECT TBL_ID, DB_ID, TBL_NAME, TBL_TYPE, OWNER FROM TBLS",
 #### A masked pattern was here ####
-"hive.sql.dbcp.maxActive" = "1"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -28,58 +25,47 @@ type STRING,
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+"hive.sql.database.type" = "METASTORE",
 "hive.sql.query" = "SELECT TBL_ID, DB_ID, TBL_NAME, TBL_TYPE, OWNER FROM TBLS",
 #### A masked pattern was here ####
-"hive.sql.dbcp.maxActive" = "1"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tables
 PREHOOK: query: CREATE EXTERNAL TABLE dbs
 (
-id int,
-name STRING
+DB_ID int,
+NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS",
-"hive.sql.column.mapping" = "id=DB_ID, name=NAME",
-"hive.sql.dbcp.maxActive" = "1"
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dbs
 POSTHOOK: query: CREATE EXTERNAL TABLE dbs
 (
-id int,
-name STRING
+DB_ID int,
+NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS",
-"hive.sql.column.mapping" = "id=DB_ID, name=NAME",
-"hive.sql.dbcp.maxActive" = "1"
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dbs
-PREHOOK: query: select tables.name as tn, dbs.name as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.id) order by tn, dn, t
+PREHOOK: query: select tables.name as tn, dbs.NAME as dn, tables.type as t
+from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dbs
 PREHOOK: Input: default@tables
 #### A masked pattern was here ####
-POSTHOOK: query: select tables.name as tn, dbs.name as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.id) order by tn, dn, t
+POSTHOOK: query: select tables.name as tn, dbs.NAME as dn, tables.type as t
+from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dbs
 POSTHOOK: Input: default@tables
