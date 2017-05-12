@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -129,7 +130,9 @@ public class LlapProtocolClientProxy extends AbstractService {
 
       @Override
       public void onFailure(Throwable t) {
-        LOG.warn("RequestManager shutdown with error", t);
+        if (!(t instanceof CancellationException)) {
+          LOG.warn("RequestManager shutdown with error", t);
+        }
       }
     });
   }

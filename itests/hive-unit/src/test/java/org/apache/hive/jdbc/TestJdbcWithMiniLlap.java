@@ -425,6 +425,7 @@ public class TestJdbcWithMiniLlap {
         rowProcessor.process(row);
         ++rowCount;
       }
+      reader.close();
     }
 
     return rowCount;
