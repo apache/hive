@@ -514,8 +514,8 @@ public class CachedStore implements RawStore, Configurable {
     if (succ) {
       interruptCacheUpdateMaster();
       for (Partition part : parts) {
-        SharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(dbName),
-            HiveStringUtils.normalizeIdentifier(tblName), part);
+        SharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(part.getDbName()),
+            HiveStringUtils.normalizeIdentifier(part.getTableName()), part);
       }
     }
     return succ;
@@ -545,6 +545,8 @@ public class CachedStore implements RawStore, Configurable {
         HiveStringUtils.normalizeIdentifier(tableName), part_vals);
     if (part != null) {
       part.unsetPrivileges();
+    } else {
+      throw new NoSuchObjectException();
     }
     return part;
   }
@@ -782,6 +784,7 @@ public class CachedStore implements RawStore, Configurable {
     for (String partName : partNames) {
       Partition part = SharedCache.getPartitionFromCache(HiveStringUtils.normalizeIdentifier(dbName),
           HiveStringUtils.normalizeIdentifier(tblName), partNameToVals(partName));
+      part.unsetPrivileges();
       result.add(part);
     }
     return hasUnknownPartitions;
@@ -1046,7 +1049,7 @@ public class CachedStore implements RawStore, Configurable {
         }
       }
       if (!psMatch) {
-        break;
+        continue;
       }
       if (maxParts == -1 || count < maxParts) {
         partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part.getValues()));

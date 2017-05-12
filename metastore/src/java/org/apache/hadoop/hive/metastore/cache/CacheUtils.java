@@ -103,7 +103,7 @@ public class CacheUtils {
     String[] subpatterns = pattern.trim().split("\\|");
     for (String subpattern : subpatterns) {
       subpattern = "(?i)" + subpattern.replaceAll("\\?", ".{1}").replaceAll("\\*", ".*")
-          .replaceAll("\\^", "\\\\^").replaceAll("\\$", "\\\\$");;
+          .replaceAll("\\^", "\\\\^").replaceAll("\\$", "\\\\$");
       if (Pattern.matches(subpattern, HiveStringUtils.normalizeIdentifier(name))) {
         return true;
       }
