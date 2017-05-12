@@ -213,9 +213,15 @@ public class Partition implements Serializable {
 
   public Path getDataLocation() {
     if (table.isPartitioned()) {
-      return new Path(tPartition.getSd().getLocation());
+      if (tPartition.getSd() == null)
+        return null;
+      else
+        return new Path(tPartition.getSd().getLocation());
     } else {
-      return new Path(table.getTTable().getSd().getLocation());
+      if (table.getTTable() == null || table.getTTable().getSd() == null)
+        return null;
+      else
+        return new Path(table.getTTable().getSd().getLocation());
     }
   }
 

@@ -2934,7 +2934,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         cmd.append(")");
       }
-      Driver driver = new Driver(conf);
+      SessionState ss = SessionState.get();
+      String uName = (ss == null? null: ss.getUserName());
+      Driver driver = new Driver(conf, uName);
       int rc = driver.compile(cmd.toString(), false);
       if (rc != 0) {
         throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
