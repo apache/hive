@@ -708,4 +708,11 @@ public interface RawStore extends Configurable {
   void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
   void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  /**
+   * Gets the unique id of the backing datastore for the metadata
+   * @return
+   * @throws MetaException
+   */
+  String getMetastoreDbUuid() throws MetaException;
 }

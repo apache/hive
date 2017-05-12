@@ -792,6 +792,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("cache_file_metadata\n");
   }
 
+  void get_metastore_db_uuid(std::string& _return) {
+    // Your implementation goes here
+    printf("get_metastore_db_uuid\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

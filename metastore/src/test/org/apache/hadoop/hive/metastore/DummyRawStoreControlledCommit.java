@@ -877,4 +877,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("Get metastore uuid is not implemented");
+  }
 }

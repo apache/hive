@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+
 public class TestSetUGIOnOnlyServer extends TestSetUGIOnBothClientServer {
 
   @Override
-  protected void createClient(boolean setugi) throws Exception {
-    // It is turned on for both client and server because of super class. Turn it off for client.
-    super.createClient(false);
+  protected HiveMetaStoreClient createClient() throws Exception {
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, false);
+    return new HiveMetaStoreClient(hiveConf);
   }
 }

@@ -1576,4 +1576,9 @@ public class CachedStore implements RawStore, Configurable {
   public void setRawStore(RawStore rawStore) {
     this.rawStore = rawStore;
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    return rawStore.getMetastoreDbUuid();
+  }
 }

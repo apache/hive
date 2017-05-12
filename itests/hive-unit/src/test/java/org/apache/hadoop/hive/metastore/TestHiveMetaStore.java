@@ -31,6 +31,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
 
@@ -99,6 +103,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
 
+  protected abstract HiveMetaStoreClient createClient() throws Exception;
+
   @Override
   protected void setUp() throws Exception {
     hiveConf = new HiveConf(this.getClass());
@@ -110,6 +116,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
     hiveConf.set("hive.key4", "0");
+    hiveConf.set("datanucleus.autoCreateTables", "false");
 
     hiveConf.setIntVar(ConfVars.METASTORE_BATCH_RETRIEVE_MAX, 2);
     hiveConf.setIntVar(ConfVars.METASTORE_LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
@@ -3323,5 +3330,47 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println("testValidateTableCols() failed.");
       throw e;
     }
+  }
+
+  public void testGetMetastoreUuid() throws Throwable {
+    String uuid = client.getMetastoreDbUuid();
+    assertNotNull(uuid);
+  }
+
+  public void testGetUUIDInParallel() throws Exception {
+    int numThreads = 5;
+    int parallelCalls = 10;
+    int numAPICallsPerThread = 10;
+    ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+    List<Future<List<String>>> futures = new ArrayList<>();
+    for (int n = 0; n < parallelCalls; n++) {
+      futures.add(executorService.submit(new Callable<List<String>>() {
+        @Override
+        public List<String> call() throws Exception {
+          HiveMetaStoreClient testClient = new HiveMetaStoreClient(hiveConf);
+          List<String> uuids = new ArrayList<>(10);
+          for (int i = 0; i < numAPICallsPerThread; i++) {
+            String uuid = testClient.getMetastoreDbUuid();
+            uuids.add(uuid);
+          }
+          return uuids;
+        }
+      }));
+    }
+
+    String firstUUID = null;
+    List<String> allUuids = new ArrayList<String>();
+    for (Future<List<String>> future : futures) {
+      for (String uuid : future.get()) {
+        if (firstUUID == null) {
+          firstUUID = uuid;
+        } else {
+          assertEquals(firstUUID.toLowerCase(), uuid.toLowerCase());
+        }
+        allUuids.add(uuid);
+      }
+    }
+    int size = allUuids.size();
+    assertEquals(numAPICallsPerThread * parallelCalls, size);
   }
 }

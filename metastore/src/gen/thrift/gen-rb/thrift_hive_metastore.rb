@@ -2562,6 +2562,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'cache_file_metadata failed: unknown result')
     end
 
+    def get_metastore_db_uuid()
+      send_get_metastore_db_uuid()
+      return recv_get_metastore_db_uuid()
+    end
+
+    def send_get_metastore_db_uuid()
+      send_message('get_metastore_db_uuid', Get_metastore_db_uuid_args)
+    end
+
+    def recv_get_metastore_db_uuid()
+      result = receive_message(Get_metastore_db_uuid_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_metastore_db_uuid failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -4455,6 +4471,17 @@ module ThriftHiveMetastore
       result = Cache_file_metadata_result.new()
       result.success = @handler.cache_file_metadata(args.req)
       write_result(result, oprot, 'cache_file_metadata', seqid)
+    end
+
+    def process_get_metastore_db_uuid(seqid, iprot, oprot)
+      args = read_args(iprot, Get_metastore_db_uuid_args)
+      result = Get_metastore_db_uuid_result.new()
+      begin
+        result.success = @handler.get_metastore_db_uuid()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_metastore_db_uuid', seqid)
     end
 
   end
@@ -10221,6 +10248,39 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CacheFileMetadataResult}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_metastore_db_uuid_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_metastore_db_uuid_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

@@ -6970,6 +6970,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return new ForeignKeysResponse(ret);
     }
+
+    @Override
+    public String get_metastore_db_uuid() throws MetaException, TException {
+      try {
+        return getMS().getMetastoreDbUuid();
+      } catch (MetaException e) {
+        LOG.error("Exception thrown while querying metastore db uuid", e);
+        throw e;
+      }
+    }
   }
 
 

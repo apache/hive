@@ -2859,4 +2859,9 @@ public class HBaseStore implements RawStore {
     // TODO: see if it makes sense to implement this here
     return null;
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("Get metastore DB uuid is not implemented");
+  }
 }
