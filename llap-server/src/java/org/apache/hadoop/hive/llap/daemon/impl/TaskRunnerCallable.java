@@ -274,6 +274,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           return result;
         } finally {
           FileSystem.closeAllForUGI(fsTaskUgi);
+          fragmentInfo.getQueryInfo().returnUmbilicalUgi(taskOwner);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
                   runtimeWatch.stop().elapsedMillis());
           if (LOG.isDebugEnabled()) {

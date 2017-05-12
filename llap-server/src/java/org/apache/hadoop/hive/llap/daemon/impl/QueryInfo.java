@@ -24,9 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -57,6 +58,8 @@ public class QueryInfo {
   private final FileSystem localFs;
   private String[] localDirs;
   private final LlapNodeId amNodeId;
+  private final String appTokenIdentifier;
+  private final Token<JobTokenIdentifier> appToken;
   // Map of states for different vertices.
 
   private final Set<QueryFragmentInfo> knownFragments =
@@ -66,14 +69,15 @@ public class QueryInfo {
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
   private final String tokenUserName, appId;
-  private final AtomicReference<UserGroupInformation> umbilicalUgi;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
     String dagName, String hiveQueryIdString,
     int dagIdentifier, String user,
     ConcurrentMap<String, SourceStateProto> sourceStateMap,
     String[] localDirsBase, FileSystem localFs, String tokenUserName,
-    String tokenAppId, final LlapNodeId amNodeId) {
+    String tokenAppId, final LlapNodeId amNodeId,
+    String tokenIdentifier,
+    Token<JobTokenIdentifier> appToken) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -86,8 +90,12 @@ public class QueryInfo {
     this.localFs = localFs;
     this.tokenUserName = tokenUserName;
     this.appId = tokenAppId;
-    this.umbilicalUgi = new AtomicReference<>();
     this.amNodeId = amNodeId;
+    this.appTokenIdentifier = tokenIdentifier;
+    this.appToken = appToken;
+    final InetSocketAddress address =
+        NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
+    SecurityUtil.setTokenService(appToken, address);
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -314,23 +322,21 @@ public class QueryInfo {
     return appId;
   }
 
-  public void setupUmbilicalUgi(String umbilicalUser, Token<JobTokenIdentifier> appToken, String amHost, int amPort) {
-    synchronized (umbilicalUgi) {
-      if (umbilicalUgi.get() == null) {
-        UserGroupInformation taskOwner =
-            UserGroupInformation.createRemoteUser(umbilicalUser);
-        final InetSocketAddress address =
-            NetUtils.createSocketAddrForHost(amHost, amPort);
-        SecurityUtil.setTokenService(appToken, address);
-        taskOwner.addToken(appToken);
-        umbilicalUgi.set(taskOwner);
-      }
-    }
-  }
+
+  private final BlockingQueue<UserGroupInformation> ugiPool = new LinkedBlockingQueue<>();
 
   public UserGroupInformation getUmbilicalUgi() {
-    synchronized (umbilicalUgi) {
-      return umbilicalUgi.get();
+
+    UserGroupInformation ugi;
+    ugi = ugiPool.poll();
+    if (ugi == null) {
+      ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
+      ugi.addToken(appToken);
     }
+    return ugi;
+  }
+
+  public void returnUmbilicalUgi(UserGroupInformation ugi) {
+    ugiPool.offer(ugi);
   }
 }
