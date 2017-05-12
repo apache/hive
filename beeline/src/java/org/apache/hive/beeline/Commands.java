@@ -304,6 +304,7 @@ public class Commands {
         try {
           rs.close();
         } catch (Exception e) {
+          beeLine.error(e);
         }
       }
       // run as a batch
@@ -787,6 +788,7 @@ public class Commands {
   private BufferedRows getConfInternal(boolean call) {
     Statement stmnt = null;
     BufferedRows rows = null;
+    ResultSet rs = null;
     try {
       boolean hasResults = false;
       DatabaseConnection dbconn = beeLine.getDatabaseConnection();
@@ -803,17 +805,24 @@ public class Commands {
         }
       }
       if (hasResults) {
-        ResultSet rs = stmnt.getResultSet();
+        rs = stmnt.getResultSet();
         rows = new BufferedRows(beeLine, rs);
       }
     } catch (SQLException e) {
       beeLine.error(e);
     } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e1) {
+          beeLine.error(e1);
+        }
+      }
       if (stmnt != null) {
         try {
           stmnt.close();
-        } catch (SQLException e1) {
-          beeLine.error(e1);
+        } catch (SQLException e2) {
+          beeLine.error(e2);
         }
       }
     }
@@ -1428,7 +1437,6 @@ public class Commands {
   public boolean closeall(String line) {
     if (close(null)) {
       while (close(null)) {
-        ;
       }
       return true;
     }
