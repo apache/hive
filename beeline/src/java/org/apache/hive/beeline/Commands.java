@@ -1227,7 +1227,6 @@ public class Commands {
                   // In test mode print the logs to the output
                   beeLine.output(log);
                 }
-                beeLine.info(log);
               }
               Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
             } catch (SQLException e) {
