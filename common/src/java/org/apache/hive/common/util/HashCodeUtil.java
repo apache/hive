@@ -34,33 +34,19 @@ public class HashCodeUtil {
   }
 
   public static int calculateLongHashCode(long key) {
-
-    key = (~key) + (key << 21); // key = (key << 21) - key - 1;
-    key = key ^ (key >>> 24);
-    key = (key + (key << 3)) + (key << 8); // key * 265
-    key = key ^ (key >>> 14);
-    key = (key + (key << 2)) + (key << 4); // key * 21
-    key = key ^ (key >>> 28);
-    key = key + (key << 31);
-
+    // Mixing down into the lower bits - this produces a worse hashcode in purely
+    // numeric terms, but leaving entropy in the higher bits is not useful for a
+    // 2^n bucketing scheme. See JSR166 ConcurrentHashMap r1.89 (released under Public Domain)
+    // Note: ConcurrentHashMap has since reverted this to retain entropy bits higher
+    // up, to support the 2-level hashing for segment which operates at a higher bitmask
+    key ^= (key >>> 7) ^ (key >>> 4);
+    key ^= (key >>> 20) ^ (key >>> 12);
     return (int) key;
   }
 
   public static void calculateLongArrayHashCodes(long[] longs, int[] hashCodes, final int count) {
-    long key;
     for (int v = 0; v < count; v++) {
-
-      key = longs[v];
-
-      // Hash code logic from calculateLongHashCode.
-      key = (~key) + (key << 21); // key = (key << 21) - key - 1;
-      key = key ^ (key >>> 24);
-      key = (key + (key << 3)) + (key << 8); // key * 265
-      key = key ^ (key >>> 14);
-      key = (key + (key << 2)) + (key << 4); // key * 21
-      key = key ^ (key >>> 28);
-      key = key + (key << 31);
-      hashCodes[v] = (int) key;
+      hashCodes[v] = (int) calculateLongHashCode(longs[v]);
     }
   }
 
