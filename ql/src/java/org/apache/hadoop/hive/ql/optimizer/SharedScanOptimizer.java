@@ -322,7 +322,7 @@ public class SharedScanOptimizer extends Transform {
     // work when the TS operators are merged. This is due to an assumption in
     // MergeJoinProc that needs to be further explored.
     // If any of these conditions are not met, we cannot merge.
-    // TODO: Extend rule so it can be apply for these cases.
+    // TODO: Extend rule so it can be applied for these cases.
     final Set<Operator<?>> workOps1 = findWorkOperators(optimizerCache, prevTsOp);
     final Set<Operator<?>> workOps2 = findWorkOperators(optimizerCache, tsOp);
     boolean foundDummyStoreOp = false;
@@ -450,14 +450,14 @@ public class SharedScanOptimizer extends Transform {
             set.addAll(findWorkOperators(optimizerCache, child));
           }
         }
-        // Semijoin DPP work is considered an child because work needs
+        // Semijoin DPP work is considered a child because work needs
         // to finish for it to execute
         SemiJoinBranchInfo sjbi = pctx.getRsToSemiJoinBranchInfo().get(op);
         if (sjbi != null) {
           set.addAll(findWorkOperators(optimizerCache, sjbi.getTsOp()));
         }
       } else if(op.getConf() instanceof DynamicPruningEventDesc) {
-        // DPP work is considered an child because work needs
+        // DPP work is considered a child because work needs
         // to finish for it to execute
         set.addAll(findWorkOperators(
                 optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
