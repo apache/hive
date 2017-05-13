@@ -91,7 +91,14 @@ public class JdbcStorageConfigManager {
 
 
   private static void checkRequiredPropertiesAreDefined(Properties props) {
-    DatabaseType dbType = DatabaseType.valueOf(props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+    DatabaseType dbType = null;
+
+    try {
+      String dbTypeName = props.getProperty(JdbcStorageConfig.DATABASE_TYPE.getPropertyName());
+      dbType = DatabaseType.valueOf(dbTypeName);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Unknown database type.", e);
+    }
 
     for (JdbcStorageConfig configKey : (DatabaseType.METASTORE.equals(dbType)
             ? METASTORE_REQUIRED_PROPERTIES : DEFAULT_REQUIRED_PROPERTIES)) {
