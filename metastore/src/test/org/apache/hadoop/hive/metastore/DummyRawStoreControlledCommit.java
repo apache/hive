@@ -791,4 +791,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public int getDatabaseCount() throws MetaException {
     return objectStore.getDatabaseCount();
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("Get metastore uuid is not implemented");
+  }
 }

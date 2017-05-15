@@ -805,6 +805,9 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public int getDatabaseCount() throws MetaException {
     return 0;
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("Get metastore uuid is not implemented");
+  }
 }
-
-

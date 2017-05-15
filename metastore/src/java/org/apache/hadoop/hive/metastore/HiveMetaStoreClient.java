@@ -2151,4 +2151,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames);
     return client.get_aggr_stats_for(req);
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws TException {
+    return client.get_metastore_db_uuid();
+  }
 }

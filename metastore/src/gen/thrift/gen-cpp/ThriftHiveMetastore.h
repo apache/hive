@@ -141,6 +141,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
+  virtual void get_metastore_db_uuid(std::string& _return) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -566,6 +567,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void fire_listener_event(FireEventResponse& /* _return */, const FireEventRequest& /* rqst */) {
+    return;
+  }
+  void get_metastore_db_uuid(std::string& /* _return */) {
     return;
   }
 };
@@ -17645,6 +17649,110 @@ class ThriftHiveMetastore_fire_listener_event_presult {
 
 };
 
+
+class ThriftHiveMetastore_get_metastore_db_uuid_args {
+ public:
+
+  ThriftHiveMetastore_get_metastore_db_uuid_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_args() throw() {}
+
+
+  bool operator == (const ThriftHiveMetastore_get_metastore_db_uuid_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_metastore_db_uuid_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_metastore_db_uuid_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_metastore_db_uuid_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_metastore_db_uuid_result__isset {
+  _ThriftHiveMetastore_get_metastore_db_uuid_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_metastore_db_uuid_result__isset;
+
+class ThriftHiveMetastore_get_metastore_db_uuid_result {
+ public:
+
+  ThriftHiveMetastore_get_metastore_db_uuid_result() : success() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_result() throw() {}
+
+  std::string success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_metastore_db_uuid_result__isset __isset;
+
+  void __set_success(const std::string& val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_get_metastore_db_uuid_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_metastore_db_uuid_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_metastore_db_uuid_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset {
+  _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset;
+
+class ThriftHiveMetastore_get_metastore_db_uuid_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_metastore_db_uuid_presult() throw() {}
+
+  std::string* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_metastore_db_uuid_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -18032,6 +18140,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst);
   void send_fire_listener_event(const FireEventRequest& rqst);
   void recv_fire_listener_event(FireEventResponse& _return);
+  void get_metastore_db_uuid(std::string& _return);
+  void send_get_metastore_db_uuid();
+  void recv_get_metastore_db_uuid(std::string& _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -18167,6 +18278,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_metastore_db_uuid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -18296,6 +18408,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
+    processMap_["get_metastore_db_uuid"] = &ThriftHiveMetastoreProcessor::process_get_metastore_db_uuid;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -19527,6 +19640,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->fire_listener_event(_return, rqst);
     }
     ifaces_[i]->fire_listener_event(_return, rqst);
+    return;
+  }
+
+  void get_metastore_db_uuid(std::string& _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_metastore_db_uuid(_return);
+    }
+    ifaces_[i]->get_metastore_db_uuid(_return);
     return;
   }
 

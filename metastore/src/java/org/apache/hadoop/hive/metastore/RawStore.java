@@ -624,4 +624,11 @@ public interface RawStore extends Configurable {
    */
   @InterfaceStability.Evolving
   int getDatabaseCount() throws MetaException;
+
+  /**
+   * Gets the unique id of the backing datastore for the metadata
+   * @return
+   * @throws MetaException
+   */
+  String getMetastoreDbUuid() throws MetaException;
 }

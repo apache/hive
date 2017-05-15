@@ -832,4 +832,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public int getDatabaseCount() throws MetaException {
     return objectStore.getDatabaseCount();
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("getMetastoreDbUuid is not implemented");
+  }
 }
