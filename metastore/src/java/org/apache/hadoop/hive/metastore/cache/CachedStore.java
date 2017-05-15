@@ -447,7 +447,7 @@ public class CachedStore implements RawStore, Configurable {
     // If the table has property EXTERNAL set, update table type
     // accordingly
     String tableType = tbl.getTableType();
-    boolean isExternal = "TRUE".equals(tbl.getParameters().get("EXTERNAL"));
+    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
     if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
       if (isExternal) {
         tableType = TableType.EXTERNAL_TABLE.toString();
