@@ -38,7 +38,8 @@ public class TestQBJoinTreeApplyPredicate {
 
   @BeforeClass
   public static void initialize() {
-    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    queryState =
+        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
     conf = queryState.getConf();
     SessionState.start(conf);
   }

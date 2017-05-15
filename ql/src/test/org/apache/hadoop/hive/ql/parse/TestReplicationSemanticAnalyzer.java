@@ -56,7 +56,8 @@ public class TestReplicationSemanticAnalyzer {
 
   @BeforeClass
   public static void initialize() throws HiveException {
-    queryState = new QueryState(new HiveConf(SemanticAnalyzer.class));
+    queryState =
+        new QueryState.Builder().withHiveConf(new HiveConf(SemanticAnalyzer.class)).build();
     conf = queryState.getConf();
     conf.set("hive.security.authorization.manager", "");
     SessionState.start(conf);

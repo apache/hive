@@ -63,6 +63,7 @@ public final class QFile {
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
   private String name;
+  private String databaseName;
   private File inputFile;
   private File rawOutputFile;
   private File outputFile;
@@ -79,6 +80,10 @@ public final class QFile {
 
   public String getName() {
     return name;
+  }
+
+  public String getDatabaseName() {
+    return databaseName;
   }
 
   public File getInputFile() {
@@ -163,8 +168,8 @@ public final class QFile {
    */
   private String revertReplaceTableNames(String source) {
     for (String table : srcTables) {
-      source = source.replaceAll("(?is)(\\s+)default\\." + table + "([\\s;\\n\\)])", "$1" + table
-          + "$2");
+      source = source.replaceAll("(?is)(?<!name:?|alias:?)(\\s+)default\\." + table
+          + "([\\s;\\n\\)])", "$1" + table + "$2");
     }
     return source;
   }
@@ -319,6 +324,7 @@ public final class QFile {
     public QFile getQFile(String name) throws IOException {
       QFile result = new QFile();
       result.name = name;
+      result.databaseName = "test_db_" + name;
       result.inputFile = new File(queryDirectory, name + ".q");
       result.rawOutputFile = new File(logDirectory, name + ".q.out.raw");
       result.outputFile = new File(logDirectory, name + ".q.out");
@@ -328,11 +334,13 @@ public final class QFile {
       result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
       result.rewriteSourceTables = rewriteSourceTables;
       result.specificFilterSet = new RegexFilterSet()
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + name + "\n",
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + result.databaseName + "\n",
               "$1: $2: database:default\n")
-          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + name + "@", "$1: $2: default@")
-          .addFilter("name(:?) " + name + "\\.(.*)\n", "name$1 default.$2\n")
-          .addFilter("/" + name + ".db/", "/");
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + result.databaseName + "@",
+              "$1: $2: default@")
+          .addFilter("name(:?) " + result.databaseName + "\\.(.*)\n", "name$1 default.$2\n")
+          .addFilter("alias(:?) " + result.databaseName + "\\.(.*)\n", "alias$1 default.$2\n")
+          .addFilter("/" + result.databaseName + ".db/", "/");
       result.converter = Converter.NONE;
       String input = FileUtils.readFileToString(result.inputFile, "UTF-8");
       if (input.contains("-- SORT_QUERY_RESULTS")) {

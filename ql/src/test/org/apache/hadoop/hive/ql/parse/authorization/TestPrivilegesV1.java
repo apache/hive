@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 
 import java.util.HashMap;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -41,7 +39,7 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     db = Mockito.mock(Hive.class);
     table = new Table(DB, TABLE);
     partition = new Partition(table);

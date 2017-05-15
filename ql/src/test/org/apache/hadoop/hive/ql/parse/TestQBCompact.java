@@ -50,7 +50,7 @@ public class TestQBCompact {
 
   @BeforeClass
   public static void init() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
