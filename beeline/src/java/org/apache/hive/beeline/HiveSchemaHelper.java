@@ -34,6 +34,7 @@ import java.util.List;
 
 public class HiveSchemaHelper {
   public static final String DB_DERBY = "derby";
+  public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRACE = "postgres";
@@ -50,15 +51,16 @@ public class HiveSchemaHelper {
    * @throws org.apache.hadoop.hive.metastore.api.MetaException
    */
   public static Connection getConnectionToMetastore(String userName,
-      String password, boolean printInfo, HiveConf hiveConf)
+      String password, String url, String driver, boolean printInfo,
+      HiveConf hiveConf)
       throws HiveMetaException {
     try {
-      String connectionURL = getValidConfVar(
-          HiveConf.ConfVars.METASTORECONNECTURLKEY, hiveConf);
-      String driver = getValidConfVar(
-          HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf);
+      url = url == null ? getValidConfVar(
+        HiveConf.ConfVars.METASTORECONNECTURLKEY, hiveConf) : url;
+      driver = driver == null ? getValidConfVar(
+        HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf) : driver;
       if (printInfo) {
-        System.out.println("Metastore connection URL:\t " + connectionURL);
+        System.out.println("Metastore connection URL:\t " + url);
         System.out.println("Metastore Connection Driver :\t " + driver);
         System.out.println("Metastore connection User:\t " + userName);
       }
@@ -70,7 +72,7 @@ public class HiveSchemaHelper {
       Class.forName(driver);
 
       // Connect using the JDBC URL and user/pass from conf
-      return DriverManager.getConnection(connectionURL, userName, password);
+      return DriverManager.getConnection(url, userName, password);
     } catch (IOException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
     } catch (SQLException e) {
@@ -97,7 +99,8 @@ public class HiveSchemaHelper {
       COMMENT
     }
 
-    static final String DEFAUTL_DELIMITER = ";";
+    static final String DEFAULT_DELIMITER = ";";
+    static final String DEFAULT_QUOTE = "\"";
 
     /**
      * Find the type of given command
@@ -140,6 +143,13 @@ public class HiveSchemaHelper {
     public String getDelimiter();
 
     /**
+     * Get the SQL indentifier quotation character
+     *
+     * @return
+     */
+    public String getQuoteCharacter();
+
+    /**
      * Clear any client specific tags
      *
      * @return
@@ -161,6 +171,17 @@ public class HiveSchemaHelper {
      * @return string of sql commands
      */
     public String buildCommand(String scriptDir, String scriptFile)
+        throws IllegalFormatException, IOException;
+
+    /**
+     * Flatten the nested upgrade script into a buffer
+     *
+     * @param scriptDir  upgrade script directory
+     * @param scriptFile upgrade script file
+     * @param fixQuotes whether to replace quote characters
+     * @return string of sql commands
+     */
+    public String buildCommand(String scriptDir, String scriptFile, boolean fixQuotes)
         throws IllegalFormatException, IOException;
   }
 
@@ -203,8 +224,14 @@ public class HiveSchemaHelper {
 
     @Override
     public String getDelimiter() {
-      return DEFAUTL_DELIMITER;
+      return DEFAULT_DELIMITER;
     }
+
+    @Override
+    public String getQuoteCharacter() {
+      return DEFAULT_QUOTE;
+    }
+
 
     @Override
     public String cleanseCommand(String dbCommand) {
@@ -224,6 +251,12 @@ public class HiveSchemaHelper {
     @Override
     public String buildCommand(
       String scriptDir, String scriptFile) throws IllegalFormatException, IOException {
+      return buildCommand(scriptDir, scriptFile, false);
+    }
+
+    @Override
+    public String buildCommand(
+      String scriptDir, String scriptFile, boolean fixQuotes) throws IllegalFormatException, IOException {
       BufferedReader bfReader =
           new BufferedReader(new FileReader(scriptDir + File.separatorChar + scriptFile));
       String currLine;
@@ -231,6 +264,11 @@ public class HiveSchemaHelper {
       String currentCommand = null;
       while ((currLine = bfReader.readLine()) != null) {
         currLine = currLine.trim();
+
+        if (fixQuotes && !getQuoteCharacter().equals(DEFAULT_QUOTE)) {
+          currLine = currLine.replace("\\\"", getQuoteCharacter());
+        }
+
         if (currLine.isEmpty()) {
           continue; // skip empty lines
         }
@@ -319,11 +357,46 @@ public class HiveSchemaHelper {
     }
   }
 
+  // Derby commandline parser
+  public static class HiveCommandParser extends AbstractCommandParser {
+    private static String HIVE_NESTING_TOKEN = "SOURCE";
+    private final NestedScriptParser nestedDbCommandParser;
+
+    public HiveCommandParser(String dbOpts, String msUsername, String msPassword,
+        HiveConf hiveConf, String metaDbType) {
+      super(dbOpts, msUsername, msPassword, hiveConf);
+      nestedDbCommandParser = getDbCommandParser(metaDbType);
+    }
+
+    @Override
+    public String getQuoteCharacter() {
+      return nestedDbCommandParser.getQuoteCharacter();
+    }
+
+    @Override
+    public String getScriptName(String dbCommand) throws IllegalArgumentException {
+
+      if (!isNestedScript(dbCommand)) {
+        throw new IllegalArgumentException("Not a script format " + dbCommand);
+      }
+      String[] tokens = dbCommand.split(" ");
+      if (tokens.length != 2) {
+        throw new IllegalArgumentException("Couldn't parse line " + dbCommand);
+      }
+      return tokens[1].replace(";", "");
+    }
+
+    @Override
+    public boolean isNestedScript(String dbCommand) {
+     return dbCommand.startsWith(HIVE_NESTING_TOKEN);
+    }
+  }
+
   // MySQL parser
   public static class MySqlCommandParser extends AbstractCommandParser {
     private static final String MYSQL_NESTING_TOKEN = "SOURCE";
     private static final String DELIMITER_TOKEN = "DELIMITER";
-    private String delimiter = DEFAUTL_DELIMITER;
+    private String delimiter = DEFAULT_DELIMITER;
 
     public MySqlCommandParser(String dbOpts, String msUsername, String msPassword,
         HiveConf hiveConf) {
@@ -362,6 +435,11 @@ public class HiveSchemaHelper {
     @Override
     public String getDelimiter() {
       return delimiter;
+    }
+
+    @Override
+    public String getQuoteCharacter() {
+      return "`";
     }
 
     @Override
@@ -474,14 +552,20 @@ public class HiveSchemaHelper {
   }
 
   public static NestedScriptParser getDbCommandParser(String dbName) {
-    return getDbCommandParser(dbName, null, null, null, null);
+    return getDbCommandParser(dbName, null);
+  }
+
+  public static NestedScriptParser getDbCommandParser(String dbName, String metaDbName) {
+    return getDbCommandParser(dbName, null, null, null, null, metaDbName);
   }
 
   public static NestedScriptParser getDbCommandParser(String dbName,
       String dbOpts, String msUsername, String msPassword,
-      HiveConf hiveConf) {
+      HiveConf hiveConf, String metaDbType) {
     if (dbName.equalsIgnoreCase(DB_DERBY)) {
       return new DerbyCommandParser(dbOpts, msUsername, msPassword, hiveConf);
+    } else if (dbName.equalsIgnoreCase(DB_HIVE)) {
+      return new HiveCommandParser(dbOpts, msUsername, msPassword, hiveConf, metaDbType);
     } else if (dbName.equalsIgnoreCase(DB_MSSQL)) {
       return new MSSQLCommandParser(dbOpts, msUsername, msPassword, hiveConf);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {

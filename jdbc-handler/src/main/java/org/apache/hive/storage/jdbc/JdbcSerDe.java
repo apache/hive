@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -61,7 +62,6 @@ public class JdbcSerDe extends AbstractSerDe {
     try {
       LOGGER.debug("Initializing the SerDe");
 
-      // Hive cdh-4.3 does not provide the properties object on all calls
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
 
@@ -126,7 +126,7 @@ public class JdbcSerDe extends AbstractSerDe {
     for (int i = 0; i < numColumns; i++) {
       columnKey.set(columnNames.get(i));
       Writable value = input.get(columnKey);
-      if (value == null) {
+      if (value == null || value instanceof NullWritable) {
         row.add(null);
       }
       else {

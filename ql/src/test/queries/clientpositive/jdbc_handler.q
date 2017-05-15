@@ -9,31 +9,24 @@ owner STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+"hive.sql.database.type" = "METASTORE",
 "hive.sql.query" = "SELECT TBL_ID, DB_ID, TBL_NAME, TBL_TYPE, OWNER FROM TBLS",
-"hive.sql.column.mapping" = "id=TBL_ID, db_id=DB_ID, name=TBL_NAME, type=TBL_TYPE, owner=OWNER",
-"hive.sql.dbcp.maxActive" = "1"
+"hive.sql.column.mapping" = "id=TBL_ID, db_id=DB_ID, name=TBL_NAME, type=TBL_TYPE, owner=OWNER"
 );
 
 CREATE EXTERNAL TABLE dbs
 (
-id int,
-name STRING
+DB_ID int,
+NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-"hive.sql.database.type" = "DERBY",
-"hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true",
-"hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS",
-"hive.sql.column.mapping" = "id=DB_ID, name=NAME",
-"hive.sql.dbcp.maxActive" = "1"
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
 );
 
-select tables.name as tn, dbs.name as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.id) order by tn, dn, t;
+select tables.name as tn, dbs.NAME as dn, tables.type as t
+from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t;
 
 explain
 select
