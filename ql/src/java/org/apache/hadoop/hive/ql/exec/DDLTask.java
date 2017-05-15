@@ -247,10 +247,12 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.hive.common.util.RetryUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 
 /**
@@ -1866,19 +1868,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private void msckAddPartitionsOneByOne(Hive db, Table table,
-      Set<CheckResult.PartitionResult> partsNotInMs, List<String> repairOutput) {
-    for (CheckResult.PartitionResult part : partsNotInMs) {
-      try {
-        db.createPartition(table, Warehouse.makeSpecFromName(part.getPartitionName()));
-        repairOutput.add("Repair: Added partition to metastore "
-            + table.getTableName() + ':' + part.getPartitionName());
-      } catch (Exception e) {
-        LOG.warn("Repair error, could not add partition to metastore: ", e);
-      }
-    }
-  }
-
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
@@ -2006,34 +1995,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
         }
         Table table = db.getTable(msckDesc.getTableName());
-        AddPartitionDesc apd = new AddPartitionDesc(
-            table.getDbName(), table.getTableName(), false);
+        int batchSize = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
+        int maxRetries = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES);
+        int decayingFactor = 2;
+        if (batchSize == 0) {
+          //batching is not enabled. Try to add all the partitions in one call
+          batchSize = partsNotInMs.size();
+        }
         try {
-          int batch_size = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
-          if (batch_size > 0 && partsNotInMs.size() > batch_size) {
-            int counter = 0;
-            for (CheckResult.PartitionResult part : partsNotInMs) {
-              counter++;
-              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
-              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName());
-              if (counter % batch_size == 0 || counter == partsNotInMs.size()) {
-                db.createPartitions(apd);
-                apd = new AddPartitionDesc(table.getDbName(), table.getTableName(), false);
-              }
-            }
-          } else {
-            for (CheckResult.PartitionResult part : partsNotInMs) {
-              apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
-              repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName());
-            }
-            db.createPartitions(apd);
-          }
+          createPartitionsInBatches(db, repairOutput, partsNotInMs, table, batchSize,
+              decayingFactor, maxRetries);
         } catch (Exception e) {
-          LOG.info("Could not bulk-add partitions to metastore; trying one by one", e);
-          repairOutput.clear();
-          msckAddPartitionsOneByOne(db, table, partsNotInMs, repairOutput);
+          throw new HiveException(e);
         }
       }
     } catch (HiveException e) {
@@ -2083,6 +2056,44 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  @VisibleForTesting
+  void createPartitionsInBatches(final Hive db, final List<String> repairOutput,
+      Set<CheckResult.PartitionResult> partsNotInMs, final Table table, int batchSize, int decayingFactor, int maxRetries)
+      throws Exception {
+    final String addMsgFormat = "Repair: Added partition to metastore "
+        + table.getTableName() + ":%s";
+    final Set<CheckResult.PartitionResult> batchWork = new HashSet<>(partsNotInMs);
+    new RetryUtilities.ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws Exception {
+        while (!batchWork.isEmpty()) {
+          //get the current batch size
+          int currentBatchSize = size;
+          AddPartitionDesc apd =
+              new AddPartitionDesc(table.getDbName(), table.getTableName(), true);
+          //store the partitions temporarily until processed
+          List<CheckResult.PartitionResult> lastBatch = new ArrayList<>(currentBatchSize);
+          List<String> addMsgs = new ArrayList<>(currentBatchSize);
+          //add the number of partitions given by the current batchsize
+          for (CheckResult.PartitionResult part : batchWork) {
+            if (currentBatchSize == 0) {
+              break;
+            }
+            apd.addPartition(Warehouse.makeSpecFromName(part.getPartitionName()), null);
+            lastBatch.add(part);
+            addMsgs.add(String.format(addMsgFormat, part.getPartitionName()));
+            currentBatchSize--;
+          }
+          db.createPartitions(apd);
+          // if last batch is successful remove it from partsNotInMs
+          batchWork.removeAll(lastBatch);
+          repairOutput.addAll(addMsgs);
+        }
+        return null;
+      }
+    }.run();
   }
 
   /**

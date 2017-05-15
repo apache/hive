@@ -14,10 +14,13 @@ dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=b/p2=a/datafile;
 dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=c/p2=a/datafile;
 
 MSCK TABLE default.repairtable;
+show partitions default.repairtable;
 
 MSCK REPAIR TABLE default.repairtable;
+show partitions default.repairtable;
 
 MSCK TABLE repairtable;
+show partitions repairtable;
 
 DROP TABLE default.repairtable;
 
@@ -28,5 +31,6 @@ CREATE TABLE `repairtable`( `col` string) PARTITIONED BY (  `p1` string,  `p2` s
 dfs -touchz ${system:test.tmp.dir}/apps/hive/warehouse/test.db/repairtable/p1=c/p2=a/p3=b/datafile;
 set hive.mv.files.thread=1;
 MSCK TABLE repairtable;
+show partitions repairtable;
 
 DROP TABLE default.repairtable;
