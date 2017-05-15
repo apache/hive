@@ -21,7 +21,8 @@ package org.apache.hive.service.cli.thrift;
 import static org.junit.Assert.assertNotNull;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.service.auth.HiveAuthFactory.AuthTypes;
+import org.apache.hive.service.auth.HiveAuthConstants;
+import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +55,7 @@ public class TestThriftCLIServiceWithBinary extends ThriftCLIServiceTest {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     hiveConf.setVar(ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST, host);
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, port);
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, AuthTypes.NONE.toString());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.NONE.toString());
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
 
     startHiveServer2WithConf(hiveConf);

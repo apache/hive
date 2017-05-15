@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSessionHook;
 import org.apache.hive.service.cli.session.HiveSessionHookContext;
@@ -255,7 +255,7 @@ public class TestJdbcWithMiniKdc {
   protected void storeToken(String tokenStr, UserGroupInformation ugi)
       throws Exception {
     Utils.setTokenStr(ugi,
-        tokenStr, HiveAuthFactory.HS2_CLIENT_TOKEN);
+        tokenStr, HiveAuthConstants.HS2_CLIENT_TOKEN);
   }
 
 }
