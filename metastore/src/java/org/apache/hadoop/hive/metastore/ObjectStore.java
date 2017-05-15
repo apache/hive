@@ -1147,7 +1147,7 @@ public class ObjectStore implements RawStore, Configurable {
     return mConstraints;
   }
 
-@Override
+  @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -1426,7 +1426,7 @@ public class ObjectStore implements RawStore, Configurable {
       // for backwards compatibility with old metastore persistence
       if (mtbl.getViewOriginalText() != null) {
         tableType = TableType.VIRTUAL_VIEW.toString();
-      } else if ("TRUE".equals(mtbl.getParameters().get("EXTERNAL"))) {
+      } else if (Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
         tableType = TableType.EXTERNAL_TABLE.toString();
       } else {
         tableType = TableType.MANAGED_TABLE.toString();
@@ -1458,7 +1458,7 @@ public class ObjectStore implements RawStore, Configurable {
     // If the table has property EXTERNAL set, update table type
     // accordingly
     String tableType = tbl.getTableType();
-    boolean isExternal = "TRUE".equals(tbl.getParameters().get("EXTERNAL"));
+    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
     if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
       if (isExternal) {
         tableType = TableType.EXTERNAL_TABLE.toString();
