@@ -1699,7 +1699,8 @@ public class QTestUtil {
       ".*at com\\.sun\\.proxy.*",
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",
-      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*"
+      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
+      "^Repair: Added partition to metastore.*"
   });
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {

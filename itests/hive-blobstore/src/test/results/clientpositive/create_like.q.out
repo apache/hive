@@ -91,10 +91,17 @@ POSTHOOK: query: MSCK REPAIR TABLE like_table
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@like_table
 Partitions not in metastore:	like_table:dt=20110924/hour=1	like_table:dt=20110924/hour=2	like_table:dt=20110925/hour=1	like_table:dt=20110925/hour=2
-Repair: Added partition to metastore like_table:dt=20110924/hour=1
-Repair: Added partition to metastore like_table:dt=20110924/hour=2
-Repair: Added partition to metastore like_table:dt=20110925/hour=1
-Repair: Added partition to metastore like_table:dt=20110925/hour=2
+#### A masked pattern was here ####
+PREHOOK: query: show partitions like_table
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@like_table
+POSTHOOK: query: show partitions like_table
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@like_table
+dt=20110924/hour=1
+dt=20110924/hour=2
+dt=20110925/hour=1
+dt=20110925/hour=2
 PREHOOK: query: SELECT * FROM blobstore_partitioned_source_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@blobstore_partitioned_source_table

@@ -21,6 +21,7 @@ DROP TABLE like_table;
 CREATE EXTERNAL TABLE like_table LIKE blobstore_partitioned_source_table LOCATION '${hiveconf:test.blobstore.path.unique}/create_like/data';
 
 MSCK REPAIR TABLE like_table;
+show partitions like_table;
 
 SELECT * FROM blobstore_partitioned_source_table;
 SELECT * FROM like_table;
