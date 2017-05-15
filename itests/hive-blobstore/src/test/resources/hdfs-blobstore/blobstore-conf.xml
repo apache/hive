@@ -13,6 +13,6 @@
   </property>
   <property>
     <name>additional.plan.masks</name>
-    <value>s3.*</value>
+    <value>.*s3.*</value>
   </property>
 </configuration>

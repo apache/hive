@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
+import static org.junit.Assert.fail;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import org.junit.Before;
@@ -33,7 +35,13 @@ public class HdfsBlobstoreCliDriver extends AbstractCoreBlobstoreCliDriver {
   @BeforeClass
   public void beforeClass() {
     super.beforeClass();
-    qt.getConf().set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
+  }
+
+  @Override
+  @Before
+  public void setUp() {
+    super.setUp();
+    qt.getConf().set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, testBlobstorePathUnique);
   }
 
   @Override
