@@ -280,7 +280,7 @@ public final class PrimitiveObjectInspectorFactory {
 
   /**
    * Returns the PrimitiveWritableObjectInspector for the given type info
-   * @param PrimitiveTypeInfo    PrimitiveTypeInfo instance
+   * @param typeInfo PrimitiveTypeInfo instance
    * @return AbstractPrimitiveWritableObjectInspector instance
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
@@ -316,7 +316,7 @@ public final class PrimitiveObjectInspectorFactory {
    * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
    * for the PrimitiveCategory.
    *
-   * @param primitiveCategory
+   * @param typeInfo
    * @param value
    */
   public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
@@ -385,7 +385,7 @@ public final class PrimitiveObjectInspectorFactory {
 
   /**
    * Returns the PrimitiveJavaObjectInspector for the given PrimitiveTypeInfo instance,
-   * @param PrimitiveTypeInfo    PrimitiveTypeInfo instance
+   * @param typeInfo PrimitiveTypeInfo instance
    * @return AbstractPrimitiveJavaObjectInspector instance
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(

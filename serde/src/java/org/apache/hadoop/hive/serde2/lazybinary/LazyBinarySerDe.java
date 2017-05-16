@@ -353,7 +353,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * @param byteStream
    * @param dec
    * @param scratchLongs
-   * @param buffer
+   * @param scratchBytes
    */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
@@ -379,9 +379,9 @@ public class LazyBinarySerDe extends AbstractSerDe {
   * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
   *
   * @param byteStream
-  * @param dec
+  * @param decWritable
   * @param scratchLongs
-  * @param buffer
+  * @param scratchBytes
   */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,

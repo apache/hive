@@ -110,7 +110,7 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
   /**
    * Set the {@link AvroSchemaRetriever} for the {@link AvroLazyObjectInspector} to the given class
    *
-   * @param scheamRetrieverClass the schema retriever class to be set
+   * @param schemaRetriever the schema retriever class to be set
    * */
   public void setSchemaRetriever(AvroSchemaRetriever schemaRetriever) {
     this.schemaRetriever = schemaRetriever;

@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
 /**
- * LazyBinaryMap is serialized as follows: start A b c b c b c end bytes[] ->
+ * LazyBinaryMap is serialized as follows: start A b c b c b c end bytes[] -&gt;
  * |--------|---|---|---|---| ... |---|---|
  * 
  * Section A is the null-bytes. Suppose the map has N key-value pairs, then

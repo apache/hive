@@ -100,7 +100,7 @@ public final class LazyBinaryUtils {
   /**
    * Record is the unit that data is serialized in. A record includes two parts.
    * The first part stores the size of the element and the second part stores
-   * the real element. size element record -> |----|-------------------------|
+   * the real element. size element record -&gt; |----|-------------------------|
    *
    * A RecordInfo stores two information of a record, the size of the "size"
    * part which is the element offset and the size of the element part which is

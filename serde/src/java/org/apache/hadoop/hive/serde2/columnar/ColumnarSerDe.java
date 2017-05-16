@@ -88,7 +88,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   /**
    * Initialize the SerDe given the parameters.
    *
-   * @see AbstractSerDe#initialize(Configuration, Properties)
+   * @see org.apache.hadoop.hive.serde2.AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -123,7 +123,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
    * @param objInspector
    *          The ObjectInspector for the row object
    * @return The serialized Writable object
-   * @see AbstractSerDe#serialize(Object, ObjectInspector)
+   * @see org.apache.hadoop.hive.serde2.AbstractSerDe#serialize(Object, ObjectInspector)
    */
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
