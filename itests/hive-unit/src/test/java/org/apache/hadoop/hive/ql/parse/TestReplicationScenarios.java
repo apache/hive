@@ -1607,40 +1607,6 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testTruncateTempTable() throws IOException {
-    String testName = "truncateTempTable";
-    LOG.info("Testing " + testName);
-    String dbName = testName + "_" + tid;
-
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY(b int) STORED AS TEXTFILE");
-
-    String[] unptn_data = new String[] { "eleven", "twelve" };
-    String[] ptn_data = new String[] { "hundred", "thousand" };
-    String[] empty = new String[] {};
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
-
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION (b=1) values('" + ptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION (b=2) values('" + ptn_data[1] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned ORDER BY a", ptn_data);
-
-    run("CREATE TEMPORARY TABLE " + dbName + ".tmp_unptned AS SELECT * from " + dbName + ".unptned");
-    verifySetup("SELECT a from " + dbName + ".tmp_unptned ORDER BY a", unptn_data);
-
-    assert(run("TRUNCATE TABLE " + dbName + ".tmp_unptned", true));
-    verifyRun("SELECT a from " + dbName + ".tmp_unptned", empty);
-
-    run("CREATE TEMPORARY TABLE " + dbName + ".tmp_ptned AS SELECT * from " + dbName + ".ptned");
-    verifySetup("SELECT a from " + dbName + ".tmp_ptned ORDER BY a", ptn_data);
-
-    assert(run("TRUNCATE TABLE " + dbName + ".tmp_ptned", true));
-    verifyRun("SELECT a from " + dbName + ".tmp_ptned", empty);
-  }
-
-  @Test
   public void testStatus() throws IOException {
     // first test ReplStateMap functionality
     Map<String,Long> cmap = new ReplStateMap<String,Long>();
