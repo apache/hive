@@ -72,6 +72,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>org.apache.hive.hcatalog</groupId>
+        <artifactId>hive-webhcat-java-client</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-hbase-handler</artifactId>
       <version>${project.version}</version>

@@ -82,5 +82,27 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
+  <build>
+      <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+      <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>test-jar</goal>
+                      </goals>
+                      <configuration>
+                          <!--exclude configuration xml that might be picked up-->
+                          <excludes>
+                              <exclude>*.xml</exclude>
+                          </excludes>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+      </plugins>
+  </build>
 </project>

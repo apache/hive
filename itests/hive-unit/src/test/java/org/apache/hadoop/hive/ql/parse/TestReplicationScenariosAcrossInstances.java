@@ -23,12 +23,17 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TestReplicationScenariosAcrossInstances {
   @Rule
   public final TestName testName = new TestName();
+
+  @Rule
+  public TestRule replV1BackwardCompat = primary.getReplivationV1CompatRule();
+
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
 
   private static WarehouseInstance primary, replica;
@@ -88,4 +93,5 @@ public class TestReplicationScenariosAcrossInstances {
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
         .verify(replicatedDbName + ".testFunction");
   }
+
 }

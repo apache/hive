@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec.ReplStateMap;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -46,6 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,6 +83,12 @@ public class TestReplicationScenarios {
   private static int msPort;
   private static Driver driver;
   private static HiveMetaStoreClient metaStoreClient;
+
+  @Rule
+  public TestRule replV1BackwardCompatibleRule =
+      new ReplicationV1CompatRule(metaStoreClient, hconf,
+          new ArrayList<>(Arrays.asList("testEventFilters")));
+  // Make sure we skip backward-compat checking for those tests that don't generate events
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
