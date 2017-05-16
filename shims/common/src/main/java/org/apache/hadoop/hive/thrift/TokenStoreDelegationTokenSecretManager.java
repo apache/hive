@@ -184,7 +184,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
 
   /**
    * Synchronize master key updates / sequence generation for multiple nodes.
-   * NOTE: {@Link AbstractDelegationTokenSecretManager} keeps currentKey private, so we need
+   * NOTE: {@link AbstractDelegationTokenSecretManager} keeps currentKey private, so we need
    * to utilize this "hook" to manipulate the key through the object reference.
    * This .20S workaround should cease to exist when Hadoop supports token store.
    */

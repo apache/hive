@@ -169,9 +169,9 @@ public abstract class HadoopThriftAuthBridge {
     /**
      * Create a client-side SASL transport that wraps an underlying transport.
      *
-     * @param method The authentication method to use. Currently only KERBEROS is
+     * @param methodStr The authentication method to use. Currently only KERBEROS is
      *               supported.
-     * @param serverPrincipal The Kerberos principal of the target server.
+     * @param principalConfig The Kerberos principal of the target server.
      * @param underlyingTransport The underlying transport mechanism, usually a TSocket.
      * @param saslProps the sasl properties to create the client with
      */
