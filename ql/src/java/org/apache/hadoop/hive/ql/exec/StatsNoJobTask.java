@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -248,9 +246,6 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
                   table.getInputFormatClass(), jc);
               InputSplit dummySplit = new FileSplit(file.getPath(), 0, 0, new String[] { table
                   .getDataLocation().toString() });
-              if (ParquetHiveSerDe.isParquetTable(table)) {
-                ParquetTableUtils.setParquetTimeZoneIfAbsent(jc, table.getParameters());
-              }
               org.apache.hadoop.mapred.RecordReader<?, ?> recordReader = (org.apache.hadoop.mapred.RecordReader<?, ?>) inputFormat
                   .getRecordReader(dummySplit, jc, Reporter.NULL);
               StatsProvidingRecordReader statsRR;
