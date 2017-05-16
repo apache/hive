@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -271,19 +269,18 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    Long mmWriteId = null;
+    Long txnId = null;
+    int stmtId = 0;
     Table tbl = ts.tableHandle;
     if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
-      try {
-        mmWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
+      txnId = 0l; //todo to be replaced with txnId in Driver
     }
 
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
-      Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite, mmWriteId);
+      Utilities.getTableDesc(ts.tableHandle), partSpec, isOverWrite, txnId);
+    loadTableWork.setTxnId(txnId);
+    loadTableWork.setStmtId(stmtId);
     if (preservePartitionSpecs){
       // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but
       // but preservePartitionSpecs=false(default) here is not sufficient enough

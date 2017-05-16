@@ -20,23 +20,18 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
@@ -44,7 +39,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -56,7 +50,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -319,21 +312,22 @@ public abstract class TaskCompiler {
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
     // CTAS; make the movetask's destination directory the table's destination.
-    Long mmWriteIdForCtas = null;
+    Long txnIdForCtas = null;
+    int stmtId = 0; // CTAS cannot be part of multi-txn stmt
     FileSinkDesc dataSinkForCtas = null;
     String loc = null;
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       dataSinkForCtas = ctd.getAndUnsetWriter();
-      mmWriteIdForCtas = ctd.getInitialMmWriteId();
+      txnIdForCtas = ctd.getInitialMmWriteId();
       loc = ctd.getLocation();
     } else {
       loc = pCtx.getCreateViewDesc().getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
-    if (mmWriteIdForCtas != null) {
+    if (txnIdForCtas != null) {
       dataSinkForCtas.setDirName(location);
-      location = new Path(location, ValidWriteIds.getMmFilePrefix(mmWriteIdForCtas));
+      location = new Path(location, AcidUtils.deltaSubdir(txnIdForCtas, txnIdForCtas, stmtId));
       lfd.setSourcePath(location);
       Utilities.LOG14535.info("Setting MM CTAS to  " + location);
     }

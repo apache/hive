@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
@@ -340,10 +339,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        boolean isAcid = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
-            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY;
-        if (tbd.isMmTable() && isAcid) {
-           throw new HiveException("ACID and MM are not supported");
+        boolean isFullAcidOp = work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
+            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE;
+        if (tbd.isMmTable() && isFullAcidOp) {
+           throw new HiveException("UPDATE and DELETE operations are not supported for MM table");
         }
 
         // Create a data container
@@ -356,8 +355,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
                 "Only single-partition LoadTableDesc can skip commiting write ID");
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
-              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isAcid, hasFollowingStatsTask(),
-              tbd.getMmWriteId());
+              work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
+              tbd.getTxnId(), tbd.getStmtId());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -414,13 +413,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     db.validatePartitionNameCharacters(partVals);
     Utilities.LOG14535.info("loadPartition called from " + tbd.getSourcePath()
         + " into " + tbd.getTable().getTableName());
-    boolean isCommitMmWrite = tbd.isCommitMmWrite();
     db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-        (work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
-         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY),
-        hasFollowingStatsTask(), tbd.getMmWriteId(), isCommitMmWrite);
+        work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
+            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE,
+        hasFollowingStatsTask(), tbd.getTxnId(), tbd.getStmtId());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -464,11 +462,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getReplace(),
         dpCtx.getNumDPCols(),
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
-        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
-            work.getLoadTableWork().getWriteType() != AcidUtils.Operation.INSERT_ONLY,
-        SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
-        work.getLoadTableWork().getWriteType(),
-        tbd.getMmWriteId());
+        work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
+            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE,
+        SessionState.get().getTxnMgr().getCurrentTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
+        work.getLoadTableWork().getWriteType());
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {

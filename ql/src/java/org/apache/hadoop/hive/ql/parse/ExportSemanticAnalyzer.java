@@ -18,15 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-
-import org.apache.hadoop.hive.common.ValidWriteIds;
-
-import java.util.List;
-
-import org.apache.hadoop.hive.ql.exec.Utilities;
-
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,13 +34,17 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -214,8 +211,6 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       int lbLevels = isMmTable && ts.tableHandle.isStoredAsSubDirectories()
           ? ts.tableHandle.getSkewedColNames().size() : 0;
-      ValidWriteIds ids = isMmTable ? db.getValidWriteIdsForTable(
-          ts.tableHandle.getDbName(), ts.tableHandle.getTableName()) : null;
       if (ts.tableHandle.isPartitioned()) {
         for (Partition partition : partitions) {
           Path fromPath = partition.getDataLocation();
@@ -229,7 +224,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
             }
             copyTask = ReplCopyTask.getDumpCopyTask(replicationSpec, fromPath, toPartPath, conf);
           } else {
-            CopyWork cw = createCopyWork(isMmTable, lbLevels, ids, fromPath, toPartPath, conf);
+            CopyWork cw = createCopyWork(isMmTable, lbLevels, new ValidReadTxnList(), fromPath, toPartPath, conf);
             copyTask = TaskFactory.get(cw, conf);
           }
           rootTasks.add(copyTask);
@@ -248,7 +243,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
           copyTask = ReplCopyTask.getDumpCopyTask(replicationSpec, fromPath, toDataPath, conf);
         } else {
           // TODO# master merge - did master remove this path or did it never exit? we need it for MM
-          CopyWork cw = createCopyWork(isMmTable, lbLevels, ids, fromPath, toDataPath, conf);
+          CopyWork cw = createCopyWork(isMmTable, lbLevels, new ValidReadTxnList(), fromPath, toDataPath, conf);
           copyTask = TaskFactory.get(cw, conf);
         }
         rootTasks.add(copyTask);
@@ -260,14 +255,14 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static CopyWork createCopyWork(boolean isMmTable, int lbLevels, ValidWriteIds ids,
+  private static CopyWork createCopyWork(boolean isMmTable, int lbLevels, ValidTxnList validTxnList,
       Path fromPath, Path toDataPath, Configuration conf) throws IOException {
     List<Path> validPaths = null;
     if (isMmTable) {
       fromPath = fromPath.getFileSystem(conf).makeQualified(fromPath);
-      validPaths = Utilities.getValidMmDirectoriesFromTableOrPart(fromPath, conf, ids, lbLevels);
+      validPaths = Utilities.getValidMmDirectoriesFromTableOrPart(fromPath, conf, validTxnList, lbLevels);
     }
-    if (validPaths == null) {
+    if (validPaths == null || validPaths.isEmpty()) {
       return new CopyWork(fromPath, toDataPath, false); // Not MM, or no need to skip anything.
     } else {
       return createCopyWorkForValidPaths(fromPath, toDataPath, validPaths);

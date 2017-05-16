@@ -1636,7 +1636,9 @@ public final class GenMapRedUtils {
     } else {
       fmd = new OrcFileMergeDesc();
     }
-    fmd.setMmWriteId(fsInputDesc.getMmWriteId());
+    fmd.setTxnId(fsInputDesc.getMmWriteId());
+    int stmtId = fsInputDesc.getStatementId();
+    fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
     fmd.setDpCtx(fsInputDesc.getDynPartCtx());
     fmd.setOutputPath(finalName);
     fmd.setHasDynamicPartitions(work.hasDynamicPartitions());

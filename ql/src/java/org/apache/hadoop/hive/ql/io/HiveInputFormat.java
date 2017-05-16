@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -34,8 +32,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +45,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
@@ -423,12 +422,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    */
   private void addSplitsForGroup(List<Path> dirs, TableScanOperator tableScan, JobConf conf,
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
-      TableDesc table, Map<String, ValidWriteIds> writeIdMap, List<InputSplit> result)
+      TableDesc table, List<InputSplit> result)
           throws IOException {
-    ValidWriteIds writeIds = extractWriteIds(writeIdMap, conf, table.getTableName());
-    if (writeIds != null) {
-      Utilities.LOG14535.info("Observing " + table.getTableName() + ": " + writeIds);
-    }
+    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    ValidTxnList validTxnList = txnString == null ? new ValidReadTxnList() :
+        new ValidReadTxnList(txnString);
 
     Utilities.copyTablePropertiesToConf(table, conf);
 
@@ -436,7 +434,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan);
     }
 
-    Path[] finalDirs = processPathsForMmRead(dirs, conf, writeIds);
+    Path[] finalDirs = processPathsForMmRead(dirs, conf, validTxnList);
     if (finalDirs == null) {
       return; // No valid inputs.
     }
@@ -461,13 +459,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
-      ValidWriteIds writeIds) throws IOException {
-    if (writeIds == null) {
+      ValidTxnList validTxnList) throws IOException {
+    if (validTxnList == null) {
       return dirs.toArray(new Path[dirs.size()]);
     } else {
       List<Path> finalPaths = new ArrayList<>(dirs.size());
       for (Path dir : dirs) {
-        processForWriteIds(dir, conf, writeIds, finalPaths);
+        processForWriteIds(dir, conf, validTxnList, finalPaths);
       }
       if (finalPaths.isEmpty()) {
         LOG.warn("No valid inputs found in " + dirs);
@@ -478,7 +476,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   private static void processForWriteIds(Path dir, JobConf conf,
-      ValidWriteIds writeIds, List<Path> finalPaths) throws IOException {
+      ValidTxnList validTxnList, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
     Utilities.LOG14535.warn("Checking " + dir + " (root) for inputs");
     // Ignore nullscan-optimized paths.
@@ -489,17 +487,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     FileStatus[] files = fs.listStatus(dir); // TODO: batch?
     LinkedList<Path> subdirs = new LinkedList<>();
     for (FileStatus file : files) {
-      handleNonMmDirChild(file, writeIds, subdirs, finalPaths);
+      handleNonMmDirChild(file, validTxnList, subdirs, finalPaths);
     }
     while (!subdirs.isEmpty()) {
       Path subdir = subdirs.poll();
       for (FileStatus file : fs.listStatus(subdir)) {
-        handleNonMmDirChild(file, writeIds, subdirs, finalPaths);
+        handleNonMmDirChild(file, validTxnList, subdirs, finalPaths);
       }
     }
   }
 
-  private static void handleNonMmDirChild(FileStatus file, ValidWriteIds writeIds,
+  private static void handleNonMmDirChild(FileStatus file, ValidTxnList validTxnList,
       LinkedList<Path> subdirs, List<Path> finalPaths) {
     Path path = file.getPath();
     Utilities.LOG14535.warn("Checking " + path + " for inputs");
@@ -507,12 +505,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
       return;
     }
-    Long writeId = ValidWriteIds.extractWriteId(path);
-    if (writeId == null) {
+    Long txnId = JavaUtils.extractTxnId(path);
+    if (txnId == null) {
       subdirs.add(path);
       return;
     }
-    if (!writeIds.isValid(writeId)) {
+    if (!validTxnList.isTxnValid(txnId)) {
       Utilities.LOG14535.warn("Ignoring an uncommitted directory " + path);
       return;
     }
@@ -564,7 +562,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     StringBuilder readColumnNamesBuffer = new StringBuilder(newjob.
       get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
     // for each dir, get the InputFormat, and do getSplits.
-    Map<String, ValidWriteIds> writeIdMap = new HashMap<>();
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
@@ -615,7 +612,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         addSplitsForGroup(currentDirs, currentTableScan, newjob,
             getInputFormatFromCache(currentInputFormatClass, job),
             currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
-            currentTable, writeIdMap, result);
+            currentTable, result);
       }
 
       currentDirs.clear();
@@ -637,7 +634,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       addSplitsForGroup(currentDirs, currentTableScan, newjob,
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
-          currentTable, writeIdMap, result);
+          currentTable, result);
     }
 
     Utilities.clearWorkMapForConf(job);
@@ -646,19 +643,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
-  }
-
-  public static ValidWriteIds extractWriteIds(Map<String, ValidWriteIds> writeIdMap,
-      JobConf newjob, String tableName) {
-    if (StringUtils.isBlank(tableName)) return null;
-    ValidWriteIds writeIds = writeIdMap.get(tableName);
-    if (writeIds == null) {
-      writeIds = ValidWriteIds.createFromConf(newjob, tableName);
-      writeIdMap.put(tableName, writeIds != null ? writeIds : ValidWriteIds.NO_WRITE_IDS);
-    } else if (writeIds == ValidWriteIds.NO_WRITE_IDS) {
-      writeIds = null;
-    }
-    return writeIds;
   }
 
   private void pushProjection(final JobConf newjob, final StringBuilder readColumnsBuffer,

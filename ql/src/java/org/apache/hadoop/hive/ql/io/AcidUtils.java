@@ -276,9 +276,8 @@ public class AcidUtils {
     return result;
   }
 
-  // INSERT_ONLY is a special operation which we only support INSERT operations, no UPDATE/DELETE
   public enum Operation {
-    NOT_ACID, INSERT, UPDATE, DELETE, INSERT_ONLY
+    NOT_ACID, INSERT, UPDATE, DELETE
   }
 
   /**

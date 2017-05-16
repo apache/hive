@@ -63,7 +63,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -919,52 +918,5 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException {
     return objectStore.getAggrColStatsForTablePartitions(dbName, tableName);
-  }
-
-  @Override
-  @CanNotRetry
-  public Boolean commitTransactionExpectDeadlock() {
-    return null;
-  }
-
-  @Override
-  public void createTableWrite(Table arg0, long arg1, char arg2, long arg3) {
-  }
-
-  @Override
-  public void deleteTableWrites(String arg0, String arg1, long arg2, long arg3)
-      throws MetaException {
-  }
-
-  @Override
-  public List<FullTableName> getAllMmTablesForCleanup() throws MetaException {
-    return null;
-  }
-
-  @Override
-  public Collection<String> getAllPartitionLocations(String arg0, String arg1) {
-    return null;
-  }
-
-  @Override
-  public MTableWrite getTableWrite(String arg0, String arg1, long arg2)
-      throws MetaException {
-    return null;
-  }
-
-  @Override
-  public List<Long> getTableWriteIds(String arg0, String arg1, long arg2,
-      long arg3, char arg4) throws MetaException {
-    return null;
-  }
-
-  @Override
-  public List<MTableWrite> getTableWrites(String arg0, String arg1, long arg2,
-      long arg3) throws MetaException {
-    return null;
-  }
-
-  @Override
-  public void updateTableWrite(MTableWrite arg0) {
   }
 }

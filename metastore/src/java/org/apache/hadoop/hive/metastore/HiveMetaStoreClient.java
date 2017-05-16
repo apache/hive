@@ -2539,27 +2539,4 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     CacheFileMetadataResult result = client.cache_file_metadata(req);
     return result.isIsSupported();
   }
-
-  @Override
-  public long getNextTableWriteId(String dbName, String tableName) throws TException {
-    return client.get_next_write_id(new GetNextWriteIdRequest(dbName, tableName)).getWriteId();
-  }
-
-  @Override
-  public void finalizeTableWrite(
-      String dbName, String tableName, long writeId, boolean commit) throws TException {
-    client.finalize_write_id(new FinalizeWriteIdRequest(dbName, tableName, writeId, commit));
-  }
-
-  @Override
-  public void heartbeatTableWrite(
-      String dbName, String tableName, long writeId) throws TException {
-    client.heartbeat_write_id(new HeartbeatWriteIdRequest(dbName, tableName, writeId));
-  }
-
-  @Override
-  public GetValidWriteIdsResult getValidWriteIds(
-      String dbName, String tableName) throws TException {
-    return client.get_valid_write_ids(new GetValidWriteIdsRequest(dbName, tableName));
-  }
 }

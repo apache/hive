@@ -116,7 +116,8 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
 
-  // whether any ACID table is involved in a query
+  // whether any ACID table or Insert-only (mm) table is involved in a query
+  // They both require DbTxnManager and both need to recordValidTxns when acquiring locks in Driver
   protected boolean acidInQuery;
 
   public static final int HIVE_COLUMN_ORDER_ASC = 1;

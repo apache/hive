@@ -3137,8 +3137,6 @@ class Table:
    - privileges
    - temporary
    - rewriteEnabled
-   - mmNextWriteId
-   - mmWatermarkWriteId
   """
 
   thrift_spec = (
@@ -3158,11 +3156,9 @@ class Table:
     (13, TType.STRUCT, 'privileges', (PrincipalPrivilegeSet, PrincipalPrivilegeSet.thrift_spec), None, ), # 13
     (14, TType.BOOL, 'temporary', None, False, ), # 14
     (15, TType.BOOL, 'rewriteEnabled', None, None, ), # 15
-    (16, TType.I64, 'mmNextWriteId', None, None, ), # 16
-    (17, TType.I64, 'mmWatermarkWriteId', None, None, ), # 17
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, mmNextWriteId=None, mmWatermarkWriteId=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -3178,8 +3174,6 @@ class Table:
     self.privileges = privileges
     self.temporary = temporary
     self.rewriteEnabled = rewriteEnabled
-    self.mmNextWriteId = mmNextWriteId
-    self.mmWatermarkWriteId = mmWatermarkWriteId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3279,16 +3273,6 @@ class Table:
           self.rewriteEnabled = iprot.readBool()
         else:
           iprot.skip(ftype)
-      elif fid == 16:
-        if ftype == TType.I64:
-          self.mmNextWriteId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 17:
-        if ftype == TType.I64:
-          self.mmWatermarkWriteId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3366,14 +3350,6 @@ class Table:
       oprot.writeFieldBegin('rewriteEnabled', TType.BOOL, 15)
       oprot.writeBool(self.rewriteEnabled)
       oprot.writeFieldEnd()
-    if self.mmNextWriteId is not None:
-      oprot.writeFieldBegin('mmNextWriteId', TType.I64, 16)
-      oprot.writeI64(self.mmNextWriteId)
-      oprot.writeFieldEnd()
-    if self.mmWatermarkWriteId is not None:
-      oprot.writeFieldBegin('mmWatermarkWriteId', TType.I64, 17)
-      oprot.writeI64(self.mmWatermarkWriteId)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3398,8 +3374,6 @@ class Table:
     value = (value * 31) ^ hash(self.privileges)
     value = (value * 31) ^ hash(self.temporary)
     value = (value * 31) ^ hash(self.rewriteEnabled)
-    value = (value * 31) ^ hash(self.mmNextWriteId)
-    value = (value * 31) ^ hash(self.mmWatermarkWriteId)
     return value
 
   def __repr__(self):
@@ -12455,654 +12429,6 @@ class CacheFileMetadataRequest:
   def __ne__(self, other):
     return not (self == other)
 
-class GetNextWriteIdRequest:
-  """
-  Attributes:
-   - dbName
-   - tblName
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'dbName', None, None, ), # 1
-    (2, TType.STRING, 'tblName', None, None, ), # 2
-  )
-
-  def __init__(self, dbName=None, tblName=None,):
-    self.dbName = dbName
-    self.tblName = tblName
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.dbName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.tblName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetNextWriteIdRequest')
-    if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 1)
-      oprot.writeString(self.dbName)
-      oprot.writeFieldEnd()
-    if self.tblName is not None:
-      oprot.writeFieldBegin('tblName', TType.STRING, 2)
-      oprot.writeString(self.tblName)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.dbName is None:
-      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
-    if self.tblName is None:
-      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.dbName)
-    value = (value * 31) ^ hash(self.tblName)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class GetNextWriteIdResult:
-  """
-  Attributes:
-   - writeId
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I64, 'writeId', None, None, ), # 1
-  )
-
-  def __init__(self, writeId=None,):
-    self.writeId = writeId
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I64:
-          self.writeId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetNextWriteIdResult')
-    if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 1)
-      oprot.writeI64(self.writeId)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.writeId is None:
-      raise TProtocol.TProtocolException(message='Required field writeId is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.writeId)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class FinalizeWriteIdRequest:
-  """
-  Attributes:
-   - dbName
-   - tblName
-   - writeId
-   - commit
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'dbName', None, None, ), # 1
-    (2, TType.STRING, 'tblName', None, None, ), # 2
-    (3, TType.I64, 'writeId', None, None, ), # 3
-    (4, TType.BOOL, 'commit', None, None, ), # 4
-  )
-
-  def __init__(self, dbName=None, tblName=None, writeId=None, commit=None,):
-    self.dbName = dbName
-    self.tblName = tblName
-    self.writeId = writeId
-    self.commit = commit
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.dbName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.tblName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I64:
-          self.writeId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.BOOL:
-          self.commit = iprot.readBool()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('FinalizeWriteIdRequest')
-    if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 1)
-      oprot.writeString(self.dbName)
-      oprot.writeFieldEnd()
-    if self.tblName is not None:
-      oprot.writeFieldBegin('tblName', TType.STRING, 2)
-      oprot.writeString(self.tblName)
-      oprot.writeFieldEnd()
-    if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 3)
-      oprot.writeI64(self.writeId)
-      oprot.writeFieldEnd()
-    if self.commit is not None:
-      oprot.writeFieldBegin('commit', TType.BOOL, 4)
-      oprot.writeBool(self.commit)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.dbName is None:
-      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
-    if self.tblName is None:
-      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
-    if self.writeId is None:
-      raise TProtocol.TProtocolException(message='Required field writeId is unset!')
-    if self.commit is None:
-      raise TProtocol.TProtocolException(message='Required field commit is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.dbName)
-    value = (value * 31) ^ hash(self.tblName)
-    value = (value * 31) ^ hash(self.writeId)
-    value = (value * 31) ^ hash(self.commit)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class FinalizeWriteIdResult:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('FinalizeWriteIdResult')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class HeartbeatWriteIdRequest:
-  """
-  Attributes:
-   - dbName
-   - tblName
-   - writeId
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'dbName', None, None, ), # 1
-    (2, TType.STRING, 'tblName', None, None, ), # 2
-    (3, TType.I64, 'writeId', None, None, ), # 3
-  )
-
-  def __init__(self, dbName=None, tblName=None, writeId=None,):
-    self.dbName = dbName
-    self.tblName = tblName
-    self.writeId = writeId
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.dbName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.tblName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.I64:
-          self.writeId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('HeartbeatWriteIdRequest')
-    if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 1)
-      oprot.writeString(self.dbName)
-      oprot.writeFieldEnd()
-    if self.tblName is not None:
-      oprot.writeFieldBegin('tblName', TType.STRING, 2)
-      oprot.writeString(self.tblName)
-      oprot.writeFieldEnd()
-    if self.writeId is not None:
-      oprot.writeFieldBegin('writeId', TType.I64, 3)
-      oprot.writeI64(self.writeId)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.dbName is None:
-      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
-    if self.tblName is None:
-      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
-    if self.writeId is None:
-      raise TProtocol.TProtocolException(message='Required field writeId is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.dbName)
-    value = (value * 31) ^ hash(self.tblName)
-    value = (value * 31) ^ hash(self.writeId)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class HeartbeatWriteIdResult:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('HeartbeatWriteIdResult')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class GetValidWriteIdsRequest:
-  """
-  Attributes:
-   - dbName
-   - tblName
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'dbName', None, None, ), # 1
-    (2, TType.STRING, 'tblName', None, None, ), # 2
-  )
-
-  def __init__(self, dbName=None, tblName=None,):
-    self.dbName = dbName
-    self.tblName = tblName
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.dbName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.tblName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetValidWriteIdsRequest')
-    if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 1)
-      oprot.writeString(self.dbName)
-      oprot.writeFieldEnd()
-    if self.tblName is not None:
-      oprot.writeFieldBegin('tblName', TType.STRING, 2)
-      oprot.writeString(self.tblName)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.dbName is None:
-      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
-    if self.tblName is None:
-      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.dbName)
-    value = (value * 31) ^ hash(self.tblName)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class GetValidWriteIdsResult:
-  """
-  Attributes:
-   - lowWatermarkId
-   - highWatermarkId
-   - areIdsValid
-   - ids
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.I64, 'lowWatermarkId', None, None, ), # 1
-    (2, TType.I64, 'highWatermarkId', None, None, ), # 2
-    (3, TType.BOOL, 'areIdsValid', None, None, ), # 3
-    (4, TType.LIST, 'ids', (TType.I64,None), None, ), # 4
-  )
-
-  def __init__(self, lowWatermarkId=None, highWatermarkId=None, areIdsValid=None, ids=None,):
-    self.lowWatermarkId = lowWatermarkId
-    self.highWatermarkId = highWatermarkId
-    self.areIdsValid = areIdsValid
-    self.ids = ids
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.I64:
-          self.lowWatermarkId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.I64:
-          self.highWatermarkId = iprot.readI64()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.BOOL:
-          self.areIdsValid = iprot.readBool()
-        else:
-          iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.LIST:
-          self.ids = []
-          (_etype569, _size566) = iprot.readListBegin()
-          for _i570 in xrange(_size566):
-            _elem571 = iprot.readI64()
-            self.ids.append(_elem571)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('GetValidWriteIdsResult')
-    if self.lowWatermarkId is not None:
-      oprot.writeFieldBegin('lowWatermarkId', TType.I64, 1)
-      oprot.writeI64(self.lowWatermarkId)
-      oprot.writeFieldEnd()
-    if self.highWatermarkId is not None:
-      oprot.writeFieldBegin('highWatermarkId', TType.I64, 2)
-      oprot.writeI64(self.highWatermarkId)
-      oprot.writeFieldEnd()
-    if self.areIdsValid is not None:
-      oprot.writeFieldBegin('areIdsValid', TType.BOOL, 3)
-      oprot.writeBool(self.areIdsValid)
-      oprot.writeFieldEnd()
-    if self.ids is not None:
-      oprot.writeFieldBegin('ids', TType.LIST, 4)
-      oprot.writeListBegin(TType.I64, len(self.ids))
-      for iter572 in self.ids:
-        oprot.writeI64(iter572)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    if self.lowWatermarkId is None:
-      raise TProtocol.TProtocolException(message='Required field lowWatermarkId is unset!')
-    if self.highWatermarkId is None:
-      raise TProtocol.TProtocolException(message='Required field highWatermarkId is unset!')
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.lowWatermarkId)
-    value = (value * 31) ^ hash(self.highWatermarkId)
-    value = (value * 31) ^ hash(self.areIdsValid)
-    value = (value * 31) ^ hash(self.ids)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class GetAllFunctionsResponse:
   """
   Attributes:
@@ -13129,11 +12455,11 @@ class GetAllFunctionsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.functions = []
-          (_etype576, _size573) = iprot.readListBegin()
-          for _i577 in xrange(_size573):
-            _elem578 = Function()
-            _elem578.read(iprot)
-            self.functions.append(_elem578)
+          (_etype569, _size566) = iprot.readListBegin()
+          for _i570 in xrange(_size566):
+            _elem571 = Function()
+            _elem571.read(iprot)
+            self.functions.append(_elem571)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13150,8 +12476,8 @@ class GetAllFunctionsResponse:
     if self.functions is not None:
       oprot.writeFieldBegin('functions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.functions))
-      for iter579 in self.functions:
-        iter579.write(oprot)
+      for iter572 in self.functions:
+        iter572.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13203,10 +12529,10 @@ class ClientCapabilities:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype583, _size580) = iprot.readListBegin()
-          for _i584 in xrange(_size580):
-            _elem585 = iprot.readI32()
-            self.values.append(_elem585)
+          (_etype576, _size573) = iprot.readListBegin()
+          for _i577 in xrange(_size573):
+            _elem578 = iprot.readI32()
+            self.values.append(_elem578)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13223,8 +12549,8 @@ class ClientCapabilities:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.values))
-      for iter586 in self.values:
-        oprot.writeI32(iter586)
+      for iter579 in self.values:
+        oprot.writeI32(iter579)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13453,10 +12779,10 @@ class GetTablesRequest:
       elif fid == 2:
         if ftype == TType.LIST:
           self.tblNames = []
-          (_etype590, _size587) = iprot.readListBegin()
-          for _i591 in xrange(_size587):
-            _elem592 = iprot.readString()
-            self.tblNames.append(_elem592)
+          (_etype583, _size580) = iprot.readListBegin()
+          for _i584 in xrange(_size580):
+            _elem585 = iprot.readString()
+            self.tblNames.append(_elem585)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13483,8 +12809,8 @@ class GetTablesRequest:
     if self.tblNames is not None:
       oprot.writeFieldBegin('tblNames', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.tblNames))
-      for iter593 in self.tblNames:
-        oprot.writeString(iter593)
+      for iter586 in self.tblNames:
+        oprot.writeString(iter586)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.capabilities is not None:
@@ -13544,11 +12870,11 @@ class GetTablesResult:
       if fid == 1:
         if ftype == TType.LIST:
           self.tables = []
-          (_etype597, _size594) = iprot.readListBegin()
-          for _i598 in xrange(_size594):
-            _elem599 = Table()
-            _elem599.read(iprot)
-            self.tables.append(_elem599)
+          (_etype590, _size587) = iprot.readListBegin()
+          for _i591 in xrange(_size587):
+            _elem592 = Table()
+            _elem592.read(iprot)
+            self.tables.append(_elem592)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13565,8 +12891,8 @@ class GetTablesResult:
     if self.tables is not None:
       oprot.writeFieldBegin('tables', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.tables))
-      for iter600 in self.tables:
-        iter600.write(oprot)
+      for iter593 in self.tables:
+        iter593.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

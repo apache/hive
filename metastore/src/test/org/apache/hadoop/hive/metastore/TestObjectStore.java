@@ -17,22 +17,18 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -54,14 +50,10 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hive.common.util.MockFileSystem;
-import org.apache.hive.common.util.MockFileSystem.MockFile;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -243,151 +235,6 @@ public class TestObjectStore {
     Assert.assertEquals(0, tables.size());
 
     objectStore.dropDatabase(DB1);
-  }
-
-
-  /**
-   * Test table operations
-   */
-  @Test
-  public void testMmCleaner() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.set(ConfVars.HIVE_METASTORE_MM_HEARTBEAT_TIMEOUT.varname, "3ms");
-    conf.set(ConfVars.HIVE_METASTORE_MM_ABSOLUTE_TIMEOUT.varname, "20ms");
-    conf.set(ConfVars.HIVE_METASTORE_MM_ABORTED_GRACE_PERIOD.varname, "5ms");
-    conf.set("fs.mock.impl", MockFileSystem.class.getName());
-
-    MockFileSystem mfs = (MockFileSystem)(new Path("mock:///").getFileSystem(conf));
-    mfs.clear();
-    mfs.allowDelete = true;
-    // Don't add the files just yet...
-    MockFile[] files = new MockFile[9];
-    for (int i = 0; i < files.length; ++i) {
-      files[i] = new MockFile("mock:/foo/mm_" + i + "/1", 0, new byte[0]);
-    }
-
-    LongSupplier time = new LongSupplier();
-
-    MmCleanerThread mct = new MmCleanerThread(0);
-    mct.setHiveConf(conf);
-    mct.overrideTime(time);
-
-    Database db1 = new Database(DB1, "description", "locationurl", null);
-    objectStore.createDatabase(db1);
-    StorageDescriptor sd = createFakeSd("mock:/foo");
-    HashMap<String,String> params = new HashMap<String,String>();
-    params.put("EXTERNAL", "false");
-    params.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-    params.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
-    Table tbl = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd,
-        null, params, null, null, "MANAGED_TABLE");
-    objectStore.createTable(tbl);
-
-    // Add write #0 so the watermark wouldn't advance; skip write #1, add #2 at 0, skip #3
-    createCompleteTableWrite(mfs, files, 0, time, tbl, HiveMetaStore.MM_WRITE_OPEN);
-    mfs.addFile(files[1]);
-    createCompleteTableWrite(mfs, files, 2, time, tbl, HiveMetaStore.MM_WRITE_OPEN);
-    mfs.addFile(files[3]);
-    tbl.setMmNextWriteId(4);
-    objectStore.alterTable(DB1, TABLE1, tbl);
-
-    mct.runOneIteration(objectStore);
-    List<Long> writes = getAbortedWrites();
-    assertEquals(0, writes.size()); // Missing write is not aborted before timeout.
-    time.value = 4; // Advance time.
-    mct.runOneIteration(objectStore);
-    writes = getAbortedWrites();
-    assertEquals(1, writes.size()); // Missing write is aborted after timeout.
-    assertEquals(1L, writes.get(0).longValue());
-    checkDeletedSet(files, 1);
-    // However, write #3 was not aborted as we cannot determine when it will time out.
-    createCompleteTableWrite(mfs, files, 4, time, tbl, HiveMetaStore.MM_WRITE_OPEN);
-    time.value = 8;
-    // It will now be aborted, since we have a following write.
-    mct.runOneIteration(objectStore);
-    writes = getAbortedWrites();
-    assertEquals(2, writes.size());
-    assertTrue(writes.contains(Long.valueOf(3)));
-    checkDeletedSet(files, 1, 3);
-
-    // Commit #0 and #2 and confirm that the watermark advances.
-    // It will only advance over #1, since #3 was aborted at 8 and grace period has not passed.
-    time.value = 10;
-    MTableWrite tw = objectStore.getTableWrite(DB1, TABLE1, 0);
-    tw.setState(String.valueOf(HiveMetaStore.MM_WRITE_COMMITTED));
-    objectStore.updateTableWrite(tw);
-    tw = objectStore.getTableWrite(DB1, TABLE1, 2);
-    tw.setState(String.valueOf(HiveMetaStore.MM_WRITE_COMMITTED));
-    objectStore.updateTableWrite(tw);
-    mct.runOneIteration(objectStore);
-    writes = getAbortedWrites();
-    assertEquals(1, writes.size());
-    assertEquals(3L, writes.get(0).longValue());
-    tbl = objectStore.getTable(DB1, TABLE1);
-    assertEquals(2L, tbl.getMmWatermarkWriteId());
-
-    // Now advance the time and see that watermark also advances over #3.
-    time.value = 16;
-    mct.runOneIteration(objectStore);
-    writes = getAbortedWrites();
-    assertEquals(0, writes.size());
-    tbl = objectStore.getTable(DB1, TABLE1);
-    assertEquals(3L, tbl.getMmWatermarkWriteId());
-
-    // Check that the open write gets aborted after some time; then the watermark advances.
-    time.value = 25;
-    mct.runOneIteration(objectStore);
-    writes = getAbortedWrites();
-    assertEquals(1, writes.size());
-    assertEquals(4L, writes.get(0).longValue());
-    time.value = 31;
-    mct.runOneIteration(objectStore);
-    tbl = objectStore.getTable(DB1, TABLE1);
-    assertEquals(4L, tbl.getMmWatermarkWriteId());
-    checkDeletedSet(files, 1, 3, 4); // The other two should still be deleted.
-
-    // Finally check that we cannot advance watermark if cleanup fails for some file.
-    createCompleteTableWrite(mfs, files, 5, time, tbl, HiveMetaStore.MM_WRITE_ABORTED);
-    createCompleteTableWrite(mfs, files, 6, time, tbl, HiveMetaStore.MM_WRITE_ABORTED);
-    createCompleteTableWrite(mfs, files, 7, time, tbl, HiveMetaStore.MM_WRITE_COMMITTED);
-    createCompleteTableWrite(mfs, files, 8, time, tbl, HiveMetaStore.MM_WRITE_ABORTED);
-    time.value = 37; // Skip the grace period.
-    files[6].cannotDelete = true;
-    mct.runOneIteration(objectStore);
-    checkDeletedSet(files, 1, 3, 4, 5, 8); // The other two should still be deleted.
-    tbl = objectStore.getTable(DB1, TABLE1);
-    assertEquals(5L, tbl.getMmWatermarkWriteId()); // Watermark only goes up to 5.
-    files[6].cannotDelete = false;
-    mct.runOneIteration(objectStore);
-    checkDeletedSet(files, 1, 3, 4, 5, 6, 8);
-    tbl = objectStore.getTable(DB1, TABLE1);
-    assertEquals(8L, tbl.getMmWatermarkWriteId()); // Now it advances all the way.
-
-    objectStore.dropTable(DB1, TABLE1);
-    objectStore.dropDatabase(DB1);
-  }
-
-  private void createCompleteTableWrite(MockFileSystem mfs, MockFile[] files,
-      int id, LongSupplier time, Table tbl, char state) throws MetaException, InvalidObjectException {
-    objectStore.createTableWrite(tbl, id, state, time.value);
-    mfs.addFile(files[id]);
-    tbl.setMmNextWriteId(id + 1);
-    objectStore.alterTable(DB1, TABLE1, tbl);
-  }
-
-  private void checkDeletedSet(MockFile[] files, int... deleted) {
-    for (int id : deleted) {
-      assertTrue("File " + id + " not deleted", files[id].isDeleted);
-    }
-    int count = 0;
-    for (MockFile file : files) {
-      if (file.isDeleted) ++count;
-    }
-    assertEquals(deleted.length, count); // Make sure nothing else is deleted.
-  }
-
-  private List<Long> getAbortedWrites() throws MetaException {
-    return objectStore.getTableWriteIds(DB1, TABLE1, -1, 10, HiveMetaStore.MM_WRITE_ABORTED);
   }
 
   private StorageDescriptor createFakeSd(String location) {

@@ -33,7 +33,6 @@ drop table part_mm;
 drop table simple_mm;
 create table simple_mm(key int) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 insert into table simple_mm select key from intermediate;
-insert overwrite table simple_mm select key from intermediate;
 select * from simple_mm order by key;
 insert into table simple_mm select key from intermediate;
 select * from simple_mm order by key;
@@ -193,47 +192,6 @@ set hive.merge.mapredfiles=false;
 -- TODO: need to include merge+union+DP, but it's broken for now
 
 
-drop table ctas0_mm;
-create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate;
-select * from ctas0_mm;
-drop table ctas0_mm;
-
-drop table ctas1_mm;
-create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
-  select * from intermediate union all select * from intermediate;
-select * from ctas1_mm;
-drop table ctas1_mm;
-
-
-
-drop table iow0_mm;
-create table iow0_mm(key int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert overwrite table iow0_mm select key from intermediate;
-insert into table iow0_mm select key + 1 from intermediate;
-select * from iow0_mm order by key;
-insert overwrite table iow0_mm select key + 2 from intermediate;
-select * from iow0_mm order by key;
-drop table iow0_mm;
-
-
-drop table iow1_mm; 
-create table iow1_mm(key int) partitioned by (key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert overwrite table iow1_mm partition (key2)
-select key as k1, key from intermediate union all select key as k1, key from intermediate;
-insert into table iow1_mm partition (key2)
-select key + 1 as k1, key from intermediate union all select key as k1, key from intermediate;
-select * from iow1_mm order by key, key2;
-insert overwrite table iow1_mm partition (key2)
-select key + 3 as k1, key from intermediate union all select key + 4 as k1, key from intermediate;
-select * from iow1_mm order by key, key2;
-insert overwrite table iow1_mm partition (key2)
-select key + 3 as k1, key + 3 from intermediate union all select key + 2 as k1, key + 2 from intermediate;
-select * from iow1_mm order by key, key2;
-drop table iow1_mm;
-
-
-
-
 drop table load0_mm;
 create table load0_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only");
 load data local inpath '../../data/files/kv1.txt' into table load0_mm;
@@ -279,174 +237,11 @@ drop table load2_mm;
 drop table intermediate2;
 
 
-drop table intermediate_nonpart;
-drop table intermmediate_part;
-drop table intermmediate_nonpart;
-create table intermediate_nonpart(key int, p int);
-insert into intermediate_nonpart select * from intermediate;
-create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert into intermmediate_nonpart select * from intermediate;
-create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert into table intermmediate partition(p) select key, p from intermediate;
-
-set hive.exim.test.mode=true;
-
-export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart';
-export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart';
-export table intermediate to 'ql/test/data/exports/intermediate_part';
-export table intermmediate to 'ql/test/data/exports/intermmediate_part';
-
-drop table intermediate_nonpart;
-drop table intermmediate_part;
-drop table intermmediate_nonpart;
-
--- non-MM export to MM table, with and without partitions
-
-drop table import0_mm;
-create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-import table import0_mm from 'ql/test/data/exports/intermediate_nonpart';
-select * from import0_mm order by key, p;
-drop table import0_mm;
-
-
-
-drop table import1_mm;
-create table import1_mm(key int) partitioned by (p int)
-  stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only");
-import table import1_mm from 'ql/test/data/exports/intermediate_part';
-select * from import1_mm order by key, p;
-drop table import1_mm;
-
-
--- MM export into new MM table, non-part and part
-
---drop table import2_mm;
---import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart';
---desc import2_mm;
---select * from import2_mm order by key, p;
---drop table import2_mm;
---
---drop table import3_mm;
---import table import3_mm from 'ql/test/data/exports/intermmediate_part';
---desc import3_mm;
---select * from import3_mm order by key, p;
---drop table import3_mm;
-
--- MM export into existing MM table, non-part and partial part
-
-drop table import4_mm;
-create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-import table import4_mm from 'ql/test/data/exports/intermmediate_nonpart';
-select * from import4_mm order by key, p;
-drop table import4_mm;
-
-drop table import5_mm;
-create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-import table import5_mm partition(p=455) from 'ql/test/data/exports/intermmediate_part';
-select * from import5_mm order by key, p;
-drop table import5_mm;
-
--- MM export into existing non-MM table, non-part and part
-
-drop table import6_mm;
-create table import6_mm(key int, p int);
-import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart';
-select * from import6_mm order by key, p;
-drop table import6_mm;
-
-drop table import7_mm;
-create table import7_mm(key int) partitioned by (p int);
-import table import7_mm from 'ql/test/data/exports/intermmediate_part';
-select * from import7_mm order by key, p;
-drop table import7_mm;
-
-set hive.exim.test.mode=false;
-
-
-
 drop table multi0_1_mm;
 drop table multi0_2_mm;
 create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 
-from intermediate
-insert overwrite table multi0_1_mm select key, p
-insert overwrite table multi0_2_mm select p, key;
-
-select * from multi0_1_mm order by key, key2;
-select * from multi0_2_mm order by key, key2;
-
-set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
-set hive.merge.tezfiles=true;
-
-from intermediate
-insert into table multi0_1_mm select p, key
-insert overwrite table multi0_2_mm select key, p;
-select * from multi0_1_mm order by key, key2;
-select * from multi0_2_mm order by key, key2;
-
-set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
-set hive.merge.tezfiles=false;
-
-drop table multi0_1_mm;
-drop table multi0_2_mm;
-
-
-drop table multi1_mm;
-create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-from intermediate
-insert into table multi1_mm partition(p=1) select p, key
-insert into table multi1_mm partition(p=2) select key, p;
-select * from multi1_mm order by key, key2, p;
-from intermediate
-insert into table multi1_mm partition(p=2) select p, key
-insert overwrite table multi1_mm partition(p=1) select key, p;
-select * from multi1_mm order by key, key2, p;
-
-from intermediate
-insert into table multi1_mm partition(p) select p, key, p
-insert into table multi1_mm partition(p=1) select key, p;
-select key, key2, p from multi1_mm order by key, key2, p;
-
-from intermediate
-insert into table multi1_mm partition(p) select p, key, 1
-insert into table multi1_mm partition(p=1) select key, p;
-select key, key2, p from multi1_mm order by key, key2, p;
-drop table multi1_mm;
-
-
-
-
-set datanucleus.cache.collections=false;
-set hive.stats.autogather=true;
-
-drop table stats_mm;
-create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert overwrite table stats_mm  select key from intermediate;
-desc formatted stats_mm;
-
-insert into table stats_mm  select key from intermediate;
-desc formatted stats_mm;
-drop table stats_mm;
-
-drop table stats2_mm;
-create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src;
-desc formatted stats2_mm;
-drop table stats2_mm;
-
-
-set hive.optimize.skewjoin=true;
-set hive.skewjoin.key=2;
-set hive.optimize.metadataonly=false;
-
-CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only");
-FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT OVERWRITE TABLE skewjoin_mm SELECT src1.key, src2.value;
-select count(distinct key) from skewjoin_mm;
-drop table skewjoin_mm;
-
-set hive.optimize.skewjoin=false;
 
 set hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;

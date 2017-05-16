@@ -33,16 +33,11 @@ import java.util.Properties;
 import java.util.Set;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -176,6 +171,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     int acidLastBucket = -1;
     int acidFileOffset = -1;
     private boolean isMmTable;
+    private Long txnId;
+    private int stmtId;
 
     public FSPaths(Path specPath, boolean isMmTable) {
       this.isMmTable = isMmTable;
@@ -185,6 +182,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       } else {
         tmpPath = specPath;
         taskOutputTempPath = null; // Should not be used.
+        txnId = conf.getTransactionId();
+        stmtId = conf.getStatementId();
       }
       Utilities.LOG14535.info("new FSPaths for " + numFiles + " files, dynParts = " + bDynParts
           + ": tmpPath " + tmpPath + ", task path " + taskOutputTempPath
@@ -327,7 +326,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
           outPaths[filesIdx] = getTaskOutPath(taskId);
         } else {
-          String subdirPath = ValidWriteIds.getMmFilePrefix(conf.getMmWriteId());
+          String subdirPath = AcidUtils.deltaSubdir(txnId, txnId, stmtId);
           if (unionPath != null) {
             // Create the union directory inside the MM directory.
             subdirPath += Path.SEPARATOR + unionPath;
@@ -731,10 +730,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
       // only create bucket files only if no dynamic partitions,
       // buckets of dynamic partitions will be created for each newly created partition
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
-          conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
         Path outPath = fsp.outPaths[filesIdx];
-        if ((conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY || conf.isMmTable())
+        if (conf.isMmTable()
             && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
           LOG.warn("Unable to create directory with inheritPerms: " + outPath);
         }
@@ -880,8 +878,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // for a given operator branch prediction should work quite nicely on it.
       // RecordUpdateer expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
-          conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
+      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
         rowOutWriters[writerOffset].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[writerOffset].insert(conf.getTransactionId(), row);
@@ -925,8 +922,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected boolean areAllTrue(boolean[] statsFromRW) {
     // If we are doing an acid operation they will always all be true as RecordUpdaters always
     // collect stats
-    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID &&
-        conf.getWriteType() != AcidUtils.Operation.INSERT_ONLY) {
+    if (conf.getWriteType() != AcidUtils.Operation.NOT_ACID && !conf.isMmTable()) {
       return true;
     }
     for(boolean b : statsFromRW) {
@@ -1070,8 +1066,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // stats from the record writer and store in the previous fsp that is cached
           if (conf.isGatherStats() && isCollectRWStats) {
             SerDeStats stats = null;
-            if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
-                conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
+            if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
               RecordWriter outWriter = prevFsp.outWriters[0];
               if (outWriter != null) {
                 stats = ((StatsProvidingRecordWriter) outWriter).getStats();
@@ -1173,8 +1168,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // record writer already gathers the statistics, it can simply return the
         // accumulated statistics which will be aggregated in case of spray writers
         if (conf.isGatherStats() && isCollectRWStats) {
-          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
-              conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
+          if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
             for (int idx = 0; idx < fsp.outWriters.length; idx++) {
               RecordWriter outWriter = fsp.outWriters[idx];
               if (outWriter != null) {
@@ -1204,7 +1198,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       if (conf.getMmWriteId() != null) {
         Utilities.writeMmCommitManifest(
-            commitPaths, specPath, fs, taskId, conf.getMmWriteId(), unionPath);
+            commitPaths, specPath, fs, taskId, conf.getMmWriteId(), conf.getStatementId(), unionPath);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1260,7 +1254,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           MissingBucketsContext mbc = new MissingBucketsContext(
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleMmTableFinalPath(specPath, unionSuffix, hconf, success,
-              dpLevels, lbLevels, mbc, conf.getMmWriteId(), reporter, conf.isMmCtas());
+              dpLevels, lbLevels, mbc, conf.getMmWriteId(), conf.getStatementId(), reporter, conf.isMmCtas());
         }
       }
     } catch (IOException e) {

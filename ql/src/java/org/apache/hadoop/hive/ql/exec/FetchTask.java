@@ -193,9 +193,4 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       fetch.clearFetchContext();
     }
   }
-
-  public Configuration getFetchConf() {
-    return fetch.getJobConf();
-  }
-
 }

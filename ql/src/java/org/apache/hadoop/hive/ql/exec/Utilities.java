@@ -67,9 +67,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
@@ -100,8 +97,8 @@ import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -211,61 +208,9 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.Expression;
-import java.beans.Statement;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLTransientException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 
 /**
@@ -1592,7 +1537,7 @@ public final class Utilities {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null)
           ? conf.getTable().getNumBuckets() : 0;
-    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null);
+    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null, 0);
   }
   
   private static boolean removeEmptyDpDirectory(FileSystem fs, Path path) throws IOException {
@@ -1608,7 +1553,7 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      int dpLevels, int numBuckets, Configuration hconf, Long mmWriteId) throws IOException {
+      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId) throws IOException {
     if (fileStats == null) {
       return null;
     }
@@ -1627,9 +1572,9 @@ public final class Utilities {
         }
         FileStatus[] items = fs.listStatus(path);
 
-        if (mmWriteId != null) {
+        if (txnId != null) {
           Path mmDir = parts[i].getPath();
-          if (!mmDir.getName().equals(ValidWriteIds.getMmFilePrefix(mmWriteId))) {
+          if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
           Utilities.LOG14535.info("removeTempOrDuplicateFiles processing files in MM directory " + mmDir);
@@ -1644,14 +1589,14 @@ public final class Utilities {
       if (items.length == 0) {
         return result;
       }
-      if (mmWriteId == null) {
+      if (txnId == null) {
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
       } else {
         if (items.length > 1) {
           throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
         }
         Path mmDir = items[0].getPath();
-        if (!mmDir.getName().equals(ValidWriteIds.getMmFilePrefix(mmWriteId))) {
+        if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
           throw new IOException("Unexpected non-MM directory " + mmDir);
         }
         Utilities.LOG14535.info(
@@ -4003,10 +3948,10 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long mmWriteId, Configuration conf) throws IOException {
+      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf) throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
+      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
@@ -4014,7 +3959,7 @@ public final class Utilities {
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs)) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, mmWriteId);
+    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, txnId, stmtId);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4082,22 +4027,22 @@ public final class Utilities {
   }
 
   private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs,
-      Path path, int skipLevels, PathFilter filter, long mmWriteId) throws IOException {
+      Path path, int skipLevels, PathFilter filter, long txnId, int stmtId) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append("*");
     }
-    sb.append(Path.SEPARATOR).append(ValidWriteIds.getMmFilePrefix(mmWriteId));
+    sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     Path pathPattern = new Path(path, sb.toString());
     Utilities.LOG14535.info("Looking for files via: " + pathPattern);
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-      int dpLevels, int lbLevels, String unionSuffix, ValidWriteIds.IdPathFilter filter,
-      long mmWriteId, Configuration conf) throws IOException {
+                                          int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter,
+                                          long txnId, int stmtId, Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, mmWriteId, conf);
+        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf);
     if (files != null) {
       for (Path path : files) {
         Utilities.LOG14535.info("Deleting " + path + " on failure");
@@ -4110,10 +4055,10 @@ public final class Utilities {
 
 
   public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
-      String taskId, Long mmWriteId, String unionSuffix) throws HiveException {
+      String taskId, Long txnId, int stmtId, String unionSuffix) throws HiveException {
     if (commitPaths.isEmpty()) return;
     // We assume one FSOP per task (per specPath), so we create it in specPath.
-    Path manifestPath = getManifestDir(specPath, mmWriteId, unionSuffix);
+    Path manifestPath = getManifestDir(specPath, txnId, stmtId, unionSuffix);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.LOG14535.info("Writing manifest to " + manifestPath + " with " + commitPaths);
     try {
@@ -4132,8 +4077,8 @@ public final class Utilities {
     }
   }
 
-  private static Path getManifestDir(Path specPath, long mmWriteId, String unionSuffix) {
-    Path manifestPath = new Path(specPath, "_tmp." + ValidWriteIds.getMmFilePrefix(mmWriteId));
+  private static Path getManifestDir(Path specPath, long txnId, int stmtId, String unionSuffix) {
+    Path manifestPath = new Path(specPath, "_tmp." + AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
 
@@ -4149,18 +4094,18 @@ public final class Utilities {
   }
 
   public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
-      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long mmWriteId,
+      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long txnId, int stmtId,
       Reporter reporter, boolean isMmCtas) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    Path manifestDir = getManifestDir(specPath, mmWriteId, unionSuffix);
+    Path manifestDir = getManifestDir(specPath, txnId, stmtId, unionSuffix);
     if (!success) {
-      ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
+      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          unionSuffix, filter, mmWriteId, hconf);
+          filter, txnId, stmtId, hconf);
       return;
     }
 
-    Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + mmWriteId + ")");
+    Utilities.LOG14535.info("Looking for manifests in: " + manifestDir + " (" + txnId + ")");
     // TODO# may be wrong if there are no splits (empty insert/CTAS)
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
@@ -4180,14 +4125,14 @@ public final class Utilities {
     }
 
     Utilities.LOG14535.info("Looking for files in: " + specPath);
-    ValidWriteIds.IdPathFilter filter = new ValidWriteIds.IdPathFilter(mmWriteId, true);
+    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
     if (isMmCtas && !fs.exists(specPath)) {
       // TODO: do we also need to do this when creating an empty partition from select?
       Utilities.LOG14535.info("Creating table directory for CTAS with no output at " + specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, mmWriteId, hconf);
+        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, hconf);
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
@@ -4243,7 +4188,7 @@ public final class Utilities {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
-        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, mmWriteId);
+        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;
@@ -4294,7 +4239,7 @@ public final class Utilities {
    * if the entire directory is valid (has no uncommitted/temporary files).
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
-      ValidWriteIds ids, int lbLevels) throws IOException {
+      ValidTxnList validTxnList, int lbLevels) throws IOException {
     Utilities.LOG14535.info("Looking for valid MM paths under " + path);
     // NULL means this directory is entirely valid.
     List<Path> result = null;
@@ -4304,8 +4249,8 @@ public final class Utilities {
     for (int i = 0; i < children.length; ++i) {
       FileStatus file = children[i];
       Path childPath = file.getPath();
-      Long writeId = ValidWriteIds.extractWriteId(childPath);
-      if (!file.isDirectory() || writeId == null || !ids.isValid(writeId)) {
+      Long txnId = JavaUtils.extractTxnId(childPath);
+      if (!file.isDirectory() || txnId == null || !validTxnList.isTxnValid(txnId)) {
         Utilities.LOG14535.info("Skipping path " + childPath);
         if (result == null) {
           result = new ArrayList<>(children.length - 1);

@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +51,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -70,9 +68,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -104,7 +102,6 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResult;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -157,7 +154,6 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -1624,26 +1620,13 @@ public class Hive {
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean inheritTableSpecs,
       boolean isSkewedStoreAsSubdir,  boolean isSrcLocal, boolean isAcid,
-      boolean hasFollowingStatsTask, Long mmWriteId, boolean isCommitMmWrite)
+      boolean hasFollowingStatsTask, Long txnId, int stmtId)
           throws HiveException {
     Table tbl = getTable(tableName);
-    boolean isMmTableWrite = (mmWriteId != null);
+    boolean isMmTableWrite = (txnId != null);
     Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
-        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, mmWriteId);
-    if (isMmTableWrite && isCommitMmWrite) {
-      // The assumption behind committing here is that this partition is the only one outputted.
-      commitMmTableWrite(tbl, mmWriteId);
-    }
-  }
-
-  public void commitMmTableWrite(Table tbl, Long mmWriteId)
-      throws HiveException {
-    try {
-      getMSC().finalizeTableWrite(tbl.getDbName(), tbl.getTableName(), mmWriteId, true);
-    } catch (TException e) {
-      throw new HiveException(e);
-    }
+        isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, txnId, stmtId);
   }
 
   /**
@@ -1673,7 +1656,7 @@ public class Hive {
    */
   public Partition loadPartition(Path loadPath, Table tbl, Map<String, String> partSpec,
       boolean replace, boolean inheritTableSpecs, boolean isSkewedStoreAsSubdir,
-      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long mmWriteId)
+      boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long txnId, int stmtId)
           throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
     try {
@@ -1722,34 +1705,34 @@ public class Hive {
         newFiles = Collections.synchronizedList(new ArrayList<Path>());
       }
       // TODO: this assumes both paths are qualified; which they are, currently.
-      if (mmWriteId != null && loadPath.equals(newPartPath)) {
+      if (txnId != null && loadPath.equals(newPartPath)) {
         // MM insert query, move itself is a no-op.
         Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath + " (MM)");
         assert !isAcid;
         if (areEventsForDmlNeeded(tbl, oldPart)) {
-          newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
+          newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
         }
         Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
         if (replace && oldPartPath != null) {
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           deleteOldPathForReplace(newPartPath, oldPartPath, getConf(), isAutoPurge,
-              new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null,
+              new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
               tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
         }
       } else {
         // Either a non-MM query, or a load into MM table from an external source.
         PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
         Path destPath = newPartPath;
-        if (mmWriteId != null) {
+        if (txnId != null) {
           // We will load into MM directory, and delete from the parent if needed.
-          destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
-          filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false, true) : filter;
+          destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+          filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
         }
         Utilities.LOG14535.info("moving " + loadPath + " to " + destPath);
         if (replace || (oldPart == null && !isAcid)) {
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
-              isSrcLocal, isAutoPurge, newFiles, filter, mmWriteId != null);
+              isSrcLocal, isAutoPurge, newFiles, filter, txnId != null);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           Hive.copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcid, newFiles);
@@ -1834,9 +1817,9 @@ public class Hive {
     return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null;
   }
 
-  private List<Path> listFilesCreatedByQuery(Path loadPath, long mmWriteId) throws HiveException {
+  private List<Path> listFilesCreatedByQuery(Path loadPath, long txnId, int stmtId) throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
-    final String filePrefix = ValidWriteIds.getMmFilePrefix(mmWriteId);
+    final String filePrefix = AcidUtils.deltaSubdir(txnId, txnId, stmtId);
     FileStatus[] srcs;
     FileSystem srcFs;
     try {
@@ -1999,11 +1982,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   private Set<Path> getValidPartitionsInPath(
-      int numDP, int numLB, Path loadPath, Long mmWriteId) throws HiveException {
+      int numDP, int numLB, Path loadPath, Long txnId, int stmtId) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      if (mmWriteId == null) {
+      if (txnId == null) {
         FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
         // Check for empty partitions
         for (FileStatus s : leafStatus) {
@@ -2018,7 +2001,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // The non-MM path only finds new partitions, as it is looking at the temp path.
         // To produce the same effect, we will find all the partitions affected by this write ID.
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, mmWriteId, conf);
+            fs, loadPath, numDP, numLB, null, txnId, stmtId, conf);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           for (int i = 0; i < numLB; ++i) {
@@ -2064,8 +2047,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final boolean replace,
-      final int numDP, final int numLB, final boolean isAcid, final long txnId,
-      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation, final Long mmWriteId)
+      final int numDP, final int numLB, final boolean isAcid, final long txnId, final int stmtId,
+      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation)
       throws HiveException {
 
     final Map<Map<String, String>, Partition> partitionsMap =
@@ -2080,7 +2063,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, mmWriteId);
+    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId);
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -2114,7 +2097,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               Utilities.LOG14535.info("loadPartition called for DPP from " + partPath + " to " + tbl.getTableName());
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   replace, true, numLB > 0,
-                  false, isAcid, hasFollowingStatsTask, mmWriteId);
+                  false, isAcid, hasFollowingStatsTask, txnId, stmtId);
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -2145,10 +2128,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       for (Future future : futures) {
         future.get();
-      }
-      if (mmWriteId != null) {
-        // Commit after we have processed all the partitions.
-        commitMmTableWrite(tbl, mmWriteId);
       }
     } catch (InterruptedException | ExecutionException e) {
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
@@ -2200,8 +2179,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public void loadTable(Path loadPath, String tableName, boolean replace, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask,
-      Long mmWriteId) throws HiveException {
-
+      Long txnId, int stmtId) throws HiveException {
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
     HiveConf sessionConf = SessionState.getSessionConf();
@@ -2209,30 +2187,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
     // TODO: this assumes both paths are qualified; which they are, currently.
-    if (mmWriteId != null && loadPath.equals(tbl.getPath())) {
+    if (txnId != null && loadPath.equals(tbl.getPath())) {
       Utilities.LOG14535.info("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {
         Path tableDest = tbl.getPath();
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         deleteOldPathForReplace(tableDest, tableDest, sessionConf, isAutopurge,
-            new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null,
+            new JavaUtils.IdPathFilter(txnId, stmtId, false, true), true,
             tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
       }
-      newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
+      newFiles = listFilesCreatedByQuery(loadPath, txnId, stmtId);
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
       Path tblPath = tbl.getPath(), destPath = tblPath;
       PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
-      if (mmWriteId != null) {
+      if (txnId != null) {
         // We will load into MM directory, and delete from the parent if needed.
-        destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
-        filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false, true) : filter;
+        destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+        filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
       }
       Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath + " (replace = " + replace + ")");
       if (replace) {
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tblPath, loadPath, destPath, tblPath,
-            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, mmWriteId != null);
+            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, txnId != null);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
@@ -2272,10 +2250,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       alterTable(tableName, tbl, environmentContext);
     } catch (InvalidOperationException e) {
       throw new HiveException(e);
-    }
-
-    if (mmWriteId != null) {
-      commitMmTableWrite(tbl, mmWriteId);
     }
 
     fireInsertEvent(tbl, null, replace, newFiles);
@@ -4337,25 +4311,4 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
-
-  public long getNextTableWriteId(String dbName, String tableName) throws HiveException {
-    try {
-      return getMSC().getNextTableWriteId(dbName, tableName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
-
-  public ValidWriteIds getValidWriteIdsForTable(
-      String dbName, String tableName) throws HiveException {
-    try {
-      // TODO: decode ID ranges here if we use that optimization
-      GetValidWriteIdsResult result = getMSC().getValidWriteIds(dbName, tableName);
-      return new ValidWriteIds(result.getLowWatermarkId(), result.getHighWatermarkId(),
-          result.isSetAreIdsValid() && result.isAreIdsValid(),
-          result.isSetIds() ? new HashSet<Long>(result.getIds()) : null);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
-};
+}

@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -364,11 +363,6 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public boolean commitTransaction() {
     return rawStore.commitTransaction();
-  }
-
-  @Override
-  public Boolean commitTransactionExpectDeadlock() {
-    return null;
   }
 
   @Override
@@ -1562,46 +1556,6 @@ public class CachedStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
     rawStore.addForeignKeys(fks);
-  }
-
-  @Override
-  public void updateTableWrite(MTableWrite tw) {
-
-  }
-
-  @Override
-  public MTableWrite getTableWrite(String dbName, String tblName, long writeId) throws MetaException {
-    return null;
-  }
-
-  @Override
-  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
-
-  }
-
-  @Override
-  public List<Long> getTableWriteIds(String dbName, String tblName, long watermarkId, long nextWriteId, char state) throws MetaException {
-    return null;
-  }
-
-  @Override
-  public List<FullTableName> getAllMmTablesForCleanup() throws MetaException {
-    return null;
-  }
-
-  @Override
-  public List<MTableWrite> getTableWrites(String dbName, String tblName, long from, long to) throws MetaException {
-    return null;
-  }
-
-  @Override
-  public Collection<String> getAllPartitionLocations(String dbName, String tblName) {
-    return null;
-  }
-
-  @Override
-  public void deleteTableWrites(String dbName, String tblName, long from, long to) throws MetaException {
-
   }
 
   @Override

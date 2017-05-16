@@ -146,7 +146,6 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
-import org.apache.hadoop.hive.metastore.model.MTableWrite;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -612,52 +611,15 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
+  /**
+   * if this is the commit of the first open call then an actual commit is
+   * called.
+   *
+   * @return Always returns true
+   */
   @Override
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
-    if (!startCommitTransaction()) return false;
-
-    openTrasactionCalls--;
-    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
-    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
-      transactionStatus = TXN_STATUS.COMMITED;
-      currentTransaction.commit();
-    }
-
-    return true;
-  }
-
-  @Override
-  @CanNotRetry
-  public Boolean commitTransactionExpectDeadlock() {
-    if (!startCommitTransaction()) return false;
-
-    if (--openTrasactionCalls != 0) {
-      String msg = "commitTransactionExpectDeadlock cannot be called for a nested transaction";
-      LOG.error(msg);
-      throw new AssertionError(msg);
-    }
-
-    transactionStatus = TXN_STATUS.COMMITED;
-    try {
-      currentTransaction.commit();
-    } catch (Exception ex) {
-      Throwable candidate = ex;
-      while (candidate != null && !(candidate instanceof SQLException)) {
-        candidate = candidate.getCause();
-      }
-      if (candidate == null) throw ex;
-      if (DatabaseProduct.isDeadlock(dbType, (SQLException)candidate)) {
-        LOG.info("Deadlock exception during commit: " + candidate.getMessage());
-        return null;
-      }
-      throw ex;
-    }
-
-    return true;
-  }
-
-  private boolean startCommitTransaction() {
     if (TXN_STATUS.ROLLBACK == transactionStatus) {
       debugLog("Commit transaction: rollback");
       return false;
@@ -675,6 +637,13 @@ public class ObjectStore implements RawStore, Configurable {
           "calls to openTransaction/commitTransaction");
       LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
+    }
+    openTrasactionCalls--;
+    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
+
+    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
+      transactionStatus = TXN_STATUS.COMMITED;
+      currentTransaction.commit();
     }
     return true;
   }
@@ -1129,12 +1098,6 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(partGrants);
         }
 
-        // TODO# temporary; will be removed with ACID. Otherwise, need to do direct delete w/o get.
-        List<MTableWrite> mtw = getTableWrites(dbName, tableName, -1, -1);
-        if (mtw != null && mtw.size() > 0) {
-          pm.deletePersistentAll(mtw);
-        }
-
         List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(dbName,
             tableName);
         if (partColGrants != null && partColGrants.size() > 0) {
@@ -1152,11 +1115,6 @@ public class ObjectStore implements RawStore, Configurable {
                                            dbName, tableName, null);
         if (tabConstraints != null && tabConstraints.size() > 0) {
           pm.deletePersistentAll(tabConstraints);
-        }
-
-        List<MTableWrite> tableWrites = listAllTableWrites(dbName, tableName);
-        if (tableWrites != null && tableWrites.size() > 0) {
-          pm.deletePersistentAll(tableWrites);
         }
 
         preDropStorageDescriptor(tbl.getSd());
@@ -1215,25 +1173,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mConstraints;
-  }
-
-
-  private List<MTableWrite> listAllTableWrites(String dbName, String tableName) {
-    List<MTableWrite> result = null;
-    Query query = null;
-    boolean success = false;
-    openTransaction();
-    try {
-      String queryStr = "table.tableName == t1 && table.database.name == t2";
-      query = pm.newQuery(MTableWrite.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      result = new ArrayList<>((List<MTableWrite>) query.executeWithArray(tableName, dbName));
-      pm.retrieveAll(result);
-      success = true;
-    } finally {
-      closeTransaction(success, query);
-    }
-    return result;
   }
 
   @Override
@@ -1527,8 +1466,6 @@ public class ObjectStore implements RawStore, Configurable {
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
-    t.setMmNextWriteId(mtbl.getMmNextWriteId());
-    t.setMmWatermarkWriteId(mtbl.getMmWatermarkWriteId());
     return t;
   }
 
@@ -1567,8 +1504,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType, tbl.isSetMmNextWriteId() ?  tbl.getMmNextWriteId() : 0,
-            tbl.isSetMmWatermarkWriteId() ?  tbl.getMmWatermarkWriteId() : -1);
+        tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -3310,8 +3246,6 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setLastAccessTime(newt.getLastAccessTime());
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
-      oldt.setMmNextWriteId(newt.getMmNextWriteId());
-      oldt.setMmWatermarkWriteId(newt.getMmWatermarkWriteId());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
       // commit the changes
@@ -8593,195 +8527,6 @@ public class ObjectStore implements RawStore, Configurable {
       if (queryWrapper != null) {
         queryWrapper.close();
       }
-    }
-  }
-
-  @Override
-  public void createTableWrite(Table tbl, long writeId, char state, long heartbeat) {
-    boolean success = false;
-    openTransaction();
-    try {
-      MTable mtbl = getMTable(tbl.getDbName(), tbl.getTableName());
-      MTableWrite tw = new MTableWrite(mtbl, writeId, String.valueOf(state), heartbeat, heartbeat);
-      pm.makePersistent(tw);
-      success = true;
-    } finally {
-      if (success) {
-        commitTransaction();
-      } else {
-        rollbackTransaction();
-      }
-    }
-  }
-
-  @Override
-  public void updateTableWrite(MTableWrite tw) {
-    boolean success = false;
-    openTransaction();
-    try {
-      pm.makePersistent(tw);
-      success = true;
-    } finally {
-      if (success) {
-        commitTransaction();
-      } else {
-        rollbackTransaction();
-      }
-    }
-  }
-
-  @Override
-  public MTableWrite getTableWrite(
-      String dbName, String tblName, long writeId) throws MetaException {
-    boolean success = false;
-    Query query = null;
-    openTransaction();
-    try {
-      query = pm.newQuery(MTableWrite.class,
-              "table.tableName == t1 && table.database.name == t2 && writeId == t3");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.Long t3");
-      @SuppressWarnings("unchecked")
-      List<MTableWrite> writes = (List<MTableWrite>) query.execute(tblName, dbName, writeId);
-      pm.retrieveAll(writes);
-      success = true;
-      if (writes == null || writes.isEmpty()) return null;
-      if (writes.size() > 1) {
-        throw new MetaException(
-            "More than one TableWrite for " + dbName + "." + tblName + " and " + writeId);
-      }
-      return writes.get(0);
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-  @Override
-  public List<Long> getTableWriteIds(String dbName, String tblName,
-      long watermarkId, long nextWriteId, char state) throws MetaException {
-    boolean success = false;
-    Query query = null;
-    openTransaction();
-    try {
-      boolean hasState = (state != '\0');
-      query = pm.newQuery("select writeId from org.apache.hadoop.hive.metastore.model.MTableWrite"
-          + " where table.tableName == t1 && table.database.name == t2 && writeId > t3"
-          + " && writeId < t4" + (hasState ? " && state == t5" : ""));
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.Long t3, "
-          + "java.lang.Long t4" + (hasState ? ", java.lang.String t5" : ""));
-      query.setResult("writeId");
-      query.setOrdering("writeId asc");
-      @SuppressWarnings("unchecked")
-      List<Long> writes = (List<Long>) (hasState
-          ? query.executeWithArray(tblName, dbName, watermarkId, nextWriteId, String.valueOf(state))
-          : query.executeWithArray(tblName, dbName, watermarkId, nextWriteId));
-      success = true;
-      return (writes == null) ? new ArrayList<Long>() : new ArrayList<>(writes);
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-  @Override
-  public List<MTableWrite> getTableWrites(
-      String dbName, String tblName, long from, long to) throws MetaException {
-    boolean success = false;
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tblName = HiveStringUtils.normalizeIdentifier(tblName);
-    Query query = null;
-    openTransaction();
-    try {
-      String queryStr = "table.tableName == t1 && table.database.name == t2 && writeId > t3",
-          argStr = "java.lang.String t1, java.lang.String t2, java.lang.Long t3";
-      if (to >= 0) {
-        queryStr += " && writeId < t4";
-        argStr += ", java.lang.Long t4";
-      }
-      query = pm.newQuery(MTableWrite.class, queryStr);
-      query.declareParameters(argStr);
-      query.setOrdering("writeId asc");
-      @SuppressWarnings("unchecked")
-      List<MTableWrite> writes = (List<MTableWrite>)(to >= 0
-         ? query.executeWithArray(tblName, dbName, from, to)
-         : query.executeWithArray(tblName, dbName, from));
-      pm.retrieveAll(writes);
-      success = true;
-      return (writes == null || writes.isEmpty()) ? null : new ArrayList<>(writes);
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-
-  @Override
-  public void deleteTableWrites(
-      String dbName, String tblName, long from, long to) throws MetaException {
-    boolean success = false;
-    Query query = null;
-    openTransaction();
-    try {
-      query = pm.newQuery(MTableWrite.class,
-          "table.tableName == t1 && table.database.name == t2 && writeId > t3 && writeId < t4");
-      query.declareParameters(
-          "java.lang.String t1, java.lang.String t2, java.lang.Long t3, java.lang.Long t4");
-      query.deletePersistentAll(tblName, dbName, from, to);
-      success = true;
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-  @Override
-  public List<FullTableName > getAllMmTablesForCleanup() throws MetaException {
-    boolean success = false;
-    Query query = null;
-    openTransaction();
-    try {
-      // If the table had no MM writes, there's nothing to clean up
-      query = pm.newQuery(MTable.class, "mmNextWriteId > 0");
-      @SuppressWarnings("unchecked")
-      List<MTable> tables = (List<MTable>) query.execute();
-      pm.retrieveAll(tables);
-      ArrayList<FullTableName> result = new ArrayList<>(tables.size());
-      for (MTable table : tables) {
-        if (MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
-          result.add(new FullTableName(table.getDatabase().getName(), table.getTableName()));
-        }
-      }
-      success = true;
-      return result;
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-  @Override
-  public Collection<String> getAllPartitionLocations(String dbName, String tblName) {
-    boolean success = false;
-    Query query = null;
-    openTransaction();
-    try {
-      String q = "select sd.location from org.apache.hadoop.hive.metastore.model.MPartition"
-          + " where table.tableName == t1 && table.database.name == t2";
-      query = pm.newQuery();
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      @SuppressWarnings("unchecked")
-      List<String> tables = (List<String>) query.execute();
-      pm.retrieveAll(tables);
-      success = true;
-      return new ArrayList<>(tables);
-    } finally {
-      closeTransaction(success, query);
-    }
-  }
-
-  private void closeTransaction(boolean success, Query query) {
-    if (success) {
-      commitTransaction();
-    } else {
-      rollbackTransaction();
-    }
-    if (query != null) {
-      query.closeAll();
     }
   }
 }

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -203,7 +202,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public Path getMergeInputDirName() {
     Path root = getFinalDirName();
     if (mmWriteId == null) return root;
-    return new Path(root, ValidWriteIds.getMmFilePrefix(mmWriteId));
+    return new Path(root, AcidUtils.deltaSubdir(txnId, txnId, 0));
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -476,6 +475,7 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
   public void setTransactionId(long id) {
     txnId = id;
+    setMmWriteId(id);
   }
   public long getTransactionId() {
     return txnId;

@@ -4569,14 +4569,6 @@ class Table {
    * @var bool
    */
   public $rewriteEnabled = null;
-  /**
-   * @var int
-   */
-  public $mmNextWriteId = null;
-  /**
-   * @var int
-   */
-  public $mmWatermarkWriteId = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -4656,14 +4648,6 @@ class Table {
           'var' => 'rewriteEnabled',
           'type' => TType::BOOL,
           ),
-        16 => array(
-          'var' => 'mmNextWriteId',
-          'type' => TType::I64,
-          ),
-        17 => array(
-          'var' => 'mmWatermarkWriteId',
-          'type' => TType::I64,
-          ),
         );
     }
     if (is_array($vals)) {
@@ -4711,12 +4695,6 @@ class Table {
       }
       if (isset($vals['rewriteEnabled'])) {
         $this->rewriteEnabled = $vals['rewriteEnabled'];
-      }
-      if (isset($vals['mmNextWriteId'])) {
-        $this->mmNextWriteId = $vals['mmNextWriteId'];
-      }
-      if (isset($vals['mmWatermarkWriteId'])) {
-        $this->mmWatermarkWriteId = $vals['mmWatermarkWriteId'];
       }
     }
   }
@@ -4871,20 +4849,6 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 16:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->mmNextWriteId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 17:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->mmWatermarkWriteId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5002,16 +4966,6 @@ class Table {
     if ($this->rewriteEnabled !== null) {
       $xfer += $output->writeFieldBegin('rewriteEnabled', TType::BOOL, 15);
       $xfer += $output->writeBool($this->rewriteEnabled);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->mmNextWriteId !== null) {
-      $xfer += $output->writeFieldBegin('mmNextWriteId', TType::I64, 16);
-      $xfer += $output->writeI64($this->mmNextWriteId);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->mmWatermarkWriteId !== null) {
-      $xfer += $output->writeFieldBegin('mmWatermarkWriteId', TType::I64, 17);
-      $xfer += $output->writeI64($this->mmWatermarkWriteId);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -17795,812 +17749,6 @@ class CacheFileMetadataRequest {
 
 }
 
-class GetNextWriteIdRequest {
-  static $_TSPEC;
-
-  /**
-   * @var string
-   */
-  public $dbName = null;
-  /**
-   * @var string
-   */
-  public $tblName = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'dbName',
-          'type' => TType::STRING,
-          ),
-        2 => array(
-          'var' => 'tblName',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['dbName'])) {
-        $this->dbName = $vals['dbName'];
-      }
-      if (isset($vals['tblName'])) {
-        $this->tblName = $vals['tblName'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetNextWriteIdRequest';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tblName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetNextWriteIdRequest');
-    if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
-      $xfer += $output->writeString($this->dbName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tblName !== null) {
-      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
-      $xfer += $output->writeString($this->tblName);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class GetNextWriteIdResult {
-  static $_TSPEC;
-
-  /**
-   * @var int
-   */
-  public $writeId = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'writeId',
-          'type' => TType::I64,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['writeId'])) {
-        $this->writeId = $vals['writeId'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetNextWriteIdResult';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->writeId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetNextWriteIdResult');
-    if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 1);
-      $xfer += $output->writeI64($this->writeId);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class FinalizeWriteIdRequest {
-  static $_TSPEC;
-
-  /**
-   * @var string
-   */
-  public $dbName = null;
-  /**
-   * @var string
-   */
-  public $tblName = null;
-  /**
-   * @var int
-   */
-  public $writeId = null;
-  /**
-   * @var bool
-   */
-  public $commit = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'dbName',
-          'type' => TType::STRING,
-          ),
-        2 => array(
-          'var' => 'tblName',
-          'type' => TType::STRING,
-          ),
-        3 => array(
-          'var' => 'writeId',
-          'type' => TType::I64,
-          ),
-        4 => array(
-          'var' => 'commit',
-          'type' => TType::BOOL,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['dbName'])) {
-        $this->dbName = $vals['dbName'];
-      }
-      if (isset($vals['tblName'])) {
-        $this->tblName = $vals['tblName'];
-      }
-      if (isset($vals['writeId'])) {
-        $this->writeId = $vals['writeId'];
-      }
-      if (isset($vals['commit'])) {
-        $this->commit = $vals['commit'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'FinalizeWriteIdRequest';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tblName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->writeId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 4:
-          if ($ftype == TType::BOOL) {
-            $xfer += $input->readBool($this->commit);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('FinalizeWriteIdRequest');
-    if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
-      $xfer += $output->writeString($this->dbName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tblName !== null) {
-      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
-      $xfer += $output->writeString($this->tblName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
-      $xfer += $output->writeI64($this->writeId);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->commit !== null) {
-      $xfer += $output->writeFieldBegin('commit', TType::BOOL, 4);
-      $xfer += $output->writeBool($this->commit);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class FinalizeWriteIdResult {
-  static $_TSPEC;
-
-
-  public function __construct() {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        );
-    }
-  }
-
-  public function getName() {
-    return 'FinalizeWriteIdResult';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('FinalizeWriteIdResult');
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class HeartbeatWriteIdRequest {
-  static $_TSPEC;
-
-  /**
-   * @var string
-   */
-  public $dbName = null;
-  /**
-   * @var string
-   */
-  public $tblName = null;
-  /**
-   * @var int
-   */
-  public $writeId = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'dbName',
-          'type' => TType::STRING,
-          ),
-        2 => array(
-          'var' => 'tblName',
-          'type' => TType::STRING,
-          ),
-        3 => array(
-          'var' => 'writeId',
-          'type' => TType::I64,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['dbName'])) {
-        $this->dbName = $vals['dbName'];
-      }
-      if (isset($vals['tblName'])) {
-        $this->tblName = $vals['tblName'];
-      }
-      if (isset($vals['writeId'])) {
-        $this->writeId = $vals['writeId'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'HeartbeatWriteIdRequest';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tblName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->writeId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('HeartbeatWriteIdRequest');
-    if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
-      $xfer += $output->writeString($this->dbName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tblName !== null) {
-      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
-      $xfer += $output->writeString($this->tblName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->writeId !== null) {
-      $xfer += $output->writeFieldBegin('writeId', TType::I64, 3);
-      $xfer += $output->writeI64($this->writeId);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class HeartbeatWriteIdResult {
-  static $_TSPEC;
-
-
-  public function __construct() {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        );
-    }
-  }
-
-  public function getName() {
-    return 'HeartbeatWriteIdResult';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('HeartbeatWriteIdResult');
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class GetValidWriteIdsRequest {
-  static $_TSPEC;
-
-  /**
-   * @var string
-   */
-  public $dbName = null;
-  /**
-   * @var string
-   */
-  public $tblName = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'dbName',
-          'type' => TType::STRING,
-          ),
-        2 => array(
-          'var' => 'tblName',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['dbName'])) {
-        $this->dbName = $vals['dbName'];
-      }
-      if (isset($vals['tblName'])) {
-        $this->tblName = $vals['tblName'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetValidWriteIdsRequest';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tblName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetValidWriteIdsRequest');
-    if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
-      $xfer += $output->writeString($this->dbName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tblName !== null) {
-      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
-      $xfer += $output->writeString($this->tblName);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class GetValidWriteIdsResult {
-  static $_TSPEC;
-
-  /**
-   * @var int
-   */
-  public $lowWatermarkId = null;
-  /**
-   * @var int
-   */
-  public $highWatermarkId = null;
-  /**
-   * @var bool
-   */
-  public $areIdsValid = null;
-  /**
-   * @var int[]
-   */
-  public $ids = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'lowWatermarkId',
-          'type' => TType::I64,
-          ),
-        2 => array(
-          'var' => 'highWatermarkId',
-          'type' => TType::I64,
-          ),
-        3 => array(
-          'var' => 'areIdsValid',
-          'type' => TType::BOOL,
-          ),
-        4 => array(
-          'var' => 'ids',
-          'type' => TType::LST,
-          'etype' => TType::I64,
-          'elem' => array(
-            'type' => TType::I64,
-            ),
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['lowWatermarkId'])) {
-        $this->lowWatermarkId = $vals['lowWatermarkId'];
-      }
-      if (isset($vals['highWatermarkId'])) {
-        $this->highWatermarkId = $vals['highWatermarkId'];
-      }
-      if (isset($vals['areIdsValid'])) {
-        $this->areIdsValid = $vals['areIdsValid'];
-      }
-      if (isset($vals['ids'])) {
-        $this->ids = $vals['ids'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetValidWriteIdsResult';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->lowWatermarkId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->highWatermarkId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::BOOL) {
-            $xfer += $input->readBool($this->areIdsValid);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 4:
-          if ($ftype == TType::LST) {
-            $this->ids = array();
-            $_size568 = 0;
-            $_etype571 = 0;
-            $xfer += $input->readListBegin($_etype571, $_size568);
-            for ($_i572 = 0; $_i572 < $_size568; ++$_i572)
-            {
-              $elem573 = null;
-              $xfer += $input->readI64($elem573);
-              $this->ids []= $elem573;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetValidWriteIdsResult');
-    if ($this->lowWatermarkId !== null) {
-      $xfer += $output->writeFieldBegin('lowWatermarkId', TType::I64, 1);
-      $xfer += $output->writeI64($this->lowWatermarkId);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->highWatermarkId !== null) {
-      $xfer += $output->writeFieldBegin('highWatermarkId', TType::I64, 2);
-      $xfer += $output->writeI64($this->highWatermarkId);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->areIdsValid !== null) {
-      $xfer += $output->writeFieldBegin('areIdsValid', TType::BOOL, 3);
-      $xfer += $output->writeBool($this->areIdsValid);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->ids !== null) {
-      if (!is_array($this->ids)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('ids', TType::LST, 4);
-      {
-        $output->writeListBegin(TType::I64, count($this->ids));
-        {
-          foreach ($this->ids as $iter574)
-          {
-            $xfer += $output->writeI64($iter574);
-          }
-        }
-        $output->writeListEnd();
-      }
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
 class GetAllFunctionsResponse {
   static $_TSPEC;
 
@@ -18652,15 +17800,15 @@ class GetAllFunctionsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->functions = array();
-            $_size575 = 0;
-            $_etype578 = 0;
-            $xfer += $input->readListBegin($_etype578, $_size575);
-            for ($_i579 = 0; $_i579 < $_size575; ++$_i579)
+            $_size568 = 0;
+            $_etype571 = 0;
+            $xfer += $input->readListBegin($_etype571, $_size568);
+            for ($_i572 = 0; $_i572 < $_size568; ++$_i572)
             {
-              $elem580 = null;
-              $elem580 = new \metastore\Function();
-              $xfer += $elem580->read($input);
-              $this->functions []= $elem580;
+              $elem573 = null;
+              $elem573 = new \metastore\Function();
+              $xfer += $elem573->read($input);
+              $this->functions []= $elem573;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18688,9 +17836,9 @@ class GetAllFunctionsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->functions));
         {
-          foreach ($this->functions as $iter581)
+          foreach ($this->functions as $iter574)
           {
-            $xfer += $iter581->write($output);
+            $xfer += $iter574->write($output);
           }
         }
         $output->writeListEnd();
@@ -18754,14 +17902,14 @@ class ClientCapabilities {
         case 1:
           if ($ftype == TType::LST) {
             $this->values = array();
-            $_size582 = 0;
-            $_etype585 = 0;
-            $xfer += $input->readListBegin($_etype585, $_size582);
-            for ($_i586 = 0; $_i586 < $_size582; ++$_i586)
+            $_size575 = 0;
+            $_etype578 = 0;
+            $xfer += $input->readListBegin($_etype578, $_size575);
+            for ($_i579 = 0; $_i579 < $_size575; ++$_i579)
             {
-              $elem587 = null;
-              $xfer += $input->readI32($elem587);
-              $this->values []= $elem587;
+              $elem580 = null;
+              $xfer += $input->readI32($elem580);
+              $this->values []= $elem580;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18789,9 +17937,9 @@ class ClientCapabilities {
       {
         $output->writeListBegin(TType::I32, count($this->values));
         {
-          foreach ($this->values as $iter588)
+          foreach ($this->values as $iter581)
           {
-            $xfer += $output->writeI32($iter588);
+            $xfer += $output->writeI32($iter581);
           }
         }
         $output->writeListEnd();
@@ -19091,14 +18239,14 @@ class GetTablesRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->tblNames = array();
-            $_size589 = 0;
-            $_etype592 = 0;
-            $xfer += $input->readListBegin($_etype592, $_size589);
-            for ($_i593 = 0; $_i593 < $_size589; ++$_i593)
+            $_size582 = 0;
+            $_etype585 = 0;
+            $xfer += $input->readListBegin($_etype585, $_size582);
+            for ($_i586 = 0; $_i586 < $_size582; ++$_i586)
             {
-              $elem594 = null;
-              $xfer += $input->readString($elem594);
-              $this->tblNames []= $elem594;
+              $elem587 = null;
+              $xfer += $input->readString($elem587);
+              $this->tblNames []= $elem587;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19139,9 +18287,9 @@ class GetTablesRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->tblNames));
         {
-          foreach ($this->tblNames as $iter595)
+          foreach ($this->tblNames as $iter588)
           {
-            $xfer += $output->writeString($iter595);
+            $xfer += $output->writeString($iter588);
           }
         }
         $output->writeListEnd();
@@ -19214,15 +18362,15 @@ class GetTablesResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->tables = array();
-            $_size596 = 0;
-            $_etype599 = 0;
-            $xfer += $input->readListBegin($_etype599, $_size596);
-            for ($_i600 = 0; $_i600 < $_size596; ++$_i600)
+            $_size589 = 0;
+            $_etype592 = 0;
+            $xfer += $input->readListBegin($_etype592, $_size589);
+            for ($_i593 = 0; $_i593 < $_size589; ++$_i593)
             {
-              $elem601 = null;
-              $elem601 = new \metastore\Table();
-              $xfer += $elem601->read($input);
-              $this->tables []= $elem601;
+              $elem594 = null;
+              $elem594 = new \metastore\Table();
+              $xfer += $elem594->read($input);
+              $this->tables []= $elem594;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19250,9 +18398,9 @@ class GetTablesResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tables));
         {
-          foreach ($this->tables as $iter602)
+          foreach ($this->tables as $iter595)
           {
-            $xfer += $iter602->write($output);
+            $xfer += $iter595->write($output);
           }
         }
         $output->writeListEnd();

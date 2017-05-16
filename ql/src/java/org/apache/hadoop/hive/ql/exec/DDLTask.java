@@ -57,8 +57,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidWriteIds;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -98,7 +100,6 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -4035,7 +4036,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           + " to false for this query if you want to force the conversion.");
     }
     Hive db = getHive();
-    ValidWriteIds ids = db.getValidWriteIdsForTable(tbl.getDbName(), tbl.getTableName());
+    String value = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    ValidTxnList validTxnList = value == null ? new ValidReadTxnList() : new ValidReadTxnList(value);
     if (tbl.getPartitionKeys().size() > 0) {
       PartitionIterable parts = new PartitionIterable(db, tbl, null,
           HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
@@ -4043,15 +4045,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       while (partIter.hasNext()) {
         Partition part = partIter.next();
         checkMmLb(part);
-        handleRemoveMm(part.getDataLocation(), ids, allMmDirs);
+        handleRemoveMm(part.getDataLocation(), validTxnList, allMmDirs);
       }
     } else {
       checkMmLb(tbl);
-      handleRemoveMm(tbl.getDataLocation(), ids, allMmDirs);
+      handleRemoveMm(tbl.getDataLocation(), validTxnList, allMmDirs);
     }
     List<Path> targetPaths = new ArrayList<>(allMmDirs.size());
     List<String> targetPrefix = new ArrayList<>(allMmDirs.size());
-    int prefixLen = ValidWriteIds.MM_PREFIX.length();
+    int prefixLen = JavaUtils.DELTA_PREFIX.length();
     for (int i = 0; i < allMmDirs.size(); ++i) {
       Path src = allMmDirs.get(i);
       Path tgt = src.getParent();
@@ -4082,7 +4084,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void handleRemoveMm(
-      Path path, ValidWriteIds ids, List<Path> result) throws HiveException {
+      Path path, ValidTxnList validTxnList, List<Path> result) throws HiveException {
     // Note: doesn't take LB into account; that is not presently supported here (throws above).
     try {
       FileSystem fs = path.getFileSystem(conf);
@@ -4092,10 +4094,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           ensureDelete(fs, childPath, "a non-directory file");
           continue;
         }
-        Long writeId = ValidWriteIds.extractWriteId(childPath);
+        Long writeId = JavaUtils.extractTxnId(childPath);
         if (writeId == null) {
           ensureDelete(fs, childPath, "an unknown directory");
-        } else if (!ids.isValid(writeId)) {
+        } else if (!validTxnList.isTxnValid(writeId)) {
           // Assume no concurrent active writes - we rely on locks here. We could check and fail.
           ensureDelete(fs, childPath, "an uncommitted directory");
         } else {
@@ -4122,9 +4124,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // We will move all the files in the table/partition directories into the first MM
     // directory, then commit the first write ID.
     List<Path> srcs = new ArrayList<>(), tgts = new ArrayList<>();
+    long mmWriteId = 0;
+    try {
+      HiveTxnManager txnManager = SessionState.get().getTxnMgr();
+      mmWriteId = txnManager.openTxn(new Context(conf), conf.getUser());
+      txnManager.commitTxn();
+    } catch (Exception e) {
+      String errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
+      console.printError(errorMessage, "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+    int stmtId = 0;
+    String mmDir = AcidUtils.deltaSubdir(mmWriteId, mmWriteId, stmtId);
     Hive db = getHive();
-    long mmWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
-    String mmDir = ValidWriteIds.getMmFilePrefix(mmWriteId);
     if (tbl.getPartitionKeys().size() > 0) {
       PartitionIterable parts = new PartitionIterable(db, tbl, null,
           HiveConf.getIntVar(conf, ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
@@ -4147,15 +4159,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
     MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
-    ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId);
-    // TODO# this is hacky and will be gone with ACID. The problem is getting the write ID above
-    //       modifies the table, but the table object above is preserved and modified without
-    //       getting this change, so saving it will overwrite write ID. Ideally, when we save
-    //       only specific fields, and not overwrite write ID every time we alter table.
-    //       There's probably some way in DN to achieve that, but for now let's just update the
-    //       original object here. This is safe due to DDL lock and the fact that converting
-    //       the table to MM here from non-MM should mean no concurrent write ID updates.
-    tbl.setMmNextWriteId(mmWriteId + 1);
+    ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
     Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
     mv.addDependentTask(ic);
     return Lists.<Task<?>>newArrayList(mv);
@@ -4568,20 +4572,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Long mmWriteId = crtTbl.getInitialMmWriteId();
       if (crtTbl.isCTAS() || mmWriteId != null) {
         Table createdTable = db.getTable(tbl.getDbName(), tbl.getTableName());
-        if (mmWriteId != null) {
-          // TODO# this would be retrieved via ACID before the query runs; for now we rely on it
-          //       being zero at start; we can't create a write ID before we create the table here.
-          long initialWriteId = db.getNextTableWriteId(tbl.getDbName(), tbl.getTableName());
-          if (initialWriteId != mmWriteId) {
-            throw new HiveException("Initial write ID mismatch - expected " + mmWriteId
-                + " but got " + initialWriteId);
-          }
-          // CTAS create the table on a directory that already exists; import creates the table
-          // first  (in parallel with copies?), then commits after all the loads.
-          if (crtTbl.isCTAS()) {
-            db.commitMmTableWrite(tbl, initialWriteId);
-          }
-        }
         if (crtTbl.isCTAS()) {
           DataContainer dc = new DataContainer(createdTable.getTTable());
           SessionState.get().getLineageState().setLineage(

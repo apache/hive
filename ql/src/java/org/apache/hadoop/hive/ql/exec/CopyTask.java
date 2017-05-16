@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -31,10 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ValidWriteIds;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -112,7 +109,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
     if (!fs.exists(path)) return null;
     if (!isSourceMm) return matchFilesOneDir(fs, path, null);
     // TODO: this doesn't handle list bucketing properly. Does the original exim do that?
-    FileStatus[] mmDirs = fs.listStatus(path, new ValidWriteIds.AnyIdDirFilter());
+    FileStatus[] mmDirs = fs.listStatus(path, new JavaUtils.AnyIdDirFilter());
     if (mmDirs == null || mmDirs.length == 0) return null;
     List<FileStatus> allFiles = new ArrayList<FileStatus>();
     for (FileStatus mmDir : mmDirs) {

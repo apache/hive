@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.Driver;
@@ -44,7 +43,6 @@ import java.util.Set;
 public class IndexUpdater {
   private List<LoadTableDesc> loadTableWork;
   private HiveConf conf;
-  private Configuration parentConf;
   // Assumes one instance of this + single-threaded compilation for each query.
   private Hive hive;
   private List<Task<? extends Serializable>> tasks;
@@ -54,7 +52,6 @@ public class IndexUpdater {
   public IndexUpdater(List<LoadTableDesc> loadTableWork, Set<ReadEntity> inputs, Configuration conf) {
     this.loadTableWork = loadTableWork;
     this.inputs = inputs;
-    this.parentConf = conf;
     this.conf = new HiveConf(conf, IndexUpdater.class);
     this.tasks = new LinkedList<Task<? extends Serializable>>();
   }
@@ -63,7 +60,6 @@ public class IndexUpdater {
       Configuration conf) {
     this.loadTableWork = new LinkedList<LoadTableDesc>();
     this.loadTableWork.add(loadTableWork);
-    this.parentConf = conf;
     this.conf = new HiveConf(conf, IndexUpdater.class);
     this.tasks = new LinkedList<Task<? extends Serializable>>();
     this.inputs = inputs;
@@ -79,15 +75,15 @@ public class IndexUpdater {
       Map<String, String> partSpec = ltd.getPartitionSpec();
       if (partSpec == null || partSpec.size() == 0) {
         //unpartitioned table, update whole index
-        doIndexUpdate(tblIndexes, ltd.getMmWriteId());
+        doIndexUpdate(tblIndexes);
       } else {
-        doIndexUpdate(tblIndexes, partSpec, ltd.getMmWriteId());
+        doIndexUpdate(tblIndexes, partSpec);
       }
     }
     return tasks;
   }
 
-  private void doIndexUpdate(List<Index> tblIndexes, Long mmWriteId) throws HiveException {
+  private void doIndexUpdate(List<Index> tblIndexes) throws HiveException {
     for (Index idx : tblIndexes) {
       StringBuilder sb = new StringBuilder();
       sb.append("ALTER INDEX ");
@@ -96,21 +92,20 @@ public class IndexUpdater {
       sb.append(idx.getDbName()).append('.');
       sb.append(idx.getOrigTableName());
       sb.append(" REBUILD");
-      compileRebuild(sb.toString(), idx, mmWriteId);
+      compileRebuild(sb.toString());
     }
   }
 
   private void doIndexUpdate(List<Index> tblIndexes, Map<String, String>
-      partSpec, Long mmWriteId) throws HiveException {
+      partSpec) throws HiveException {
     for (Index index : tblIndexes) {
       if (containsPartition(index, partSpec)) {
-        doIndexUpdate(index, partSpec, mmWriteId);
+        doIndexUpdate(index, partSpec);
       }
     }
   }
 
-  private void doIndexUpdate(Index index, Map<String, String> partSpec, Long mmWriteId)
-      throws HiveException {
+  private void doIndexUpdate(Index index, Map<String, String> partSpec) {
     StringBuilder ps = new StringBuilder();
     boolean first = true;
     ps.append("(");
@@ -134,18 +129,12 @@ public class IndexUpdater {
     sb.append(" PARTITION ");
     sb.append(ps.toString());
     sb.append(" REBUILD");
-    compileRebuild(sb.toString(), index, mmWriteId);
+    compileRebuild(sb.toString());
   }
 
-  private void compileRebuild(String query, Index index, Long mmWriteId)
-      throws HiveException {
+  private void compileRebuild(String query) {
     Driver driver = new Driver(this.conf);
     driver.compile(query, false);
-    if (mmWriteId != null) {
-      // TODO: this is rather fragile
-      ValidWriteIds.addCurrentToConf(
-          parentConf, index.getDbName(), index.getOrigTableName(), mmWriteId);
-    }
     tasks.addAll(driver.getPlan().getRootTasks());
     inputs.addAll(driver.getPlan().getInputs());
   }

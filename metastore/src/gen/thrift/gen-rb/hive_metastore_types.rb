@@ -736,8 +736,6 @@ class Table
   PRIVILEGES = 13
   TEMPORARY = 14
   REWRITEENABLED = 15
-  MMNEXTWRITEID = 16
-  MMWATERMARKWRITEID = 17
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -754,9 +752,7 @@ class Table
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
-    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
-    MMNEXTWRITEID => {:type => ::Thrift::Types::I64, :name => 'mmNextWriteId', :optional => true},
-    MMWATERMARKWRITEID => {:type => ::Thrift::Types::I64, :name => 'mmWatermarkWriteId', :optional => true}
+    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2804,166 +2800,6 @@ class CacheFileMetadataRequest
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetNextWriteIdRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TBLNAME = 2
-
-  FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetNextWriteIdResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  WRITEID = 1
-
-  FIELDS = {
-    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class FinalizeWriteIdRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TBLNAME = 2
-  WRITEID = 3
-  COMMIT = 4
-
-  FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'},
-    COMMIT => {:type => ::Thrift::Types::BOOL, :name => 'commit'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field commit is unset!') if @commit.nil?
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class FinalizeWriteIdResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-
-  FIELDS = {
-
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class HeartbeatWriteIdRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TBLNAME = 2
-  WRITEID = 3
-
-  FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class HeartbeatWriteIdResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-
-  FIELDS = {
-
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetValidWriteIdsRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TBLNAME = 2
-
-  FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetValidWriteIdsResult
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  LOWWATERMARKID = 1
-  HIGHWATERMARKID = 2
-  AREIDSVALID = 3
-  IDS = 4
-
-  FIELDS = {
-    LOWWATERMARKID => {:type => ::Thrift::Types::I64, :name => 'lowWatermarkId'},
-    HIGHWATERMARKID => {:type => ::Thrift::Types::I64, :name => 'highWatermarkId'},
-    AREIDSVALID => {:type => ::Thrift::Types::BOOL, :name => 'areIdsValid', :optional => true},
-    IDS => {:type => ::Thrift::Types::LIST, :name => 'ids', :element => {:type => ::Thrift::Types::I64}, :optional => true}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lowWatermarkId is unset!') unless @lowWatermarkId
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field highWatermarkId is unset!') unless @highWatermarkId
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -26,16 +26,22 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ImportCommitWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dbName, tblName;
-  private long mmWriteId;
+  private long txnId;
+  private int stmtId;
 
-  public ImportCommitWork(String dbName, String tblName, long mmWriteId) {
-    this.mmWriteId = mmWriteId;
+  public ImportCommitWork(String dbName, String tblName, long txnId, int stmtId) {
+    this.txnId = txnId;
+    this.stmtId = stmtId;
     this.dbName = dbName;
     this.tblName = tblName;
   }
 
-  public long getMmWriteId() {
-    return mmWriteId;
+  public long getTxnId() {
+    return txnId;
+  }
+
+  public int getStmtId() {
+    return stmtId;
   }
 
   public String getDbName() {

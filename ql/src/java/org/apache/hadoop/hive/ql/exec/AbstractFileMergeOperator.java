@@ -89,7 +89,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         .isListBucketingAlterTableConcatenate();
     listBucketingDepth = conf.getListBucketingDepth();
     Path specPath = conf.getOutputPath();
-    isMmTable = conf.getMmWriteId() != null;
+    isMmTable = conf.getTxnId() != null;
     if (isMmTable) {
       updatePaths(specPath, null);
     } else {
@@ -246,7 +246,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
           // There's always just one file that we have merged.
           // The union/DP/etc. should already be account for in the path.
           Utilities.writeMmCommitManifest(Lists.newArrayList(outPath),
-              tmpPath.getParent(), fs, taskId, conf.getMmWriteId(), null);
+              tmpPath.getParent(), fs, taskId, conf.getTxnId(), conf.getStmtId(), null);
           LOG.info("Merged into " + finalPath + "(" + fss.getLen() + " bytes).");
         }
       }
@@ -280,7 +280,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     try {
       Path outputDir = conf.getOutputPath();
       FileSystem fs = outputDir.getFileSystem(hconf);
-      Long mmWriteId = conf.getMmWriteId();
+      Long mmWriteId = conf.getTxnId();
+      int stmtId = conf.getStmtId();
       if (mmWriteId == null) {
         Path backupPath = backupOutputPath(fs, outputDir);
         Utilities.mvFileToFinalPath(
@@ -297,7 +298,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // We don't expect missing buckets from mere (actually there should be no buckets),
         // so just pass null as bucketing context. Union suffix should also be accounted for.
         Utilities.handleMmTableFinalPath(outputDir.getParent(), null, hconf, success,
-            dpLevels, lbLevels, null, mmWriteId, reporter, false);
+            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, false);
       }
 
     } catch (IOException e) {

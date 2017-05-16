@@ -33,13 +33,11 @@ import java.util.TreeMap;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidWriteIds;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -57,6 +55,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -303,31 +302,31 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tableExists = true;
     }
 
-    Long mmWriteId = null;
+    Long txnId = null;
+    int stmtId = 0;
     if (table != null && MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
-      mmWriteId = x.getHive().getNextTableWriteId(table.getDbName(), table.getTableName());
+      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     } else if (table == null && isSourceMm) {
       // We could import everything as is - directories and IDs, but that won't work with ACID
       // txn ids in future. So, let's import everything into the new MM directory with ID == 0.
-      mmWriteId = 0l;
+      txnId = 0l;
     }
-    //todo due to master merge on May 4, tblDesc has been changed from CreateTableDesc to ImportTableDesc
-    // which may result in Import test failure
+    //todo due to the master merge, tblDesc is no longer CreateTableDesc, but ImportTableDesc
     /*
-    if (mmWriteId != null) {
-      tblDesc.setInitialMmWriteId(mmWriteId);
+    if (txnId != null) {
+      tblDesc.setInitialMmWriteId(txnId);
     }
     */
     if (!replicationSpec.isInReplicationScope()) {
       createRegularImportTasks(
           tblDesc, partitionDescs,
           isPartSpecSet, replicationSpec, table,
-          fromURI, fs, wh, x, mmWriteId, isSourceMm);
+          fromURI, fs, wh, x, txnId, stmtId, isSourceMm);
     } else {
       createReplImportTasks(
           tblDesc, partitionDescs,
           isPartSpecSet, replicationSpec, waitOnPrecursor, table,
-          fromURI, fs, wh, x, mmWriteId, isSourceMm);
+          fromURI, fs, wh, x, txnId, stmtId, isSourceMm);
     }
     return tableExists;
   }
@@ -362,17 +361,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private static Task<?> loadTable(URI fromURI, Table table, boolean replace, Path tgtPath,
       ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
-      Long mmWriteId, boolean isSourceMm) {
+      Long txnId, int stmtId, boolean isSourceMm) {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    Path destPath = mmWriteId == null ? x.getCtx().getExternalTmpPath(tgtPath)
-        : new Path(tgtPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
+    Path destPath = txnId == null ? x.getCtx().getExternalTmpPath(tgtPath)
+        : new Path(tgtPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     Utilities.LOG14535.info("adding import work for table with source location: "
         + dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm "
-        + mmWriteId + " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
+        + txnId + " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
-      if (isSourceMm || mmWriteId != null) {
+      if (isSourceMm || txnId != null) {
         // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
         throw new RuntimeException(
             "Not supported right now because Replication is completely screwed");
@@ -385,7 +384,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     LoadTableDesc loadTableWork = new LoadTableDesc(destPath,
-        Utilities.getTableDesc(table), new TreeMap<String, String>(), replace, mmWriteId);
+        Utilities.getTableDesc(table), new TreeMap<String, String>(), replace, txnId);
+    loadTableWork.setTxnId(txnId);
+    loadTableWork.setStmtId(stmtId);
     MoveWork mv = new MoveWork(x.getInputs(), x.getOutputs(), loadTableWork, null, false);
     Task<?> loadTableTask = TaskFactory.get(mv, x.getConf());
     copyTask.addDependentTask(loadTableTask);
@@ -433,7 +434,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
  private static Task<?> addSinglePartition(URI fromURI, FileSystem fs, ImportTableDesc tblDesc,
       Table table, Warehouse wh, AddPartitionDesc addPartitionDesc, ReplicationSpec replicationSpec,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long mmWriteId, boolean isSourceMm,
+      EximUtil.SemanticAnalyzerWrapperContext x, Long txnId, int stmtId, boolean isSourceMm,
       Task<?> commitTask)
       throws MetaException, IOException, HiveException {
     AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
@@ -452,17 +453,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tgtLocation = new Path(partSpec.getLocation());
-      Path destPath = mmWriteId == null ? x.getCtx().getExternalTmpPath(tgtLocation)
-          : new Path(tgtLocation, ValidWriteIds.getMmFilePrefix(mmWriteId));
-      Path moveTaskSrc =  mmWriteId == null ? destPath : tgtLocation;
+      Path destPath = txnId == null ? x.getCtx().getExternalTmpPath(tgtLocation)
+          : new Path(tgtLocation, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+      Path moveTaskSrc =  txnId == null ? destPath : tgtLocation;
       Utilities.LOG14535.info("adding import work for partition with source location: "
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
-          + mmWriteId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
+          + txnId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
 
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
-        if (isSourceMm || mmWriteId != null) {
+        if (isSourceMm || txnId != null) {
           // TODO: ReplCopyTask is completely screwed. Need to support when it's not as screwed.
           throw new RuntimeException(
               "Not supported right now because Replication is completely screwed");
@@ -478,11 +479,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<?> addPartTask = TaskFactory.get(new DDLWork(x.getInputs(),
           x.getOutputs(), addPartitionDesc), x.getConf());
       LoadTableDesc loadTableWork = new LoadTableDesc(moveTaskSrc, Utilities.getTableDesc(table),
-          partSpec.getPartSpec(), replicationSpec.isReplace(), mmWriteId);
+          partSpec.getPartSpec(), replicationSpec.isReplace(), txnId);
+      loadTableWork.setTxnId(txnId);
+      loadTableWork.setStmtId(stmtId);
       loadTableWork.setInheritTableSpecs(false);
       // Do not commit the write ID from each task; need to commit once.
       // TODO: we should just change the import to use a single MoveTask, like dynparts.
-      loadTableWork.setIntermediateInMmWrite(mmWriteId != null);
+      loadTableWork.setIntermediateInMmWrite(txnId != null);
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
           x.getInputs(), x.getOutputs(), loadTableWork, null, false), x.getConf());
       copyTask.addDependentTask(loadPartTask);
@@ -778,21 +781,21 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static void createRegularImportTasks(
       ImportTableDesc tblDesc, List<AddPartitionDesc> partitionDescs, boolean isPartSpecSet,
       ReplicationSpec replicationSpec, Table table, URI fromURI, FileSystem fs, Warehouse wh,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long mmWriteId, boolean isSourceMm)
+      EximUtil.SemanticAnalyzerWrapperContext x, Long txnId, int stmtId, boolean isSourceMm)
       throws HiveException, URISyntaxException, IOException, MetaException {
 
     if (table != null) {
       if (table.isPartitioned()) {
         x.getLOG().debug("table partitioned");
         Task<?> ict = createImportCommitTask(
-            table.getDbName(), table.getTableName(), mmWriteId, x.getConf());
+            table.getDbName(), table.getTableName(), txnId, stmtId, x.getConf());
 
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             x.getTasks().add(addSinglePartition(
-                fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, mmWriteId, isSourceMm, ict));
+                fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, txnId, stmtId, isSourceMm, ict));
           } else {
             throw new SemanticException(
                 ErrorMsg.PARTITION_EXISTS.getMsg(partSpecToString(partSpec)));
@@ -804,7 +807,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path tgtPath = new Path(table.getDataLocation().toString());
         FileSystem tgtFs = FileSystem.get(tgtPath.toUri(), x.getConf());
         checkTargetLocationEmpty(tgtFs, tgtPath, replicationSpec, x);
-        loadTable(fromURI, table, false, tgtPath, replicationSpec, x, mmWriteId, isSourceMm);
+        loadTable(fromURI, table, false, tgtPath, replicationSpec, x, txnId, stmtId, isSourceMm);
       }
       // Set this to read because we can't overwrite any existing partitions
       x.getOutputs().add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -821,10 +824,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (isPartitioned(tblDesc)) {
         Task<?> ict = createImportCommitTask(
-            tblDesc.getDatabaseName(), tblDesc.getTableName(), mmWriteId, x.getConf());
+            tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           t.addDependentTask(addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc,
-            replicationSpec, x, mmWriteId, isSourceMm, ict));
+            replicationSpec, x, txnId, stmtId, isSourceMm, ict));
         }
       } else {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
@@ -841,7 +844,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x);
-          t.addDependentTask(loadTable(fromURI, table, false, tablePath, replicationSpec, x, mmWriteId, isSourceMm));
+          t.addDependentTask(loadTable(fromURI, table, false, tablePath, replicationSpec, x, txnId, stmtId, isSourceMm));
         }
       }
       x.getTasks().add(t);
@@ -849,10 +852,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<?> createImportCommitTask(
-      String dbName, String tblName, Long mmWriteId, HiveConf conf) {
+      String dbName, String tblName, Long txnId, int stmtId, HiveConf conf) {
     @SuppressWarnings("unchecked")
-    Task<ImportCommitWork> ict = (mmWriteId == null) ? null : TaskFactory.get(
-        new ImportCommitWork(dbName, tblName, mmWriteId), conf);
+    Task<ImportCommitWork> ict = (txnId == null) ? null : TaskFactory.get(
+        new ImportCommitWork(dbName, tblName, txnId, stmtId), conf);
     return ict;
   }
 
@@ -864,7 +867,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<AddPartitionDesc> partitionDescs,
       boolean isPartSpecSet, ReplicationSpec replicationSpec, boolean waitOnPrecursor,
       Table table, URI fromURI, FileSystem fs, Warehouse wh,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long mmWriteId, boolean isSourceMm)
+      EximUtil.SemanticAnalyzerWrapperContext x, Long txnId, int stmtId, boolean isSourceMm)
       throws HiveException, URISyntaxException, IOException, MetaException {
 
     Task<?> dr = null;
@@ -933,15 +936,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {
           Task<?> ict = createImportCommitTask(
-              tblDesc.getDatabaseName(), tblDesc.getTableName(), mmWriteId, x.getConf());
+              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
             addPartitionDesc.setReplicationSpec(replicationSpec);
             t.addDependentTask(
-                addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, mmWriteId, isSourceMm, ict));
+                addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, txnId, stmtId, isSourceMm, ict));
           }
         } else {
           x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
-          t.addDependentTask(loadTable(fromURI, table, true, new Path(tblDesc.getLocation()), replicationSpec, x, mmWriteId, isSourceMm));
+          t.addDependentTask(loadTable(fromURI, table, true, new Path(tblDesc.getLocation()), replicationSpec, x, txnId, stmtId, isSourceMm));
         }
       }
       if (dr == null){
@@ -961,11 +964,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
           Task<?> ict = replicationSpec.isMetadataOnly() ? null : createImportCommitTask(
-              tblDesc.getDatabaseName(), tblDesc.getTableName(), mmWriteId, x.getConf());
+              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
-                  fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, mmWriteId, isSourceMm, ict));
+                  fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, txnId, stmtId, isSourceMm, ict));
             }
           } else {
             // If replicating, then the partition already existing means we need to replace, maybe, if
@@ -973,7 +976,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             if (replicationSpec.allowReplacementInto(ptn)){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(
-                    fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, mmWriteId, isSourceMm, ict));
+                    fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, txnId, stmtId, isSourceMm, ict));
               } else {
                 x.getTasks().add(alterSinglePartition(
                     fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, ptn, x));
@@ -1002,7 +1005,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into
           loadTable(fromURI, table, replicationSpec.isReplace(), new Path(fromURI),
-            replicationSpec, x, mmWriteId, isSourceMm);
+            replicationSpec, x, txnId, stmtId, isSourceMm);
         } else {
           x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec));
         }

@@ -1026,8 +1026,4 @@ public class Table implements Serializable {
   public boolean hasDeserializer() {
     return deserializer != null;
   }
-
-  public void setMmNextWriteId(long writeId) {
-    this.tTable.setMmNextWriteId(writeId);
-  }
 };

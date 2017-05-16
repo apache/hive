@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -35,16 +33,13 @@ public class ImportCommitTask extends Task<ImportCommitWork> {
 
   @Override
   public int execute(DriverContext driverContext) {
-    Utilities.LOG14535.info("Executing ImportCommit for " + work.getMmWriteId());
+    Utilities.LOG14535.info("Executing ImportCommit for " + work.getTxnId());
 
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
         Utilities.LOG14535.info("Exiting due to explain");
         return 0;
       }
-      Hive db = getHive();
-      Table tbl = db.getTable(work.getDbName(), work.getTblName());
-      db.commitMmTableWrite(tbl, work.getMmWriteId());
       return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"

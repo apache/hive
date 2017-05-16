@@ -68,6 +68,14 @@ public class LoadMultiFilesDesc implements Serializable {
     return srcDirs;
   }
 
+  public void setSourceDirs(List<Path> srcs) {
+    this.srcDirs = srcs;
+  }
+
+  public void setTargetDirs(final List<Path> targetDir) {
+    this.targetDirs = targetDir;
+  }
+
   @Explain(displayName = "hdfs directory")
   public boolean getIsDfsDir() {
     return isDfsDir;

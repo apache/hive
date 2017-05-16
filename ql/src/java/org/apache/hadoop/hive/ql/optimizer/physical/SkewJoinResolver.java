@@ -86,7 +86,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
       ParseContext pc = physicalContext.getParseContext();
       if (pc.getLoadTableWork() != null) {
         for (LoadTableDesc ltd : pc.getLoadTableWork()) {
-          if (ltd.getMmWriteId() == null) continue;
+          if (ltd.getTxnId() == null) continue;
           // See the path in FSOP that calls fs.exists on finalPath.
           LOG.debug("Not using skew join because the destination table "
               + ltd.getTable().getTableName() + " is an insert_only table");
