@@ -2779,4 +2779,11 @@ public class TestVectorOrcFile {
     rows.nextBatch(batch);
     assertEquals(0, batch.size);
   }
+
+  @Test
+  public void testWriterVersion() throws Exception {
+    assertEquals(OrcFile.WriterVersion.FUTURE, OrcFile.WriterVersion.from(99));
+    assertEquals(OrcFile.WriterVersion.ORIGINAL, OrcFile.WriterVersion.from(0));
+    assertEquals(OrcFile.WriterVersion.HIVE_4243, OrcFile.WriterVersion.from(2));
+  }
 }
