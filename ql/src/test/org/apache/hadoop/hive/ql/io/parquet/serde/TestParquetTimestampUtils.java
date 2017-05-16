@@ -11,21 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.io.parquet.timestamp;
+package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+
 
 
 /**
  * Tests util-libraries used for parquet-timestamp.
  */
-public class TestParquetTimestampConverter extends TestCase {
+public class TestParquetTimestampUtils extends TestCase {
 
   public void testJulianDay() {
     //check if May 23, 1968 is Julian Day 2440000
@@ -38,10 +44,10 @@ public class TestParquetTimestampConverter extends TestCase {
 
     Timestamp ts = new Timestamp(cal.getTimeInMillis());
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
-    assertEquals(nt.getJulianDay(), 2440000);
+    Assert.assertEquals(nt.getJulianDay(), 2440000);
 
     Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, false);
-    assertEquals(tsFetched, ts);
+    Assert.assertEquals(tsFetched, ts);
 
     //check if 30 Julian Days between Jan 1, 2005 and Jan 31, 2005.
     Calendar cal1 = Calendar.getInstance();
@@ -55,7 +61,7 @@ public class TestParquetTimestampConverter extends TestCase {
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, false);
 
     Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
-    assertEquals(ts1Fetched, ts1);
+    Assert.assertEquals(ts1Fetched, ts1);
 
     Calendar cal2 = Calendar.getInstance();
     cal2.set(Calendar.YEAR,  2005);
@@ -68,8 +74,8 @@ public class TestParquetTimestampConverter extends TestCase {
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, false);
 
     Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
-    assertEquals(ts2Fetched, ts2);
-    assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 30);
+    Assert.assertEquals(ts2Fetched, ts2);
+    Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 30);
 
     //check if 1464305 Julian Days between Jan 1, 2005 BC and Jan 31, 2005.
     cal1 = Calendar.getInstance();
@@ -84,7 +90,7 @@ public class TestParquetTimestampConverter extends TestCase {
     nt1 = NanoTimeUtils.getNanoTime(ts1, false);
 
     ts1Fetched = NanoTimeUtils.getTimestamp(nt1, false);
-    assertEquals(ts1Fetched, ts1);
+    Assert.assertEquals(ts1Fetched, ts1);
 
     cal2 = Calendar.getInstance();
     cal2.set(Calendar.YEAR,  2005);
@@ -97,8 +103,8 @@ public class TestParquetTimestampConverter extends TestCase {
     nt2 = NanoTimeUtils.getNanoTime(ts2, false);
 
     ts2Fetched = NanoTimeUtils.getTimestamp(nt2, false);
-    assertEquals(ts2Fetched, ts2);
-    assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 1464305);
+    Assert.assertEquals(ts2Fetched, ts2);
+    Assert.assertEquals(nt2.getJulianDay() - nt1.getJulianDay(), 1464305);
 }
 
   public void testNanos() {
@@ -116,7 +122,7 @@ public class TestParquetTimestampConverter extends TestCase {
 
     //(1*60*60 + 1*60 + 1) * 10e9 + 1
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
-    assertEquals(nt.getTimeOfDayNanos(), 3661000000001L);
+    Assert.assertEquals(nt.getTimeOfDayNanos(), 3661000000001L);
 
     //case 2: 23:59:59.999999999
     cal = Calendar.getInstance();
@@ -132,7 +138,7 @@ public class TestParquetTimestampConverter extends TestCase {
 
     //(23*60*60 + 59*60 + 59)*10e9 + 999999999
     nt = NanoTimeUtils.getNanoTime(ts, false);
-    assertEquals(nt.getTimeOfDayNanos(), 86399999999999L);
+    Assert.assertEquals(nt.getTimeOfDayNanos(), 86399999999999L);
 
     //case 3: verify the difference.
     Calendar cal2 = Calendar.getInstance();
@@ -160,12 +166,12 @@ public class TestParquetTimestampConverter extends TestCase {
     NanoTime n2 = NanoTimeUtils.getNanoTime(ts2, false);
     NanoTime n1 = NanoTimeUtils.getNanoTime(ts1, false);
 
-    assertEquals(n2.getTimeOfDayNanos() - n1.getTimeOfDayNanos(), 600000000009L);
+    Assert.assertEquals(n2.getTimeOfDayNanos() - n1.getTimeOfDayNanos(), 600000000009L);
 
     NanoTime n3 = new NanoTime(n1.getJulianDay() - 1, n1.getTimeOfDayNanos() + TimeUnit.DAYS.toNanos(1));
-    assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false));
     n3 = new NanoTime(n1.getJulianDay() + 3, n1.getTimeOfDayNanos() - TimeUnit.DAYS.toNanos(3));
-    assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false));
   }
 
   public void testTimezone() {
@@ -189,76 +195,69 @@ public class TestParquetTimestampConverter extends TestCase {
      */
     NanoTime nt = NanoTimeUtils.getNanoTime(ts, false);
     long timeOfDayNanos = nt.getTimeOfDayNanos();
-    assertTrue(timeOfDayNanos == 61000000001L || timeOfDayNanos == 3661000000001L);
+    Assert.assertTrue(timeOfDayNanos == 61000000001L || timeOfDayNanos == 3661000000001L);
 
     //in both cases, this will be the next day in GMT
-    assertEquals(nt.getJulianDay(), 2440001);
+    Assert.assertEquals(nt.getJulianDay(), 2440001);
+  }
+
+  public void testTimezoneValues() {
+    valueTest(false);
+  }
+
+  public void testTimezonelessValues() {
+    valueTest(true);
   }
 
   public void testTimezoneless() {
     Timestamp ts1 = Timestamp.valueOf("2011-01-01 00:30:30.111111111");
     NanoTime nt1 = NanoTimeUtils.getNanoTime(ts1, true);
-    assertEquals(nt1.getJulianDay(), 2455563);
-    assertEquals(nt1.getTimeOfDayNanos(), 1830111111111L);
+    Assert.assertEquals(nt1.getJulianDay(), 2455563);
+    Assert.assertEquals(nt1.getTimeOfDayNanos(), 1830111111111L);
     Timestamp ts1Fetched = NanoTimeUtils.getTimestamp(nt1, true);
-    assertEquals(ts1Fetched.toString(), ts1.toString());
+    Assert.assertEquals(ts1Fetched.toString(), ts1.toString());
 
     Timestamp ts2 = Timestamp.valueOf("2011-02-02 08:30:30.222222222");
     NanoTime nt2 = NanoTimeUtils.getNanoTime(ts2, true);
-    assertEquals(nt2.getJulianDay(), 2455595);
-    assertEquals(nt2.getTimeOfDayNanos(), 30630222222222L);
+    Assert.assertEquals(nt2.getJulianDay(), 2455595);
+    Assert.assertEquals(nt2.getTimeOfDayNanos(), 30630222222222L);
     Timestamp ts2Fetched = NanoTimeUtils.getTimestamp(nt2, true);
-    assertEquals(ts2Fetched.toString(), ts2.toString());
+    Assert.assertEquals(ts2Fetched.toString(), ts2.toString());
   }
 
-  public void testTimezoneValues() {
-    // Test with different timezone IDs strings
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("GMT")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("CST")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("CST")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("PST")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("US/Pacific")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT-1")));
-    valueTest(Calendar.getInstance(TimeZone.getTimeZone("Mexico/General")));
-    valueTest(Calendar.getInstance(TimeZone.getDefault()));
-  }
-
-  private void valueTest(Calendar calendar) {
+  private void valueTest(boolean local) {
     //exercise a broad range of timestamps close to the present.
-    verifyTsString("2011-01-01 01:01:01.111111111", calendar);
-    verifyTsString("2012-02-02 02:02:02.222222222", calendar);
-    verifyTsString("2013-03-03 03:03:03.333333333", calendar);
-    verifyTsString("2014-04-04 04:04:04.444444444", calendar);
-    verifyTsString("2015-05-05 05:05:05.555555555", calendar);
-    verifyTsString("2016-06-06 06:06:06.666666666", calendar);
-    verifyTsString("2017-07-07 07:07:07.777777777", calendar);
-    verifyTsString("2018-08-08 08:08:08.888888888", calendar);
-    verifyTsString("2019-09-09 09:09:09.999999999", calendar);
-    verifyTsString("2020-10-10 10:10:10.101010101", calendar);
-    verifyTsString("2021-11-11 11:11:11.111111111", calendar);
-    verifyTsString("2022-12-12 12:12:12.121212121", calendar);
-    verifyTsString("2023-01-02 13:13:13.131313131", calendar);
-    verifyTsString("2024-02-02 14:14:14.141414141", calendar);
-    verifyTsString("2025-03-03 15:15:15.151515151", calendar);
-    verifyTsString("2026-04-04 16:16:16.161616161", calendar);
-    verifyTsString("2027-05-05 17:17:17.171717171", calendar);
-    verifyTsString("2028-06-06 18:18:18.181818181", calendar);
-    verifyTsString("2029-07-07 19:19:19.191919191", calendar);
-    verifyTsString("2030-08-08 20:20:20.202020202", calendar);
-    verifyTsString("2031-09-09 21:21:21.212121212", calendar);
+    verifyTsString("2011-01-01 01:01:01.111111111", local);
+    verifyTsString("2012-02-02 02:02:02.222222222", local);
+    verifyTsString("2013-03-03 03:03:03.333333333", local);
+    verifyTsString("2014-04-04 04:04:04.444444444", local);
+    verifyTsString("2015-05-05 05:05:05.555555555", local);
+    verifyTsString("2016-06-06 06:06:06.666666666", local);
+    verifyTsString("2017-07-07 07:07:07.777777777", local);
+    verifyTsString("2018-08-08 08:08:08.888888888", local);
+    verifyTsString("2019-09-09 09:09:09.999999999", local);
+    verifyTsString("2020-10-10 10:10:10.101010101", local);
+    verifyTsString("2021-11-11 11:11:11.111111111", local);
+    verifyTsString("2022-12-12 12:12:12.121212121", local);
+    verifyTsString("2023-01-02 13:13:13.131313131", local);
+    verifyTsString("2024-02-02 14:14:14.141414141", local);
+    verifyTsString("2025-03-03 15:15:15.151515151", local);
+    verifyTsString("2026-04-04 16:16:16.161616161", local);
+    verifyTsString("2027-05-05 17:17:17.171717171", local);
+    verifyTsString("2028-06-06 18:18:18.181818181", local);
+    verifyTsString("2029-07-07 19:19:19.191919191", local);
+    verifyTsString("2030-08-08 20:20:20.202020202", local);
+    verifyTsString("2031-09-09 21:21:21.212121212", local);
 
     //test some extreme cases.
-    verifyTsString("9999-09-09 09:09:09.999999999", calendar);
-    verifyTsString("0001-01-01 00:00:00.0", calendar);
+    verifyTsString("9999-09-09 09:09:09.999999999", local);
+    verifyTsString("0001-01-01 00:00:00.0", local);
   }
 
-  private void verifyTsString(String tsString, Calendar calendar) {
+  private void verifyTsString(String tsString, boolean local) {
     Timestamp ts = Timestamp.valueOf(tsString);
-    NanoTime nt = NanoTimeUtils.getNanoTime(ts, calendar);
-    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, calendar);
-    assertEquals(tsString, tsFetched.toString());
+    NanoTime nt = NanoTimeUtils.getNanoTime(ts, local);
+    Timestamp tsFetched = NanoTimeUtils.getTimestamp(nt, local);
+    Assert.assertEquals(tsString, tsFetched.toString());
   }
 }

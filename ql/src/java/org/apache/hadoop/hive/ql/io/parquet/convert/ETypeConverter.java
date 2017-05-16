@@ -16,11 +16,9 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Map;
-import java.util.TimeZone;
 
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -38,12 +36,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import parquet.column.Dictionary;
-import parquet.io.api.Binary;
-import parquet.io.api.PrimitiveConverter;
-import parquet.schema.OriginalType;
-import parquet.schema.PrimitiveType;
-import parquet.Strings;
 import parquet.column.Dictionary;
 import parquet.io.api.Binary;
 import parquet.io.api.PrimitiveConverter;
@@ -201,21 +193,15 @@ public enum ETypeConverter {
   ETIMESTAMP_CONVERTER(TimestampWritable.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      Map<String, String> metadata = parent.getMetadata();
-
-      // This variable must be initialized only once to keep good read performance while doing conversion of timestamps values.
-      final Calendar calendar;
-      if (Strings.isNullOrEmpty(metadata.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY))) {
-        // Local time should be used if timezone is not available.
-        calendar = Calendar.getInstance();
-      } else {
-        calendar = Calendar.getInstance(TimeZone.getTimeZone(metadata.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY)));
-      }
-
       return new BinaryConverter<TimestampWritable>(type, parent, index) {
         @Override
         protected TimestampWritable convert(Binary binary) {
-          Timestamp ts = NanoTimeUtils.getTimestamp(NanoTime.fromBinary(binary), calendar);
+          NanoTime nt = NanoTime.fromBinary(binary);
+          Map<String, String> metadata = parent.getMetadata();
+          //Current Hive parquet timestamp implementation stores it in UTC, but other components do not do that.
+          //If this file written by current Hive implementation itself, we need to do the reverse conversion, else skip the conversion.
+          boolean skipConversion = Boolean.valueOf(metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion);
           return new TimestampWritable(ts);
         }
       };
