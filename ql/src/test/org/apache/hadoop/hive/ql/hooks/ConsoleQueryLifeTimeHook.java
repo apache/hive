@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-public class TestQueryLifeTimeHook implements QueryLifeTimeHook {
+public class ConsoleQueryLifeTimeHook implements QueryLifeTimeHook {
   @Override
   public void beforeCompile(QueryLifeTimeHookContext ctx) {
     SessionState.getConsole().getOutStream().println("beforeCompile: " + ctx.getCommand());
