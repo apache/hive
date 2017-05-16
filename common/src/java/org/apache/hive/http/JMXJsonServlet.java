@@ -70,7 +70,7 @@ import org.codehaus.jackson.JsonGenerator;
  * <p>
  * The optional <code>get</code> parameter is used to query a specific
  * attribute of a JMX bean.  The format of the URL is
- * <code>http://.../jmx?get=MXBeanName::AttributeName<code>
+ * <code>http://.../jmx?get=MXBeanName::AttributeName</code>
  * <p>
  * For example 
  * <code>
@@ -85,7 +85,7 @@ import org.codehaus.jackson.JsonGenerator;
  * <p>
  * The return format is JSON and in the form
  * <p>
- *  <code><pre>
+ *  <code>
  *  {
  *    "beans" : [
  *      {
@@ -94,7 +94,7 @@ import org.codehaus.jackson.JsonGenerator;
  *      }
  *    ]
  *  }
- *  </pre></code>
+ *  </code>
  *  <p>
  *  The servlet attempts to convert the JMXBeans into JSON. Each
  *  bean's attributes will be converted to a JSON object member.

@@ -426,7 +426,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return a <code>Collection</code> of <code>String</code> values
    */
   public static Collection<String> getTrimmedStringCollection(String str){
@@ -436,7 +436,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return an array of <code>String</code> values
    */
   public static String[] getTrimmedStrings(String str){
