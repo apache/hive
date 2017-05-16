@@ -302,6 +302,7 @@ public class Operation2Privilege {
 (SEL_NOGRANT_AR, null));
     op2Priv.put(HiveOperationType.CREATETABLE_AS_SELECT, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(SEL_NOGRANT_AR, IOType.INPUT),
+        new PrivRequirement(OWNER_INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
         new PrivRequirement(OWNER_PRIV_AR, HivePrivilegeObjectType.DATABASE)));
 
     // QUERY,LOAD op can contain an insert & overwrite,
