@@ -41,6 +41,7 @@ public class EventHandlerFactory {
     register(MessageFactory.DROP_PARTITION_EVENT, DropPartitionHandler.class);
     register(MessageFactory.DROP_TABLE_EVENT, DropTableHandler.class);
     register(MessageFactory.INSERT_EVENT, InsertHandler.class);
+    register(MessageFactory.DROP_FUNCTION_EVENT, DropFunctionHandler.class);
   }
 
   static void register(String event, Class<? extends EventHandler> handlerClazz) {

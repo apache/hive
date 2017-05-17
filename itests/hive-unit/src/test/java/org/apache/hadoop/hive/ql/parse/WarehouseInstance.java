@@ -42,9 +42,8 @@ class WarehouseInstance {
   private Driver driver;
   private HiveMetaStoreClient client;
   private HiveConf hconf;
-  private ReplicationV1CompatRule bcompat = null;
 
-
+  private static int schemaNameCounter = 0;
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
   /**
@@ -55,7 +54,6 @@ class WarehouseInstance {
     this.driver = other.driver;
     this.client = other.client;
     this.hconf = other.hconf;
-    this.bcompat = other.bcompat;
   }
 
   WarehouseInstance() throws Exception {
@@ -65,7 +63,7 @@ class WarehouseInstance {
         + Path.SEPARATOR
         + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
         + "_"
-        + System.currentTimeMillis();
+        + System.nanoTime();
 
     if (metaStoreUri != null) {
       hconf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
@@ -78,6 +76,10 @@ class WarehouseInstance {
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, hiveWarehouseLocation + "/cmroot/");
+    String schemaName = "APP" + schemaNameCounter++;
+    System.setProperty("datanucleus.mapping.Schema", schemaName);
+    hconf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
+        "jdbc:derby:memory:${test.tmp.dir}/" + schemaName + ";create=true");
     int metaStorePort = MetaStoreUtils.startMetaStore(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR, hiveWarehouseLocation + "/hrepl/");
     hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
@@ -95,8 +97,6 @@ class WarehouseInstance {
     driver = new Driver(hconf);
     SessionState.start(new CliSessionState(hconf));
     client = new HiveMetaStoreClient(hconf);
-
-    bcompat = new ReplicationV1CompatRule(client,hconf);
   }
 
   private int next = 0;
@@ -148,7 +148,7 @@ class WarehouseInstance {
   }
 
   WarehouseInstance verify(String data) throws IOException {
-    verifyResults(new String[] { data });
+    verifyResults(data == null ? new String[] {} : new String[] { data });
     return this;
   }
 
@@ -186,12 +186,8 @@ class WarehouseInstance {
     }
   }
 
-  public TestRule getReplivationV1CompatRule(){
-    return bcompat;
-  }
-
-  public void doBackwardCompatibilityCheck(boolean eventsMustExist) {
-    bcompat.doBackwardCompatibilityCheck(eventsMustExist);
+  public ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip){
+    return new ReplicationV1CompatRule(client,hconf,testsToSkip);
   }
 
   static class Tuple {

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DefaultHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.DropFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropPartitionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.DropTableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.InsertHandler;
@@ -47,6 +48,12 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new DropTableHandler();
+    }
+  },
+  EVENT_DROP_FUNCTION("EVENT_DROP_FUNCTION") {
+    @Override
+    public MessageHandler handler() {
+      return new DropFunctionHandler();
     }
   },
   EVENT_DROP_PARTITION("EVENT_DROP_PARTITION") {
