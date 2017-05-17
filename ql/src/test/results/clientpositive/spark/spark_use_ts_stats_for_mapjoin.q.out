@@ -1,0 +1,574 @@
+PREHOOK: query: EXPLAIN
+SELECT src1.key, src2.value
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+WHERE src1.key = 97
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT src1.key, src2.value
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+WHERE src1.key = 97
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 97.0) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 97.0) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT src1.key, src2.value
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+WHERE src1.key = 97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.key, src2.value
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+WHERE src1.key = 97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+PREHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest
+POSTHOOK: query: CREATE TABLE dest(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest
+PREHOOK: query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src3
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                          1 UDFToDouble(_col0) (type: double)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src2
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Local Work:
+              Map Reduce Local Work
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
+                    1 UDFToDouble(_col0) (type: double)
+                  outputColumnNames: _col0, _col3
+                  input vertices:
+                    1 Map 4
+                  Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int), _col3 (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.dest
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest
+POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest SELECT src1.key, src3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest
+POSTHOOK: Lineage: dest.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest.value SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(dest.key,dest.value)) FROM dest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest
+#### A masked pattern was here ####
+33815990627
+PREHOOK: query: CREATE TABLE a (c1 STRING, c2 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a
+POSTHOOK: query: CREATE TABLE a (c1 STRING, c2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a
+PREHOOK: query: CREATE TABLE b (c3 STRING, c4 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@b
+POSTHOOK: query: CREATE TABLE b (c3 STRING, c4 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@b
+PREHOOK: query: CREATE TABLE c (c1 STRING, c2 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+POSTHOOK: query: CREATE TABLE c (c1 STRING, c2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+PREHOOK: query: CREATE TABLE d (c3 STRING, c4 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@d
+POSTHOOK: query: CREATE TABLE d (c3 STRING, c4 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@d
+PREHOOK: query: CREATE TABLE e (c5 STRING, c6 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e
+POSTHOOK: query: CREATE TABLE e (c5 STRING, c6 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e
+PREHOOK: query: INSERT INTO TABLE a VALUES ("a1", 1), ("a2", 2), ("a3", 3), ("a4", 4), ("a5", 5), ("a6", 6), ("a7", 7)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@a
+POSTHOOK: query: INSERT INTO TABLE a VALUES ("a1", 1), ("a2", 2), ("a3", 3), ("a4", 4), ("a5", 5), ("a6", 6), ("a7", 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@a
+POSTHOOK: Lineage: a.c1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: a.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE b VALUES ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@b
+POSTHOOK: query: INSERT INTO TABLE b VALUES ("b1", 1), ("b2", 2), ("b3", 3), ("b4", 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@b
+POSTHOOK: Lineage: b.c3 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: b.c4 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE c VALUES ("c1", 1), ("c2", 2), ("c3", 3), ("c4", 4), ("c5", 5), ("c6", 6), ("c7", 7)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@c
+POSTHOOK: query: INSERT INTO TABLE c VALUES ("c1", 1), ("c2", 2), ("c3", 3), ("c4", 4), ("c5", 5), ("c6", 6), ("c7", 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@c
+POSTHOOK: Lineage: c.c1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: c.c2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE d VALUES ("d1", 1), ("d2", 2), ("d3", 3), ("d4", 4)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@d
+POSTHOOK: query: INSERT INTO TABLE d VALUES ("d1", 1), ("d2", 2), ("d3", 3), ("d4", 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@d
+POSTHOOK: Lineage: d.c3 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: d.c4 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE e VALUES ("d1", 1), ("d2", 2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@e
+POSTHOOK: query: INSERT INTO TABLE e VALUES ("d1", 1), ("d2", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@e
+POSTHOOK: Lineage: e.c5 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: e.c6 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+WITH t1 AS (
+SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
+),
+t2 AS (
+SELECT c.c1 AS c1, c.c2 AS c2, d.c3 AS c3 FROM c JOIN d ON c.c2 = d.c4
+),
+t3 AS (
+SELECT * FROM t1 UNION ALL SELECT * FROM t2
+),
+t4 AS (
+SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
+)
+SELECT * FROM t4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+WITH t1 AS (
+SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
+),
+t2 AS (
+SELECT c.c1 AS c1, c.c2 AS c2, d.c3 AS c3 FROM c JOIN d ON c.c2 = d.c4
+),
+t3 AS (
+SELECT * FROM t1 UNION ALL SELECT * FROM t2
+),
+t4 AS (
+SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
+)
+SELECT * FROM t4
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c4 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c3 (type: string), c4 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-3
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c4 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c3 (type: string), c4 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col1 (type: int)
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2), Map 6 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c2 is not null (type: boolean)
+                    Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c1 (type: string), c2 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col1 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: int)
+                          Statistics: Num rows: 14 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: string), _col2 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c2 is not null (type: boolean)
+                    Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c1 (type: string), c2 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col1 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        input vertices:
+                          1 Map 5
+                        Statistics: Num rows: 7 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col1 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col1 (type: int)
+                          Statistics: Num rows: 14 Data size: 60 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: string), _col2 (type: string)
+            Local Work:
+              Map Reduce Local Work
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: t5
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: c6 is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c5 (type: string), c6 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col2, _col3
+                Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 15 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: WITH t1 AS (
+SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
+),
+t2 AS (
+SELECT c.c1 AS c1, c.c2 AS c2, d.c3 AS c3 FROM c JOIN d ON c.c2 = d.c4
+),
+t3 AS (
+SELECT * FROM t1 UNION ALL SELECT * FROM t2
+),
+t4 AS (
+SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
+)
+SELECT * FROM t4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a
+PREHOOK: Input: default@b
+PREHOOK: Input: default@c
+PREHOOK: Input: default@d
+PREHOOK: Input: default@e
+#### A masked pattern was here ####
+POSTHOOK: query: WITH t1 AS (
+SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3 FROM a JOIN b ON a.c2 = b.c4
+),
+t2 AS (
+SELECT c.c1 AS c1, c.c2 AS c2, d.c3 AS c3 FROM c JOIN d ON c.c2 = d.c4
+),
+t3 AS (
+SELECT * FROM t1 UNION ALL SELECT * FROM t2
+),
+t4 AS (
+SELECT t3.c1, t3.c3, t5.c5 FROM t3 JOIN e AS t5 ON t3.c2 = t5.c6
+)
+SELECT * FROM t4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a
+POSTHOOK: Input: default@b
+POSTHOOK: Input: default@c
+POSTHOOK: Input: default@d
+POSTHOOK: Input: default@e
+#### A masked pattern was here ####
+c2	d2	d2
+a2	b2	d2
+a1	b1	d1
+c1	d1	d1
