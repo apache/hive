@@ -282,7 +282,7 @@ STAGE PLANS:
             Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
-                   Right Outer Join0 to 1
+                   Right Outer Join 0 to 1
                    Inner Join 1 to 2
               keys:
                 0 key (type: string)
@@ -1103,7 +1103,7 @@ STAGE PLANS:
             Statistics: Num rows: 9 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
-                   Right Outer Join0 to 1
+                   Right Outer Join 0 to 1
                    Inner Join 1 to 2
               keys:
                 0 key (type: string)

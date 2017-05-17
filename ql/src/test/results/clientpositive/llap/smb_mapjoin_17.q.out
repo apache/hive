@@ -495,12 +495,12 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Merge Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -674,13 +674,13 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Merge Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
-                           Left Outer Join0 to 7
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
+                           Left Outer Join 0 to 7
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -949,21 +949,21 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Merge Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
-                           Left Outer Join0 to 7
-                           Left Outer Join0 to 8
-                           Left Outer Join0 to 9
-                           Left Outer Join0 to 10
-                           Left Outer Join0 to 11
-                           Left Outer Join0 to 12
-                           Left Outer Join0 to 13
-                           Left Outer Join0 to 14
-                           Left Outer Join0 to 15
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
+                           Left Outer Join 0 to 7
+                           Left Outer Join 0 to 8
+                           Left Outer Join 0 to 9
+                           Left Outer Join 0 to 10
+                           Left Outer Join 0 to 11
+                           Left Outer Join 0 to 12
+                           Left Outer Join 0 to 13
+                           Left Outer Join 0 to 14
+                           Left Outer Join 0 to 15
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -1059,10 +1059,10 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join0 to 1
-                     Left Outer Join0 to 2
-                     Left Outer Join0 to 3
-                     Left Outer Join0 to 4
+                     Left Outer Join 0 to 1
+                     Left Outer Join 0 to 2
+                     Left Outer Join 0 to 3
+                     Left Outer Join 0 to 4
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)

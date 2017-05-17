@@ -79,7 +79,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 filter predicates:
                   0 {(KEY.reducesinkkey0 < 100)}
                   1 
@@ -176,7 +176,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 310 Basic stats: COMPLETE Column stats: COMPLETE
                   Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                     filter predicates:
                       0 {(_col2 < 100)}
                       1 

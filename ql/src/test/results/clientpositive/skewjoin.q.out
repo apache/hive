@@ -1196,7 +1196,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Map Join Operator
               condition map:
-                   Left Outer Join0 to 1
+                   Left Outer Join 0 to 1
               keys:
                 0 (key + 1) (type: double)
                 1 UDFToDouble(key) (type: double)

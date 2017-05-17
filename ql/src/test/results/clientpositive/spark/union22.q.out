@@ -276,7 +276,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         filter mappings:
                           0 [1, 1]
                         filter predicates:

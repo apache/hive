@@ -2363,7 +2363,7 @@ STAGE PLANS:
                   Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                          Left Semi Join 1 to 2
                     keys:
                       0 key (type: int)
@@ -2693,7 +2693,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Left Outer Join0 to 2
+                     Left Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -2840,7 +2840,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Right Outer Join0 to 2
+                     Right Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -3118,7 +3118,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
@@ -8591,7 +8591,7 @@ STAGE PLANS:
                       projectedOutputColumns: [0, 1]
                   Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                          Left Semi Join 1 to 2
                     keys:
                       0 key (type: int)
@@ -9191,7 +9191,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Left Outer Join0 to 2
+                     Left Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -9434,7 +9434,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Right Outer Join0 to 2
+                     Right Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -9840,7 +9840,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
@@ -12994,7 +12994,7 @@ STAGE PLANS:
                       projectedOutputColumns: [0, 1]
                   Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                          Left Semi Join 1 to 2
                     keys:
                       0 key (type: int)
@@ -13594,7 +13594,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Left Outer Join0 to 2
+                     Left Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -13837,7 +13837,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Right Outer Join0 to 2
+                     Right Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -14246,7 +14246,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)
@@ -17406,7 +17406,7 @@ STAGE PLANS:
                       projectedOutputColumns: [0, 1]
                   Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                          Left Semi Join 1 to 2
                     keys:
                       0 key (type: int)
@@ -18006,7 +18006,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Left Outer Join0 to 2
+                     Left Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -18249,7 +18249,7 @@ STAGE PLANS:
               Merge Join Operator
                 condition map:
                      Left Semi Join 0 to 1
-                     Right Outer Join0 to 2
+                     Right Outer Join 0 to 2
                 keys:
                   0 key (type: int)
                   1 _col0 (type: int)
@@ -18658,7 +18658,7 @@ STAGE PLANS:
                       Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col1 (type: string)
                           1 value (type: string)

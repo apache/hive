@@ -248,7 +248,7 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Left Outer Join1 to 2
+               Left Outer Join 1 to 2
           filter predicates:
             0 
             1 {(UDFToDouble(KEY.reducesinkkey0) < 10.0)}

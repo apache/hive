@@ -69,7 +69,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {_col0 BETWEEN 100 AND 102}
                         1 
@@ -168,7 +168,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {_col0 BETWEEN 100 AND 102}
                         1 

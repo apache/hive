@@ -264,7 +264,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 id (type: string)
             1 id (type: string)
@@ -377,7 +377,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 id (type: string)
             1 id (type: string)

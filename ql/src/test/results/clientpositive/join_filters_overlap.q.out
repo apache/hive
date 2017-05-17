@@ -136,8 +136,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Left Outer Join0 to 2
+               Left Outer Join 0 to 1
+               Left Outer Join 0 to 2
           filter mappings:
             0 [1, 1, 2, 1]
           filter predicates:
@@ -327,8 +327,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
-               Left Outer Join1 to 2
+               Right Outer Join 0 to 1
+               Left Outer Join 1 to 2
           filter mappings:
             1 [0, 1, 2, 1]
           filter predicates:
@@ -518,8 +518,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
-               Left Outer Join1 to 2
+               Right Outer Join 0 to 1
+               Left Outer Join 1 to 2
           filter mappings:
             1 [0, 2, 2, 2]
           filter predicates:
@@ -727,8 +727,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Outer Join 0 to 1
-               Left Outer Join1 to 2
-               Left Outer Join0 to 3
+               Left Outer Join 1 to 2
+               Left Outer Join 0 to 3
           filter mappings:
             0 [1, 1, 3, 1]
             1 [0, 1, 2, 1]
@@ -933,9 +933,9 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Left Outer Join0 to 2
-               Left Outer Join0 to 3
+               Left Outer Join 0 to 1
+               Left Outer Join 0 to 2
+               Left Outer Join 0 to 3
           filter mappings:
             0 [1, 1, 2, 1, 3, 1]
           filter predicates:

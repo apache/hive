@@ -3831,7 +3831,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col4 (type: string)
                   1 _col0 (type: string)
@@ -4308,7 +4308,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col4 (type: string)
                   1 _col0 (type: string)
@@ -4331,7 +4331,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col4 (type: string)
                   1 _col0 (type: string)
@@ -4347,7 +4347,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col4 (type: string), UDFToLong(_col5) (type: bigint)
                   1 _col1 (type: string), _col0 (type: bigint)
@@ -4546,7 +4546,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
@@ -4569,7 +4569,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
@@ -4585,7 +4585,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int), UDFToDouble(_col5) (type: double)
                   1 _col1 (type: int), _col0 (type: double)
