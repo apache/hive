@@ -62,7 +62,6 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.parquet.hadoop.ParquetInputFormat;
-import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.openjdk.jmh.annotations.Param;
@@ -339,7 +338,7 @@ public class ColumnarStorageBench {
       Job vectorJob = new Job(conf, "read vector");
       ParquetInputFormat.setInputPaths(vectorJob, inputPath);
       ParquetInputFormat parquetInputFormat = new ParquetInputFormat(GroupReadSupport.class);
-      ParquetInputSplit split = (ParquetInputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
+      InputSplit split = (InputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
       initialVectorizedRowBatchCtx(conf);
       return new VectorizedParquetRecordReader(split, new JobConf(conf));
     }

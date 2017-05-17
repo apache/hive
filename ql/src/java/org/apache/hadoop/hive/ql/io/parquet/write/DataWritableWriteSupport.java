@@ -14,7 +14,6 @@
 package org.apache.hadoop.hive.ql.io.parquet.write;
 
 import java.util.HashMap;
-import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
@@ -32,11 +31,9 @@ import org.apache.parquet.schema.MessageTypeParser;
 public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
 
   public static final String PARQUET_HIVE_SCHEMA = "parquet.hive.schema";
-  private static final String PARQUET_TIMEZONE_CONVERSION = "parquet.hive.timezone";
 
   private DataWritableWriter writer;
   private MessageType schema;
-  private TimeZone timeZone;
 
   public static void setSchema(final MessageType schema, final Configuration configuration) {
     configuration.set(PARQUET_HIVE_SCHEMA, schema.toString());
@@ -46,24 +43,15 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
     return MessageTypeParser.parseMessageType(configuration.get(PARQUET_HIVE_SCHEMA));
   }
 
-  public static void setTimeZone(final TimeZone timeZone, final Configuration configuration) {
-    configuration.set(PARQUET_TIMEZONE_CONVERSION, timeZone.getID());
-  }
-
-  public static TimeZone getTimeZone(final Configuration configuration) {
-    return TimeZone.getTimeZone(configuration.get(PARQUET_TIMEZONE_CONVERSION));
-  }
-
   @Override
   public WriteContext init(final Configuration configuration) {
     schema = getSchema(configuration);
-    timeZone = getTimeZone(configuration);
     return new WriteContext(schema, new HashMap<String, String>());
   }
 
   @Override
   public void prepareForWrite(final RecordConsumer recordConsumer) {
-    writer = new DataWritableWriter(recordConsumer, schema, timeZone);
+    writer = new DataWritableWriter(recordConsumer, schema);
   }
 
   @Override

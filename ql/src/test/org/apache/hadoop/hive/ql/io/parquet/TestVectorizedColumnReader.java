@@ -106,7 +106,7 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
     HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
     initialVectorizedRowBatchCtx(conf);
     VectorizedParquetRecordReader reader =
-        new VectorizedParquetRecordReader((org.apache.hadoop.mapred.InputSplit)null, new JobConf(conf));
+        new VectorizedParquetRecordReader((InputSplit)null, new JobConf(conf));
     assertFalse(reader.next(reader.createKey(), reader.createValue()));
   }
 }
