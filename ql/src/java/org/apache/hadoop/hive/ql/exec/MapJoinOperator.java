@@ -132,6 +132,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     return HashTableLoaderFactory.getLoader(hconf);
   }
 
+  public String getCacheKey() {
+    return cacheKey;
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     this.hconf = hconf;

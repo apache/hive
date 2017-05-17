@@ -402,10 +402,10 @@ public class SharedScanOptimizer extends Transform {
       if (op instanceof MapJoinOperator) {
         MapJoinOperator mop = (MapJoinOperator) op;
         dataSize = StatsUtils.safeAdd(dataSize, mop.getConf().getInMemoryDataSize());
-        if (dataSize > mop.getConf().getNoConditionalTaskSize()) {
+        if (dataSize > mop.getConf().getMemoryMonitorInfo().getAdjustedNoConditionalTaskSize()) {
           // Size surpasses limit, we cannot convert
           LOG.debug("accumulated data size: {} / max size: {}",
-                  dataSize, mop.getConf().getNoConditionalTaskSize());
+                  dataSize, mop.getConf().getMemoryMonitorInfo().getAdjustedNoConditionalTaskSize());
           return false;
         }
       }

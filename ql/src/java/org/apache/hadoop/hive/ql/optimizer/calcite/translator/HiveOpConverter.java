@@ -1003,7 +1003,7 @@ public class HiveOpConverter {
 
     // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
-            filters, joinExpressions, 0);
+            filters, joinExpressions, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 
