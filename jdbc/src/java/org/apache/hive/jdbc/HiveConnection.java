@@ -200,8 +200,8 @@ public class HiveConnection implements java.sql.Connection {
         transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
         if (!transport.isOpen()) {
           transport.open();
-          logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
         }
+        logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
         break;
       } catch (TTransportException e) {
         // We'll retry till we exhaust all HiveServer2 nodes from ZooKeeper
