@@ -356,7 +356,7 @@ public class TestHCatMultiOutputFormat {
    * @throws Exception if any error occurs
    */
   private List<String> getTableData(String table, String database) throws Exception {
-    QueryState queryState = new QueryState(null);
+    QueryState queryState = new QueryState.Builder().build();
     HiveConf conf = queryState.getConf();
     conf.addResource("hive-site.xml");
     ArrayList<String> results = new ArrayList<String>();

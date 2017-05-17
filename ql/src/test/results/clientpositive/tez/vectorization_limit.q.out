@@ -120,8 +120,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 5]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: [1]
                         Statistics: Num rows: 9173 Data size: 109584 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col2 (type: smallint)
@@ -402,8 +404,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 95 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
             Execution mode: vectorized
@@ -553,8 +557,11 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            partitionColumns: [0]
+                            valueColumns: []
                         Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
             Map Vectorization:
@@ -746,8 +753,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: [1]
                         Statistics: Num rows: 3185 Data size: 44512 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized
@@ -798,8 +807,10 @@ STAGE PLANS:
                   sort order: ++
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkObjectHashOperator
+                      keyColumns: [1, 0]
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      valueColumns: []
                   Statistics: Num rows: 3185 Data size: 44512 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.3
         Reducer 3 

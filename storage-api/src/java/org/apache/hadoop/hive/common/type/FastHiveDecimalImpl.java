@@ -3913,7 +3913,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
 
     long key = fast0;
 
-    // Hash code logic from calculateLongHashCode.
+    // Hash code logic from original calculateLongHashCode
 
     key = (~key) + (key << 21); // key = (key << 21) - key - 1;
     key = key ^ (key >>> 24);

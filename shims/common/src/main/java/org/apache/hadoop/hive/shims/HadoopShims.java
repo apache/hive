@@ -168,7 +168,6 @@ public interface HadoopShims {
    * All updates to jobtracker/resource manager rpc address
    * in the configuration should be done through this shim
    * @param conf
-   * @return
    */
   public void setJobLauncherRpcAddress(Configuration conf, String val);
 
@@ -252,12 +251,12 @@ public interface HadoopShims {
 
   /**
    * For the block locations returned by getLocations() convert them into a Treemap
-   * <Offset,blockLocation> by iterating over the list of blockLocation.
+   * &lt;Offset,blockLocation&gt; by iterating over the list of blockLocation.
    * Using TreeMap from offset to blockLocation, makes it O(logn) to get a particular
    * block based upon offset.
    * @param fs the file system
    * @param status the file information
-   * @return TreeMap<Long, BlockLocation>
+   * @return TreeMap&lt;Long, BlockLocation&gt;
    * @throws IOException
    */
   TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,

@@ -1,4 +1,5 @@
-PREHOOK: query: select * from part where p_size > (select count(*) from part p where p.p_mfgr = part.p_mfgr group by p_type)
+PREHOOK: query: select * from part where p_size >
+    (select count(*) from part p where p.p_mfgr = part.p_mfgr group by p_type)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####

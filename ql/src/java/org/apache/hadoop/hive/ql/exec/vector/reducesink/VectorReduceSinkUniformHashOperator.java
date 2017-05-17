@@ -66,8 +66,12 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hive.common.util.HashCodeUtil;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This class is uniform hash (common) operator class for native vectorized reduce sink.
+ * There are variation operators for Long, String, and MultiKey.  And, a special case operator
+ * for no key (VectorReduceSinkEmptyKeyOperator).
  */
 public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSinkCommonOperator {
 
@@ -105,6 +109,7 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
+    Preconditions.checkState(!isEmptyKey);
     // Create all nulls key.
     try {
       Output nullKeyOutput = new Output();
@@ -155,10 +160,7 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
       boolean selectedInUse = batch.selectedInUse;
       int[] selected = batch.selected;
 
-      int keyLength;
       int logical;
-      int end;
-      int batchIndex;
       do {
         if (serializedKeySeries.getCurrentIsAllNull()) {
 
@@ -179,7 +181,7 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
           // One serialized key for 1 or more rows for the duplicate keys.
           // LOG.info("reduceSkipTag " + reduceSkipTag + " tag " + tag + " reduceTagByte " + (int) reduceTagByte + " keyLength " + serializedKeySeries.getSerializedLength());
           // LOG.info("process offset " + serializedKeySeries.getSerializedStart() + " length " + serializedKeySeries.getSerializedLength());
-          keyLength = serializedKeySeries.getSerializedLength();
+          final int keyLength = serializedKeySeries.getSerializedLength();
           if (tag == -1 || reduceSkipTag) {
             keyWritable.set(serializedKeySeries.getSerializedBytes(),
                 serializedKeySeries.getSerializedStart(), keyLength);
@@ -194,18 +196,38 @@ public abstract class VectorReduceSinkUniformHashOperator extends VectorReduceSi
         }
 
         logical = serializedKeySeries.getCurrentLogical();
-        end = logical + serializedKeySeries.getCurrentDuplicateCount();
-        do {
-          batchIndex = (selectedInUse ? selected[logical] : logical);
+        final int end = logical + serializedKeySeries.getCurrentDuplicateCount();
+        if (!isEmptyValue) {
+          if (selectedInUse) {
+            do {
+              final int batchIndex = selected[logical];
 
-          valueLazyBinarySerializeWrite.reset();
-          valueVectorSerializeRow.serializeWrite(batch, batchIndex);
+              valueLazyBinarySerializeWrite.reset();
+              valueVectorSerializeRow.serializeWrite(batch, batchIndex);
 
-          valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
+              valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
 
-          collect(keyWritable, valueBytesWritable);
-        } while (++logical < end);
-  
+              collect(keyWritable, valueBytesWritable);
+            } while (++logical < end);
+          } else {
+            do {
+              valueLazyBinarySerializeWrite.reset();
+              valueVectorSerializeRow.serializeWrite(batch, logical);
+
+              valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
+
+              collect(keyWritable, valueBytesWritable);
+            } while (++logical < end);
+
+          }
+        } else {
+
+          // Empty value, too.
+          do {
+            collect(keyWritable, valueBytesWritable);
+          } while (++logical < end);
+        }
+
         if (!serializedKeySeries.next()) {
           break;
         }

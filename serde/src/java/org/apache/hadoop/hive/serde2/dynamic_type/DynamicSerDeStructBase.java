@@ -86,7 +86,7 @@ public abstract class DynamicSerDeStructBase extends DynamicSerDeTypeBase
    * @param o
    *          - this list should be in the order of the function's params for
    *          now. If we wanted to remove this requirement, we'd need to make it
-   *          a List<Pair<String, Object>> with the String being the field name.
+   *          a List&lt;Pair&lt;String, Object&gt;&gt; with the String being the field name.
    * 
    */
   @Override

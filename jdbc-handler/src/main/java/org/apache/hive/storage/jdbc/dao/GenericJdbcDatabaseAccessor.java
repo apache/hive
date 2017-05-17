@@ -16,6 +16,10 @@ package org.apache.hive.storage.jdbc.dao;
 
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.security.Credentials;
+import org.apache.hadoop.security.UserGroupInformation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +49,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   protected static final int DEFAULT_FETCH_SIZE = 1000;
   protected static final Logger LOGGER = LoggerFactory.getLogger(GenericJdbcDatabaseAccessor.class);
   protected DataSource dbcpDataSource = null;
+  protected static final Text DBCP_PWD = new Text(DBCP_CONFIG_PREFIX + ".password");
 
 
   public GenericJdbcDatabaseAccessor() {
@@ -97,7 +102,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       initializeDatabaseConnection(conf);
       String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
       String countQuery = "SELECT COUNT(*) FROM (" + sql + ") tmptable";
-      LOGGER.debug("Query to execute is [{}]", countQuery);
+      LOGGER.info("Query to execute is [{}]", countQuery);
 
       conn = dbcpDataSource.getConnection();
       ps = conn.prepareStatement(countQuery);
@@ -135,7 +140,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       initializeDatabaseConnection(conf);
       String sql = JdbcStorageConfigManager.getQueryToExecute(conf);
       String limitQuery = addLimitAndOffsetToQuery(sql, limit, offset);
-      LOGGER.debug("Query to execute is [{}]", limitQuery);
+      LOGGER.info("Query to execute is [{}]", limitQuery);
 
       conn = dbcpDataSource.getConnection();
       ps = conn.prepareStatement(limitQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -216,7 +221,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   }
 
 
-  protected Properties getConnectionPoolProperties(Configuration conf) {
+  protected Properties getConnectionPoolProperties(Configuration conf) throws Exception {
     // Create the default properties object
     Properties dbProperties = getDefaultDBCPProperties();
 
@@ -226,6 +231,13 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       for (Entry<String, String> entry : userProperties.entrySet()) {
         dbProperties.put(entry.getKey().replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), entry.getValue());
       }
+    }
+
+    // handle password
+    Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
+    if (credentials.getSecretKey(DBCP_PWD) != null) {
+      LOGGER.info("found token in credentials");
+      dbProperties.put(DBCP_PWD,new String(credentials.getSecretKey(DBCP_PWD)));
     }
 
     // essential properties that shouldn't be overridden by users

@@ -30,8 +30,7 @@ POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable
 Partitions not in metastore:	repairtable:p1=a/p2=a	repairtable:p1=b/p2=a
-Repair: Added partition to metastore default.repairtable:p1=a/p2=a
-Repair: Added partition to metastore default.repairtable:p1=b/p2=a
+#### A masked pattern was here ####
 PREHOOK: query: MSCK TABLE repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable

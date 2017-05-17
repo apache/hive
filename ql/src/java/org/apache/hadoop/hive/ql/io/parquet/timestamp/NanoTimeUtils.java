@@ -165,9 +165,12 @@ public class NanoTimeUtils {
    * @param timeZoneID
    */
   public static void validateTimeZone(String timeZoneID) {
+    if(timeZoneID == null) {
+      throw new IllegalArgumentException("Missing timezone id for parquet int96 conversion!");
+    }
     if (TimeZone.getTimeZone(timeZoneID).getID().equals("GMT")
         && !"GMT".equals(timeZoneID)) {
-      throw new IllegalStateException(
+      throw new IllegalArgumentException(
           "Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
     }
   }

@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.common.jsonexplain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.common.jsonexplain.Op.OpType;
@@ -31,9 +33,13 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class Vertex implements Comparable<Vertex>{
   public final String name;
+  // the stage that this vertex belongs to
+  public final Stage stage;
   //tezJsonParser
   public final DagJsonParser parser;
   // vertex's parent connections.
@@ -45,8 +51,10 @@ public final class Vertex implements Comparable<Vertex>{
   // whether this vertex is dummy (which does not really exists but is created),
   // e.g., a dummy vertex for a mergejoin branch
   public boolean dummy;
-  // the rootOps in this vertex
-  public final List<Op> rootOps = new ArrayList<>();
+  // the outputOps in this vertex.
+  public final List<Op> outputOps= new ArrayList<>();
+  // the inputOps in this vertex.
+  public final List<Op> inputOps= new ArrayList<>();
   // we create a dummy vertex for a mergejoin branch for a self join if this
   // vertex is a mergejoin
   public final List<Vertex> mergeJoinDummyVertexs = new ArrayList<>();
@@ -58,7 +66,8 @@ public final class Vertex implements Comparable<Vertex>{
   public Map<String, String> tagToInput = new LinkedHashMap<>();
   // tag
   public String tag;
-
+  protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
+  
   public static enum VertexType {
     MAP, REDUCE, UNION, UNKNOWN
   };
@@ -69,7 +78,7 @@ public final class Vertex implements Comparable<Vertex>{
   };
   public String edgeType;
 
-  public Vertex(String name, JSONObject vertexObject, DagJsonParser dagJsonParser) {
+  public Vertex(String name, JSONObject vertexObject, Stage stage, DagJsonParser dagJsonParser) {
     super();
     this.name = name;
     if (this.name != null) {
@@ -87,7 +96,8 @@ public final class Vertex implements Comparable<Vertex>{
     }
     this.dummy = false;
     this.vertexObject = vertexObject;
-    parser = dagJsonParser;
+    this.stage = stage;
+    this.parser = dagJsonParser;
   }
 
   public void addDependency(Connection connection) throws JSONException {
@@ -108,16 +118,16 @@ public final class Vertex implements Comparable<Vertex>{
     if (vertexObject.length() != 0) {
       for (String key : JSONObject.getNames(vertexObject)) {
         if (key.equals("Map Operator Tree:")) {
-          extractOp(vertexObject.getJSONArray(key).getJSONObject(0));
+          extractOp(vertexObject.getJSONArray(key).getJSONObject(0), null);
         } else if (key.equals("Reduce Operator Tree:") || key.equals("Processor Tree:")) {
-          extractOp(vertexObject.getJSONObject(key));
+          extractOp(vertexObject.getJSONObject(key), null);
         } else if (key.equals("Join:")) {
           // this is the case when we have a map-side SMB join
           // one input of the join is treated as a dummy vertex
           JSONArray array = vertexObject.getJSONArray(key);
           for (int index = 0; index < array.length(); index++) {
             JSONObject mpOpTree = array.getJSONObject(index);
-            Vertex v = new Vertex(null, mpOpTree, parser);
+            Vertex v = new Vertex(null, mpOpTree, this.stage, parser);
             v.extractOpTree();
             v.dummy = true;
             mergeJoinDummyVertexs.add(v);
@@ -125,7 +135,7 @@ public final class Vertex implements Comparable<Vertex>{
         } else if (key.equals("Merge File Operator")) {
           JSONObject opTree = vertexObject.getJSONObject(key);
           if (opTree.has("Map Operator Tree:")) {
-            extractOp(opTree.getJSONArray("Map Operator Tree:").getJSONObject(0));
+            extractOp(opTree.getJSONArray("Map Operator Tree:").getJSONObject(0), null);
           } else {
             throw new Exception("Merge File Operator does not have a Map Operator Tree");
           }
@@ -139,16 +149,17 @@ public final class Vertex implements Comparable<Vertex>{
         } else if (key.equals("tag:")) {
           this.tag = vertexObject.getString(key);
         } else if (key.equals("Local Work:")) {
-          extractOp(vertexObject.getJSONObject(key));
+          extractOp(vertexObject.getJSONObject(key), null);
         } else {
-          throw new Exception("Unsupported operator tree in vertex " + this.name);
+          LOG.warn("Skip unsupported " + key + " in vertex " + this.name);
         }
       }
     }
   }
 
   /**
-   * @param operator
+   * @param object
+   * @param isInput
    * @param parent
    * @return
    * @throws JSONException
@@ -159,31 +170,31 @@ public final class Vertex implements Comparable<Vertex>{
    *           assumption: each operator only has one parent but may have many
    *           children
    */
-  Op extractOp(JSONObject operator) throws JSONException, JsonParseException, JsonMappingException,
+  Op extractOp(JSONObject object, Op parent) throws JSONException, JsonParseException, JsonMappingException,
       IOException, Exception {
-    String[] names = JSONObject.getNames(operator);
+    String[] names = JSONObject.getNames(object);
     if (names.length != 1) {
-      throw new Exception("Expect only one operator in " + operator.toString());
+      throw new Exception("Expect only one operator in " + object.toString());
     } else {
       String opName = names[0];
-      JSONObject attrObj = (JSONObject) operator.get(opName);
+      JSONObject attrObj = (JSONObject) object.get(opName);
       Map<String, String> attrs = new TreeMap<>();
       List<Op> children = new ArrayList<>();
-      String id = null;
-      String outputVertexName = null;
+      Op op = new Op(opName, null, null, parent, children, attrs, attrObj, this, parser);
+
       if (JSONObject.getNames(attrObj) != null) {
         for (String attrName : JSONObject.getNames(attrObj)) {
           if (attrName.equals("children")) {
             Object childrenObj = attrObj.get(attrName);
             if (childrenObj instanceof JSONObject) {
               if (((JSONObject) childrenObj).length() != 0) {
-                children.add(extractOp((JSONObject) childrenObj));
+                children.add(extractOp((JSONObject) childrenObj, op));
               }
             } else if (childrenObj instanceof JSONArray) {
               if (((JSONArray) childrenObj).length() != 0) {
                 JSONArray array = ((JSONArray) childrenObj);
                 for (int index = 0; index < array.length(); index++) {
-                  children.add(extractOp(array.getJSONObject(index)));
+                  children.add(extractOp(array.getJSONObject(index), op));
                 }
               }
             } else {
@@ -192,9 +203,9 @@ public final class Vertex implements Comparable<Vertex>{
             }
           } else {
             if (attrName.equals("OperatorId:")) {
-              id = attrObj.get(attrName).toString();
+              op.setOperatorId(attrObj.get(attrName).toString());
             } else if (attrName.equals("outputname:")) {
-              outputVertexName = attrObj.get(attrName).toString();
+              op.outputVertexName = attrObj.get(attrName).toString();
             } else {
               if (!attrObj.get(attrName).toString().isEmpty()) {
                 attrs.put(attrName, attrObj.get(attrName).toString());
@@ -203,13 +214,11 @@ public final class Vertex implements Comparable<Vertex>{
           }
         }
       }
-      Op op = new Op(opName, id, outputVertexName, children, attrs, operator, this, parser);
-      if (!children.isEmpty()) {
-        for (Op child : children) {
-          child.parent = op;
-        }
-      } else {
-        this.rootOps.add(op);
+      if (parent == null) {
+        this.inputOps.add(op);
+      }
+      if (children.isEmpty()) {
+        this.outputOps.add(op);
       }
       return op;
     }
@@ -239,7 +248,7 @@ public final class Vertex implements Comparable<Vertex>{
     if (numReduceOp > 1 && !(callingVertex.vertexType == VertexType.UNION)) {
       // find the right op
       Op choose = null;
-      for (Op op : this.rootOps) {
+      for (Op op : this.outputOps) {
         if (op.outputVertexName.equals(callingVertex.name)) {
           choose = op;
         }
@@ -250,7 +259,7 @@ public final class Vertex implements Comparable<Vertex>{
         throw new Exception("Can not find the right reduce output operator for vertex " + this.name);
       }
     } else {
-      for (Op op : this.rootOps) {
+      for (Op op : this.outputOps) {
         // dummy vertex is treated as a branch of a join operator
         if (this.dummy) {
           op.print(printer, indentFlag, true);
@@ -271,15 +280,24 @@ public final class Vertex implements Comparable<Vertex>{
 
   /**
    * We check if a vertex has multiple reduce operators.
+   * @throws JSONException 
    */
-  public void checkMultiReduceOperator() {
+  public void checkMultiReduceOperator(boolean rewriteObject) throws JSONException {
     // check if it is a reduce vertex and its children is more than 1;
-    if (this.rootOps.size() < 2) {
-      return;
-    }
     // check if all the child ops are reduce output operators
-    for (Op op : this.rootOps) {
+    numReduceOp = 0;
+    for (Op op : this.outputOps) {
       if (op.type == OpType.RS) {
+        if (rewriteObject) {
+          Vertex outputVertex = this.stage.vertexs.get(op.outputVertexName);
+          if (outputVertex != null && outputVertex.inputOps.size() > 0) {
+            JSONArray array = new JSONArray();
+            for (Op inputOp : outputVertex.inputOps) {
+              array.put(inputOp.operatorId);
+            }
+            op.opObject.put("outputOperator:", array);
+          }
+        }
         numReduceOp++;
       }
     }
@@ -301,16 +319,16 @@ public final class Vertex implements Comparable<Vertex>{
   }
 
   public Op getJoinRSOp(Vertex joinVertex) {
-    if (rootOps.size() == 0) {
+    if (outputOps.size() == 0) {
       return null;
-    } else if (rootOps.size() == 1) {
-      if (rootOps.get(0).type == OpType.RS) {
-        return rootOps.get(0);
+    } else if (outputOps.size() == 1) {
+      if (outputOps.get(0).type == OpType.RS) {
+        return outputOps.get(0);
       } else {
         return null;
       }
     } else {
-      for (Op op : rootOps) {
+      for (Op op : outputOps) {
         if (op.type == OpType.RS) {
           if (op.outputVertexName.equals(joinVertex.name)) {
             return op;

@@ -93,7 +93,7 @@ public final class Stage {
         JSONObject edges = tez.getJSONObject("Edges:");
         // iterate for the first time to get all the vertices
         for (String to : JSONObject.getNames(edges)) {
-          vertexs.put(to, new Vertex(to, vertices.getJSONObject(to), parser));
+          vertexs.put(to, new Vertex(to, vertices.getJSONObject(to), this, parser));
         }
         // iterate for the second time to get all the vertex dependency
         for (String to : JSONObject.getNames(edges)) {
@@ -105,7 +105,7 @@ public final class Stage {
             String parent = obj.getString("parent");
             Vertex parentVertex = vertexs.get(parent);
             if (parentVertex == null) {
-              parentVertex = new Vertex(parent, vertices.getJSONObject(parent), parser);
+              parentVertex = new Vertex(parent, vertices.getJSONObject(parent), this, parser);
               vertexs.put(parent, parentVertex);
             }
             String type = obj.getString("type");
@@ -128,7 +128,7 @@ public final class Stage {
               String parent = obj.getString("parent");
               Vertex parentVertex = vertexs.get(parent);
               if (parentVertex == null) {
-                parentVertex = new Vertex(parent, vertices.getJSONObject(parent), parser);
+                parentVertex = new Vertex(parent, vertices.getJSONObject(parent), this, parser);
                 vertexs.put(parent, parentVertex);
               }
               String type = obj.getString("type");
@@ -147,15 +147,19 @@ public final class Stage {
         }
       } else {
         for (String vertexName : JSONObject.getNames(vertices)) {
-          vertexs.put(vertexName, new Vertex(vertexName, vertices.getJSONObject(vertexName), parser));
+          vertexs.put(vertexName, new Vertex(vertexName, vertices.getJSONObject(vertexName), this, parser));
         }
       }
-      // The opTree in vertex is extracted
+
+      // iterate for the first time to extract opTree in vertex
       for (Vertex v : vertexs.values()) {
         if (v.vertexType == VertexType.MAP || v.vertexType == VertexType.REDUCE) {
           v.extractOpTree();
-          v.checkMultiReduceOperator();
         }
+      }
+      // iterate for the second time to rewrite object
+      for (Vertex v : vertexs.values()) {
+        v.checkMultiReduceOperator(parser.rewriteObject);
       }
     } else {
       String[] names = JSONObject.getNames(object);
@@ -196,7 +200,7 @@ public final class Stage {
             if (name.equals("Processor Tree:")) {
               JSONObject object = new JSONObject(new LinkedHashMap<>());
               object.put(name, attrObj);
-              v = new Vertex(null, object, parser);
+              v = new Vertex(null, object, this, parser);
               v.extractOpTree();
             } else {
               for (String attrName : JSONObject.getNames(attrObj)) {
@@ -211,7 +215,7 @@ public final class Stage {
         }
       }
     }
-    Op op = new Op(opName, null, null, null, attrs, null, v, parser);
+    Op op = new Op(opName, null, null, null, null, attrs, null, v, parser);
     if (v != null) {
       parser.addInline(op, new Connection(null, v));
     }

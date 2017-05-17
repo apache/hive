@@ -27,6 +27,7 @@ PRIMITIVE_TYPES = set([
     19,
     20,
     21,
+    22,
 ])
 COMPLEX_TYPES = set([
     10,
@@ -61,6 +62,7 @@ TYPE_NAMES = {
     19 : "CHAR",
     20 : "INTERVAL_YEAR_MONTH",
     21 : "INTERVAL_DAY_TIME",
+    22 : "TIMESTAMP WITH TIME ZONE",
 }
 CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
 PRECISION = "precision"

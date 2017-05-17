@@ -281,7 +281,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                   joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
-                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null, joinDesc.getNoConditionalTaskSize());
+                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
+                  joinDesc.getNoConditionalTaskSize(), joinDesc.getInMemoryDataSize());
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
       mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
@@ -419,7 +420,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // each side better have 0 or more RS. if either side is unbalanced, cannot convert.
       // This is a workaround for now. Right fix would be to refactor code in the
       // MapRecordProcessor and ReduceRecordProcessor with respect to the sources.
-      @SuppressWarnings({"rawtypes","unchecked"})
       Set<ReduceSinkOperator> set =
           OperatorUtils.findOperatorsUpstream(parentOp.getParentOperators(),
               ReduceSinkOperator.class);
@@ -718,6 +718,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
     }
+
+    // We store the total memory that this MapJoin is going to use,
+    // which is calculated as totalSize/buckets, with totalSize
+    // equal to sum of small tables size.
+    joinOp.getConf().setInMemoryDataSize(totalSize/buckets);
 
     return bigTablePosition;
   }

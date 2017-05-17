@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 
 public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
@@ -27,13 +26,7 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
   protected void setUp() throws Exception {
     super.setUp();
     warehouse = new Warehouse(hiveConf);
-    try {
-      client = new HiveMetaStoreClient(hiveConf);
-    } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
-    }
+    client = createClient();
   }
 
   @Override
@@ -43,6 +36,17 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
       client.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
+      System.err.println(StringUtils.stringifyException(e));
+      throw new Exception(e);
+    }
+  }
+
+  @Override
+  protected HiveMetaStoreClient createClient() throws Exception {
+    try {
+      return new HiveMetaStoreClient(hiveConf);
+    } catch (Throwable e) {
+      System.err.println("Unable to open the metastore");
       System.err.println(StringUtils.stringifyException(e));
       throw new Exception(e);
     }

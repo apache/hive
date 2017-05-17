@@ -51,10 +51,10 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 /**
  *
@@ -268,7 +268,7 @@ public class EximUtil {
     }
   }
 
-  static MetaData readMetaData(FileSystem fs, Path metadataPath)
+  public static MetaData readMetaData(FileSystem fs, Path metadataPath)
       throws IOException, SemanticException {
     String message = readAsString(fs, metadataPath);
     try {
@@ -340,7 +340,7 @@ public class EximUtil {
    * @return the partition specification as a map
    */
   public static Map<String, String> makePartSpec(List<FieldSchema> partCols, List<String> partVals) {
-    Map<String, String> partSpec = new TreeMap<String, String>();
+    Map<String, String> partSpec = new LinkedHashMap<String, String>();
     for (int i = 0; i < partCols.size(); ++i) {
       partSpec.put(partCols.get(i).getName(), partVals.get(i));
     }

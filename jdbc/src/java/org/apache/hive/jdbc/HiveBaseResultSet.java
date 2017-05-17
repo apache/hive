@@ -47,6 +47,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.thrift.Type;
 import org.apache.hive.service.cli.TableSchema;
 
@@ -442,6 +443,8 @@ public abstract class HiveBaseResultSet implements ResultSet {
         return value;
       case TIMESTAMP_TYPE:
         return Timestamp.valueOf((String) value);
+      case TIMESTAMPTZ_TYPE:
+        return TimestampTZ.parse((String) value);
       case DECIMAL_TYPE:
         return new BigDecimal((String)value);
       case DATE_TYPE:

@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 /**
- * Interface for metrics variables. <p/> For example a the database service could expose the number of
+ * Interface for metrics variables. For example a the database service could expose the number of
  * currently active connections.
  */
 public interface MetricsVariable<T> {

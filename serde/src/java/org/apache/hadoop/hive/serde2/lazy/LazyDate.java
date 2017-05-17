@@ -77,7 +77,7 @@ public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritabl
    * Writes a Date in SQL date format to the output stream.
    * @param out
    *          The output stream
-   * @param i
+   * @param d
    *          The Date to write
    * @throws IOException
    */

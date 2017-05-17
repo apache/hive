@@ -118,7 +118,7 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   }
 
   /**
-   * @rturn Whether the SerDe that can store schema both inside and outside of metastore
+   * @return Whether the SerDe that can store schema both inside and outside of metastore
    *        does, in fact, store it inside metastore, based on table parameters.
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {

@@ -42,7 +42,7 @@ public class TestMacroSemanticAnalyzer {
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     SessionState.start(conf);
     context = new Context(conf);

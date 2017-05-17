@@ -32,7 +32,7 @@ import java.util.BitSet;
  * open transaction when choosing which files to compact, but that it still ignores aborted
  * records when compacting.
  * 
- * See {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList()} for proper
+ * See org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList() for proper
  * way to construct this.
  */
 public class ValidCompactorTxnList extends ValidReadTxnList {
@@ -70,7 +70,7 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
     super(value);
   }
   /**
-   * Returns {@link org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL} if all txns in
+   * Returns org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL if all txns in
    * the range are resolved and RangeResponse.NONE otherwise
    */
   @Override

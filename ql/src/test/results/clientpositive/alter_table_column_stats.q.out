@@ -823,17 +823,204 @@ POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
+PREHOOK: query: describe formatted statsdb1.testpart1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb1            	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	30                  
+	rawDataSize         	466                 
+	totalSize           	496                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part11]            	 
+Database:           	statsdb1            	 
+Table:              	testpart1           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	154                 
+	totalSize           	164                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part2]             	 
+Database:           	statsdb1            	 
+Table:              	testpart1           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	numFiles            	1                   
+	numRows             	20                  
+	rawDataSize         	312                 
+	totalSize           	332                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Output: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part11
 PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Output: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
 POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -878,10 +1065,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             
@@ -896,7 +1083,7 @@ col4                	string
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
-Partition Value:    	[part1]             	 
+Partition Value:    	[part11]            	 
 Database:           	statsdb1            	 
 Table:              	testpart1           	 
 #### A masked pattern was here ####
@@ -918,28 +1105,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
@@ -1016,13 +1203,13 @@ PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string ca
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Output: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part11
 PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string cascade
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Output: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
 POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -1067,10 +1254,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             
@@ -1085,7 +1272,7 @@ col4                	string
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
-Partition Value:    	[part1]             	 
+Partition Value:    	[part11]            	 
 Database:           	statsdb1            	 
 Table:              	testpart1           	 
 #### A masked pattern was here ####
@@ -1107,28 +1294,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
@@ -1253,28 +1440,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
@@ -2176,17 +2363,204 @@ POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: query: alter table statsdb1.testpart1 partition (part = 'part1') rename to partition (part = 'part11')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: statsdb1@testpart1
+POSTHOOK: Input: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
+PREHOOK: query: describe formatted statsdb1.testpart1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb1            	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	30                  
+	rawDataSize         	466                 
+	totalSize           	496                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part11]            	 
+Database:           	statsdb1            	 
+Table:              	testpart1           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	numFiles            	1                   
+	numRows             	10                  
+	rawDataSize         	154                 
+	totalSize           	164                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	comment             
+	 	 
+col1                	int                 	                    
+col2                	string              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+part                	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[part2]             	 
+Database:           	statsdb1            	 
+Table:              	testpart1           	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	numFiles            	1                   
+	numRows             	20                  
+	rawDataSize         	312                 
+	totalSize           	332                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	18                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	18                  	6.8                 	7                   	                    	                    	from deserializer   
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb1@testpart1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part2') col3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb1@testpart1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
 PREHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Output: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part11
 PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: alter table statsdb1.testpart1 replace columns (col1 int, col2 string, col4 string) cascade
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Output: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
 POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -2231,10 +2605,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             
@@ -2249,7 +2623,7 @@ col4                	string
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
-Partition Value:    	[part1]             	 
+Partition Value:    	[part11]            	 
 Database:           	statsdb1            	 
 Table:              	testpart1           	 
 #### A masked pattern was here ####
@@ -2271,28 +2645,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col1                	int                 	27                  	484                 	0                   	8                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
@@ -2369,13 +2743,13 @@ PREHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string ca
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Output: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part11
 PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: alter table statsdb1.testpart1 change column col1 col1 string cascade
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Output: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part11
 POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -2420,10 +2794,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1')
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             
@@ -2438,7 +2812,7 @@ col4                	string
 part                	string              	                    
 	 	 
 # Detailed Partition Information	 	 
-Partition Value:    	[part1]             	 
+Partition Value:    	[part11]            	 
 Database:           	statsdb1            	 
 Table:              	testpart1           	 
 #### A masked pattern was here ####
@@ -2460,28 +2834,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
-POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testpart1
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
@@ -2606,28 +2980,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col1
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col1
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
 	 	 	 	 	 	 	 	 	 	 
 col1                	string              	from deserializer   	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col2
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col2
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 col2                	string              	                    	                    	0                   	12                  	6.7                 	7                   	                    	                    	from deserializer   
-PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col4
+PREHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testpart2
-POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part1') col4
+POSTHOOK: query: describe formatted statsdb2.testpart2 partition (part = 'part11') col4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testpart2
 # col_name            	data_type           	comment             	 	 	 	 	 	 	 	 

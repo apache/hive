@@ -32,7 +32,7 @@ public class TestSemanticAnalyzerFactory {
   
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
   }
   @Test

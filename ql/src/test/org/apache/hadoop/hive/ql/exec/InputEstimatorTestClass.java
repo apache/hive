@@ -75,6 +75,11 @@ public class InputEstimatorTestClass implements HiveStorageHandler, InputEstimat
   }
 
   @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> jobProperties) {
+
+  }
+
+  @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
 
   }

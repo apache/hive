@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 
 /**
- * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] ->
+ * LazyBinaryStruct is serialized as follows: start A B A B A B end bytes[] -&gt;
  * |-----|---------|--- ... ---|-----|---------|
  *
  * Section A is one null-byte, corresponding to eight struct fields in Section

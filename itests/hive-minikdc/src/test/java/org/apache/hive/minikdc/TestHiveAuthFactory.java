@@ -20,6 +20,7 @@ package org.apache.hive.minikdc;
 import org.junit.Assert;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +47,7 @@ public class TestHiveAuthFactory {
    */
   @Test
   public void testStartTokenManagerForMemoryTokenStore() throws Exception {
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.KERBEROS.getAuthName());
     String principalName = miniHiveKdc.getFullHiveServicePrincipal();
     System.out.println("Principal: " + principalName);
 
@@ -68,7 +69,7 @@ public class TestHiveAuthFactory {
    */
   @Test
   public void testStartTokenManagerForDBTokenStore() throws Exception {
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthFactory.AuthTypes.KERBEROS.getAuthName());
+    hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.KERBEROS.getAuthName());
     String principalName = miniHiveKdc.getFullHiveServicePrincipal();
     System.out.println("Principal: " + principalName);
 

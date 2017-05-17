@@ -17,6 +17,7 @@ insert overwrite table alter_partition_change_col1 partition (p1, p2)
 show partitions alter_partition_change_col1;
 select * from alter_partition_change_col1 where p1='abc';
 select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__';
+select * from alter_partition_change_col1 where p1='__HIVE_DEFAULT_PARTITION__' or lower(p1)='a';
 
 -- Change c2 to decimal(10,0)
 alter table alter_partition_change_col1 change c2 c2 decimal(10,0);

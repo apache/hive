@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-class RenameTableHandler extends AbstractMessageHandler {
+public class RenameTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {

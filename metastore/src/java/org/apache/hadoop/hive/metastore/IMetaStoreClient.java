@@ -1664,4 +1664,12 @@ public interface IMetaStoreClient {
 
   void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
   MetaException, NoSuchObjectException, TException;
+
+  /**
+   * Gets the unique id of the backing database instance used for storing metadata
+   * @return unique id of the backing database instance
+   * @throws MetaException if HMS is not able to fetch the UUID or if there are multiple UUIDs found in the database
+   * @throws TException in case of Thrift errors
+   */
+  String getMetastoreDbUuid() throws MetaException, TException;
 }

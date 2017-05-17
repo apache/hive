@@ -72,6 +72,10 @@ public class LlapTaskUmbilicalServer {
     return this.address;
   }
 
+  public int getNumOpenConnections() {
+    return server.getNumOpenConnections();
+  }
+
   public void shutdownServer() {
     if (started.get()) { // Primarily to avoid multiple shutdowns.
       started.set(false);

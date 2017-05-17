@@ -30,7 +30,8 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /*
- * Specialized class for native vectorized reduce sink that is reducing on a single long key column.
+ * Specialized class for native vectorized reduce sink that is reducing on a Uniform Hash
+ * single long key column.
  */
 public class VectorReduceSinkLongOperator extends VectorReduceSinkUniformHashOperator {
 

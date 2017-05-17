@@ -657,13 +657,13 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5
 POSTHOOK: Output: default@table5
 PREHOOK: query: create table orc_table (
-time string)
+`time` string)
 stored as ORC tblproperties ("orc.compress"="SNAPPY")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_table
 POSTHOOK: query: create table orc_table (
-time string)
+`time` string)
 stored as ORC tblproperties ("orc.compress"="SNAPPY")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

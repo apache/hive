@@ -69,7 +69,9 @@ import org.apache.hive.common.util.HashCodeUtil;
 import com.google.common.base.Preconditions;
 
 /**
- * This class is uniform hash (common) operator class for native vectorized reduce sink.
+ * This class is the object hash (not Uniform Hash) operator class for native vectorized reduce sink.
+ * It takes the "object" hash code of bucket and/or partition keys (which are often subsets of the
+ * reduce key).  If the bucket and partition keys are empty, the hash will be a random number.
  */
 public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOperator {
 
@@ -77,11 +79,13 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   private static final String CLASS_NAME = VectorReduceSinkObjectHashOperator.class.getName();
   private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
+  protected boolean isEmptyBuckets;
   protected int[] reduceSinkBucketColumnMap;
   protected TypeInfo[] reduceSinkBucketTypeInfos;
 
   protected VectorExpression[] reduceSinkBucketExpressions;
 
+  protected boolean isEmptyPartitions;
   protected int[] reduceSinkPartitionColumnMap;
   protected TypeInfo[] reduceSinkPartitionTypeInfos;
 
@@ -90,6 +94,8 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   // The above members are initialized by the constructor and must not be
   // transient.
   //---------------------------------------------------------------------------
+
+  private transient boolean isKeyInitialized;
 
   protected transient Output keyOutput;
   protected transient VectorSerializeRow<BinarySortableSerializeWrite> keyVectorSerializeRow;
@@ -124,13 +130,19 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
     // This the is Object Hash class variation.
     Preconditions.checkState(!vectorReduceSinkInfo.getUseUniformHash());
 
-    reduceSinkBucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
-    reduceSinkBucketTypeInfos = vectorReduceSinkInfo.getReduceSinkBucketTypeInfos();
-    reduceSinkBucketExpressions = vectorReduceSinkInfo.getReduceSinkBucketExpressions();
+    isEmptyBuckets = vectorDesc.getIsEmptyBuckets();
+    if (!isEmptyBuckets) {
+      reduceSinkBucketColumnMap = vectorReduceSinkInfo.getReduceSinkBucketColumnMap();
+      reduceSinkBucketTypeInfos = vectorReduceSinkInfo.getReduceSinkBucketTypeInfos();
+      reduceSinkBucketExpressions = vectorReduceSinkInfo.getReduceSinkBucketExpressions();
+    }
 
-    reduceSinkPartitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
-    reduceSinkPartitionTypeInfos = vectorReduceSinkInfo.getReduceSinkPartitionTypeInfos();
-    reduceSinkPartitionExpressions = vectorReduceSinkInfo.getReduceSinkPartitionExpressions();
+    isEmptyPartitions = vectorDesc.getIsEmptyPartitions();
+    if (!isEmptyPartitions) {
+      reduceSinkPartitionColumnMap = vectorReduceSinkInfo.getReduceSinkPartitionColumnMap();
+      reduceSinkPartitionTypeInfos = vectorReduceSinkInfo.getReduceSinkPartitionTypeInfos();
+      reduceSinkPartitionExpressions = vectorReduceSinkInfo.getReduceSinkPartitionExpressions();
+    }
   }
 
   private ObjectInspector[] getObjectInspectorArray(TypeInfo[] typeInfos) {
@@ -149,31 +161,32 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    keyOutput = new Output();
-    keyBinarySortableSerializeWrite.set(keyOutput);
-    keyVectorSerializeRow =
-        new VectorSerializeRow<BinarySortableSerializeWrite>(
-            keyBinarySortableSerializeWrite);
-    keyVectorSerializeRow.init(reduceSinkKeyTypeInfos, reduceSinkKeyColumnMap);
- 
-    hasBuckets = false;
-    isPartitioned = false;
-    numBuckets = 0;
- 
+    if (!isEmptyKey) {
+
+      // For this variation, we serialize the key without caring if it single Long,
+      // single String, multi-key, etc.
+      keyOutput = new Output();
+      keyBinarySortableSerializeWrite.set(keyOutput);
+      keyVectorSerializeRow =
+          new VectorSerializeRow<BinarySortableSerializeWrite>(
+              keyBinarySortableSerializeWrite);
+      keyVectorSerializeRow.init(reduceSinkKeyTypeInfos, reduceSinkKeyColumnMap);
+    }
+
     // Object Hash.
 
-    numBuckets = conf.getNumBuckets();
-    hasBuckets = (numBuckets > 0);
+    if (isEmptyBuckets) {
+      numBuckets = 0;
+    } else {
+      numBuckets = conf.getNumBuckets();
 
-    if (hasBuckets) {
       bucketObjectInspectors = getObjectInspectorArray(reduceSinkBucketTypeInfos);
       bucketVectorExtractRow = new VectorExtractRow();
       bucketVectorExtractRow.init(reduceSinkBucketTypeInfos, reduceSinkBucketColumnMap);
       bucketFieldValues = new Object[reduceSinkBucketTypeInfos.length];
     }
-  
-    isPartitioned = (conf.getPartitionCols() != null);
-    if (!isPartitioned) {
+
+    if (isEmptyPartitions) {
       nonPartitionRandom = new Random(12345);
     } else {
       partitionObjectInspectors = getObjectInspectorArray(reduceSinkPartitionTypeInfos);
@@ -197,6 +210,13 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
+      }
+
+      if (!isKeyInitialized) {
+        isKeyInitialized = true;
+        if (isEmptyKey) {
+          initializeEmptyKey(tag);
+        }
       }
 
       // Perform any key expressions.  Results will go into scratch columns.
@@ -226,21 +246,21 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
           ve.evaluate(batch);
         }
       }
-  
+
       final boolean selectedInUse = batch.selectedInUse;
       int[] selected = batch.selected;
 
       final int size = batch.size;
       for (int logical = 0; logical < size; logical++) {
         final int batchIndex = (selectedInUse ? selected[logical] : logical);
-  
+
         final int hashCode;
-        if (!hasBuckets) {
-          if (!isPartitioned) {
+        if (isEmptyBuckets) {
+          if (isEmptyPartitions) {
             hashCode = nonPartitionRandom.nextInt();
           } else {
             partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-            hashCode = 
+            hashCode =
                 ObjectInspectorUtils.getBucketHashCode(
                     partitionFieldValues, partitionObjectInspectors);
           }
@@ -249,36 +269,40 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
           final int bucketNum =
               ObjectInspectorUtils.getBucketNumber(
                   bucketFieldValues, bucketObjectInspectors, numBuckets);
-          if (!isPartitioned) {
+          if (isEmptyPartitions) {
             hashCode = nonPartitionRandom.nextInt() * 31 + bucketNum;
           } else {
             partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-            hashCode = 
+            hashCode =
                 ObjectInspectorUtils.getBucketHashCode(
                     partitionFieldValues, partitionObjectInspectors) * 31 + bucketNum;
           }
         }
-  
-        keyBinarySortableSerializeWrite.reset();
-        keyVectorSerializeRow.serializeWrite(batch, batchIndex);
-  
-        // One serialized key for 1 or more rows for the duplicate keys.
-        final int keyLength = keyOutput.getLength();
-        if (tag == -1 || reduceSkipTag) {
-          keyWritable.set(keyOutput.getData(), 0, keyLength);
-        } else {
-          keyWritable.setSize(keyLength + 1);
-          System.arraycopy(keyOutput.getData(), 0, keyWritable.get(), 0, keyLength);
-          keyWritable.get()[keyLength] = reduceTagByte;
+
+        if (!isEmptyKey) {
+          keyBinarySortableSerializeWrite.reset();
+          keyVectorSerializeRow.serializeWrite(batch, batchIndex);
+
+          // One serialized key for 1 or more rows for the duplicate keys.
+          final int keyLength = keyOutput.getLength();
+          if (tag == -1 || reduceSkipTag) {
+            keyWritable.set(keyOutput.getData(), 0, keyLength);
+          } else {
+            keyWritable.setSize(keyLength + 1);
+            System.arraycopy(keyOutput.getData(), 0, keyWritable.get(), 0, keyLength);
+            keyWritable.get()[keyLength] = reduceTagByte;
+          }
+          keyWritable.setDistKeyLength(keyLength);
+          keyWritable.setHashCode(hashCode);
         }
-        keyWritable.setDistKeyLength(keyLength);
-        keyWritable.setHashCode(hashCode);
-  
-        valueLazyBinarySerializeWrite.reset();
-        valueVectorSerializeRow.serializeWrite(batch, batchIndex);
-  
-        valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
-  
+
+        if (!isEmptyValue) {
+          valueLazyBinarySerializeWrite.reset();
+          valueVectorSerializeRow.serializeWrite(batch, batchIndex);
+
+          valueBytesWritable.set(valueOutput.getData(), 0, valueOutput.getLength());
+        }
+
         collect(keyWritable, valueBytesWritable);
       }
     } catch (Exception e) {

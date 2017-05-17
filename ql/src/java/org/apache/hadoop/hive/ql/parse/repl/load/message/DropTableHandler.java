@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-class DropTableHandler extends AbstractMessageHandler {
+public class DropTableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {

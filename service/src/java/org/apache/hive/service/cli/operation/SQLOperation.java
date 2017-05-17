@@ -169,7 +169,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           @Override
           public void run() {
             try {
-              String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+              String queryId = queryState.getQueryId();
               LOG.info("Query timed out after: " + queryTimeout
                   + " seconds. Cancelling the execution now: " + queryId);
               SQLOperation.this.cancel(OperationState.TIMEDOUT);
@@ -397,7 +397,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
-        String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+        String queryId = queryState.getQueryId();
         if (success) {
           LOG.info("The running operation has been successfully interrupted: " + queryId);
         } else if (state == OperationState.CANCELED) {
@@ -430,7 +430,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void cancel(OperationState stateAfterCancel) throws HiveSQLException {
     String queryId = null;
     if (stateAfterCancel == OperationState.CANCELED) {
-      queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      queryId = queryState.getQueryId();
       LOG.info("Cancelling the query execution: " + queryId);
     }
     cleanup(stateAfterCancel);

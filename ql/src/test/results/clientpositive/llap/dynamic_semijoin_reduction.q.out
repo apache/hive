@@ -1402,10 +1402,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc_int
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date__col1_min) AND DynamicValue(RS_12_srcpart_date__col1_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date__col1_bloom_filter)))) (type: boolean)
+                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date__col1_min) AND DynamicValue(RS_12_srcpart_date__col1_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date__col1_bloom_filter)))) (type: boolean)
+                    predicate: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)

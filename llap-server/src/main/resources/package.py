@@ -20,6 +20,7 @@ class LlapResource(object):
 		# convert to Mb
 		self.cache = config["hive.llap.io.memory.size"] / (1024*1024.0)
 		self.direct = config["hive.llap.io.allocator.direct"]
+		self.executors = config["hive.llap.daemon.num.executors"]
 		self.min_cores = -1
 		# compute heap + cache as final Xmx
 		h = self.memory 
@@ -129,10 +130,13 @@ def main(args):
 	config = json_parse(open(join(input, "config.json")).read())
 	java_home = config["java.home"]
 	max_direct_memory = config["max_direct_memory"]
+
+	resource = LlapResource(config)
+
 	daemon_args = args.args
 	if long(max_direct_memory) > 0:
 		daemon_args = " -XX:MaxDirectMemorySize=%s %s" % (max_direct_memory, daemon_args)
-	resource = LlapResource(config)
+	daemon_args = " -Dhttp.maxConnections=%s %s" % ((max(args.instances, resource.executors) + 1), daemon_args)
 	# 5% container failure every monkey_interval seconds
 	monkey_percentage = 5 # 5%
 	vars = {

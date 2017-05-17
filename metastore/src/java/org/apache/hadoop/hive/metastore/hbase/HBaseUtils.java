@@ -653,7 +653,7 @@ public class HBaseUtils {
       }
     }
     if (sd.getBucketCols() != null) {
-      SortedSet<String> bucketCols = new TreeSet<>(sd.getBucketCols());
+      List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
       for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
     }
     if (sd.getSortCols() != null) {
@@ -688,6 +688,7 @@ public class HBaseUtils {
           md.update(e.getValue().getBytes(ENCODING));
         }
       }
+      md.update(sd.isStoredAsSubDirectories() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
     }
 
     return md.digest();

@@ -54,7 +54,10 @@ public final class LogDivertAppenderForTest {
     public Result filter(LogEvent event) {
       if (event.getLevel().equals(Level.INFO) && "SessionState".equals(event.getLoggerName())) {
         if (event.getMessage().getFormattedMessage().startsWith("PREHOOK:")
-            || event.getMessage().getFormattedMessage().startsWith("POSTHOOK:")) {
+            || event.getMessage().getFormattedMessage().startsWith("POSTHOOK:")
+            || event.getMessage().getFormattedMessage().startsWith("unix_timestamp(void)")
+            || event.getMessage().getFormattedMessage().startsWith("Warning: ")
+            ) {
           return Result.ACCEPT;
         }
       }

@@ -396,7 +396,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         HiveConf conf = SessionState.getSessionConf();
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_SHOW_WARNINGS)) {
           LogHelper console = SessionState.getConsole();
-          console.printInfoNoLog(logMsg);
+          console.printInfo(logMsg);
         }
       } else {
         LOG.error(logMsg);

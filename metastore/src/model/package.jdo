@@ -971,6 +971,24 @@
       </field>
     </class>
 
+    <class name="MMetastoreDBProperties" table="METASTORE_DB_PROPERTIES" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="PROPERTY_ID"/>
+      </datastore-identity>
+      <field name ="propertyKey">
+        <column name="PROPERTY_KEY" length="255" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name ="propertyValue">
+        <column name="PROPERTY_VALUE" length="1000" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name ="description">
+        <column name="DESCRIPTION" length="1000" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <index name="PropertyKeyIndex" unique="true">
+        <column name="PROPERTY_KEY"/>
+      </index>
+    </class>
+
     <class name="MResourceUri" embedded-only="true" table="RESOURCE_URI" detachable="true">
       <field name="resourceType">
         <column name="RESOURCE_TYPE" jdbc-type="INTEGER"/>

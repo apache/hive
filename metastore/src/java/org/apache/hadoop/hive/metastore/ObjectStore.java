@@ -27,6 +27,8 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -148,6 +151,7 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -172,6 +176,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 
 /**
  * This class is the interface between the application logic and the database
@@ -1454,7 +1459,7 @@ public class ObjectStore implements RawStore, Configurable {
       // for backwards compatibility with old metastore persistence
       if (mtbl.getViewOriginalText() != null) {
         tableType = TableType.VIRTUAL_VIEW.toString();
-      } else if ("TRUE".equals(mtbl.getParameters().get("EXTERNAL"))) {
+      } else if (Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
         tableType = TableType.EXTERNAL_TABLE.toString();
       } else {
         tableType = TableType.MANAGED_TABLE.toString();
@@ -1486,7 +1491,7 @@ public class ObjectStore implements RawStore, Configurable {
     // If the table has property EXTERNAL set, update table type
     // accordingly
     String tableType = tbl.getTableType();
-    boolean isExternal = "TRUE".equals(tbl.getParameters().get("EXTERNAL"));
+    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
     if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
       if (isExternal) {
         tableType = TableType.EXTERNAL_TABLE.toString();
@@ -3535,6 +3540,77 @@ public class ObjectStore implements RawStore, Configurable {
   public void addForeignKeys(
     List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
    addForeignKeys(fks, true);
+  }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    String ret = getGuidFromDB();
+    if(ret != null) {
+      return ret;
+    }
+    return createDbGuidAndPersist();
+  }
+
+  private String createDbGuidAndPersist() throws MetaException {
+    boolean success = false;
+    Query query = null;
+    try {
+      openTransaction();
+      MMetastoreDBProperties prop = new MMetastoreDBProperties();
+      prop.setPropertykey("guid");
+      final String guid = UUID.randomUUID().toString();
+      LOG.debug("Attempting to add a guid " + guid + " for the metastore db");
+      prop.setPropertyValue(guid);
+      prop.setDescription("Metastore DB GUID generated on "
+          + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+      pm.makePersistent(prop);
+      success = commitTransaction();
+      if (success) {
+        LOG.info("Metastore db guid " + guid + " created successfully");
+        return guid;
+      }
+    } catch (Exception e) {
+      LOG.warn(e.getMessage(), e);
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    // it possible that some other HMS instance could have created the guid
+    // at the same time due which this instance could not create a guid above
+    // in such case return the guid already generated
+    final String guid = getGuidFromDB();
+    if (guid == null) {
+      throw new MetaException("Unable to create or fetch the metastore database uuid");
+    }
+    return guid;
+  }
+
+  private String getGuidFromDB() throws MetaException {
+    boolean success = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
+      query.declareParameters("java.lang.String key");
+      Collection<MMetastoreDBProperties> names = (Collection<MMetastoreDBProperties>) query.execute("guid");
+      List<String> uuids = new ArrayList<String>();
+      for (Iterator<MMetastoreDBProperties> i = names.iterator(); i.hasNext();) {
+        String uuid = i.next().getPropertyValue();
+        LOG.debug("Found guid " + uuid);
+        uuids.add(uuid);
+      }
+      success = commitTransaction();
+      if(uuids.size() > 1) {
+        throw new MetaException("Multiple uuids found");
+      }
+      if(!uuids.isEmpty()) {
+        LOG.debug("Returning guid of metastore db : " + uuids.get(0));
+        return uuids.get(0);
+      }
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+    LOG.warn("Guid for metastore db not found");
+    return null;
   }
 
   private void addForeignKeys(
@@ -5909,6 +5985,8 @@ public class ObjectStore implements RawStore, Configurable {
   public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
     boolean success = false;
     Query query = null;
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = HiveStringUtils.normalizeIdentifier(tableName);
     try {
       openTransaction();
       LOG.debug("Executing listTableGrantsAll");
@@ -6109,6 +6187,8 @@ public class ObjectStore implements RawStore, Configurable {
       String columnName) {
     boolean success = false;
     Query query = null;
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = HiveStringUtils.normalizeIdentifier(tableName);
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalTableColumnGrantsAll");

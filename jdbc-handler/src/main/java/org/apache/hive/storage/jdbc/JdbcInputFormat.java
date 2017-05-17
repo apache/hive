@@ -59,15 +59,23 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     try {
-      if (numSplits <= 0) {
-        numSplits = 1;
-      }
+
       LOGGER.debug("Creating {} input splits", numSplits);
+
       if (dbAccessor == null) {
         dbAccessor = DatabaseAccessorFactory.getAccessor(job);
       }
 
       int numRecords = dbAccessor.getTotalNumberOfRecords(job);
+
+      if (numRecords < numSplits) {
+        numSplits = numRecords;
+      }
+
+      if (numSplits <= 0) {
+        numSplits = 1;
+      }
+
       int numRecordsPerSplit = numRecords / numSplits;
       int numSplitsWithExtraRecords = numRecords % numSplits;
 
@@ -86,6 +94,7 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         offset += numRecordsInThisSplit;
       }
 
+      dbAccessor = null;
       return splits;
     }
     catch (Exception e) {

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,18 +32,15 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -135,12 +131,13 @@ public class ColumnStatsAutoGatherContext {
     ASTNode tree = ParseUtils.parse(analyzeCommand, ctx);
 
     //1. get the ColumnStatsSemanticAnalyzer
-    BaseSemanticAnalyzer baseSem = SemanticAnalyzerFactory.get(new QueryState(conf), tree);
+    QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+    BaseSemanticAnalyzer baseSem = SemanticAnalyzerFactory.get(queryState, tree);
     ColumnStatsSemanticAnalyzer colSem = (ColumnStatsSemanticAnalyzer) baseSem;
 
     //2. get the rewritten AST
     ASTNode ast = colSem.rewriteAST(tree, this);
-    baseSem = SemanticAnalyzerFactory.get(new QueryState(conf), ast);
+    baseSem = SemanticAnalyzerFactory.get(queryState, ast);
     SemanticAnalyzer sem = (SemanticAnalyzer) baseSem;
     QB qb = new QB(null, null, false);
     ASTNode child = ast;

@@ -60,11 +60,11 @@ public abstract class DeserializeRead {
    *
    * if (deserializeRead.readNextField()) {
    *   if (deserializeRead.currentExternalBufferNeeded) {
-   *     <Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes>
+   *     &lt;Ensure external buffer is as least deserializeRead.currentExternalBufferNeededLen bytes&gt;
    *     deserializeRead.copyToExternalBuffer(externalBuffer, externalBufferStart);
    *   } else {
-   *     <Otherwise, field data is available in the currentBytes, currentBytesStart, and
-   *      currentBytesLength of deserializeRead>
+   *     &lt;Otherwise, field data is available in the currentBytes, currentBytesStart, and
+   *      currentBytesLength of deserializeRead&gt;
    *   }
    *
    * @param typeInfos

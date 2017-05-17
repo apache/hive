@@ -81,6 +81,8 @@ INTERVAL_YEAR_MONTH_TYPE_NAME = %q"interval_year_month"
 
 INTERVAL_DAY_TIME_TYPE_NAME = %q"interval_day_time"
 
+TIMESTAMPTZ_TYPE_NAME = %q"timestamp with time zone"
+
 LIST_TYPE_NAME = %q"array"
 
 MAP_TYPE_NAME = %q"map"
@@ -116,6 +118,7 @@ PrimitiveTypes = Set.new([
   %q"interval_day_time",
   %q"decimal",
   %q"binary",
+  %q"timestamp with time zone",
 ])
 
 CollectionTypes = Set.new([

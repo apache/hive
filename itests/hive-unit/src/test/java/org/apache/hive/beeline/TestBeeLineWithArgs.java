@@ -439,7 +439,8 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "CREATE\tTABLE IF NOT EXISTS testTabInScriptFile\n(id\tint);\nSHOW TABLES;"
         + "\ndrop table testTabInScriptFile";
     final String EXPECTED_PATTERN = "testTabInScriptFile";
-    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, EXPECTED_PATTERN, false);
   }
 
   @Test
@@ -482,7 +483,7 @@ public class TestBeeLineWithArgs {
   public void testGetVariableValue() throws Throwable {
     final String SCRIPT_TEXT = "set env:TERM;";
     final String EXPECTED_PATTERN = "env:TERM";
-    testScriptFile(SCRIPT_TEXT, getBaseArgs(miniHS2.getBaseJdbcURL()), EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, getBaseArgs(miniHS2.getBaseJdbcURL()), OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
   /**
@@ -1002,10 +1003,15 @@ public class TestBeeLineWithArgs {
   @Test
   public void testQueryNonEscapedSemiColon() throws Throwable {
     String SCRIPT_TEXT = "drop table if exists nonEscapedSemiColon;create table nonEscapedSemiColon "
-        + "(key int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';';show tables;";
-    final String EXPECTED_PATTERN = " nonEscapedSemiColon ";
+        + "(key int, value int) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';';show tables;";
+    String EXPECTED_PATTERN = "nonescapedsemicolon";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+    //look for the " nonEscapedSemiColon " in the query text not the table name which comes
+    //in the result
+    EXPECTED_PATTERN = " nonEscapedSemiColon ";
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, EXPECTED_PATTERN, false);
   }
 
   @Test
@@ -1032,7 +1038,7 @@ public class TestBeeLineWithArgs {
     argList.add(miniHS2.getBaseJdbcURL() + ";user=hivetest;password=hive");
     String SCRIPT_TEXT = "select current_user();";
 
-    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.ERR, EXPECTED_PATTERN, true);
   }
 
   @Test
@@ -1078,6 +1084,48 @@ public class TestBeeLineWithArgs {
   public void testBackslashInLiteral() throws Throwable {
     String SCRIPT_TEXT = "select 'hello\\\\', '\\\\hello', 'hel\\\\lo', '\\\\' as literal;";
     final String EXPECTED_PATTERN = "hello\\\\\t\\\\hello\thel\\\\lo\t\\\\";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testCustomDelimiter() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$");
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testCustomMultiCharDelimiter() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$$");
+    argList.add("--outputformat=tsv2");
+    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  @Test
+  public void testCustomDelimiterWithMultiQuery() throws Throwable {
+    String SCRIPT_TEXT = "select 'hello', 'hello', 'hello'$select 'world', 'world', 'world'$";
+    final String EXPECTED_PATTERN1 = "hello\thello\thello";
+    final String EXPECTED_PATTERN2 = "world\tworld\tworld";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    argList.add("--delimiter=$");
+    argList.add("--outputformat=tsv2");
+    List<Tuple<String>> expectedMatches = Arrays.asList(new Tuple<>(EXPECTED_PATTERN1, true),
+            new Tuple<>(EXPECTED_PATTERN2, true));
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, expectedMatches);
+  }
+
+  @Test
+  public void testCustomDelimiterBeelineCmd() throws Throwable {
+    String SCRIPT_TEXT = "!delimiter $\n select 'hello', 'hello', 'hello'$";
+    final String EXPECTED_PATTERN = "hello\thello\thello";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--outputformat=tsv2");
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);

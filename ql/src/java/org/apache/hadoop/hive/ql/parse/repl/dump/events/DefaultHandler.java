@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-class DefaultHandler extends AbstractHandler {
+class DefaultHandler extends AbstractEventHandler {
 
   DefaultHandler(NotificationEvent event) {
     super(event);

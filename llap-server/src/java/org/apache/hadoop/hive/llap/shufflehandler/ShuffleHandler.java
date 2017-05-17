@@ -171,7 +171,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED =
       "llap.shuffle.connection-keep-alive.enable";
-  public static final boolean DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED = false;
+  public static final boolean DEFAULT_SHUFFLE_CONNECTION_KEEP_ALIVE_ENABLED = true;
 
   public static final String SHUFFLE_CONNECTION_KEEP_ALIVE_TIME_OUT =
       "llap.shuffle.connection-keep-alive.timeout";
@@ -194,7 +194,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   
   public static final String MAX_SHUFFLE_THREADS = "llap.shuffle.max.threads";
   // 0 implies Netty default of 2 * number of available processors
-  public static final int DEFAULT_MAX_SHUFFLE_THREADS = 0;
+  public static final int DEFAULT_MAX_SHUFFLE_THREADS = Runtime.getRuntime().availableProcessors() * 3;
   
   public static final String SHUFFLE_BUFFER_SIZE = 
       "llap.shuffle.transfer.buffer.size";

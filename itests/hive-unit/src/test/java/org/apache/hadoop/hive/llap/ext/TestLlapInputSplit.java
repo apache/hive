@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.FieldDesc;
-import org.apache.hadoop.hive.llap.TypeDesc;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.junit.Test;
@@ -46,8 +46,8 @@ public class TestLlapInputSplit {
     };
 
     ArrayList<FieldDesc> colDescs = new ArrayList<FieldDesc>();
-    colDescs.add(new FieldDesc("col1", new TypeDesc(TypeDesc.Type.STRING)));
-    colDescs.add(new FieldDesc("col2", new TypeDesc(TypeDesc.Type.INT)));
+    colDescs.add(new FieldDesc("col1", TypeInfoFactory.stringTypeInfo));
+    colDescs.add(new FieldDesc("col2", TypeInfoFactory.intTypeInfo));
     Schema schema = new Schema(colDescs);
 
     byte[] tokenBytes = new byte[] { 1 };

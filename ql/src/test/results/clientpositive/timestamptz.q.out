@@ -1,0 +1,124 @@
+PREHOOK: query: explain select cast('2005-01-03 02:01:00 GMT' as timestamp with time zone)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cast('2005-01-03 02:01:00 GMT' as timestamp with time zone)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 2005-01-03 02:01:00.0 Z (type: timestamp with time zone)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select cast('2005-01-03 02:01:00 GMT' as timestamp with time zone)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2005-01-03 02:01:00 GMT' as timestamp with time zone)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2005-01-03 02:01:00.0 Z
+PREHOOK: query: explain select cast('2016-01-03 12:26:34.0123 America/Los_Angeles' as timestamptz)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cast('2016-01-03 12:26:34.0123 America/Los_Angeles' as timestamptz)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 2016-01-03 20:26:34.0123 Z (type: timestamp with time zone)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select cast('2016-01-03 12:26:34.0123 America/Los_Angeles' as timestamptz)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2016-01-03 12:26:34.0123 America/Los_Angeles' as timestamptz)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2016-01-03 20:26:34.0123 Z
+PREHOOK: query: explain select cast('2016-01-03Europe/London' as timestamptz)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cast('2016-01-03Europe/London' as timestamptz)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 2016-01-03 00:00:00.0 Z (type: timestamp with time zone)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select cast('2016-01-03Europe/London' as timestamptz)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2016-01-03Europe/London' as timestamptz)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2016-01-03 00:00:00.0 Z
+PREHOOK: query: explain select cast('2016-01-03 13:34:56.38 +1:00' as timestamptz)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select cast('2016-01-03 13:34:56.38 +1:00' as timestamptz)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 2016-01-03 12:34:56.38 Z (type: timestamp with time zone)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            ListSink
+
+PREHOOK: query: select cast('2016-01-03 13:34:56.38 +1:00' as timestamptz)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2016-01-03 13:34:56.38 +1:00' as timestamptz)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2016-01-03 12:34:56.38 Z

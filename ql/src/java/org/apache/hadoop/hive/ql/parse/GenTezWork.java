@@ -291,8 +291,14 @@ public class GenTezWork implements NodeProcessor {
               // of the downstream work
               for (ReduceSinkOperator r:
                      context.linkWorkWithReduceSinkMap.get(parentWork)) {
+                if (!context.mapJoinParentMap.get(mj).contains(r)) {
+                  // We might be visiting twice because of reutilization of intermediary results.
+                  // If that is the case, we do not need to do anything because either we have
+                  // already connected this RS operator or we will connect it at subsequent pass.
+                  continue;
+                }
                 if (r.getConf().getOutputName() != null) {
-                  LOG.debug("Cloning reduce sink for multi-child broadcast edge");
+                  LOG.debug("Cloning reduce sink " + r + " for multi-child broadcast edge");
                   // we've already set this one up. Need to clone for the next work.
                   r = (ReduceSinkOperator) OperatorFactory.getAndMakeChild(
                       r.getCompilationOpContext(), (ReduceSinkDesc)r.getConf().clone(),
@@ -370,7 +376,7 @@ public class GenTezWork implements NodeProcessor {
       long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
 
       LOG.debug("Second pass. Leaf operator: "+operator
-        +" has common downstream work:"+followingWork);
+        +" has common downstream work: "+followingWork);
 
       if (operator instanceof DummyStoreOperator) {
         // this is the small table side.

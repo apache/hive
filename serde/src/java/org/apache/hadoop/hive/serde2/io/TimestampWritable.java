@@ -47,9 +47,9 @@ import org.apache.hadoop.io.WritableUtils;
  * The fractional portion is reversed, and encoded as a VInt
  * so timestamps with less precision use fewer bytes.
  *
- *      0.1    -> 1
- *      0.01   -> 10
- *      0.001  -> 100
+ *      0.1    -&gt; 1
+ *      0.01   -&gt; 10
+ *      0.001  -&gt; 100
  *
  */
 public class TimestampWritable implements WritableComparable<TimestampWritable> {

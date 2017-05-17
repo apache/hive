@@ -178,6 +178,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  PutFileMetadataResult put_file_metadata(PutFileMetadataRequest req)')
   print('  ClearFileMetadataResult clear_file_metadata(ClearFileMetadataRequest req)')
   print('  CacheFileMetadataResult cache_file_metadata(CacheFileMetadataRequest req)')
+  print('  string get_metastore_db_uuid()')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1170,6 +1171,12 @@ elif cmd == 'cache_file_metadata':
     print('cache_file_metadata requires 1 args')
     sys.exit(1)
   pp.pprint(client.cache_file_metadata(eval(args[0]),))
+
+elif cmd == 'get_metastore_db_uuid':
+  if len(args) != 0:
+    print('get_metastore_db_uuid requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_metastore_db_uuid())
 
 elif cmd == 'getName':
   if len(args) != 0:

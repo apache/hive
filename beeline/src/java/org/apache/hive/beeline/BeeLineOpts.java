@@ -61,6 +61,7 @@ class BeeLineOpts implements Completer {
   public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
   public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
+  public static final String DEFAULT_DELIMITER = ";";
 
   public static final String URL_ENV_PREFIX = "BEELINE_URL_";
 
@@ -115,6 +116,8 @@ class BeeLineOpts implements Completer {
   private String lastConnectedUrl = null;
 
   private TreeSet<String> cachedPropertyNameSet = null;
+
+  private String delimiter = DEFAULT_DELIMITER;
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Ignore {
@@ -657,6 +660,14 @@ class BeeLineOpts implements Completer {
 
   public void setLastConnectedUrl(String lastConnectedUrl){
     this.lastConnectedUrl = lastConnectedUrl;
+  }
+
+  public String getDelimiter() {
+    return this.delimiter;
+  }
+
+  public void setDelimiter(String delimiter) {
+    this.delimiter = delimiter;
   }
 
   @Ignore

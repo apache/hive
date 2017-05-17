@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
@@ -90,7 +90,7 @@ public class TestSessionHooks extends TestCase {
     String connectingUser = "user1";
     String proxyUser = System.getProperty("user.name");
     Map<String, String>sessConf = new HashMap<String,String>();
-    sessConf.put(HiveAuthFactory.HS2_PROXY_USER, proxyUser);
+    sessConf.put(HiveAuthConstants.HS2_PROXY_USER, proxyUser);
     sessionUserName = proxyUser;
     SessionHandle sessionHandle = client.openSession(connectingUser, "foobar", sessConf);
     Assert.assertEquals(1, SessionHookTest.runCount.get());

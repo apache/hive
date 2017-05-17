@@ -5910,8 +5910,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -5968,8 +5970,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6101,8 +6105,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6159,8 +6165,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6294,8 +6302,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6352,8 +6362,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6487,8 +6499,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6545,8 +6559,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6683,8 +6699,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6741,8 +6759,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6876,8 +6896,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -6937,8 +6959,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7072,8 +7096,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7133,8 +7159,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7265,8 +7293,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7318,8 +7348,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7450,8 +7482,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7508,8 +7542,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7654,8 +7690,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7712,9 +7750,11 @@ STAGE PLANS:
                           Map-reduce partition columns: (2 * _col0) (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               keyExpressions: LongScalarMultiplyLongColumn(val 2, col 0) -> 1:long
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7856,8 +7896,10 @@ STAGE PLANS:
                           sort order: ++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: [2, 3]
                           Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: int), _col3 (type: string)
             Execution mode: vectorized, llap
@@ -7897,8 +7939,10 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: [1]
                       Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized, llap
@@ -7956,8 +8000,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8099,8 +8145,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8157,8 +8205,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8301,8 +8351,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8359,8 +8411,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8417,8 +8471,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8556,8 +8612,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8588,8 +8646,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8639,8 +8699,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8773,8 +8835,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8805,8 +8869,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -8856,8 +8922,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9010,8 +9078,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9061,8 +9131,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9093,8 +9165,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9247,8 +9321,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9298,8 +9374,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9330,8 +9408,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9486,8 +9566,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9537,8 +9619,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9569,8 +9653,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9772,8 +9858,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 26 Data size: 2475 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9830,8 +9918,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -9862,8 +9952,10 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
+                        keyColumns: [1]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10093,8 +10185,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkStringOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10189,8 +10283,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10247,8 +10343,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10383,8 +10481,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10441,8 +10541,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10579,8 +10681,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10637,8 +10741,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10775,8 +10881,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10833,8 +10941,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -10974,8 +11084,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11032,8 +11144,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11167,8 +11281,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11231,8 +11347,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11366,8 +11484,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11430,8 +11550,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11562,8 +11684,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11618,8 +11742,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11753,8 +11879,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11811,8 +11939,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -11960,8 +12090,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12018,9 +12150,11 @@ STAGE PLANS:
                           Map-reduce partition columns: (2 * _col0) (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               keyExpressions: LongScalarMultiplyLongColumn(val 2, col 0) -> 1:long
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12162,8 +12296,10 @@ STAGE PLANS:
                           sort order: ++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: [2, 3]
                           Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: int), _col3 (type: string)
             Execution mode: vectorized, llap
@@ -12203,8 +12339,10 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: [1]
                       Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized, llap
@@ -12262,8 +12400,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12408,8 +12548,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12466,8 +12608,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12610,8 +12754,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12668,8 +12814,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12726,8 +12874,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12865,8 +13015,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12897,8 +13049,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -12948,8 +13102,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13082,8 +13238,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13114,8 +13272,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13165,8 +13325,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13319,8 +13481,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13370,8 +13534,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13402,8 +13568,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13556,8 +13724,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13607,8 +13777,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13639,8 +13811,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13795,8 +13969,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13846,8 +14022,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -13878,8 +14056,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14087,8 +14267,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 26 Data size: 2475 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14145,8 +14327,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14177,8 +14361,10 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
+                        keyColumns: [1]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14411,8 +14597,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkStringOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14507,8 +14695,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14565,8 +14755,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14701,8 +14893,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14759,8 +14953,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14897,8 +15093,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -14955,8 +15153,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15093,8 +15293,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15151,8 +15353,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15292,8 +15496,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15350,8 +15556,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15485,8 +15693,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15549,8 +15759,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15684,8 +15896,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15748,8 +15962,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15880,8 +16096,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -15936,8 +16154,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16071,8 +16291,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16129,8 +16351,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16278,8 +16502,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12 Data size: 1125 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16336,9 +16562,11 @@ STAGE PLANS:
                           Map-reduce partition columns: (2 * _col0) (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [1]
                               keyExpressions: LongScalarMultiplyLongColumn(val 2, col 0) -> 1:long
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16480,8 +16708,10 @@ STAGE PLANS:
                           sort order: ++
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: [2, 3]
                           Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col2 (type: int), _col3 (type: string)
             Execution mode: vectorized, llap
@@ -16521,8 +16751,10 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: [1]
                       Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
             Execution mode: vectorized, llap
@@ -16580,8 +16812,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16726,8 +16960,10 @@ STAGE PLANS:
                         sort order: ++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0, 1]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 24 Data size: 2250 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16784,8 +17020,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
+                              keyColumns: [0, 1]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16928,8 +17166,10 @@ STAGE PLANS:
                         sort order: +
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -16986,8 +17226,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17044,8 +17286,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17183,8 +17427,10 @@ STAGE PLANS:
                       sort order: +
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
+                          keyColumns: [0]
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: []
                       Statistics: Num rows: 48 Data size: 4501 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17215,8 +17461,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17266,8 +17514,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17400,8 +17650,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17432,8 +17684,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17483,8 +17737,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17637,8 +17893,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17688,8 +17946,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17720,8 +17980,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17874,8 +18136,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17925,8 +18189,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -17957,8 +18223,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18113,8 +18381,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 22 Data size: 2046 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18164,8 +18434,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
+                            keyColumns: [0]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18196,8 +18468,10 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkLongOperator
+                        keyColumns: [0]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18405,8 +18679,10 @@ STAGE PLANS:
                           sort order: +
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 26 Data size: 2475 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18463,8 +18739,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: int)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18495,8 +18773,10 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: string)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
+                        keyColumns: [1]
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: []
                     Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -18729,8 +19009,10 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string)
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkStringOperator
+                              keyColumns: [0]
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: []
                           Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs

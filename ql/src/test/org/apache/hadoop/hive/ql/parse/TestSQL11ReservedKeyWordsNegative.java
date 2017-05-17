@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Parser tests for SQL11 Reserved KeyWords. Please find more information in
- * HIVE-6617. Total number : 82
+ * HIVE-6617. Total number : 83
  * ALL,ALTER,ARRAY,AS,AUTHORIZATION,BETWEEN,BIGINT,BINARY
  * ,BOOLEAN,BOTH,BY,CONSTRAINT
  * ,CREATE,CUBE,CURRENT_DATE,CURRENT_TIMESTAMP,CURSOR,
@@ -43,7 +43,7 @@ import org.junit.Test;
  * ,PRIMARY,PROCEDURE,RANGE,READS,
  * REFERENCES,REGEXP,REVOKE,RIGHT,RLIKE,ROLLUP,ROW
  * ,ROWS,SET,SMALLINT,TABLE,TIMESTAMP
- * ,TO,TRIGGER,TRUE,TRUNCATE,UNION,UPDATE,USER,USING,VALUES,WITH,
+ * ,TO,TRIGGER,TRUE,TRUNCATE,UNION,UPDATE,USER,USING,VALUES,WITH,TIME
  */
 public class TestSQL11ReservedKeyWordsNegative {
 	private static HiveConf conf;
@@ -1136,5 +1136,18 @@ public class TestSQL11ReservedKeyWordsNegative {
 					ex.getMessage());
 		}
 	}
+
+  @Test
+  public void testSQL11ReservedKeyWords_TIME() {
+    try {
+      parse("CREATE TABLE TIME (col STRING)");
+      Assert.fail("Expected ParseException");
+    } catch (ParseException ex) {
+      Assert.assertEquals(
+          "Failure didn't match.",
+          "line 1:13 cannot recognize input near 'TIME' '(' 'col' in table name",
+          ex.getMessage());
+    }
+  }
 
 }

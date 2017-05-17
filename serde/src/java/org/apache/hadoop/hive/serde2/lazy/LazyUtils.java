@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -229,7 +230,8 @@ public final class LazyUtils {
       PrimitiveObjectInspector oi, boolean escaped, byte escapeChar,
       boolean[] needsEscape) throws IOException {
 
-    switch (oi.getPrimitiveCategory()) {
+    PrimitiveObjectInspector.PrimitiveCategory category = oi.getPrimitiveCategory();
+    switch (category) {
     case BOOLEAN: {
       boolean b = ((BooleanObjectInspector) oi).get(o);
       if (b) {
@@ -305,6 +307,11 @@ public final class LazyUtils {
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
+    case TIMESTAMPTZ: {
+      LazyTimestampTZ.writeUTF8(out, ((TimestampTZObjectInspector) oi).
+          getPrimitiveWritableObject(o));
+      break;
+    }
     case INTERVAL_YEAR_MONTH: {
       LazyHiveIntervalYearMonth.writeUTF8(out,
           ((HiveIntervalYearMonthObjectInspector) oi).getPrimitiveWritableObject(o));
@@ -322,7 +329,7 @@ public final class LazyUtils {
       break;
     }
     default: {
-      throw new RuntimeException("Hive internal error.");
+      throw new RuntimeException("Unknown primitive type: " + category);
     }
     }
   }

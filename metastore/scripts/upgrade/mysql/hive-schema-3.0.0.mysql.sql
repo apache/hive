@@ -829,6 +829,18 @@ CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
 
 CREATE INDEX `CONSTRAINTS_PARENT_TABLE_ID_INDEX` ON KEY_CONSTRAINTS (`PARENT_TBL_ID`) USING BTREE;
 
+-- -----------------------------
+-- Metastore DB Properties table
+-- -----------------------------
+CREATE TABLE IF NOT EXISTS `METASTORE_DB_PROPERTIES` (
+  `PROPERTY_ID` BIGINT(20) NOT NULL,
+  `PROPERTY_KEY` varchar(255) NOT NULL,
+  `PROPERTY_VALUE` varchar(1000) NOT NULL,
+  `DESCRIPTION` varchar(1000),
+ PRIMARY KEY(`PROPERTY_ID`),
+ UNIQUE KEY `UNIQUE_PROPERTY_KEY` (`PROPERTY_KEY`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- ----------------------------
 -- Transaction and Lock Tables
 -- ----------------------------

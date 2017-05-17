@@ -84,7 +84,7 @@ DESCRIBE FORMATTED table6;
 drop table table5;
 
 create table orc_table (
-time string)
+`time` string)
 stored as ORC tblproperties ("orc.compress"="SNAPPY");
 
 create table orc_table_using_like like orc_table;

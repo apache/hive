@@ -919,4 +919,9 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
       String tableName) throws MetaException, NoSuchObjectException {
     return objectStore.getAggrColStatsForTablePartitions(dbName, tableName);
   }
+
+  @Override
+  public String getMetastoreDbUuid() throws MetaException {
+    throw new MetaException("getMetastoreDbUuid is not implemented");
+  }
 }

@@ -597,6 +597,8 @@ public class HiveConf extends Configuration {
     HADOOPNUMREDUCERS("mapreduce.job.reduces", -1, "", true),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add something here!
+    METASTOREDBTYPE("hive.metastore.db.type", "DERBY", new StringSet("DERBY", "ORACLE", "MYSQL", "MSSQL", "POSTGRES"),
+        "Type of database used by the metastore. Information schema & JDBCStorageHandler depend on it."),
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse",
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
@@ -1646,6 +1648,10 @@ public class HiveConf extends Configuration {
         "\n" +
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
+
+    HIVE_SHARED_SCAN_OPTIMIZATION("hive.optimize.shared.scan", true,
+        "Whether to enable shared scan optimizer. The optimizer finds scan operator over the same table\n" +
+        "in the query plan and merges them if they meet some preconditions."),
 
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
@@ -2911,8 +2917,6 @@ public class HiveConf extends Configuration {
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
             "Only perform semijoin optimization if the estimated benefit at or above this fraction of the target table"),
-    TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY("hive.tez.dynamic.semijoin.reduction.hint.only", false,
-            "When true, only enforce semijoin when a hint is provided"),
     TEZ_SMB_NUMBER_WAVES(
         "hive.tez.smb.number.waves",
         (float) 0.5,
@@ -3369,9 +3373,16 @@ public class HiveConf extends Configuration {
        " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
     HIVE_MSCK_REPAIR_BATCH_SIZE(
         "hive.msck.repair.batch.size", 0,
-        "Batch size for the msck repair command. If the value is greater than zero, "
-            + "it will execute batch wise with the configured batch size. "
-            + "The default value is zero. Zero means it will execute directly (Not batch wise)"),
+        "Batch size for the msck repair command. If the value is greater than zero,\n "
+            + "it will execute batch wise with the configured batch size. In case of errors while\n"
+            + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
+            + "retry attempt. The default value is zero which means it will execute directly (not batch wise)"),
+    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 0,
+        "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
+        + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
+        + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
+        + "In each retry attempt it will reduce the batch size by a factor of 2 until it reaches zero.\n"
+        + "If the value is set to zero it will retry until the batch size becomes zero as described above."),
     HIVE_SERVER2_LLAP_CONCURRENT_QUERIES("hive.server2.llap.concurrent.queries", -1,
         "The number of queries allowed in parallel via llap. Negative number implies 'infinite'."),
     HIVE_TEZ_ENABLE_MEMORY_MANAGER("hive.tez.enable.memory.manager", true,

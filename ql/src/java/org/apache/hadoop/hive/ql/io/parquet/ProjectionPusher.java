@@ -187,9 +187,14 @@ public class ProjectionPusher {
     final PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
         pathToPartitionInfo, path, null, false, true);
 
-    if ((part != null) && (part.getTableDesc() != null)) {
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+    try {
+      if ((part != null) && (part.getTableDesc() != null)) {
+        Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
     }
+
     pushProjectionsAndFilters(cloneJobConf, path.toString(), path.toUri().getPath());
     return cloneJobConf;
   }

@@ -40,6 +40,7 @@ public abstract class DagJsonParser implements JsonParser {
   // the vertex that should be inlined. <Operator, list of Vertex that is
   // inlined>
   public final Map<Op, List<Connection>> inlineMap = new LinkedHashMap<>();
+  public boolean rewriteObject;
 
   public DagJsonParser() {
     super();
@@ -101,7 +102,12 @@ public abstract class DagJsonParser implements JsonParser {
   @Override
   public void print(JSONObject inputObject, PrintStream outputStream) throws Exception {
     LOG.info("JsonParser is parsing:" + inputObject.toString());
+    this.rewriteObject = outputStream == null;
+    // outputStream == null means we need to process it for explain formatted
     this.extractStagesAndPlans(inputObject);
+    if (rewriteObject) {
+      return;
+    }
     Printer printer = new Printer();
     // print out the cbo info
     if (inputObject.has("cboInfo")) {

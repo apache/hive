@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -351,7 +353,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * @param byteStream
    * @param dec
    * @param scratchLongs
-   * @param buffer
+   * @param scratchBytes
    */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
@@ -377,9 +379,9 @@ public class LazyBinarySerDe extends AbstractSerDe {
   * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
   *
   * @param byteStream
-  * @param dec
+  * @param decWritable
   * @param scratchLongs
-  * @param buffer
+  * @param scratchBytes
   */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
@@ -510,6 +512,11 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return;
+      }
+      case TIMESTAMPTZ: {
+        TimestampTZWritable t = ((TimestampTZObjectInspector) poi).getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
         return;
       }

@@ -89,7 +89,7 @@ public class ShutdownHookManager {
   /**
    * register file to delete-on-exit hook
    *
-   * @see {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
+   * {@link org.apache.hadoop.hive.common.FileUtils#createTempFile}
    */
   public static void deleteOnExit(File file) {
     if (MGR.isShutdownInProgress()) {

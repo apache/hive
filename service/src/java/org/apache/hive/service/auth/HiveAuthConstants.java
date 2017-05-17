@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,32 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.apache.hive.service.auth;
 
-abstract class AbstractHandler implements EventHandler {
-  static final Logger LOG = LoggerFactory.getLogger(AbstractHandler.class);
+public class HiveAuthConstants {
+  public enum AuthTypes {
+    NOSASL("NOSASL"),
+    NONE("NONE"),
+    LDAP("LDAP"),
+    KERBEROS("KERBEROS"),
+    CUSTOM("CUSTOM"),
+    PAM("PAM");
 
-  final NotificationEvent event;
-  final MessageDeserializer deserializer;
+    private final String authType;
 
-  AbstractHandler(NotificationEvent event) {
-    this.event = event;
-    deserializer = MessageFactory.getInstance().getDeserializer();
+    AuthTypes(String authType) {
+      this.authType = authType;
+    }
+
+    public String getAuthName() {
+      return authType;
+    }
   }
 
-  @Override
-  public long fromEventId() {
-    return event.getEventId();
-  }
-
-  @Override
-  public long toEventId() {
-    return event.getEventId();
-  }
+  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
+  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
 }

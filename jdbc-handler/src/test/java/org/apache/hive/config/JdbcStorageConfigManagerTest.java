@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+import org.junit.Ignore;
 
 import org.apache.hive.storage.jdbc.conf.DatabaseType;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
@@ -32,7 +33,7 @@ import java.util.Properties;
 public class JdbcStorageConfigManagerTest {
 
   @Test
-  public void testWithAllRequiredSettingsDefined() {
+  public void testWithAllRequiredSettingsDefined() throws Exception {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.MYSQL.toString());
     props.put(JdbcStorageConfig.JDBC_URL.getPropertyName(), "jdbc://localhost:3306/hive");
@@ -51,8 +52,9 @@ public class JdbcStorageConfigManagerTest {
   }
 
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testWithJdbcUrlMissing() {
+  // since metastore connections don't require the url, this is allowable.
+  @Ignore @Test(expected = IllegalArgumentException.class)
+  public void testWithJdbcUrlMissing() throws Exception {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.MYSQL.toString());
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
@@ -63,7 +65,7 @@ public class JdbcStorageConfigManagerTest {
 
 
   @Test(expected = IllegalArgumentException.class)
-  public void testWithDatabaseTypeMissing() {
+  public void testWithDatabaseTypeMissing() throws Exception {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.JDBC_URL.getPropertyName(), "jdbc://localhost:3306/hive");
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
@@ -74,7 +76,7 @@ public class JdbcStorageConfigManagerTest {
 
 
   @Test(expected = IllegalArgumentException.class)
-  public void testWithUnknownDatabaseType() {
+  public void testWithUnknownDatabaseType() throws Exception {
     Properties props = new Properties();
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), "Postgres");
     props.put(JdbcStorageConfig.JDBC_URL.getPropertyName(), "jdbc://localhost:3306/hive");

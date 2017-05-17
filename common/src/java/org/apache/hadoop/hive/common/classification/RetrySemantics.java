@@ -28,7 +28,6 @@ import java.lang.annotation.Target;
  * Initially meant for Metastore API when made across a network, i.e. asynchronously where
  * the response may not reach the caller and thus it cannot know if the operation was actually
  * performed on the server.
- * @see RetryingMetastoreClient
  */
 @InterfaceStability.Evolving
 @InterfaceAudience.LimitedPrivate("Hive developer")

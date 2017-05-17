@@ -81,7 +81,12 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
       // class
       Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), newjob);
+
+      try {
+        Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), newjob);
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());

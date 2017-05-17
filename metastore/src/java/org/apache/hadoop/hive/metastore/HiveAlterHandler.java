@@ -376,13 +376,7 @@ public class HiveAlterHandler implements AlterHandler {
     EnvironmentContext environmentContext, HMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     boolean success = false;
-    Path srcPath = null;
-    Path destPath = null;
-    FileSystem srcFs = null;
-    FileSystem destFs;
     Partition oldPart = null;
-    String oldPartLoc = null;
-    String newPartLoc = null;
     List<MetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
@@ -445,6 +439,13 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     //rename partition
+    String oldPartLoc = null;
+    String newPartLoc = null;
+    Path srcPath = null;
+    Path destPath = null;
+    FileSystem srcFs = null;
+    FileSystem destFs = null;
+    boolean dataWasMoved = false;
     try {
       msdb.openTransaction();
       try {
@@ -468,20 +469,11 @@ public class HiveAlterHandler implements AlterHandler {
             new_part.getValues());
       }
 
-      // if the external partition is renamed, the file should not change
-      if (tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        new_part.getSd().setLocation(oldPart.getSd().getLocation());
-        String oldPartName = Warehouse.makePartName(tbl.getPartitionKeys(), oldPart.getValues());
-        try {
-          //existing partition column stats is no longer valid, remove
-          msdb.deletePartitionColumnStatistics(dbname, name, oldPartName, oldPart.getValues(), null);
-        } catch (NoSuchObjectException nsoe) {
-          //ignore
-        } catch (InvalidInputException iie) {
-          throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
-        }
-        msdb.alterPartition(dbname, name, part_vals, new_part);
-      } else {
+      // when renaming a partition, we should update
+      // 1) partition SD Location
+      // 2) partition column stats if there are any because of part_name field in HMS table PART_COL_STATS
+      // 3) rename the partition directory if it is not an external table
+      if (!tbl.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
         try {
           // if tbl location is available use it
           // else derive the tbl location from database location
@@ -510,34 +502,54 @@ public class HiveAlterHandler implements AlterHandler {
           }
 
           try {
-            srcFs.exists(srcPath);
-            if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
-              throw new InvalidOperationException("New location for this table "
-                + tbl.getDbName() + "." + tbl.getTableName()
-                + " already exists : " + destPath);
+            if (srcFs.exists(srcPath)) {
+              if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
+                throw new InvalidOperationException("New location for this table "
+                  + tbl.getDbName() + "." + tbl.getTableName()
+                  + " already exists : " + destPath);
+              }
+              //if destPath's parent path doesn't exist, we should mkdir it
+              Path destParentPath = destPath.getParent();
+              if (!wh.mkdirs(destParentPath)) {
+                  throw new MetaException("Unable to create path " + destParentPath);
+              }
+
+              //rename the data directory
+              wh.renameDir(srcPath, destPath);
+              LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
+              dataWasMoved = true;
             }
           } catch (IOException e) {
-            throw new InvalidOperationException("Unable to access new location "
-              + destPath + " for partition " + tbl.getDbName() + "."
-              + tbl.getTableName() + " " + new_part.getValues());
+            LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, e);
+            throw new InvalidOperationException("Unable to access src or dest location for partition "
+                + tbl.getDbName() + "." + tbl.getTableName() + " " + new_part.getValues());
+          } catch (MetaException me) {
+            LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, me);
+            throw me;
           }
 
           new_part.getSd().setLocation(newPartLoc);
-          if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
-            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
-          }
+        }
+      } else {
+        new_part.getSd().setLocation(oldPart.getSd().getLocation());
+      }
 
-          String oldPartName = Warehouse.makePartName(tbl.getPartitionKeys(), oldPart.getValues());
-          try {
-            //existing partition column stats is no longer valid, remove
-            msdb.deletePartitionColumnStatistics(dbname, name, oldPartName, oldPart.getValues(), null);
-          } catch (NoSuchObjectException nsoe) {
-            //ignore
-          } catch (InvalidInputException iie) {
-            throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
-          }
+      if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
+        MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+      }
 
-          msdb.alterPartition(dbname, name, part_vals, new_part);
+      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
+      ColumnStatistics cs = updateOrGetPartitionColumnStats(msdb, dbname, name, oldPart.getValues(),
+          oldPart.getSd().getCols(), tbl, new_part);
+      msdb.alterPartition(dbname, name, part_vals, new_part);
+      if (cs != null) {
+        cs.getStatsDesc().setPartName(newPartName);
+        try {
+          msdb.updatePartitionColumnStatistics(cs, new_part.getValues());
+        } catch (InvalidInputException iie) {
+          throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
+        } catch (NoSuchObjectException nsoe) {
+          // It is ok, ignore
         }
       }
 
@@ -551,48 +563,21 @@ public class HiveAlterHandler implements AlterHandler {
       success = msdb.commitTransaction();
     } finally {
       if (!success) {
+        LOG.error("Failed to rename a partition. Rollback transaction");
         msdb.rollbackTransaction();
-      }
-
-      if (success && newPartLoc != null && newPartLoc.compareTo(oldPartLoc) != 0) {
-        //rename the data directory
-        try{
-          if (srcFs.exists(srcPath)) {
-            //if destPath's parent path doesn't exist, we should mkdir it
-            Path destParentPath = destPath.getParent();
-            if (!wh.mkdirs(destParentPath)) {
-                throw new IOException("Unable to create path " + destParentPath);
-            }
-
-            wh.renameDir(srcPath, destPath);
-            LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
-          }
-        } catch (IOException ex) {
-          LOG.error("Cannot rename partition directory from " + srcPath + " to " +
-              destPath, ex);
-          boolean revertMetaDataTransaction = false;
+        if (dataWasMoved) {
+          LOG.error("Revert the data move in renaming a partition.");
           try {
-            msdb.openTransaction();
-            msdb.alterPartition(dbname, name, new_part.getValues(), oldPart);
-            if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                                                    EventMessage.EventType.ALTER_PARTITION,
-                                                    new AlterPartitionEvent(new_part, oldPart, tbl, false, success, handler),
-                                                    environmentContext);
+            if (destFs.exists(destPath)) {
+              wh.renameDir(destPath, srcPath);
             }
-
-            revertMetaDataTransaction = msdb.commitTransaction();
-          } catch (Exception ex2) {
-            LOG.error("Attempt to revert partition metadata change failed. The revert was attempted " +
-                "because associated filesystem rename operation failed with exception " + ex.getMessage(), ex2);
-            if (!revertMetaDataTransaction) {
-              msdb.rollbackTransaction();
-            }
+          } catch (MetaException me) {
+            LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath
+                +  " in alter partition failure. Manual restore is needed.");
+          } catch (IOException ioe) {
+            LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath
+                +  " in alter partition failure. Manual restore is needed.");
           }
-
-          throw new InvalidOperationException("Unable to access old location "
-              + srcPath + " for partition " + tbl.getDbName() + "."
-              + tbl.getTableName() + " " + part_vals);
         }
       }
     }

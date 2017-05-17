@@ -5,7 +5,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE src_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -25,7 +25,7 @@ PREHOOK: Output: default@src_events
 POSTHOOK: query: CREATE TABLE src_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -57,7 +57,7 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -75,7 +75,7 @@ PREHOOK: Output: default@orc_events
 POSTHOOK: query: CREATE TABLE orc_events
 (
   log_id      BIGINT,
-  time        BIGINT,
+  `time`        BIGINT,
   uid         BIGINT,
   user_id     BIGINT,
   type        INT,
@@ -163,13 +163,13 @@ POSTHOOK: Input: default@orc_events
 #### A masked pattern was here ####
 100
 PREHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201211, game_id, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201211'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_events
 PREHOOK: Output: default@orc_events@run_date=201211
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201211, game_id, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,game_id,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201211'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
@@ -202,13 +202,13 @@ POSTHOOK: Input: default@orc_events
 #### A masked pattern was here ####
 300
 PREHOOK: query: INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_events
 PREHOOK: Output: default@orc_events@run_date=201209/game_id=39
 POSTHOOK: query: INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name)
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid,event_name FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
@@ -231,13 +231,13 @@ POSTHOOK: Input: default@orc_events
 #### A masked pattern was here ####
 350
 PREHOOK: query: INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_events
 PREHOOK: Output: default@orc_events@run_date=201209/game_id=39/event_name=hq_change
 POSTHOOK: query: INSERT INTO TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
@@ -252,13 +252,13 @@ POSTHOOK: Input: default@orc_events
 #### A masked pattern was here ####
 400
 PREHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_events
 PREHOOK: Output: default@orc_events@run_date=201209/game_id=39/event_name=hq_change
 POSTHOOK: query: INSERT OVERWRITE TABLE orc_events PARTITION (run_date=201209, game_id=39, event_name='hq_change')
-SELECT log_id,time,uid,user_id,type,event_data,session_id,full_uid FROM src_events
+SELECT log_id,`time`,uid,user_id,type,event_data,session_id,full_uid FROM src_events
 WHERE SUBSTR(run_date,1,6)='201209' AND game_id=39 AND event_name='hq_change'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events

@@ -32,7 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class TruncatePartitionHandler extends AbstractMessageHandler {
+public class TruncatePartitionHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
     AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());

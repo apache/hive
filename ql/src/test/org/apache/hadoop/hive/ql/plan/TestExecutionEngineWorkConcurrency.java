@@ -19,8 +19,13 @@ package org.apache.hadoop.hive.ql.plan;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.junit.Test;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -32,14 +37,27 @@ import java.util.concurrent.FutureTask;
 
 import static org.junit.Assert.assertEquals;
 
-public final class TestTezWorkConcurrency {
+
+@RunWith(Parameterized.class)
+public final class TestExecutionEngineWorkConcurrency {
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.asList(new Object[][]{{new TezDagIdProvider()}, {new SparkDagIdProvider()}});
+  }
+
+  private final ExecutionEngineDagIdGenerator executionEngineDagIdGenerator;
+
+  public TestExecutionEngineWorkConcurrency(ExecutionEngineDagIdGenerator executionEngineDagIdGenerator) {
+    this.executionEngineDagIdGenerator = executionEngineDagIdGenerator;
+  }
 
   @Test
   public void ensureDagIdIsUnique() throws Exception {
     final int threadCount = 5;
     final CountDownLatch threadReadyToStartSignal = new CountDownLatch(threadCount);
     final CountDownLatch startThreadSignal = new CountDownLatch(1);
-    final int numberOfTezWorkToCreatePerThread = 100;
+    final int numberOfWorkToCreatePerThread = 100;
 
     List<FutureTask<Set<String>>> tasks = Lists.newArrayList();
     for (int i = 0; i < threadCount; i++) {
@@ -48,7 +66,7 @@ public final class TestTezWorkConcurrency {
         public Set<String> call() throws Exception {
           threadReadyToStartSignal.countDown();
           startThreadSignal.await();
-          return generateTezWorkDagIds(numberOfTezWorkToCreatePerThread);
+          return generateWorkDagIds(numberOfWorkToCreatePerThread);
         }
       }));
     }
@@ -58,25 +76,44 @@ public final class TestTezWorkConcurrency {
     }
     threadReadyToStartSignal.await();
     startThreadSignal.countDown();
-    Set<String> allTezWorkDagIds = getAllTezWorkDagIds(tasks);
-    assertEquals(threadCount * numberOfTezWorkToCreatePerThread, allTezWorkDagIds.size());
+    Set<String> allWorkDagIds = getAllWorkDagIds(tasks);
+    assertEquals(threadCount * numberOfWorkToCreatePerThread, allWorkDagIds.size());
   }
 
-  private static Set<String> generateTezWorkDagIds(int numberOfNames) {
-    Set<String> tezWorkIds = Sets.newHashSet();
+  private Set<String> generateWorkDagIds(int numberOfNames) {
+    Set<String> workIds = Sets.newHashSet();
     for (int i = 0; i < numberOfNames; i++) {
-      TezWork work = new TezWork("query-id");
-      tezWorkIds.add(work.getDagId());
+      workIds.add(executionEngineDagIdGenerator.getDagId());
     }
-    return tezWorkIds;
+    return workIds;
   }
 
-  private static Set<String> getAllTezWorkDagIds(List<FutureTask<Set<String>>> tasks)
+  private static Set<String> getAllWorkDagIds(List<FutureTask<Set<String>>> tasks)
       throws ExecutionException, InterruptedException {
-    Set<String> allTezWorkDagIds = Sets.newHashSet();
+    Set<String> allWorkDagIds = Sets.newHashSet();
     for (FutureTask<Set<String>> task : tasks) {
-      allTezWorkDagIds.addAll(task.get());
+      allWorkDagIds.addAll(task.get());
     }
-    return allTezWorkDagIds;
+    return allWorkDagIds;
+  }
+
+  private interface ExecutionEngineDagIdGenerator {
+    String getDagId();
+  }
+
+  private static final class TezDagIdProvider implements ExecutionEngineDagIdGenerator {
+
+    @Override
+    public String getDagId() {
+      return new TezWork("query-id").getDagId();
+    }
+  }
+
+  private static final class SparkDagIdProvider implements ExecutionEngineDagIdGenerator {
+
+    @Override
+    public String getDagId() {
+      return new SparkWork("query-id").getName();
+    }
   }
 }
