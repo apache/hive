@@ -797,8 +797,18 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       if (!keepAliveParam && !connectionKeepAliveEnabled) {
         lastMap.addListener(ChannelFutureListener.CLOSE);
       } else {
-        // Entire response is written out. Safe to enable timeout handling.
-        timeoutHandler.setEnabledTimeout(true);
+        lastMap.addListener(new ChannelFutureListener() {
+          @Override
+          public void operationComplete(ChannelFuture future) throws Exception {
+            if (!future.isSuccess()) {
+              // On error close the channel.
+              future.getChannel().close();
+              return;
+            }
+            // Entire response is written out. Safe to enable timeout handling.
+            timeoutHandler.setEnabledTimeout(true);
+          }
+        });
       }
     }
 
