@@ -62,6 +62,7 @@ import java.io.FileReader;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -783,6 +784,7 @@ public class HiveSchemaTool {
     // now diff the lists
     schemaTables.removeAll(dbTables);
     if (schemaTables.size() > 0) {
+      Collections.sort(schemaTables);
       System.err.println("Table(s) [ " + Arrays.toString(schemaTables.toArray())
           + " ] are missing from the metastore database schema.");
       System.out.println("Schema table validation failed!!!");
