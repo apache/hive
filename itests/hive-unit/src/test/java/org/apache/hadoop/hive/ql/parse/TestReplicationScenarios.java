@@ -21,7 +21,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.DummyRawStoreForRepl;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -52,6 +53,7 @@ import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -125,7 +127,7 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
-              "org.apache.hadoop.hive.metastore.DummyRawStoreForRepl");
+              "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -384,11 +386,29 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
 
-    // The ptned table will not be dumped as getTable will return null
-    DummyRawStoreForRepl.setGetTableSucceed(false);
 
     advanceDumpDir();
+
+    BehaviourInjection<Table,Table> ptnedTableNuller = new BehaviourInjection<Table,Table>(){
+      @Nullable
+      @Override
+      public Table apply(@Nullable Table table) {
+        if (table.getTableName().equalsIgnoreCase("ptned")){
+          injectionPathCalled = true;
+          return null;
+        } else {
+          nonInjectedPathCalled = true;
+          return table;
+        }
+      }
+    };
+    InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableNuller);
+
+    // The ptned table will not be dumped as getTable will return null
     run("REPL DUMP " + dbName);
+    ptnedTableNuller.assertInjectionsPerformed(true,true);
+    InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
+
     String replDumpLocn = getResult(0, 0);
     String replDumpId = getResult(0, 1, true);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
