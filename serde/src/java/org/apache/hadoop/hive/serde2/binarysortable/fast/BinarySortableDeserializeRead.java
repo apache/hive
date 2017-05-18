@@ -19,13 +19,19 @@
 package org.apache.hadoop.hive.serde2.binarysortable.fast;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.nio.charset.StandardCharsets;
+import java.util.Deque;
+import java.util.List;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -57,12 +63,6 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   byte[] columnNullMarker;
   byte[] columnNotNullMarker;
 
-  // Which field we are on.  We start with -1 so readNextField can increment once and the read
-  // field data methods don't increment.
-  private int fieldIndex;
-
-  private int fieldCount;
-
   private int start;
   private int end;
   private int fieldStart;
@@ -78,19 +78,40 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
   private InputByteBuffer inputByteBuffer = new InputByteBuffer();
 
+  private Field root;
+  private Deque<Field> stack;
+
+  private class Field {
+    Field[] children;
+
+    Category category;
+    PrimitiveObjectInspector.PrimitiveCategory primitiveCategory;
+    TypeInfo typeInfo;
+
+    int index;
+    int count;
+    int start;
+    int tag;
+  }
+
   /*
    * Use this constructor when only ascending sort order is used.
    */
-  public BinarySortableDeserializeRead(PrimitiveTypeInfo[] primitiveTypeInfos,
-      boolean useExternalBuffer) {
-    this(primitiveTypeInfos, useExternalBuffer, null, null, null);
+  public BinarySortableDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
+    this(typeInfos, useExternalBuffer, null, null, null);
   }
 
   public BinarySortableDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker) {
     super(typeInfos, useExternalBuffer);
     final int count = typeInfos.length;
-    fieldCount = count;
+
+    root = new Field();
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = count;
+    stack = new ArrayDeque<>();
+
     if (columnSortOrderIsDesc != null) {
       this.columnSortOrderIsDesc = columnSortOrderIsDesc;
     } else {
@@ -131,10 +152,23 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
    */
   @Override
   public void set(byte[] bytes, int offset, int length) {
-    fieldIndex = -1;
     start = offset;
     end = offset + length;
     inputByteBuffer.reset(bytes, start, end);
+    root.index = -1;
+    stack.clear();
+    stack.push(root);
+    clearIndex(root);
+  }
+
+  private void clearIndex(Field field) {
+    field.index = -1;
+    if (field.children == null) {
+      return;
+    }
+    for (Field child : field.children) {
+      clearIndex(child);
+    }
   }
 
   /*
@@ -150,15 +184,15 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
     sb.append(" for length ");
     sb.append(end - start);
     sb.append(" to read ");
-    sb.append(fieldCount);
+    sb.append(root.count);
     sb.append(" fields with types ");
     sb.append(Arrays.toString(typeInfos));
     sb.append(".  ");
-    if (fieldIndex == -1) {
+    if (root.index == -1) {
       sb.append("Before first field?");
     } else {
       sb.append("Read field #");
-      sb.append(fieldIndex);
+      sb.append(root.index);
       sb.append(" at field start position ");
       sb.append(fieldStart);
       sb.append(" current read offset ");
@@ -187,31 +221,17 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
    */
   @Override
   public boolean readNextField() throws IOException {
+    return readComplexField();
+  }
 
-    // We start with fieldIndex as -1 so we can increment once here and then the read
-    // field data methods don't increment.
-    fieldIndex++;
-
-    if (fieldIndex >= fieldCount) {
-      return false;
-    }
-    if (inputByteBuffer.isEof()) {
-      // Also, reading beyond our byte range produces NULL.
-      return false;
-    }
-
-    fieldStart = inputByteBuffer.tell();
-
-    byte isNullByte = inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]);
-
-    if (isNullByte == columnNullMarker[fieldIndex]) {
-      return false;
-    }
+  private boolean readPrimitive(Field field) throws IOException {
+    final int fieldIndex = root.index;
+    field.start = inputByteBuffer.tell();
 
     /*
      * We have a field and are positioned to it.  Read it.
      */
-    switch (primitiveCategories[fieldIndex]) {
+    switch (field.primitiveCategory) {
     case BOOLEAN:
       currentBoolean = (inputByteBuffer.read(columnSortOrderIsDesc[fieldIndex]) == 2);
       return true;
@@ -392,7 +412,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
         if (!(b == 1 || b == -1 || b == 0)) {
           throw new IOException("Unexpected byte value " + (int)b + " in binary sortable format data (invert " + invert + ")");
         }
-        boolean positive = b != -1;
+        final boolean positive = b != -1;
 
         int factor = inputByteBuffer.read(invert) ^ 0x80;
         for (int i = 0; i < 3; i++) {
@@ -403,7 +423,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
           factor = -factor;
         }
 
-        int decimalStart = inputByteBuffer.tell();
+        final int decimalStart = inputByteBuffer.tell();
         int length = 0;
 
         do {
@@ -434,10 +454,8 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
         // read the null byte again
         inputByteBuffer.read(positive ? invert : !invert);
 
-        String digits = new String(tempDecimalBuffer, 0, length, StandardCharsets.UTF_8);
-
         // Set the value of the writable from the decimal digits that were written with no dot.
-        int scale = length - factor;
+        final int scale = length - factor;
         currentHiveDecimalWritable.setFromDigitsOnlyBytesWithScale(
             !positive, tempDecimalBuffer, 0, length, scale);
         boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
@@ -445,10 +463,10 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
 
           // We have a decimal.  After we enforce precision and scale, will it become a NULL?
 
-          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+          final DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) field.typeInfo;
 
-          int enforcePrecision = decimalTypeInfo.getPrecision();
-          int enforceScale = decimalTypeInfo.getScale();
+          final int enforcePrecision = decimalTypeInfo.getPrecision();
+          final int enforceScale = decimalTypeInfo.getScale();
 
           decimalIsNull =
               !currentHiveDecimalWritable.mutateEnforcePrecisionScale(
@@ -461,7 +479,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
       }
       return true;
     default:
-      throw new RuntimeException("Unexpected primitive type category " + primitiveCategories[fieldIndex]);
+      throw new RuntimeException("Unexpected primitive type category " + field.primitiveCategory);
     }
   }
 
@@ -472,8 +490,53 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
    * Designed for skipping columns that are not included.
    */
   public void skipNextField() throws IOException {
-    // Not a known use case for BinarySortable -- so don't optimize.
-    readNextField();
+    final Field current = stack.peek();
+    current.index++;
+
+    if (root.index >= root.count) {
+      return;
+    }
+
+    if (inputByteBuffer.isEof()) {
+      // Also, reading beyond our byte range produces NULL.
+      return;
+    }
+
+    if (current.category == Category.UNION && current.index == 0) {
+      current.tag = inputByteBuffer.read();
+      currentInt = current.tag;
+      return;
+    }
+
+    final Field child = getChild(current);
+
+    if (isNull()) {
+      return;
+    }
+    if (child.category == Category.PRIMITIVE) {
+      readPrimitive(child);
+    } else {
+      stack.push(child);
+      switch (child.category) {
+      case LIST:
+      case MAP:
+        while (isNextComplexMultiValue()) {
+          skipNextField();
+        }
+        break;
+      case STRUCT:
+        for (int i = 0; i < child.count; i++) {
+          skipNextField();
+        }
+        finishComplexVariableFieldsType();
+        break;
+      case UNION:
+        readComplexField();
+        skipNextField();
+        finishComplexVariableFieldsType();
+        break;
+      }
+    }
   }
 
   @Override
@@ -482,7 +545,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   }
 
   private void copyToBuffer(byte[] buffer, int bufferStart, int bufferLength) throws IOException {
-    final boolean invert = columnSortOrderIsDesc[fieldIndex];
+    final boolean invert = columnSortOrderIsDesc[root.index];
     inputByteBuffer.seek(bytesStart);
     // 3. Copy the data.
     for (int i = 0; i < bufferLength; i++) {
@@ -515,5 +578,141 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
    */
   public boolean isEndOfInputReached() {
     return inputByteBuffer.isEof();
+  }
+
+  private Field[] createFields(TypeInfo[] typeInfos) {
+    final Field[] children = new Field[typeInfos.length];
+    for (int i = 0; i < typeInfos.length; i++) {
+      children[i] = createField(typeInfos[i]);
+    }
+    return children;
+  }
+
+  private Field createField(TypeInfo typeInfo) {
+    final Field field = new Field();
+    final Category category = typeInfo.getCategory();
+    field.category = category;
+    field.typeInfo = typeInfo;
+
+    switch (category) {
+    case PRIMITIVE:
+      field.primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      break;
+    case LIST:
+      field.children = new Field[1];
+      field.children[0] = createField(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+      break;
+    case MAP:
+      field.children = new Field[2];
+      field.children[0] = createField(((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
+      field.children[1] = createField(((MapTypeInfo) typeInfo).getMapValueTypeInfo());
+      break;
+    case STRUCT:
+      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      field.count = fieldTypeInfos.size();
+      field.children = createFields(fieldTypeInfos.toArray(new TypeInfo[fieldTypeInfos.size()]));
+      break;
+    case UNION:
+      UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+      List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
+      field.count = 2;
+      field.children = createFields(objectTypeInfos.toArray(new TypeInfo[objectTypeInfos.size()]));
+      break;
+    default:
+      throw new RuntimeException();
+    }
+    return field;
+  }
+
+  private Field getChild(Field field) {
+    switch (field.category) {
+    case LIST:
+      return field.children[0];
+    case MAP:
+      return field.children[field.index % 2];
+    case STRUCT:
+      return field.children[field.index];
+    case UNION:
+      return field.children[field.tag];
+    default:
+      throw new RuntimeException();
+    }
+  }
+
+  private boolean isNull() throws IOException {
+    return inputByteBuffer.read(columnSortOrderIsDesc[root.index]) ==
+        columnNullMarker[root.index];
+  }
+
+  @Override
+  public boolean readComplexField() throws IOException {
+    final Field current = stack.peek();
+    current.index++;
+
+    if (root.index >= root.count) {
+      return false;
+    }
+
+    if (inputByteBuffer.isEof()) {
+      // Also, reading beyond our byte range produces NULL.
+      return false;
+    }
+
+    if (current.category == Category.UNION) {
+      if (current.index == 0) {
+        current.tag = inputByteBuffer.read(columnSortOrderIsDesc[root.index]);
+        currentInt = current.tag;
+        return true;
+      }
+    }
+
+    final Field child = getChild(current);
+
+    boolean isNull = isNull();
+
+    if (isNull) {
+      return false;
+    }
+    if (child.category == Category.PRIMITIVE) {
+      isNull = !readPrimitive(child);
+    } else {
+      stack.push(child);
+    }
+    return !isNull;
+  }
+
+  @Override
+  public boolean isNextComplexMultiValue() throws IOException {
+    final byte isNullByte = inputByteBuffer.read(columnSortOrderIsDesc[root.index]);
+    final boolean isEnded;
+
+    switch (isNullByte) {
+    case 0:
+      isEnded = true;
+      break;
+
+    case 1:
+      isEnded = false;
+      break;
+
+    default:
+      throw new RuntimeException();
+    }
+
+    if (isEnded) {
+      stack.pop();
+      stack.peek();
+    }
+    return !isEnded;
+  }
+
+  @Override
+  public void finishComplexVariableFieldsType() {
+    stack.pop();
+    if (stack.peek() == null) {
+      throw new RuntimeException();
+    }
+    stack.peek();
   }
 }

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2.fast;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -154,4 +156,32 @@ public interface SerializeWrite {
    */
   void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException;
   void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException;
+
+  /*
+   * LIST.
+   */
+  void beginList(List list);
+  void separateList();
+  void finishList();
+
+  /*
+   * MAP.
+   */
+  void beginMap(Map<?, ?> map);
+  void separateKey();
+  void separateKeyValuePair();
+  void finishMap();
+
+  /*
+   * STRUCT.
+   */
+  void beginStruct(List fieldValues);
+  void separateStruct();
+  void finishStruct();
+
+  /*
+   * UNION.
+   */
+  void beginUnion(int tag) throws IOException;
+  void finishUnion();
 }

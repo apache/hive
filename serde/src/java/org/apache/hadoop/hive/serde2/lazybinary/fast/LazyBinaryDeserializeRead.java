@@ -20,19 +20,28 @@ package org.apache.hadoop.hive.serde2.lazybinary.fast;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VLong;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.WritableUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Directly deserialize with the caller reading field-by-field the LazyBinary serialization format.
@@ -55,26 +64,84 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
   private int start;
   private int offset;
   private int end;
-  private int fieldCount;
-  private int fieldStart;
-  private int fieldIndex;
-  private byte nullByte;
+
+  private boolean skipLengthPrefix = false;
 
   // Object to receive results of reading a decoded variable length int or long.
   private VInt tempVInt;
   private VLong tempVLong;
 
+  private Deque<Field> stack = new ArrayDeque<>();
+  private Field root;
+
+  private class Field {
+    Field[] children;
+
+    Category category;
+    PrimitiveCategory primitiveCategory;
+    TypeInfo typeInfo;
+
+    int index;
+    int count;
+    int start;
+    int end;
+    int nullByteStart;
+    byte nullByte;
+    byte tag;
+  }
+
   public LazyBinaryDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer) {
     super(typeInfos, useExternalBuffer);
-    fieldCount = typeInfos.length;
     tempVInt = new VInt();
     tempVLong = new VLong();
     currentExternalBufferNeeded = false;
+
+    root = new Field();
+    root.category = Category.STRUCT;
+    root.children = createFields(typeInfos);
+    root.count = typeInfos.length;
   }
 
-  // Not public since we must have the field count so every 8 fields NULL bytes can be navigated.
-  private LazyBinaryDeserializeRead() {
-    super();
+  private Field[] createFields(TypeInfo[] typeInfos) {
+    final Field[] children = new Field[typeInfos.length];
+    for (int i = 0; i < typeInfos.length; i++) {
+      children[i] = createField(typeInfos[i]);
+    }
+    return children;
+  }
+
+  private Field createField(TypeInfo typeInfo) {
+    final Field field = new Field();
+    final Category category = typeInfo.getCategory();
+    field.category = category;
+    field.typeInfo = typeInfo;
+    switch (category) {
+    case PRIMITIVE:
+      field.primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      break;
+    case LIST:
+      field.children = new Field[1];
+      field.children[0] = createField(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+      break;
+    case MAP:
+      field.children = new Field[2];
+      field.children[0] = createField(((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
+      field.children[1] = createField(((MapTypeInfo) typeInfo).getMapValueTypeInfo());
+      break;
+    case STRUCT:
+      final StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+      final List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      field.children = createFields(fieldTypeInfos.toArray(new TypeInfo[fieldTypeInfos.size()]));
+      break;
+    case UNION:
+      final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) typeInfo;
+      final List<TypeInfo> objectTypeInfos = unionTypeInfo.getAllUnionObjectTypeInfos();
+      field.children = createFields(objectTypeInfos.toArray(new TypeInfo[objectTypeInfos.size()]));
+      break;
+    default:
+      throw new RuntimeException();
+    }
+    return field;
   }
 
   /*
@@ -86,7 +153,20 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
     this.offset = offset;
     start = offset;
     end = offset + length;
-    fieldIndex = 0;
+
+    stack.clear();
+    stack.push(root);
+    clearIndex(root);
+  }
+
+  private void clearIndex(Field field) {
+    field.index = 0;
+    if (field.children == null) {
+      return;
+    }
+    for (Field child : field.children) {
+      clearIndex(child);
+    }
   }
 
   /*
@@ -102,13 +182,13 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
     sb.append(" for length ");
     sb.append(end - start);
     sb.append(" to read ");
-    sb.append(fieldCount);
+    sb.append(root.children.length);
     sb.append(" fields with types ");
     sb.append(Arrays.toString(typeInfos));
     sb.append(".  Read field #");
-    sb.append(fieldIndex);
+    sb.append(root.index);
     sb.append(" at field start position ");
-    sb.append(fieldStart);
+    sb.append(root.start);
     sb.append(" current read offset ");
     sb.append(offset);
 
@@ -127,127 +207,70 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
    */
   @Override
   public boolean readNextField() throws IOException {
-    if (fieldIndex >= fieldCount) {
-      return false;
-    }
+    return readComplexField();
+  }
 
-    fieldStart = offset;
-
-    if (fieldIndex == 0) {
-      // The rest of the range check for fields after the first is below after checking
-      // the NULL byte.
-      if (offset >= end) {
+  private boolean readPrimitive(Field field) throws IOException {
+    final PrimitiveCategory primitiveCategory = field.primitiveCategory;
+    final TypeInfo typeInfo = field.typeInfo;
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      // No check needed for single byte read.
+      currentBoolean = (bytes[offset++] != 0);
+      break;
+    case BYTE:
+      // No check needed for single byte read.
+      currentByte = bytes[offset++];
+      break;
+    case SHORT:
+      // Last item -- ok to be at end.
+      if (offset + 2 > end) {
         throw new EOFException();
       }
-      nullByte = bytes[offset++];
-    }
-
-    // NOTE: The bit is set to 1 if a field is NOT NULL.    boolean isNull;
-    if ((nullByte & (1 << (fieldIndex % 8))) == 0) {
-
-      // Logically move past this field.
-      fieldIndex++;
-
-      // Every 8 fields we read a new NULL byte.
-      if (fieldIndex < fieldCount) {
-        if ((fieldIndex % 8) == 0) {
-          // Get next null byte.
-          if (offset >= end) {
-            throw new EOFException();
-          }
-          nullByte = bytes[offset++];
-        }
-      }
-      return false;
-    } else {
-
-      // Make sure there is at least one byte that can be read for a value.
-      if (offset >= end) {
+      currentShort = LazyBinaryUtils.byteArrayToShort(bytes, offset);
+      offset += 2;
+      break;
+    case INT:
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
         throw new EOFException();
       }
+      LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+      offset += tempVInt.length;
+      currentInt = tempVInt.value;
+      break;
+    case LONG:
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+        throw new EOFException();
+      }
+      LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
+      offset += tempVLong.length;
+      currentLong = tempVLong.value;
+      break;
+    case FLOAT:
+      // Last item -- ok to be at end.
+      if (offset + 4 > end) {
+        throw new EOFException();
+      }
+      currentFloat = Float.intBitsToFloat(LazyBinaryUtils.byteArrayToInt(bytes, offset));
+      offset += 4;
+      break;
+    case DOUBLE:
+      // Last item -- ok to be at end.
+      if (offset + 8 > end) {
+        throw new EOFException();
+      }
+      currentDouble = Double.longBitsToDouble(LazyBinaryUtils.byteArrayToLong(bytes, offset));
+      offset += 8;
+      break;
 
-      /*
-       * We have a field and are positioned to it.  Read it.
-       */
-      switch (primitiveCategories[fieldIndex]) {
-      case BOOLEAN:
-        // No check needed for single byte read.
-        currentBoolean = (bytes[offset++] != 0);
-        break;
-      case BYTE:
-        // No check needed for single byte read.
-        currentByte = bytes[offset++];
-        break;
-      case SHORT:
-        // Last item -- ok to be at end.
-        if (offset + 2 > end) {
-          throw new EOFException();
-        }
-        currentShort = LazyBinaryUtils.byteArrayToShort(bytes, offset);
-        offset += 2;
-        break;
-      case INT:
-        // Parse the first byte of a vint/vlong to determine the number of bytes.
-        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
-          throw new EOFException();
-        }
-        LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-        offset += tempVInt.length;
-        currentInt = tempVInt.value;
-        break;
-      case LONG:
-        // Parse the first byte of a vint/vlong to determine the number of bytes.
-        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
-          throw new EOFException();
-        }
-        LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
-        offset += tempVLong.length;
-        currentLong = tempVLong.value;
-        break;
-      case FLOAT:
-        // Last item -- ok to be at end.
-        if (offset + 4 > end) {
-          throw new EOFException();
-        }
-        currentFloat = Float.intBitsToFloat(LazyBinaryUtils.byteArrayToInt(bytes, offset));
-        offset += 4;
-        break;
-      case DOUBLE:
-        // Last item -- ok to be at end.
-        if (offset + 8 > end) {
-          throw new EOFException();
-        }
-        currentDouble = Double.longBitsToDouble(LazyBinaryUtils.byteArrayToLong(bytes, offset));
-        offset += 8;
-        break;
-
-      case BINARY:
-      case STRING:
-      case CHAR:
-      case VARCHAR:
-        {
-          // using vint instead of 4 bytes
-          // Parse the first byte of a vint/vlong to determine the number of bytes.
-          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
-            throw new EOFException();
-          }
-          LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-          offset += tempVInt.length;
-
-          int saveStart = offset;
-          int length = tempVInt.value;
-          offset += length;
-          // Last item -- ok to be at end.
-          if (offset > end) {
-            throw new EOFException();
-          }
-
-          currentBytes = bytes;
-          currentBytesStart = saveStart;
-          currentBytesLength = length;
-        }
-        break;
-      case DATE:
+    case BINARY:
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+      {
+        // using vint instead of 4 bytes
         // Parse the first byte of a vint/vlong to determine the number of bytes.
         if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
           throw new EOFException();
@@ -255,39 +278,86 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
 
-        currentDateWritable.set(tempVInt.value);
-        break;
-      case TIMESTAMP:
-        {
-          int length = TimestampWritable.getTotalLength(bytes, offset);
-          int saveStart = offset;
-          offset += length;
-          // Last item -- ok to be at end.
-          if (offset > end) {
-            throw new EOFException();
-          }
-
-          currentTimestampWritable.set(bytes, saveStart);
-        }
-        break;
-      case INTERVAL_YEAR_MONTH:
-        // Parse the first byte of a vint/vlong to determine the number of bytes.
-        if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+        int saveStart = offset;
+        int length = tempVInt.value;
+        offset += length;
+        // Last item -- ok to be at end.
+        if (offset > end) {
           throw new EOFException();
         }
-        LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-        offset += tempVInt.length;
 
-        currentHiveIntervalYearMonthWritable.set(tempVInt.value);
-        break;
-      case INTERVAL_DAY_TIME:
+        currentBytes = bytes;
+        currentBytesStart = saveStart;
+        currentBytesLength = length;
+      }
+      break;
+    case DATE:
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+        throw new EOFException();
+      }
+      LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+      offset += tempVInt.length;
+
+      currentDateWritable.set(tempVInt.value);
+      break;
+    case TIMESTAMP:
+      {
+        int length = TimestampWritable.getTotalLength(bytes, offset);
+        int saveStart = offset;
+        offset += length;
+        // Last item -- ok to be at end.
+        if (offset > end) {
+          throw new EOFException();
+        }
+
+        currentTimestampWritable.set(bytes, saveStart);
+      }
+      break;
+    case INTERVAL_YEAR_MONTH:
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+        throw new EOFException();
+      }
+      LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+      offset += tempVInt.length;
+
+      currentHiveIntervalYearMonthWritable.set(tempVInt.value);
+      break;
+    case INTERVAL_DAY_TIME:
+      // The first bounds check requires at least one more byte beyond for 2nd int (hence >=).
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) >= end) {
+        throw new EOFException();
+      }
+      LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
+      offset += tempVLong.length;
+
+      // Parse the first byte of a vint/vlong to determine the number of bytes.
+      if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
+        throw new EOFException();
+      }
+      LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+      offset += tempVInt.length;
+
+      currentHiveIntervalDayTimeWritable.set(tempVLong.value, tempVInt.value);
+      break;
+    case DECIMAL:
+      {
+        // Since enforcing precision and scale can cause a HiveDecimal to become NULL,
+        // we must read it, enforce it here, and either return NULL or buffer the result.
+
+        // These calls are to see how much data there is. The setFromBytes call below will do the same
+        // readVInt reads but actually unpack the decimal.
+
         // The first bounds check requires at least one more byte beyond for 2nd int (hence >=).
         // Parse the first byte of a vint/vlong to determine the number of bytes.
         if (offset + WritableUtils.decodeVIntSize(bytes[offset]) >= end) {
           throw new EOFException();
         }
-        LazyBinaryUtils.readVLong(bytes, offset, tempVLong);
-        offset += tempVLong.length;
+        LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+        offset += tempVInt.length;
+        int readScale = tempVInt.value;
 
         // Parse the first byte of a vint/vlong to determine the number of bytes.
         if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
@@ -295,95 +365,38 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
         }
         LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
         offset += tempVInt.length;
-
-        currentHiveIntervalDayTimeWritable.set(tempVLong.value, tempVInt.value);
-        break;
-      case DECIMAL:
-        {
-          // Since enforcing precision and scale can cause a HiveDecimal to become NULL,
-          // we must read it, enforce it here, and either return NULL or buffer the result.
-
-          // These calls are to see how much data there is. The setFromBytes call below will do the same
-          // readVInt reads but actually unpack the decimal.
-
-          // The first bounds check requires at least one more byte beyond for 2nd int (hence >=).
-          // Parse the first byte of a vint/vlong to determine the number of bytes.
-          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) >= end) {
-            throw new EOFException();
-          }
-          LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-          offset += tempVInt.length;
-          int readScale = tempVInt.value;
-
-          // Parse the first byte of a vint/vlong to determine the number of bytes.
-          if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
-            throw new EOFException();
-          }
-          LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-          offset += tempVInt.length;
-          int saveStart = offset;
-          offset += tempVInt.value;
-          // Last item -- ok to be at end.
-          if (offset > end) {
-            throw new EOFException();
-          }
-          int length = offset - saveStart;
-
-          //   scale = 2, length = 6, value = -6065716379.11
-          //   \002\006\255\114\197\131\083\105
-          //           \255\114\197\131\083\105
-
-          currentHiveDecimalWritable.setFromBigIntegerBytesAndScale(
-              bytes, saveStart, length, readScale);
-          boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
-          if (!decimalIsNull) {
-
-            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-
-            int precision = decimalTypeInfo.getPrecision();
-            int scale = decimalTypeInfo.getScale();
-
-            decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
-          }
-          if (decimalIsNull) {
-
-            // Logically move past this field.
-            fieldIndex++;
-
-            // Every 8 fields we read a new NULL byte.
-            if (fieldIndex < fieldCount) {
-              if ((fieldIndex % 8) == 0) {
-                // Get next null byte.
-                if (offset >= end) {
-                  throw new EOFException();
-                }
-                nullByte = bytes[offset++];
-              }
-            }
-            return false;
-          }
-        }
-        break;
-
-      default:
-        throw new Error("Unexpected primitive category " + primitiveCategories[fieldIndex].name());
-      }
-    }
-
-    // Logically move past this field.
-    fieldIndex++;
-
-    // Every 8 fields we read a new NULL byte.
-    if (fieldIndex < fieldCount) {
-      if ((fieldIndex % 8) == 0) {
-        // Get next null byte.
-        if (offset >= end) {
+        int saveStart = offset;
+        offset += tempVInt.value;
+        // Last item -- ok to be at end.
+        if (offset > end) {
           throw new EOFException();
         }
-        nullByte = bytes[offset++];
-      }
-    }
+        int length = offset - saveStart;
 
+        //   scale = 2, length = 6, value = -6065716379.11
+        //   \002\006\255\114\197\131\083\105
+        //           \255\114\197\131\083\105
+
+        currentHiveDecimalWritable.setFromBigIntegerBytesAndScale(
+            bytes, saveStart, length, readScale);
+        boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
+        if (!decimalIsNull) {
+
+          final DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+
+          final int precision = decimalTypeInfo.getPrecision();
+          final int scale = decimalTypeInfo.getScale();
+
+          decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+        }
+        if (decimalIsNull) {
+          return false;
+        }
+      }
+      break;
+    default:
+      throw new Error("Unexpected primitive category " + primitiveCategory.name());
+    }
     return true;
   }
 
@@ -394,8 +407,37 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
    * Designed for skipping columns that are not included.
    */
   public void skipNextField() throws IOException {
-    // Not a known use case for LazyBinary -- so don't optimize.
-    readNextField();
+    final Field current = stack.peek();
+    final boolean isNull = isNull(current);
+
+    if (isNull) {
+      current.index++;
+      return;
+    }
+
+    if (readUnionTag(current)) {
+      current.index++;
+      return;
+    }
+
+    final Field child = getChild(current);
+
+    if (child.category == Category.PRIMITIVE) {
+      readPrimitive(child);
+      current.index++;
+    } else {
+      parseHeader(child);
+      stack.push(child);
+
+      for (int i = 0; i < child.count; i++) {
+        skipNextField();
+      }
+      finishComplexVariableFieldsType();
+    }
+
+    if (offset > end) {
+      throw new EOFException();
+    }
   }
 
   /*
@@ -411,5 +453,142 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
    */
   public boolean isEndOfInputReached() {
     return (offset == end);
+  }
+
+  private boolean isNull(Field field) {
+    final byte b = (byte) (1 << (field.index % 8));
+    switch (field.category) {
+    case PRIMITIVE:
+      return false;
+    case LIST:
+    case MAP:
+      final byte nullByte = bytes[field.nullByteStart + (field.index / 8)];
+      return (nullByte & b) == 0;
+    case STRUCT:
+      if (field.index % 8 == 0) {
+        field.nullByte = bytes[offset++];
+      }
+      return (field.nullByte & b) == 0;
+    case UNION:
+      return false;
+    default:
+      throw new RuntimeException();
+    }
+  }
+
+  private void parseHeader(Field field) {
+    // Init
+    field.index = 0;
+    field.start = offset;
+
+    // Read length
+    if (!skipLengthPrefix) {
+      final int length = LazyBinaryUtils.byteArrayToInt(bytes, offset);
+      offset += 4;
+      field.end = offset + length;
+    }
+
+    switch (field.category) {
+    case LIST:
+    case MAP:
+      // Read count
+      LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
+      if (field.category == Category.LIST) {
+        field.count = tempVInt.value;
+      } else {
+        field.count = tempVInt.value * 2;
+      }
+      offset += tempVInt.length;
+
+      // Null byte start
+      field.nullByteStart = offset;
+      offset += ((field.count) + 7) / 8;
+      break;
+    case STRUCT:
+      field.count = ((StructTypeInfo) field.typeInfo).getAllStructFieldTypeInfos().size();
+      break;
+    case UNION:
+      field.count = 2;
+      break;
+    }
+  }
+
+  private Field getChild(Field field) {
+    switch (field.category) {
+    case LIST:
+      return field.children[0];
+    case MAP:
+      return field.children[field.index % 2];
+    case STRUCT:
+      return field.children[field.index];
+    case UNION:
+      return field.children[field.tag];
+    default:
+      throw new RuntimeException();
+    }
+  }
+
+  private boolean readUnionTag(Field field) {
+    if (field.category == Category.UNION && field.index == 0) {
+      field.tag = bytes[offset++];
+      currentInt = field.tag;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Push or next
+  @Override
+  public boolean readComplexField() throws IOException {
+    final Field current = stack.peek();
+    boolean isNull = isNull(current);
+
+    if (isNull) {
+      current.index++;
+      return false;
+    }
+
+    if (readUnionTag(current)) {
+      current.index++;
+      return true;
+    }
+
+    final Field child = getChild(current);
+
+    if (child.category == Category.PRIMITIVE) {
+      isNull = !readPrimitive(child);
+      current.index++;
+    } else {
+      parseHeader(child);
+      stack.push(child);
+    }
+
+    if (offset > end) {
+      throw new EOFException();
+    }
+    return !isNull;
+  }
+
+  // Pop (list, map)
+  @Override
+  public boolean isNextComplexMultiValue() {
+    Field current = stack.peek();
+    final boolean isNext = current.index < current.count;
+    if (!isNext) {
+      stack.pop();
+      stack.peek().index++;
+    }
+    return isNext;
+  }
+
+  // Pop (struct, union)
+  @Override
+  public void finishComplexVariableFieldsType() {
+    stack.pop();
+    if (stack.peek() == null) {
+      throw new RuntimeException();
+    }
+    stack.peek().index++;
   }
 }

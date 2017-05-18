@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.io.EOFException;
 import java.util.Arrays;
@@ -30,13 +31,16 @@ import org.apache.hadoop.hive.serde2.SerdeRandomRowSource;
 import org.apache.hadoop.hive.serde2.VerifyFast;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
+import org.apache.hadoop.hive.serde2.lazy.VerifyLazy;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Writable;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 public class TestBinarySortableFast extends TestCase {
 
@@ -48,11 +52,11 @@ public class TestBinarySortableFast extends TestCase {
           boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker,
           AbstractSerDe serde, StructObjectInspector rowOI,
           AbstractSerDe serde_fewer, StructObjectInspector writeRowOI,
-          boolean ascending, PrimitiveTypeInfo[] primitiveTypeInfos,
+          boolean ascending, TypeInfo[] typeInfos,
           boolean useIncludeColumns, boolean doWriteFewerColumns, Random r) throws Throwable {
 
     int rowCount = rows.length;
-    int columnCount = primitiveTypeInfos.length;
+    int columnCount = typeInfos.length;
 
     boolean[] columnsToInclude = null;
     if (useIncludeColumns) {
@@ -83,10 +87,7 @@ public class TestBinarySortableFast extends TestCase {
 
       int[] perFieldWriteLengths = new int[columnCount];
       for (int index = 0; index < writeColumnCount; index++) {
-
-        Writable writable = (Writable) row[index];
-
-        VerifyFast.serializeWrite(binarySortableSerializeWrite, primitiveTypeInfos[index], writable);
+        VerifyFast.serializeWrite(binarySortableSerializeWrite, typeInfos[index], row[index]);
         perFieldWriteLengths[index] = output.getLength();
       }
       perFieldWriteLengthsArray[i] = perFieldWriteLengths;
@@ -95,7 +96,8 @@ public class TestBinarySortableFast extends TestCase {
       bytesWritable.set(output.getData(), 0, output.getLength());
       serializeWriteBytes[i] = bytesWritable;
       if (i > 0) {
-        int compareResult = serializeWriteBytes[i - 1].compareTo(serializeWriteBytes[i]);
+        BytesWritable previousBytesWritable = serializeWriteBytes[i - 1];
+        int compareResult = previousBytesWritable.compareTo(bytesWritable);
         if ((compareResult < 0 && !ascending)
             || (compareResult > 0 && ascending)) {
           System.out.println("Test failed in "
@@ -117,7 +119,7 @@ public class TestBinarySortableFast extends TestCase {
       Object[] row = rows[i];
       BinarySortableDeserializeRead binarySortableDeserializeRead =
               new BinarySortableDeserializeRead(
-                  primitiveTypeInfos,
+                  typeInfos,
                   /* useExternalBuffer */ false,
                   columnSortOrderIsDesc,
                   columnNullMarker,
@@ -132,10 +134,9 @@ public class TestBinarySortableFast extends TestCase {
           binarySortableDeserializeRead.skipNextField();
         } else if (index >= writeColumnCount) {
           // Should come back a null.
-          VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], null);
+          VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, typeInfos[index], null);
         } else {
-          Writable writable = (Writable) row[index];
-          VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], writable);
+          verifyRead(binarySortableDeserializeRead, typeInfos[index], row[index]);
         }
       }
       if (writeColumnCount == columnCount) {
@@ -147,7 +148,7 @@ public class TestBinarySortableFast extends TestCase {
        */
       BinarySortableDeserializeRead binarySortableDeserializeRead2 =
           new BinarySortableDeserializeRead(
-              primitiveTypeInfos,
+              typeInfos,
               /* useExternalBuffer */ false,
               columnSortOrderIsDesc,
               columnNullMarker,
@@ -157,22 +158,24 @@ public class TestBinarySortableFast extends TestCase {
           bytesWritable.getBytes(), 0, bytesWritable.getLength() - 1);  // One fewer byte.
 
       for (int index = 0; index < writeColumnCount; index++) {
-        Writable writable = (Writable) row[index];
         if (index == writeColumnCount - 1) {
           boolean threw = false;
           try {
-            VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead2, primitiveTypeInfos[index], writable);
+            verifyRead(binarySortableDeserializeRead2, typeInfos[index], row[index]);
           } catch (EOFException e) {
 //          debugDetailedReadPositionString = binarySortableDeserializeRead2.getDetailedReadPositionString();
 //          debugStackTrace = e.getStackTrace();
             threw = true;
           }
-          TestCase.assertTrue(threw);
+
+          if (!threw && row[index] != null) {
+            Assert.fail();
+          }
         } else {
           if (useIncludeColumns && !columnsToInclude[index]) {
             binarySortableDeserializeRead2.skipNextField();
           } else {
-            VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead2, primitiveTypeInfos[index], writable);
+            verifyRead(binarySortableDeserializeRead2, typeInfos[index], row[index]);
           }
         }
       }
@@ -270,7 +273,7 @@ public class TestBinarySortableFast extends TestCase {
               "\nSerDe: " +
                   serDeFields.toString() +
               "\nperFieldWriteLengths " + Arrays.toString(perFieldWriteLengthsArray[i]) +
-              "\nprimitiveTypeInfos " + Arrays.toString(primitiveTypeInfos) +
+              "\nprimitiveTypeInfos " + Arrays.toString(typeInfos) +
               "\nrow " + Arrays.toString(row));
         }
       }
@@ -282,7 +285,7 @@ public class TestBinarySortableFast extends TestCase {
       Object[] row = rows[i];
       BinarySortableDeserializeRead binarySortableDeserializeRead =
               new BinarySortableDeserializeRead(
-                  primitiveTypeInfos,
+                  typeInfos,
                   /* useExternalBuffer */ false,
                   columnSortOrderIsDesc,
                   columnNullMarker,
@@ -297,10 +300,9 @@ public class TestBinarySortableFast extends TestCase {
           binarySortableDeserializeRead.skipNextField();
         } else if (index >= writeColumnCount) {
           // Should come back a null.
-          VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], null);
+          verifyRead(binarySortableDeserializeRead, typeInfos[index], null);
         } else {
-          Writable writable = (Writable) row[index];
-          VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, primitiveTypeInfos[index], writable);
+          verifyRead(binarySortableDeserializeRead, typeInfos[index], row[index]);
         }
       }
       if (writeColumnCount == columnCount) {
@@ -309,11 +311,44 @@ public class TestBinarySortableFast extends TestCase {
     }
   }
 
-  private void testBinarySortableFastCase(int caseNum, boolean doNonRandomFill, Random r)
+  private void verifyRead(BinarySortableDeserializeRead binarySortableDeserializeRead,
+      TypeInfo typeInfo, Object expectedObject) throws IOException {
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, typeInfo, expectedObject);
+    } else {
+      Object complexFieldObj = VerifyFast.deserializeReadComplexType(binarySortableDeserializeRead, typeInfo);
+      if (expectedObject == null) {
+        if (complexFieldObj != null) {
+          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+              ", " + complexFieldObj.toString() + ")");
+        }
+      } else {
+        if (complexFieldObj == null) {
+          // It's hard to distinguish a union with null from a null union.
+          if (expectedObject instanceof UnionObject) {
+            UnionObject expectedUnion = (UnionObject) expectedObject;
+            if (expectedUnion.getObject() == null) {
+              return;
+            }
+          }
+          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+              ", " + expectedObject.toString() + ")");
+        }
+      }
+      if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
+        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
+      }
+    }
+  }
+
+  private void testBinarySortableFastCase(
+      int caseNum, boolean doNonRandomFill, Random r, SerdeRandomRowSource.SupportedTypes supportedTypes, int depth)
       throws Throwable {
 
     SerdeRandomRowSource source = new SerdeRandomRowSource();
-    source.init(r);
+
+    // UNDONE: Until Fast BinarySortable supports complex types -- disable.
+    source.init(r, supportedTypes, depth);
 
     int rowCount = 1000;
     Object[][] rows = source.randomRows(rowCount);
@@ -327,8 +362,8 @@ public class TestBinarySortableFast extends TestCase {
 
     StructObjectInspector rowStructObjectInspector = source.rowStructObjectInspector();
 
-    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
-    int columnCount = primitiveTypeInfos.length;
+    TypeInfo[] typeInfos = source.typeInfos();
+    int columnCount = typeInfos.length;
 
     int writeColumnCount = columnCount;
     StructObjectInspector writeRowStructObjectInspector = rowStructObjectInspector;
@@ -385,14 +420,14 @@ public class TestBinarySortableFast extends TestCase {
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_ascending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
-        /* ascending */ true, primitiveTypeInfos,
+        /* ascending */ true, typeInfos,
         /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
 
     testBinarySortableFast(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_ascending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
-        /* ascending */ true, primitiveTypeInfos,
+        /* ascending */ true, typeInfos,
         /* useIncludeColumns */ true, /* doWriteFewerColumns */ false, r);
 
     if (doWriteFewerColumns) {
@@ -400,14 +435,14 @@ public class TestBinarySortableFast extends TestCase {
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_ascending, rowStructObjectInspector,
           serde_ascending_fewer, writeRowStructObjectInspector,
-          /* ascending */ true, primitiveTypeInfos,
+          /* ascending */ true, typeInfos,
           /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
       testBinarySortableFast(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_ascending, rowStructObjectInspector,
           serde_ascending_fewer, writeRowStructObjectInspector,
-          /* ascending */ true, primitiveTypeInfos,
+          /* ascending */ true, typeInfos,
           /* useIncludeColumns */ true, /* doWriteFewerColumns */ true, r);
     }
 
@@ -420,14 +455,14 @@ public class TestBinarySortableFast extends TestCase {
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_descending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
-        /* ascending */ false, primitiveTypeInfos,
+        /* ascending */ false, typeInfos,
         /* useIncludeColumns */ false, /* doWriteFewerColumns */ false, r);
 
     testBinarySortableFast(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
         serde_descending, rowStructObjectInspector,
         serde_ascending_fewer, writeRowStructObjectInspector,
-        /* ascending */ false, primitiveTypeInfos,
+        /* ascending */ false, typeInfos,
         /* useIncludeColumns */ true, /* doWriteFewerColumns */ false, r);
 
     if (doWriteFewerColumns) {
@@ -435,27 +470,27 @@ public class TestBinarySortableFast extends TestCase {
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_descending, rowStructObjectInspector,
           serde_descending_fewer, writeRowStructObjectInspector,
-          /* ascending */ false, primitiveTypeInfos,
+          /* ascending */ false, typeInfos,
           /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
       testBinarySortableFast(source, rows,
           columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,
           serde_descending, rowStructObjectInspector,
           serde_descending_fewer, writeRowStructObjectInspector,
-          /* ascending */ false, primitiveTypeInfos,
+          /* ascending */ false, typeInfos,
           /* useIncludeColumns */ true, /* doWriteFewerColumns */ true, r);
     }
 
   }
 
-  public void testBinarySortableFast() throws Throwable {
+  public void testBinarySortableFast(SerdeRandomRowSource.SupportedTypes supportedTypes, int depth) throws Throwable {
 
     try {
       Random r = new Random(35790);
 
       int caseNum = 0;
       for (int i = 0; i < 10; i++) {
-        testBinarySortableFastCase(caseNum, (i % 2 == 0), r);
+        testBinarySortableFastCase(caseNum, (i % 2 == 0), r, supportedTypes, depth);
         caseNum++;
       }
 
@@ -463,6 +498,18 @@ public class TestBinarySortableFast extends TestCase {
       e.printStackTrace();
       throw e;
     }
+  }
+
+  public void testBinarySortableFastPrimitive() throws Throwable {
+    testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.PRIMITIVE, 0);
+  }
+
+  public void testBinarySortableFastComplexDepthOne() throws Throwable {
+    testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP, 1);
+  }
+
+  public void testBinarySortableFastComplexDepthFour() throws Throwable {
+    testBinarySortableFast(SerdeRandomRowSource.SupportedTypes.ALL_EXCEPT_MAP, 4);
   }
 
   private static String displayBytes(byte[] bytes, int start, int length) {
