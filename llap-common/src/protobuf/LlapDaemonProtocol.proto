@@ -67,6 +67,7 @@ message SignableVertexSpec
   repeated GroupInputSpecProto grouped_input_specs = 12;
 
   optional int32 vertex_parallelism = 13; // An internal field required for Tez.
+  optional bool is_external_submission = 14 [default = false];
 }
 
 // Union
