@@ -73,6 +73,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<TypeInfo> columnTypesList;
   private VectorizedRowBatchCtx rbCtx;
   private List<Integer> indexColumnsWanted;
+  private Object[] partitionValues;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -128,11 +129,22 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+      initPartitionValues((FileSplit) oldInputSplit, conf);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
     }
   }
+
+   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
+      int partitionColumnCount = rbCtx.getPartitionColumnCount();
+      if (partitionColumnCount > 0) {
+        partitionValues = new Object[partitionColumnCount];
+        rbCtx.getPartitionValues(rbCtx, conf, fileSplit, partitionValues);
+      } else {
+        partitionValues = null;
+      }
+   }
 
   public void initialize(
       ParquetInputSplit split,
@@ -263,16 +275,23 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (rowsReturned >= totalRowCount) {
       return false;
     }
+
+    // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
+    if (partitionValues != null) {
+      rbCtx.addPartitionColsToBatch(columnarBatch, partitionValues);
+    }
     checkEndOfRowGroup();
 
     int num = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, totalCountLoadedSoFar - rowsReturned);
-    for (int i = 0; i < columnReaders.length; ++i) {
-      if (columnReaders[i] == null) {
-        continue;
+    if (colsToInclude.size() > 0) {
+      for (int i = 0; i < columnReaders.length; ++i) {
+        if (columnReaders[i] == null) {
+          continue;
+        }
+        columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
+        columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
+            columnTypesList.get(colsToInclude.get(i)));
       }
-      columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
-      columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
-        columnTypesList.get(colsToInclude.get(i)));
     }
     rowsReturned += num;
     columnarBatch.size = num;
