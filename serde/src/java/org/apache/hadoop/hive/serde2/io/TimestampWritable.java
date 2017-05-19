@@ -556,22 +556,9 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
-    boolean hasDecimalOrSecondVInt = hasDecimalOrSecondVInt(bytes[offset]);
-    long seconds = (long) TimestampWritable.getSeconds(bytes, offset);
-    int nanos = 0;
-    if (hasDecimalOrSecondVInt) {
-      nanos = TimestampWritable.getNanos(bytes, offset + 4);
-      if (hasSecondVInt(bytes[offset + 4])) {
-        seconds += LazyBinaryUtils.readVLongFromByteArray(bytes,
-            offset + 4 + WritableUtils.decodeVIntSize(bytes[offset + 4]));
-      }
-    }
+    long seconds = getSeconds(bytes, offset);
     t.setTime(seconds * 1000);
-    if (hasDecimalOrSecondVInt(bytes[offset])) {
-      t.setNanos(getNanos(bytes, offset + 4));
-    } else {
-      t.setNanos(0);
-    }
+    t.setNanos(getNanos(bytes, offset + 4));
   }
 
   public static Timestamp createTimestamp(byte[] bytes, int offset) {

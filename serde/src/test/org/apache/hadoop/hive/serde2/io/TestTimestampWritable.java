@@ -495,21 +495,8 @@ public class TestTimestampWritable {
 
   @Test
   public void testSetTimestamp() {
-    // one VInt without nanos
-    verifySetTimestamp(1000);
-
-    // one VInt with nanos
-    verifySetTimestamp(1001);
-
-    // two VInt without nanos
-    verifySetTimestamp((long) Integer.MAX_VALUE * 1000 + 1000);
-
-    // two VInt with nanos
-    verifySetTimestamp((long) Integer.MAX_VALUE * 1000 + 1234);
-  }
-
-  private static void verifySetTimestamp(long time) {
-    Timestamp t1 = new Timestamp(time);
+    // make sure we need a 2nd VInt
+    Timestamp t1 = new Timestamp((long) Integer.MAX_VALUE * 1000 + 1234);
     TimestampWritable writable = new TimestampWritable(t1);
     byte[] bytes = writable.getBytes();
     Timestamp t2 = new Timestamp(0);
