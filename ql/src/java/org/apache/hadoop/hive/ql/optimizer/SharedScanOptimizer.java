@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -141,6 +142,15 @@ public class SharedScanOptimizer extends Transform {
               // Skip
               continue;
             }
+            // If partitions do not match, we currently do not merge
+            PrunedPartitionList prevTsOpPPList = pctx.getPrunedPartitions(prevTsOp);
+            PrunedPartitionList tsOpPPList = pctx.getPrunedPartitions(tsOp);
+            if (prevTsOpPPList.hasUnknownPartitions()
+                || tsOpPPList.hasUnknownPartitions()
+                || !prevTsOpPPList.getPartitions().equals(tsOpPPList.getPartitions())) {
+              // Skip
+              continue;
+            }
 
             // It seems these two operators can be merged.
             // Check that plan meets some preconditions before doing it.
@@ -226,27 +236,18 @@ public class SharedScanOptimizer extends Transform {
   }
 
   private static Set<TableScanOperator> gatherNotValidTableScanOps(
-          ParseContext pctx, SharedScanOptimizerCache optimizerCache) {
+          ParseContext pctx, SharedScanOptimizerCache optimizerCache) throws SemanticException {
     // Find TS operators with partition pruning enabled in plan
     // because these TS may potentially read different data for
     // different pipeline.
     // These can be:
-    // 1) TS with static partitioning.
-    //    TODO: Check partition list of different TS and do not add if they are identical
-    // 2) TS with DPP.
+    // 1) TS with DPP.
     //    TODO: Check if dynamic filters are identical and do not add.
-    // 3) TS with semijoin DPP.
+    // 2) TS with semijoin DPP.
     //    TODO: Check for dynamic filters.
     Set<TableScanOperator> notValidTableScanOps = new HashSet<>();
-    // 1) TS with static partitioning.
+    // 1) TS with DPP.
     Map<String, TableScanOperator> topOps = pctx.getTopOps();
-    for (TableScanOperator tsOp : topOps.values()) {
-      if (tsOp.getConf().getPartColumns() != null &&
-              !tsOp.getConf().getPartColumns().isEmpty()) {
-        notValidTableScanOps.add(tsOp);
-      }
-    }
-    // 2) TS with DPP.
     Collection<Operator<? extends OperatorDesc>> tableScanOps =
             Lists.<Operator<?>>newArrayList(topOps.values());
     Set<AppMasterEventOperator> s =
@@ -258,7 +259,7 @@ public class SharedScanOptimizer extends Transform {
         optimizerCache.tableScanToDPPSource.put(dped.getTableScan(), a);
       }
     }
-    // 3) TS with semijoin DPP.
+    // 2) TS with semijoin DPP.
     for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e
             : pctx.getRsToSemiJoinBranchInfo().entrySet()) {
       notValidTableScanOps.add(e.getValue().getTsOp());
