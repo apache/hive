@@ -494,6 +494,11 @@ public class HiveConf extends Configuration {
       " enabled the MS will be unusable."),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked",
         "throw exception if metadata tables are incorrect"),
+    METASTORE_SCHEMA_INFO_CLASS("hive.metastore.schema.info.class",
+        "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
+        "Fully qualified class name for the metastore schema information class \n"
+        + "which is used by schematool to fetch the schema information.\n"
+        + " This class should implement the IMetaStoreSchemaInfo interface"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed",
         "Default transaction isolation level for identity generation."),
     METASTORE_CACHE_LEVEL2("datanucleus.cache.level2", false,

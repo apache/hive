@@ -35,7 +35,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
@@ -219,7 +221,9 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testSchemaInit() throws Exception {
-    schemaTool.doInit(MetaStoreSchemaInfo.getHiveSchemaVersion());
+    IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf,
+        System.getProperty("test.tmp.dir", "target/tmp"), "derby");
+    schemaTool.doInit(metastoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
   }
 

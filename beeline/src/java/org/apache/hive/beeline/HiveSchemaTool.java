@@ -50,7 +50,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -75,7 +76,7 @@ public class HiveSchemaTool {
   private URI[] validationServers = null; // The list of servers the database/partition/table can locate on
   private final HiveConf hiveConf;
   private final String dbType;
-  private final MetaStoreSchemaInfo metaStoreSchemaInfo;
+  private final IMetaStoreSchemaInfo metaStoreSchemaInfo;
   static Log LOG = LogFactory.getLog("HiveSchemaTool");
 
   public HiveSchemaTool(String dbType) throws HiveMetaException {
@@ -89,7 +90,7 @@ public class HiveSchemaTool {
     }
     this.hiveConf = hiveConf;
     this.dbType = dbType;
-    this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, hiveConf, dbType);
+    this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
   }
 
   public HiveConf getHiveConf() {
@@ -149,7 +150,7 @@ public class HiveSchemaTool {
    */
   public void showInfo() throws HiveMetaException {
     Connection metastoreConn = getConnectionToMetastore(true);
-    String hiveVersion = MetaStoreSchemaInfo.getHiveSchemaVersion();
+    String hiveVersion = metaStoreSchemaInfo.getHiveSchemaVersion();
     String dbVersion = getMetaStoreSchemaVersion(metastoreConn);
     System.out.println("Hive distribution version:\t " + hiveVersion);
     System.out.println("Metastore schema version:\t " + dbVersion);
@@ -482,13 +483,13 @@ public class HiveSchemaTool {
     String newSchemaVersion = getMetaStoreSchemaVersion(
         getConnectionToMetastore(false));
     // verify that the new version is added to schema
-    assertCompatibleVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
+    assertCompatibleVersion(metaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
 
   }
 
   private void assertCompatibleVersion(String hiveSchemaVersion, String dbSchemaVersion)
       throws HiveMetaException {
-    if (!MetaStoreSchemaInfo.isVersionCompatible(hiveSchemaVersion, dbSchemaVersion)) {
+    if (!metaStoreSchemaInfo.isVersionCompatible(hiveSchemaVersion, dbSchemaVersion)) {
       throw new HiveMetaException("Metastore schema version is not compatible. Hive Version: "
           + hiveSchemaVersion + ", Database Schema Version: " + dbSchemaVersion);
     }
@@ -516,7 +517,7 @@ public class HiveSchemaTool {
    * @throws MetaException
    */
   public void doUpgrade(String fromSchemaVer) throws HiveMetaException {
-    if (MetaStoreSchemaInfo.getHiveSchemaVersion().equals(fromSchemaVer)) {
+    if (metaStoreSchemaInfo.getHiveSchemaVersion().equals(fromSchemaVer)) {
       System.out.println("No schema upgrade required from version " + fromSchemaVer);
       return;
     }
@@ -525,7 +526,7 @@ public class HiveSchemaTool {
         metaStoreSchemaInfo.getUpgradeScripts(fromSchemaVer);
     testConnectionToMetastore();
     System.out.println("Starting upgrade metastore schema from version " +
-        fromSchemaVer + " to " + MetaStoreSchemaInfo.getHiveSchemaVersion());
+        fromSchemaVer + " to " + metaStoreSchemaInfo.getHiveSchemaVersion());
     String scriptDir = metaStoreSchemaInfo.getMetaStoreScriptDir();
     try {
       for (String scriptFile : upgradeScripts) {
@@ -551,7 +552,7 @@ public class HiveSchemaTool {
    * @throws MetaException
    */
   public void doInit() throws HiveMetaException {
-    doInit(MetaStoreSchemaInfo.getHiveSchemaVersion());
+    doInit(metaStoreSchemaInfo.getHiveSchemaVersion());
 
     // Revalidated the new version after upgrade
     verifySchemaVersion();
@@ -698,7 +699,7 @@ public class HiveSchemaTool {
     System.out.println("Validating schema version");
     try {
       String newSchemaVersion = getMetaStoreSchemaVersion(conn, true);
-      assertCompatibleVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
+      assertCompatibleVersion(metaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
     } catch (HiveMetaException hme) {
       if (hme.getMessage().contains("Metastore schema version is not compatible")
         || hme.getMessage().contains("Multiple versions were found in metastore")
@@ -910,7 +911,7 @@ public class HiveSchemaTool {
   private void runPreUpgrade(String scriptDir, String scriptFile) {
     for (int i = 0;; i++) {
       String preUpgradeScript =
-          MetaStoreSchemaInfo.getPreUpgradeScriptName(i, scriptFile);
+          metaStoreSchemaInfo.getPreUpgradeScriptName(i, scriptFile);
       File preUpgradeScriptFile = new File(scriptDir, preUpgradeScript);
       if (!preUpgradeScriptFile.isFile()) {
         break;
