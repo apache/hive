@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -68,15 +70,17 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapRowRecordReader.class);
 
   protected final Configuration conf;
-  protected final RecordReader<NullWritable, Text> reader;
+  protected final RecordReader<NullWritable, BytesWritable> reader;
   protected final Schema schema;
   protected final AbstractSerDe serde;
-  protected final Text textData = new Text();
+  protected final BytesWritable data;
 
-  public LlapRowRecordReader(Configuration conf, Schema schema, RecordReader<NullWritable, Text> reader) throws IOException {
+  public LlapRowRecordReader(Configuration conf, Schema schema,
+      RecordReader<NullWritable, BytesWritable> reader) throws IOException {
     this.conf = conf;
     this.schema = schema;
     this.reader = reader;
+    this.data = new BytesWritable();
 
     try {
       serde = initSerDe(conf);
@@ -114,17 +118,17 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
   public boolean next(NullWritable key, Row value) throws IOException {
     Preconditions.checkArgument(value != null);
 
-    boolean hasNext = reader.next(key,  textData);
+    boolean hasNext = reader.next(key,  data);
     if (hasNext) {
-      // Deserialize Text to column values, and populate the row record
+      // Deserialize data to column values, and populate the row record
       Object rowObj;
       try {
         StructObjectInspector rowOI = (StructObjectInspector) serde.getObjectInspector();
-        rowObj = serde.deserialize(textData);
+        rowObj = serde.deserialize(data);
         setRowFromStruct(value, rowObj, rowOI);
       } catch (SerDeException err) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Error deserializing row from text: " + textData);
+          LOG.debug("Error deserializing row from data: " + data);
         }
         throw new IOException("Error deserializing row data", err);
       }
@@ -246,7 +250,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     props.put(serdeConstants.LIST_COLUMNS, columns);
     props.put(serdeConstants.LIST_COLUMN_TYPES, types);
     props.put(serdeConstants.ESCAPE_CHAR, "\\");
-    AbstractSerDe serde = new LazySimpleSerDe();
+    AbstractSerDe serde = new LazyBinarySerDe();
     serde.initialize(conf, props);
 
     return serde;

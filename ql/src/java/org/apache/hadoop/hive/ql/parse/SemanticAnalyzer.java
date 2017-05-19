@@ -216,6 +216,7 @@ import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -7138,9 +7139,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
           } else {
               fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+              Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+              if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
+                serdeClass = LazyBinarySerDe.class;
+              }
               table_desc =
                          PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
-                           LazySimpleSerDe.class);
+                           serdeClass);
           }
         } else {
           table_desc = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
