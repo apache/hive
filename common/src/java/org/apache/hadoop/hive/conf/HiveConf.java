@@ -3074,6 +3074,8 @@ public class HiveConf extends Configuration {
         "By default, the clients are required to provide tokens to access HDFS/etc."),
     LLAP_ZKSM_ZK_CONNECTION_STRING("hive.llap.zk.sm.connectionString", "",
         "ZooKeeper connection string for ZooKeeper SecretManager."),
+    LLAP_ZKSM_ZK_SESSION_TIMEOUT("hive.llap.zk.sm.session.timeout", "40s", new TimeValidator(
+        TimeUnit.MILLISECONDS), "ZooKeeper session timeout for ZK SecretManager."),
     LLAP_ZK_REGISTRY_USER("hive.llap.zk.registry.user", "",
         "In the LLAP ZooKeeper-based registry, specifies the username in the Zookeeper path.\n" +
         "This should be the hive user or whichever user is running the LLAP daemon."),
