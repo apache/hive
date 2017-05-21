@@ -93,14 +93,14 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     statsObj.setColName(colName.get(0));
 
     statsObj.setColType(colType.get(0));
-    
+
     ColumnStatisticsData statsData = new ColumnStatisticsData();
-    
+
     String columnType = colType.get(0);
 
     if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
-            || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
-            || columnType.equalsIgnoreCase("bigint")) {
+        || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
+        || columnType.equalsIgnoreCase("bigint") || columnType.equalsIgnoreCase("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
@@ -121,7 +121,6 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
         } else {
           throw new SemanticException("Unknown stat");
         }
-
       }
       statsData.setLongStats(longStats);
       statsObj.setStatsData(statsData);
@@ -244,8 +243,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDecimalStats(decimalStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase("date")
-            || columnType.equalsIgnoreCase("timestamp")) {
+    } else if (columnType.equalsIgnoreCase("date")) {
       DateColumnStatsData dateStats = new DateColumnStatsData();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {
