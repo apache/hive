@@ -139,10 +139,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         if (!rwork.getListFilesOnOutputBehaviour(oneSrc)){
 
           LOG.debug("ReplCopyTask :cp:" + oneSrc.getPath() + "=>" + toPath);
-          if (!FileUtils.copy(actualSrcFs, oneSrc.getPath(), dstFs, toPath,
-            false, // delete source
-            true, // overwrite destination
-            conf)) {
+          if (!doCopy(toPath, dstFs, oneSrc.getPath(), actualSrcFs)) {
           console.printError("Failed to copy: '" + oneSrc.getPath().toString()
               + "to: '" + toPath.toString() + "'");
           return 1;
@@ -166,6 +163,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       return (1);
+    }
+  }
+
+  private boolean doCopy(Path dst, FileSystem dstFs, Path src, FileSystem srcFs) throws IOException {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)){
+      // regular copy in test env.
+      return FileUtils.copy(srcFs, src, dstFs, dst, false, true, conf);
+    } else {
+      // distcp in actual deployment with privilege escalation
+      return FileUtils.privilegedCopy(srcFs, src, dst, conf);
     }
   }
 

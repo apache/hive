@@ -583,11 +583,21 @@ public final class FileUtils {
    * Copies files between filesystems.
    */
   public static boolean copy(FileSystem srcFS, Path src,
-    FileSystem dstFS, Path dst,
-    boolean deleteSource,
-    boolean overwrite,
-    HiveConf conf) throws IOException {
+      FileSystem dstFS, Path dst,
+      boolean deleteSource,
+      boolean overwrite,
+      HiveConf conf) throws IOException {
     return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
+  }
+
+  /**
+   * Copies files between filesystems as a fs super user using distcp, and runs
+   * as a privileged user.
+   */
+  public static boolean privilegedCopy(FileSystem srcFS, Path src, Path dst,
+      HiveConf conf) throws IOException {
+    String privilegedUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+    return distCp(srcFS, src, dst, false, privilegedUser, conf, ShimLoader.getHadoopShims());
   }
 
   @VisibleForTesting
@@ -612,14 +622,30 @@ public final class FileUtils {
                 HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES) + ")");
         LOG.info("Launch distributed copy (distcp) job.");
         triedDistcp = true;
-        copied = shims.runDistCp(src, dst, conf);
-        if (copied && deleteSource) {
-          srcFS.delete(src, true);
-        }
+        copied = distCp(srcFS, src, dst, deleteSource, null, conf, shims);
       }
     }
     if (!triedDistcp) {
+      // Note : Currently, this implementation does not "fall back" to regular copy if distcp
+      // is tried and it fails. We depend upon that behaviour in cases like replication,
+      // wherein if distcp fails, there is good reason to not plod along with a trivial
+      // implementation, and fail instead.
       copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
+    }
+    return copied;
+  }
+
+  static boolean distCp(FileSystem srcFS, Path src, Path dst,
+      boolean deleteSource, String doAsUser,
+      HiveConf conf, HadoopShims shims) throws IOException {
+    boolean copied = false;
+    if (doAsUser == null){
+      copied = shims.runDistCp(src, dst, conf);
+    } else {
+      copied = shims.runDistCpAs(src, dst, conf, doAsUser);
+    }
+    if (copied && deleteSource) {
+      srcFS.delete(src, true);
     }
     return copied;
   }
