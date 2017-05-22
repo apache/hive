@@ -30,9 +30,9 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -343,14 +343,8 @@ public class TestFunctionRegistry extends TestCase {
         TypeInfoFactory.doubleTypeInfo);
     unionAll(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
         TypeInfoFactory.decimalTypeInfo);
-    unionAll(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
-        TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
         TypeInfoFactory.decimalTypeInfo);
-    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
-        TypeInfoFactory.stringTypeInfo);
-    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-        TypeInfoFactory.doubleTypeInfo);
 
     unionAll(varchar5, varchar10, varchar10);
     unionAll(varchar10, varchar5, varchar10);
