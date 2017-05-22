@@ -692,8 +692,8 @@ public class TestSchemaTool extends TestCase {
     assertTrue(isValid);
     // adding same property key twice should throw unique key constraint violation exception
     String[] scripts = new String[] {
-        "insert into METASTORE_DB_PROPERTIES values (1, 'guid', 'test-uuid-1', 'dummy uuid 1')",
-        "insert into METASTORE_DB_PROPERTIES values (2, 'guid', 'test-uuid-2', 'dummy uuid 2')", };
+        "insert into METASTORE_DB_PROPERTIES values ('guid', 'test-uuid-1', 'dummy uuid 1')",
+        "insert into METASTORE_DB_PROPERTIES values ('guid', 'test-uuid-2', 'dummy uuid 2')", };
     File scriptFile = generateTestScript(scripts);
     Exception ex = null;
     try {
