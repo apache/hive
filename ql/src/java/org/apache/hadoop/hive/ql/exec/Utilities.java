@@ -1538,7 +1538,7 @@ public final class Utilities {
     int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
         numBuckets = (conf != null && conf.getTable() != null)
           ? conf.getTable().getNumBuckets() : 0;
-    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null, 0);
+    return removeTempOrDuplicateFiles(fs, fileStats, dpLevels, numBuckets, hconf, null, 0, false);
   }
   
   private static boolean removeEmptyDpDirectory(FileSystem fs, Path path) throws IOException {
@@ -1554,7 +1554,7 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId) throws IOException {
+      int dpLevels, int numBuckets, Configuration hconf, Long txnId, int stmtId, boolean isMmTable) throws IOException {
     if (fileStats == null) {
       return null;
     }
@@ -1573,7 +1573,7 @@ public final class Utilities {
         }
         FileStatus[] items = fs.listStatus(path);
 
-        if (txnId != null) {
+        if (isMmTable) {
           Path mmDir = parts[i].getPath();
           if (!mmDir.getName().equals(AcidUtils.deltaSubdir(txnId, txnId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
@@ -1590,7 +1590,7 @@ public final class Utilities {
       if (items.length == 0) {
         return result;
       }
-      if (txnId == null) {
+      if (!isMmTable) {
         taskIDToFile = removeTempOrDuplicateFilesNonMm(items, fs);
       } else {
         if (items.length > 1) {
@@ -4120,7 +4120,7 @@ public final class Utilities {
 
   public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long txnId, int stmtId,
-      Reporter reporter, boolean isMmCtas) throws IOException, HiveException {
+      Reporter reporter, boolean isMmTable, boolean isMmCtas) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path manifestDir = getManifestDir(specPath, txnId, stmtId, unionSuffix);
     if (!success) {
@@ -4213,7 +4213,7 @@ public final class Utilities {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
-        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId);
+        fs, finalResults, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId, isMmTable);
     // create empty buckets if necessary
     if (emptyBuckets.size() > 0) {
       assert mbc != null;

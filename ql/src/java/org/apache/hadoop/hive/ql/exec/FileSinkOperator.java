@@ -1198,9 +1198,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           fsp.commit(fs, commitPaths);
         }
       }
-      if (conf.getMmWriteId() != null) {
+      if (conf.isMmTable()) {
         Utilities.writeMmCommitManifest(
-            commitPaths, specPath, fs, taskId, conf.getMmWriteId(), conf.getStatementId(), unionPath);
+            commitPaths, specPath, fs, taskId, conf.getTransactionId(), conf.getStatementId(), unionPath);
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1256,7 +1256,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           MissingBucketsContext mbc = new MissingBucketsContext(
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleMmTableFinalPath(specPath, unionSuffix, hconf, success,
-              dpLevels, lbLevels, mbc, conf.getMmWriteId(), conf.getStatementId(), reporter, conf.isMmCtas());
+              dpLevels, lbLevels, mbc, conf.getTransactionId(), conf.getStatementId(), reporter,
+              conf.isMmTable(), conf.isMmCtas());
         }
       }
     } catch (IOException e) {

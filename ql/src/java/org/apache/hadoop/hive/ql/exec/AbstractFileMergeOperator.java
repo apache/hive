@@ -89,7 +89,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         .isListBucketingAlterTableConcatenate();
     listBucketingDepth = conf.getListBucketingDepth();
     Path specPath = conf.getOutputPath();
-    isMmTable = conf.getTxnId() != null;
+    isMmTable = conf.getIsMmTable();
     if (isMmTable) {
       updatePaths(specPath, null);
     } else {
@@ -282,7 +282,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       FileSystem fs = outputDir.getFileSystem(hconf);
       Long mmWriteId = conf.getTxnId();
       int stmtId = conf.getStmtId();
-      if (mmWriteId == null) {
+      if (!isMmTable) {
         Path backupPath = backupOutputPath(fs, outputDir);
         Utilities.mvFileToFinalPath(
             outputDir, hconf, success, LOG, conf.getDpCtx(), null, reporter);
@@ -298,7 +298,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // We don't expect missing buckets from mere (actually there should be no buckets),
         // so just pass null as bucketing context. Union suffix should also be accounted for.
         Utilities.handleMmTableFinalPath(outputDir.getParent(), null, hconf, success,
-            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, false);
+            dpLevels, lbLevels, null, mmWriteId, stmtId, reporter, isMmTable, false);
       }
 
     } catch (IOException e) {

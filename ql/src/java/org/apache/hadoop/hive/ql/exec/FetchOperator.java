@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
@@ -277,7 +278,8 @@ public class FetchOperator implements Serializable {
       }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
-        if (extractValidTxnList() != null) {
+        if (extractValidTxnList() != null &&
+            MetaStoreUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
           return true;
         }
         for (FileStatus fStat : listStatusUnderPath(fs, currPath)) {
@@ -411,7 +413,12 @@ public class FetchOperator implements Serializable {
     if (inputFormat instanceof HiveInputFormat) {
       return StringUtils.escapeString(currPath.toString()); // No need to process here.
     }
-    ValidTxnList validTxnList = extractValidTxnList();
+    ValidTxnList validTxnList;
+    if (MetaStoreUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
+      validTxnList = extractValidTxnList();
+    } else {
+      validTxnList = null;  // non-MM case
+    }
     if (validTxnList != null) {
       Utilities.LOG14535.info("Observing " + currDesc.getTableName() + ": " + validTxnList);
     }

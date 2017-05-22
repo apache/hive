@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,9 +429,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
-    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    ValidTxnList validTxnList = txnString == null ? new ValidReadTxnList() :
-        new ValidReadTxnList(txnString);
+    ValidTxnList validTxnList;
+    if (MetaStoreUtils.isInsertOnlyTable(table.getProperties())) {
+      String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      validTxnList = txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+    } else {
+      validTxnList = null;  // for non-MM case
+    }
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);

@@ -1623,8 +1623,6 @@ public class Hive {
       boolean hasFollowingStatsTask, Long txnId, int stmtId)
           throws HiveException {
     Table tbl = getTable(tableName);
-    boolean isMmTableWrite = (txnId != null);
-    Preconditions.checkState(isMmTableWrite == MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()));
     loadPartition(loadPath, tbl, partSpec, replace, inheritTableSpecs,
         isSkewedStoreAsSubdir, isSrcLocal, isAcid, hasFollowingStatsTask, txnId, stmtId);
   }
@@ -1659,6 +1657,7 @@ public class Hive {
       boolean isSrcLocal, boolean isAcid, boolean hasFollowingStatsTask, Long txnId, int stmtId)
           throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
+    boolean isMmTableWrite = MetaStoreUtils.isInsertOnlyTable(tbl.getParameters());
     try {
       // Get the partition object if it already exists
       Partition oldPart = getPartition(tbl, partSpec, false);
@@ -1705,7 +1704,7 @@ public class Hive {
         newFiles = Collections.synchronizedList(new ArrayList<Path>());
       }
       // TODO: this assumes both paths are qualified; which they are, currently.
-      if (txnId != null && loadPath.equals(newPartPath)) {
+      if (isMmTableWrite && loadPath.equals(newPartPath)) {
         // MM insert query, move itself is a no-op.
         Utilities.LOG14535.info("not moving " + loadPath + " to " + newPartPath + " (MM)");
         assert !isAcid;
@@ -1723,7 +1722,7 @@ public class Hive {
         // Either a non-MM query, or a load into MM table from an external source.
         PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
         Path destPath = newPartPath;
-        if (txnId != null) {
+        if (isMmTableWrite) {
           // We will load into MM directory, and delete from the parent if needed.
           destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
           filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
@@ -1732,7 +1731,7 @@ public class Hive {
         if (replace || (oldPart == null && !isAcid)) {
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
-              isSrcLocal, isAutoPurge, newFiles, filter, txnId != null);
+              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite);
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           Hive.copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcid, newFiles);
@@ -1982,11 +1981,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   private Set<Path> getValidPartitionsInPath(
-      int numDP, int numLB, Path loadPath, Long txnId, int stmtId) throws HiveException {
+      int numDP, int numLB, Path loadPath, Long txnId, int stmtId, boolean isMmTable) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      if (txnId == null) {
+      if (!isMmTable) {
         FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
         // Check for empty partitions
         for (FileStatus s : leafStatus) {
@@ -2063,7 +2062,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId);
+    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId,
+        MetaStoreUtils.isInsertOnlyTable(tbl.getParameters()));
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -2179,7 +2179,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public void loadTable(Path loadPath, String tableName, boolean replace, boolean isSrcLocal,
       boolean isSkewedStoreAsSubdir, boolean isAcid, boolean hasFollowingStatsTask,
-      Long txnId, int stmtId) throws HiveException {
+      Long txnId, int stmtId, boolean isMmTable) throws HiveException {
     List<Path> newFiles = null;
     Table tbl = getTable(tableName);
     HiveConf sessionConf = SessionState.getSessionConf();
@@ -2187,7 +2187,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
     // TODO: this assumes both paths are qualified; which they are, currently.
-    if (txnId != null && loadPath.equals(tbl.getPath())) {
+    if (isMmTable && loadPath.equals(tbl.getPath())) {
       Utilities.LOG14535.info("not moving " + loadPath + " to " + tbl.getPath());
       if (replace) {
         Path tableDest = tbl.getPath();
@@ -2201,7 +2201,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // Either a non-MM query, or a load into MM table from an external source.
       Path tblPath = tbl.getPath(), destPath = tblPath;
       PathFilter filter = FileUtils.HIDDEN_FILES_PATH_FILTER;
-      if (txnId != null) {
+      if (isMmTable) {
         // We will load into MM directory, and delete from the parent if needed.
         destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
         filter = replace ? new JavaUtils.IdPathFilter(txnId, stmtId, false, true) : filter;
@@ -2210,7 +2210,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (replace) {
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tblPath, loadPath, destPath, tblPath,
-            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, txnId != null);
+            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);

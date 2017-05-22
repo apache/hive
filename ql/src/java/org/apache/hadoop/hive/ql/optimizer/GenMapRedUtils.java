@@ -1265,7 +1265,8 @@ public final class GenMapRedUtils {
     //
     FileSinkDesc fsInputDesc = fsInput.getConf();
     Utilities.LOG14535.info("Creating merge work from " + System.identityHashCode(fsInput)
-        + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getMmWriteId() : null) + " into " + finalName);
+        + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null)
+        + " into " + finalName);
 
     boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
         fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) ||
@@ -1273,7 +1274,7 @@ public final class GenMapRedUtils {
             fsInputDesc.getTableInfo().getInputFileFormatClass().equals(OrcInputFormat.class));
 
     RowSchema inputRS = fsInput.getSchema();
-    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getMmWriteId() : null;
+    Long srcMmWriteId = fsInputDesc.isMmTable() ? fsInputDesc.getTransactionId() : null;
     FileSinkDesc fsOutputDesc = null;
     TableScanOperator tsMerge = null;
     if (!isBlockMerge) {
@@ -1636,7 +1637,8 @@ public final class GenMapRedUtils {
     } else {
       fmd = new OrcFileMergeDesc();
     }
-    fmd.setTxnId(fsInputDesc.getMmWriteId());
+    fmd.setIsMmTable(fsInputDesc.isMmTable());
+    fmd.setTxnId(fsInputDesc.getTransactionId());
     int stmtId = fsInputDesc.getStatementId();
     fmd.setStmtId(stmtId == -1 ? 0 : stmtId);
     fmd.setDpCtx(fsInputDesc.getDynPartCtx());

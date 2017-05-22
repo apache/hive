@@ -30,6 +30,7 @@ public class FileMergeDesc extends AbstractOperatorDesc {
   private boolean isListBucketingAlterTableConcatenate;
   private Long txnId;
   private int stmtId;
+  private boolean isMmTable;
 
   public FileMergeDesc(DynamicPartitionCtx dynPartCtx, Path outputDir) {
     this.dpCtx = dynPartCtx;
@@ -90,5 +91,13 @@ public class FileMergeDesc extends AbstractOperatorDesc {
 
   public void setStmtId(int stmtId) {
     this.stmtId = stmtId;
+  }
+
+  public boolean getIsMmTable() {
+    return isMmTable;
+  }
+
+  public void setIsMmTable(boolean isMmTable) {
+    this.isMmTable = isMmTable;
   }
 }

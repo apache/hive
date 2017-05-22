@@ -104,7 +104,7 @@ public class TestHiveHistory extends TestCase {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, false, false, false, false, null, 0);
+        db.loadTable(hadoopDataFile[i], src, false, false, false, false, false, null, 0, false);
         i++;
       }
 

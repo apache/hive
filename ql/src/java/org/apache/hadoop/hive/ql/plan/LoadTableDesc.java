@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -159,11 +160,11 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
 
   @Explain(displayName = "micromanaged table")
   public Boolean isMmTableExplain() {
-    return txnId != null? true : null;
+    return isMmTable() ? true : null;
   }
 
   public boolean isMmTable() {
-    return txnId != null;
+    return MetaStoreUtils.isInsertOnlyTable(table.getProperties());
   }
 
   public void setReplace(boolean replace) {

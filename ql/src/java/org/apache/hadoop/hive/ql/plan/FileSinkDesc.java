@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -275,11 +276,11 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
 
   public boolean isMmTable() {
-    return mmWriteId != null;
-  }
-
-  public Long getMmWriteId() {
-    return mmWriteId;
+    if (getTable() != null) {
+      return MetaStoreUtils.isInsertOnlyTable(table.getParameters());
+    } else { // Dynamic Partition Insert case
+      return MetaStoreUtils.isInsertOnlyTable(getTableInfo().getProperties());
+    }
   }
 
   public boolean isMaterialization() {
@@ -475,7 +476,6 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   }
   public void setTransactionId(long id) {
     txnId = id;
-    setMmWriteId(id);
   }
   public long getTransactionId() {
     return txnId;

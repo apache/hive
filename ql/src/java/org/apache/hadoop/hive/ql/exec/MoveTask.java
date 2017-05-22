@@ -339,11 +339,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        boolean isFullAcidOp = work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
-            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE;
-        if (tbd.isMmTable() && isFullAcidOp) {
-           throw new HiveException("UPDATE and DELETE operations are not supported for MM table");
-        }
+        boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
+            && !tbd.isMmTable();
 
         // Create a data container
         DataContainer dc = null;
@@ -356,7 +353,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getReplace(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
-              tbd.getTxnId(), tbd.getStmtId());
+              tbd.getTxnId(), tbd.getStmtId(), tbd.isMmTable());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -416,8 +413,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     db.loadPartition(tbd.getSourcePath(), tbd.getTable().getTableName(),
         tbd.getPartitionSpec(), tbd.getReplace(),
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
-        work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
-            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE,
+        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+            !tbd.isMmTable(),
         hasFollowingStatsTask(), tbd.getTxnId(), tbd.getStmtId());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
@@ -462,8 +459,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getReplace(),
         dpCtx.getNumDPCols(),
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
-        work.getLoadTableWork().getWriteType() == AcidUtils.Operation.UPDATE ||
-            work.getLoadTableWork().getWriteType() == AcidUtils.Operation.DELETE,
+        work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
+            !tbd.isMmTable(),
         SessionState.get().getTxnMgr().getCurrentTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
         work.getLoadTableWork().getWriteType());
 

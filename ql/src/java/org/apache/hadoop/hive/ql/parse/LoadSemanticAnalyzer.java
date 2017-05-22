@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
@@ -273,7 +274,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     int stmtId = 0;
     Table tbl = ts.tableHandle;
     if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
-      txnId = 0l; //todo to be replaced with txnId in Driver
+      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     }
 
     LoadTableDesc loadTableWork;

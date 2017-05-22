@@ -140,7 +140,7 @@ public class TestExecDriver extends TestCase {
         db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             HiveIgnoreKeyTextOutputFormat.class);
-        db.loadTable(hadoopDataFile[i], src, false, true, false, false, false, null, 0);
+        db.loadTable(hadoopDataFile[i], src, false, true, false, false, false, null, 0, false);
         i++;
       }
 

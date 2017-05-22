@@ -68,14 +68,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: intermediate
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -161,6 +161,24 @@ POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	455
+0	456
+10	455
+10	455
+10	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
+103	455
+103	455
+103	456
 PREHOOK: query: select * from part_mm order by key, key_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
@@ -173,6 +191,24 @@ POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	455
+0	456
+10	455
+10	455
+10	456
+97	455
+97	455
+97	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
+103	455
+103	455
+103	456
 PREHOOK: query: truncate table part_mm
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@part_mm@key_mm=455
@@ -236,6 +272,12 @@ POSTHOOK: query: select * from simple_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
 #### A masked pattern was here ####
+0
+10
+97
+98
+100
+103
 PREHOOK: query: insert into table simple_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -259,6 +301,18 @@ POSTHOOK: query: select * from simple_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_mm
 #### A masked pattern was here ####
+0
+0
+10
+10
+97
+97
+98
+98
+100
+100
+103
+103
 PREHOOK: query: truncate table simple_mm
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@simple_mm
@@ -308,14 +362,44 @@ POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@dp_mm@key1=123/key2=0
+POSTHOOK: Output: default@dp_mm@key1=123/key2=10
+POSTHOOK: Output: default@dp_mm@key1=123/key2=100
+POSTHOOK: Output: default@dp_mm@key1=123/key2=103
+POSTHOOK: Output: default@dp_mm@key1=123/key2=97
+POSTHOOK: Output: default@dp_mm@key1=123/key2=98
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=0).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=100).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=103).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=10).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=97).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dp_mm PARTITION(key1=123,key2=98).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from dp_mm order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dp_mm
+PREHOOK: Input: default@dp_mm@key1=123/key2=0
+PREHOOK: Input: default@dp_mm@key1=123/key2=10
+PREHOOK: Input: default@dp_mm@key1=123/key2=100
+PREHOOK: Input: default@dp_mm@key1=123/key2=103
+PREHOOK: Input: default@dp_mm@key1=123/key2=97
+PREHOOK: Input: default@dp_mm@key1=123/key2=98
 #### A masked pattern was here ####
 POSTHOOK: query: select * from dp_mm order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dp_mm
+POSTHOOK: Input: default@dp_mm@key1=123/key2=0
+POSTHOOK: Input: default@dp_mm@key1=123/key2=10
+POSTHOOK: Input: default@dp_mm@key1=123/key2=100
+POSTHOOK: Input: default@dp_mm@key1=123/key2=103
+POSTHOOK: Input: default@dp_mm@key1=123/key2=97
+POSTHOOK: Input: default@dp_mm@key1=123/key2=98
 #### A masked pattern was here ####
+0	123	0
+10	123	10
+97	123	97
+98	123	98
+100	123	100
+103	123	103
 PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dp_mm
@@ -363,6 +447,18 @@ POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
 #### A masked pattern was here ####
+0
+1
+10
+11
+97
+98
+98
+99
+100
+101
+103
+104
 PREHOOK: query: insert into table union_mm 
 select p from
 (
@@ -402,6 +498,23 @@ POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
 #### A masked pattern was here ####
+0
+1
+2
+10
+11
+12
+97
+98
+99
+99
+100
+100
+101
+102
+103
+104
+105
 PREHOOK: query: insert into table union_mm
 SELECT p FROM
 (
@@ -455,6 +568,38 @@ POSTHOOK: query: select * from union_mm order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_mm
 #### A masked pattern was here ####
+0
+0
+1
+1
+2
+2
+10
+10
+11
+11
+12
+12
+97
+97
+98
+98
+99
+99
+99
+100
+100
+100
+101
+101
+102
+102
+103
+103
+104
+104
+105
+105
 PREHOOK: query: drop table union_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_mm
@@ -545,6 +690,12 @@ POSTHOOK: query: select * from skew_mm order by k2, k1, k4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@skew_mm
 #### A masked pattern was here ####
+0	0	0
+10	10	10
+97	97	97
+98	98	98
+100	100	100
+103	103	103
 PREHOOK: query: drop table skew_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@skew_mm
@@ -629,6 +780,12 @@ POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
 PREHOOK: query: insert into table merge0_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -652,6 +809,18 @@ POSTHOOK: query: select * from merge0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge0_mm
 #### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
+98
+97
+100
+103
+0
+10
 PREHOOK: query: drop table merge0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge0_mm
@@ -691,6 +860,12 @@ POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
 #### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
 PREHOOK: query: insert into table merge2_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -714,6 +889,18 @@ POSTHOOK: query: select * from merge2_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge2_mm
 #### A masked pattern was here ####
+98
+97
+100
+103
+0
+10
+98
+97
+100
+103
+0
+10
 PREHOOK: query: drop table merge2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge2_mm
@@ -743,14 +930,44 @@ POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=100).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=103).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from merge1_mm order by id, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
 POSTHOOK: query: select * from merge1_mm order by id, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
+0	0
+10	10
+97	97
+98	98
+100	100
+103	103
 PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -764,14 +981,50 @@ POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@merge1_mm@key=0
+POSTHOOK: Output: default@merge1_mm@key=10
+POSTHOOK: Output: default@merge1_mm@key=100
+POSTHOOK: Output: default@merge1_mm@key=103
+POSTHOOK: Output: default@merge1_mm@key=97
+POSTHOOK: Output: default@merge1_mm@key=98
+POSTHOOK: Lineage: merge1_mm PARTITION(key=0).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=100).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=103).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=10).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=97).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: merge1_mm PARTITION(key=98).id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from merge1_mm order by id, key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge1_mm
+PREHOOK: Input: default@merge1_mm@key=0
+PREHOOK: Input: default@merge1_mm@key=10
+PREHOOK: Input: default@merge1_mm@key=100
+PREHOOK: Input: default@merge1_mm@key=103
+PREHOOK: Input: default@merge1_mm@key=97
+PREHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
 POSTHOOK: query: select * from merge1_mm order by id, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge1_mm
+POSTHOOK: Input: default@merge1_mm@key=0
+POSTHOOK: Input: default@merge1_mm@key=10
+POSTHOOK: Input: default@merge1_mm@key=100
+POSTHOOK: Input: default@merge1_mm@key=103
+POSTHOOK: Input: default@merge1_mm@key=97
+POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
+0	0
+0	0
+10	10
+10	10
+97	97
+97	97
+98	98
+98	98
+100	100
+100	100
+103	103
+103	103
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge1_mm
@@ -842,7 +1095,7 @@ POSTHOOK: query: select count(1) from load0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load0_mm
 #### A masked pattern was here ####
-1000
+500
 PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load0_mm
@@ -993,7 +1246,7 @@ POSTHOOK: query: select count(1) from load1_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load1_mm
 #### A masked pattern was here ####
-1050
+500
 PREHOOK: query: drop table load1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load1_mm
@@ -1155,6 +1408,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet1_mm
 POSTHOOK: Input: default@parquet2_mm
 #### A masked pattern was here ####
+1	value1	value2
 PREHOOK: query: drop table parquet1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet1_mm

@@ -1284,7 +1284,7 @@ POSTHOOK: query: select count(1) from load0_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load0_mm
 #### A masked pattern was here ####
-1000
+500
 PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load0_mm
@@ -1435,7 +1435,7 @@ POSTHOOK: query: select count(1) from load1_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load1_mm
 #### A masked pattern was here ####
-1050
+500
 PREHOOK: query: drop table load1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load1_mm
