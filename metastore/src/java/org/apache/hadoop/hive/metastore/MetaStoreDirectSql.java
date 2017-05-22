@@ -1208,7 +1208,9 @@ class MetaStoreDirectSql {
       }
     };
     List<Object[]> list = runBatched(colNames, b);
-    if (list.isEmpty()) return null;
+    if (list.isEmpty()) {
+      return null;
+    }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
     ColumnStatistics result = makeColumnStats(list, csd, 0);
     b.closeAllQueries();
@@ -1343,41 +1345,26 @@ class MetaStoreDirectSql {
 
   // Get aggregated column stats for a table per partition for all columns in the partition
   // This is primarily used to populate stats object when using CachedStore (Check CachedStore#prewarm)
-  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
-      String tblName, boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
-    String queryText = "select \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", "
-        + "min(\"LONG_LOW_VALUE\"), max(\"LONG_HIGH_VALUE\"), min(\"DOUBLE_LOW_VALUE\"), max(\"DOUBLE_HIGH_VALUE\"), "
-        + "min(cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal)), max(cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)), "
-        + "sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
-        + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), "
-        // The following data is used to compute a partitioned table's NDV based
-        // on partitions' NDV when useDensityFunctionForNDVEstimation = true. Global NDVs cannot be
-        // accurately derived from partition NDVs, because the domain of column value two partitions
-        // can overlap. If there is no overlap then global NDV is just the sum
-        // of partition NDVs (UpperBound). But if there is some overlay then
-        // global NDV can be anywhere between sum of partition NDVs (no overlap)
-        // and same as one of the partition NDV (domain of column value in all other
-        // partitions is subset of the domain value in one of the partition)
-        // (LowerBound).But under uniform distribution, we can roughly estimate the global
-        // NDV by leveraging the min/max values.
-        // And, we also guarantee that the estimation makes sense by comparing it to the
-        // UpperBound (calculated by "sum(\"NUM_DISTINCTS\")")
-        // and LowerBound (calculated by "max(\"NUM_DISTINCTS\")")
-        + "avg((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
-        + "avg((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
-        + "avg((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-        + "sum(\"NUM_DISTINCTS\") from \"PART_COL_STATS\""
-        + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ? group by \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\"";
+  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
+      String tblName) throws MetaException {
+    String queryText =
+        "select \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"LONG_LOW_VALUE\", "
+            + "\"LONG_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\", \"DOUBLE_HIGH_VALUE\",  "
+            + "\"BIG_DECIMAL_LOW_VALUE\", \"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", "
+            + "\"NUM_DISTINCTS\", \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\""
+            + " from \"PART_COL_STATS\" where \"DB_NAME\" = ? and \"TABLE_NAME\" = ?"
+            + " order by \"PARTITION_NAME\"";
     long start = 0;
     long end = 0;
     Query query = null;
     boolean doTrace = LOG.isDebugEnabled();
     Object qResult = null;
-    ForwardQueryResult fqr = null;
     start = doTrace ? System.nanoTime() : 0;
     query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    qResult = executeWithArray(query,
-        prepareParams(dbName, tblName, new ArrayList<String>(), new ArrayList<String>()), queryText);
+    qResult =
+        executeWithArray(query,
+            prepareParams(dbName, tblName, new ArrayList<String>(), new ArrayList<String>()),
+            queryText);
     if (qResult == null) {
       query.closeAll();
       return Maps.newHashMap();
@@ -1385,13 +1372,31 @@ class MetaStoreDirectSql {
     end = doTrace ? System.nanoTime() : 0;
     timingTrace(doTrace, queryText, start, end);
     List<Object[]> list = ensureList(qResult);
-    Map<String, ColumnStatisticsObj> partColStatsMap = new HashMap<String, ColumnStatisticsObj>();
+    Map<String, List<ColumnStatisticsObj>> partColStatsMap =
+        new HashMap<String, List<ColumnStatisticsObj>>();
+    String partNameCurrent = null;
+    List<ColumnStatisticsObj> partColStatsList = new ArrayList<ColumnStatisticsObj>();
     for (Object[] row : list) {
       String partName = (String) row[0];
-      String colName = (String) row[1];
-      partColStatsMap.put(
-          CacheUtils.buildKey(dbName, tblName, CachedStore.partNameToVals(partName), colName),
-          prepareCSObjWithAdjustedNDV(row, 1, useDensityFunctionForNDVEstimation, ndvTuner));
+      if (partNameCurrent == null) {
+        // Update the current partition we are working on
+        partNameCurrent = partName;
+        // Create a new list for this new partition
+        partColStatsList = new ArrayList<ColumnStatisticsObj>();
+        // Add the col stat for the current column
+        partColStatsList.add(prepareCSObj(row, 1));
+      } else if (!partNameCurrent.equalsIgnoreCase(partName)) {
+        // Save the previous partition and its col stat list
+        partColStatsMap.put(partNameCurrent, partColStatsList);
+        // Update the current partition we are working on
+        partNameCurrent = partName;
+        // Create a new list for this new partition
+        partColStatsList = new ArrayList<ColumnStatisticsObj>();
+        // Add the col stat for the current column
+        partColStatsList.add(prepareCSObj(row, 1));
+      } else {
+        partColStatsList.add(prepareCSObj(row, 1));
+      }
       Deadline.checkTimeout();
     }
     query.closeAll();

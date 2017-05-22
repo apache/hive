@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
@@ -35,7 +36,7 @@ public class ColumnStatsMergerFactory {
 
   private ColumnStatsMergerFactory() {
   }
-  
+
   // we depend on the toString() method for javolution.util.FastCollection.
   private static int countNumBitVectors(String s) {
     if (s != null) {
@@ -88,8 +89,15 @@ public class ColumnStatsMergerFactory {
       numBitVectors = nbvNew == nbvOld ? nbvNew : 0;
       break;
     }
+    case DATE_STATS: {
+      agg = new DateColumnStatsMerger();
+      int nbvNew = countNumBitVectors(statsObjNew.getStatsData().getDateStats().getBitVectors());
+      int nbvOld = countNumBitVectors(statsObjOld.getStatsData().getDateStats().getBitVectors());
+      numBitVectors = nbvNew == nbvOld ? nbvNew : 0;
+      break;
+    }
     default:
-      throw new RuntimeException("Woh, bad.  Unknown stats type " + typeNew.toString());
+      throw new IllegalArgumentException("Unknown stats type " + typeNew.toString());
     }
     if (numBitVectors > 0) {
       agg.ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
@@ -127,8 +135,12 @@ public class ColumnStatsMergerFactory {
       csd.setDecimalStats(new DecimalColumnStatsData());
       break;
 
+    case DATE_STATS:
+      csd.setDateStats(new DateColumnStatsData());
+      break;
+
     default:
-      throw new RuntimeException("Woh, bad.  Unknown stats type!");
+      throw new IllegalArgumentException("Unknown stats type");
     }
 
     cso.setStatsData(csd);

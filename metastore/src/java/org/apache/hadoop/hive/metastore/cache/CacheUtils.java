@@ -38,6 +38,10 @@ public class CacheUtils {
     return dbName + delimit + tableName;
   }
 
+  public static String buildKeyWithDelimit(String dbName, String tableName) {
+    return buildKey(dbName, tableName) + delimit;
+  }
+
   public static String buildKey(String dbName, String tableName, List<String> partVals) {
     String key = buildKey(dbName, tableName);
     if (partVals == null || partVals.size() == 0) {
@@ -52,9 +56,36 @@ public class CacheUtils {
     return key;
   }
 
+  public static String buildKeyWithDelimit(String dbName, String tableName, List<String> partVals) {
+    return buildKey(dbName, tableName, partVals) + delimit;
+  }
+
   public static String buildKey(String dbName, String tableName, List<String> partVals, String colName) {
     String key = buildKey(dbName, tableName, partVals);
     return key + delimit + colName;
+  }
+
+  public static String buildKey(String dbName, String tableName, String colName) {
+    String key = buildKey(dbName, tableName);
+    return key + delimit + colName;
+  }
+
+  public static String[] splitTableColStats(String key) {
+    return key.split(delimit);
+  }
+
+  public static Object[] splitPartitionColStats(String key) {
+    Object[] result = new Object[4];
+    String[] comps = key.split(delimit);
+    result[0] = comps[0];
+    result[1] = comps[1];
+    List<String> vals = new ArrayList<String>();
+    for (int i=2;i<comps.length-2;i++) {
+      vals.add(comps[i]);
+    }
+    result[2] = vals;
+    result[3] = comps[comps.length-1];
+    return result;
   }
 
   public static Table assemble(TableWrapper wrapper) {

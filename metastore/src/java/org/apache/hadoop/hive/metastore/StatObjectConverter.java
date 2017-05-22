@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -700,4 +701,151 @@ public class StatObjectConverter {
     return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
   }
 
+  /**
+   * Set field values in oldStatObj from newStatObj
+   * @param oldStatObj
+   * @param newStatObj
+   */
+  public static void setFieldsIntoOldStats(ColumnStatisticsObj oldStatObj,
+      ColumnStatisticsObj newStatObj) {
+    _Fields typeNew = newStatObj.getStatsData().getSetField();
+    _Fields typeOld = oldStatObj.getStatsData().getSetField();
+    typeNew = typeNew == typeOld ? typeNew : null;
+    switch (typeNew) {
+    case BOOLEAN_STATS:
+      BooleanColumnStatsData oldBooleanStatsData = oldStatObj.getStatsData().getBooleanStats();
+      BooleanColumnStatsData newBooleanStatsData = newStatObj.getStatsData().getBooleanStats();
+      if (newBooleanStatsData.isSetNumTrues()) {
+        oldBooleanStatsData.setNumTrues(newBooleanStatsData.getNumTrues());
+      }
+      if (newBooleanStatsData.isSetNumFalses()) {
+        oldBooleanStatsData.setNumFalses(newBooleanStatsData.getNumFalses());
+      }
+      if (newBooleanStatsData.isSetNumNulls()) {
+        oldBooleanStatsData.setNumNulls(newBooleanStatsData.getNumNulls());
+      }
+      if (newBooleanStatsData.isSetBitVectors()) {
+        oldBooleanStatsData.setBitVectors(newBooleanStatsData.getBitVectors());
+      }
+      break;
+    case LONG_STATS: {
+      LongColumnStatsData oldLongStatsData = oldStatObj.getStatsData().getLongStats();
+      LongColumnStatsData newLongStatsData = newStatObj.getStatsData().getLongStats();
+      if (newLongStatsData.isSetHighValue()) {
+        oldLongStatsData.setHighValue(newLongStatsData.getHighValue());
+      }
+      if (newLongStatsData.isSetLowValue()) {
+        oldLongStatsData.setLowValue(newLongStatsData.getLowValue());
+      }
+      if (newLongStatsData.isSetNumNulls()) {
+        oldLongStatsData.setNumNulls(newLongStatsData.getNumNulls());
+      }
+      if (newLongStatsData.isSetNumDVs()) {
+        oldLongStatsData.setNumDVs(newLongStatsData.getNumDVs());
+      }
+      if (newLongStatsData.isSetBitVectors()) {
+        oldLongStatsData.setBitVectors(newLongStatsData.getBitVectors());
+      }
+      break;
+    }
+    case DOUBLE_STATS: {
+      DoubleColumnStatsData oldDoubleStatsData = oldStatObj.getStatsData().getDoubleStats();
+      DoubleColumnStatsData newDoubleStatsData = newStatObj.getStatsData().getDoubleStats();
+      if (newDoubleStatsData.isSetHighValue()) {
+        oldDoubleStatsData.setHighValue(newDoubleStatsData.getHighValue());
+      }
+      if (newDoubleStatsData.isSetLowValue()) {
+        oldDoubleStatsData.setLowValue(newDoubleStatsData.getLowValue());
+      }
+      if (newDoubleStatsData.isSetNumNulls()) {
+        oldDoubleStatsData.setNumNulls(newDoubleStatsData.getNumNulls());
+      }
+      if (newDoubleStatsData.isSetNumDVs()) {
+        oldDoubleStatsData.setNumDVs(newDoubleStatsData.getNumDVs());
+      }
+      if (newDoubleStatsData.isSetBitVectors()) {
+        oldDoubleStatsData.setBitVectors(newDoubleStatsData.getBitVectors());
+      }
+      break;
+    }
+    case STRING_STATS: {
+      StringColumnStatsData oldStringStatsData = oldStatObj.getStatsData().getStringStats();
+      StringColumnStatsData newStringStatsData = newStatObj.getStatsData().getStringStats();
+      if (newStringStatsData.isSetMaxColLen()) {
+        oldStringStatsData.setMaxColLen(newStringStatsData.getMaxColLen());
+      }
+      if (newStringStatsData.isSetAvgColLen()) {
+        oldStringStatsData.setAvgColLen(newStringStatsData.getAvgColLen());
+      }
+      if (newStringStatsData.isSetNumNulls()) {
+        oldStringStatsData.setNumNulls(newStringStatsData.getNumNulls());
+      }
+      if (newStringStatsData.isSetNumDVs()) {
+        oldStringStatsData.setNumDVs(newStringStatsData.getNumDVs());
+      }
+      if (newStringStatsData.isSetBitVectors()) {
+        oldStringStatsData.setBitVectors(newStringStatsData.getBitVectors());
+      }
+      break;
+    }
+    case BINARY_STATS:
+      BinaryColumnStatsData oldBinaryStatsData = oldStatObj.getStatsData().getBinaryStats();
+      BinaryColumnStatsData newBinaryStatsData = newStatObj.getStatsData().getBinaryStats();
+      if (newBinaryStatsData.isSetMaxColLen()) {
+        oldBinaryStatsData.setMaxColLen(newBinaryStatsData.getMaxColLen());
+      }
+      if (newBinaryStatsData.isSetAvgColLen()) {
+        oldBinaryStatsData.setAvgColLen(newBinaryStatsData.getAvgColLen());
+      }
+      if (newBinaryStatsData.isSetNumNulls()) {
+        oldBinaryStatsData.setNumNulls(newBinaryStatsData.getNumNulls());
+      }
+      if (newBinaryStatsData.isSetBitVectors()) {
+        oldBinaryStatsData.setBitVectors(newBinaryStatsData.getBitVectors());
+      }
+      break;
+    case DECIMAL_STATS: {
+      DecimalColumnStatsData oldDecimalStatsData = oldStatObj.getStatsData().getDecimalStats();
+      DecimalColumnStatsData newDecimalStatsData = newStatObj.getStatsData().getDecimalStats();
+      if (newDecimalStatsData.isSetHighValue()) {
+        oldDecimalStatsData.setHighValue(newDecimalStatsData.getHighValue());
+      }
+      if (newDecimalStatsData.isSetLowValue()) {
+        oldDecimalStatsData.setLowValue(newDecimalStatsData.getLowValue());
+      }
+      if (newDecimalStatsData.isSetNumNulls()) {
+        oldDecimalStatsData.setNumNulls(newDecimalStatsData.getNumNulls());
+      }
+      if (newDecimalStatsData.isSetNumDVs()) {
+        oldDecimalStatsData.setNumDVs(newDecimalStatsData.getNumDVs());
+      }
+      if (newDecimalStatsData.isSetBitVectors()) {
+        oldDecimalStatsData.setBitVectors(newDecimalStatsData.getBitVectors());
+      }
+      break;
+    }
+    case DATE_STATS: {
+      DateColumnStatsData oldDateStatsData = oldStatObj.getStatsData().getDateStats();
+      DateColumnStatsData newDateStatsData = newStatObj.getStatsData().getDateStats();
+      if (newDateStatsData.isSetHighValue()) {
+        oldDateStatsData.setHighValue(newDateStatsData.getHighValue());
+      }
+      if (newDateStatsData.isSetLowValue()) {
+        oldDateStatsData.setLowValue(newDateStatsData.getLowValue());
+      }
+      if (newDateStatsData.isSetNumNulls()) {
+        oldDateStatsData.setNumNulls(newDateStatsData.getNumNulls());
+      }
+      if (newDateStatsData.isSetNumDVs()) {
+        oldDateStatsData.setNumDVs(newDateStatsData.getNumDVs());
+      }
+      if (newDateStatsData.isSetBitVectors()) {
+        oldDateStatsData.setBitVectors(newDateStatsData.getBitVectors());
+      }
+      break;
+    }
+    default:
+      throw new IllegalArgumentException("Unknown stats type: " + typeNew.toString());
+    }
+  }
 }

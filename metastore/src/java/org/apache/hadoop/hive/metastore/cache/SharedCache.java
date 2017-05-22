@@ -21,14 +21,18 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -38,16 +42,25 @@ import org.apache.hadoop.hive.metastore.cache.CachedStore.StorageDescriptorWrapp
 import org.apache.hadoop.hive.metastore.cache.CachedStore.TableWrapper;
 import org.apache.hadoop.hive.metastore.hbase.HBaseUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class SharedCache {
   private static Map<String, Database> databaseCache = new TreeMap<String, Database>();
   private static Map<String, TableWrapper> tableCache = new TreeMap<String, TableWrapper>();
-  private static Map<String, PartitionWrapper> partitionCache = new TreeMap<String, PartitionWrapper>();
-  private static Map<String, ColumnStatisticsObj> partitionColStatsCache = new TreeMap<String, ColumnStatisticsObj>();
-  private static Map<ByteArrayWrapper, StorageDescriptorWrapper> sdCache = new HashMap<ByteArrayWrapper, StorageDescriptorWrapper>();
+  private static Map<String, PartitionWrapper> partitionCache =
+      new TreeMap<String, PartitionWrapper>();
+  private static Map<String, ColumnStatisticsObj> partitionColStatsCache =
+      new TreeMap<String, ColumnStatisticsObj>();
+  private static Map<String, ColumnStatisticsObj> tableColStatsCache =
+      new TreeMap<String, ColumnStatisticsObj>();
+  private static Map<ByteArrayWrapper, StorageDescriptorWrapper> sdCache =
+      new HashMap<ByteArrayWrapper, StorageDescriptorWrapper>();
   private static MessageDigest md;
+
+  static final private Logger LOG = LoggerFactory.getLogger(SharedCache.class.getName());
 
   static {
     try {
@@ -97,11 +110,13 @@ public class SharedCache {
     Table tblCopy = tbl.deepCopy();
     tblCopy.setDbName(HiveStringUtils.normalizeIdentifier(dbName));
     tblCopy.setTableName(HiveStringUtils.normalizeIdentifier(tblName));
-    for (FieldSchema fs : tblCopy.getPartitionKeys()) {
-      fs.setName(HiveStringUtils.normalizeIdentifier(fs.getName()));
+    if (tblCopy.getPartitionKeys() != null) {
+      for (FieldSchema fs : tblCopy.getPartitionKeys()) {
+        fs.setName(HiveStringUtils.normalizeIdentifier(fs.getName()));
+      }
     }
     TableWrapper wrapper;
-    if (tbl.getSd()!=null) {
+    if (tbl.getSd() != null) {
       byte[] sdHash = HBaseUtils.hashStorageDescriptor(tbl.getSd(), md);
       StorageDescriptor sd = tbl.getSd();
       increSd(sd, sdHash);
@@ -121,10 +136,54 @@ public class SharedCache {
     }
   }
 
+  public static synchronized ColumnStatisticsObj getCachedTableColStats(String colStatsCacheKey) {
+    return tableColStatsCache.get(colStatsCacheKey);
+  }
+
+  public static synchronized void removeTableColStatsFromCache(String dbName, String tblName) {
+    String partialKey = CacheUtils.buildKeyWithDelimit(dbName, tblName);
+    Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+        tableColStatsCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, ColumnStatisticsObj> entry = iterator.next();
+      String key = entry.getKey();
+      if (key.toLowerCase().startsWith(partialKey.toLowerCase())) {
+        iterator.remove();
+      }
+    }
+  }
+
+  public static synchronized void removeTableColStatsFromCache(String dbName, String tblName,
+      String colName) {
+    tableColStatsCache.remove(CacheUtils.buildKey(dbName, tblName, colName));
+  }
+
+  public static synchronized void updateTableColStatsInCache(String dbName, String tableName,
+      List<ColumnStatisticsObj> colStatsForTable) {
+    for (ColumnStatisticsObj colStatObj : colStatsForTable) {
+      // Get old stats object if present
+      String key = CacheUtils.buildKey(dbName, tableName, colStatObj.getColName());
+      ColumnStatisticsObj oldStatsObj = tableColStatsCache.get(key);
+      if (oldStatsObj != null) {
+        LOG.debug("CachedStore: updating table column stats for column: " + colStatObj.getColName()
+            + ", of table: " + tableName + " and database: " + dbName);
+        // Update existing stat object's field
+        StatObjectConverter.setFieldsIntoOldStats(oldStatsObj, colStatObj);
+      } else {
+        // No stats exist for this key; add a new object to the cache
+        tableColStatsCache.put(key, colStatObj);
+      }
+    }
+  }
+
   public static synchronized void alterTableInCache(String dbName, String tblName, Table newTable) {
     removeTableFromCache(dbName, tblName);
     addTableToCache(HiveStringUtils.normalizeIdentifier(newTable.getDbName()),
         HiveStringUtils.normalizeIdentifier(newTable.getTableName()), newTable);
+  }
+
+  public static synchronized void alterTableInPartitionCache(String dbName, String tblName,
+      Table newTable) {
     if (!dbName.equals(newTable.getDbName()) || !tblName.equals(newTable.getTableName())) {
       List<Partition> partitions = listCachedPartitions(dbName, tblName, -1);
       for (Partition part : partitions) {
@@ -134,6 +193,58 @@ public class SharedCache {
         addPartitionToCache(HiveStringUtils.normalizeIdentifier(newTable.getDbName()),
             HiveStringUtils.normalizeIdentifier(newTable.getTableName()), part);
       }
+    }
+  }
+
+  public static synchronized void alterTableInTableColStatsCache(String dbName, String tblName,
+      Table newTable) {
+    if (!dbName.equals(newTable.getDbName()) || !tblName.equals(newTable.getTableName())) {
+      String oldPartialTableStatsKey = CacheUtils.buildKeyWithDelimit(dbName, tblName);
+      Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+          tableColStatsCache.entrySet().iterator();
+      Map<String, ColumnStatisticsObj> newTableColStats =
+          new HashMap<String, ColumnStatisticsObj>();
+      while (iterator.hasNext()) {
+        Entry<String, ColumnStatisticsObj> entry = iterator.next();
+        String key = entry.getKey();
+        ColumnStatisticsObj colStatObj = entry.getValue();
+        if (key.toLowerCase().startsWith(oldPartialTableStatsKey.toLowerCase())) {
+          String[] decomposedKey = CacheUtils.splitTableColStats(key);
+          String newKey = CacheUtils.buildKey(decomposedKey[0], decomposedKey[1], decomposedKey[2]);
+          newTableColStats.put(newKey, colStatObj);
+          iterator.remove();
+        }
+      }
+      tableColStatsCache.putAll(newTableColStats);
+    }
+  }
+
+  public static synchronized void alterTableInPartitionColStatsCache(String dbName, String tblName,
+      Table newTable) {
+    if (!dbName.equals(newTable.getDbName()) || !tblName.equals(newTable.getTableName())) {
+      List<Partition> partitions = listCachedPartitions(dbName, tblName, -1);
+      Map<String, ColumnStatisticsObj> newPartitionColStats =
+          new HashMap<String, ColumnStatisticsObj>();
+      for (Partition part : partitions) {
+        String oldPartialPartitionKey =
+            CacheUtils.buildKeyWithDelimit(dbName, tblName, part.getValues());
+        Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+            partitionColStatsCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+          Entry<String, ColumnStatisticsObj> entry = iterator.next();
+          String key = entry.getKey();
+          ColumnStatisticsObj colStatObj = entry.getValue();
+          if (key.toLowerCase().startsWith(oldPartialPartitionKey.toLowerCase())) {
+            Object[] decomposedKey = CacheUtils.splitPartitionColStats(key);
+            String newKey =
+                CacheUtils.buildKey((String) decomposedKey[0], (String) decomposedKey[1],
+                    (List<String>) decomposedKey[2], (String) decomposedKey[3]);
+            newPartitionColStats.put(newKey, colStatObj);
+            iterator.remove();
+          }
+        }
+      }
+      partitionColStatsCache.putAll(newPartitionColStats);
     }
   }
 
@@ -149,18 +260,6 @@ public class SharedCache {
       }
     }
     return tables;
-  }
-
-  public static synchronized void updateTableColumnStatistics(String dbName, String tableName,
-      List<ColumnStatisticsObj> statsObjs) {
-    Table tbl = getTableFromCache(dbName, tableName);
-    tbl.getSd().getParameters();
-    List<String> colNames = new ArrayList<>();
-    for (ColumnStatisticsObj statsObj:statsObjs) {
-      colNames.add(statsObj.getColName());
-    }
-    StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
-    alterTableInCache(dbName, tableName, tbl);
   }
 
   public static synchronized List<TableMeta> getTableMeta(String dbNames, String tableNames, List<String> tableTypes) {
@@ -214,12 +313,49 @@ public class SharedCache {
     return partitionCache.containsKey(CacheUtils.buildKey(dbName, tblName, part_vals));
   }
 
-  public static synchronized Partition removePartitionFromCache(String dbName, String tblName, List<String> part_vals) {
-    PartitionWrapper wrapper = partitionCache.remove(CacheUtils.buildKey(dbName, tblName, part_vals));
-    if (wrapper.getSdHash()!=null) {
+  public static synchronized Partition removePartitionFromCache(String dbName, String tblName,
+      List<String> part_vals) {
+    PartitionWrapper wrapper =
+        partitionCache.remove(CacheUtils.buildKey(dbName, tblName, part_vals));
+    if (wrapper.getSdHash() != null) {
       decrSd(wrapper.getSdHash());
     }
     return wrapper.getPartition();
+  }
+
+  // Remove cached column stats for all partitions of a table
+  public static synchronized void removePartitionColStatsFromCache(String dbName, String tblName) {
+    String partialKey = CacheUtils.buildKeyWithDelimit(dbName, tblName);
+    Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+        partitionColStatsCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, ColumnStatisticsObj> entry = iterator.next();
+      String key = entry.getKey();
+      if (key.toLowerCase().startsWith(partialKey.toLowerCase())) {
+        iterator.remove();
+      }
+    }
+  }
+
+  // Remove cached column stats for a particular partition of a table
+  public static synchronized void removePartitionColStatsFromCache(String dbName, String tblName,
+      List<String> partVals) {
+    String partialKey = CacheUtils.buildKeyWithDelimit(dbName, tblName, partVals);
+    Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+        partitionColStatsCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, ColumnStatisticsObj> entry = iterator.next();
+      String key = entry.getKey();
+      if (key.toLowerCase().startsWith(partialKey.toLowerCase())) {
+        iterator.remove();
+      }
+    }
+  }
+
+  // Remove cached column stats for a particular partition and a particular column of a table
+  public static synchronized void removePartitionColStatsFromCache(String dbName, String tblName,
+      List<String> partVals, String colName) {
+    partitionColStatsCache.remove(CacheUtils.buildKey(dbName, tblName, partVals, colName));
   }
 
   public static synchronized List<Partition> listCachedPartitions(String dbName, String tblName, int max) {
@@ -236,22 +372,53 @@ public class SharedCache {
     return partitions;
   }
 
-  public static synchronized void alterPartitionInCache(String dbName, String tblName, List<String> partVals, Partition newPart) {
+  public static synchronized void alterPartitionInCache(String dbName, String tblName,
+      List<String> partVals, Partition newPart) {
     removePartitionFromCache(dbName, tblName, partVals);
     addPartitionToCache(HiveStringUtils.normalizeIdentifier(newPart.getDbName()),
         HiveStringUtils.normalizeIdentifier(newPart.getTableName()), newPart);
   }
 
-  public static synchronized void updatePartitionColumnStatistics(String dbName, String tableName,
-      List<String> partVals, List<ColumnStatisticsObj> statsObjs) {
-    Partition part = getPartitionFromCache(dbName, tableName, partVals);
-    part.getSd().getParameters();
-    List<String> colNames = new ArrayList<>();
-    for (ColumnStatisticsObj statsObj:statsObjs) {
-      colNames.add(statsObj.getColName());
+  public static synchronized void alterPartitionInColStatsCache(String dbName, String tblName,
+      List<String> partVals, Partition newPart) {
+    String oldPartialPartitionKey = CacheUtils.buildKeyWithDelimit(dbName, tblName, partVals);
+    Map<String, ColumnStatisticsObj> newPartitionColStats =
+        new HashMap<String, ColumnStatisticsObj>();
+    Iterator<Entry<String, ColumnStatisticsObj>> iterator =
+        partitionColStatsCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<String, ColumnStatisticsObj> entry = iterator.next();
+      String key = entry.getKey();
+      ColumnStatisticsObj colStatObj = entry.getValue();
+      if (key.toLowerCase().startsWith(oldPartialPartitionKey.toLowerCase())) {
+        Object[] decomposedKey = CacheUtils.splitPartitionColStats(key);
+        String newKey =
+            CacheUtils.buildKey(HiveStringUtils.normalizeIdentifier(newPart.getDbName()),
+                HiveStringUtils.normalizeIdentifier(newPart.getTableName()), newPart.getValues(),
+                (String) decomposedKey[3]);
+        newPartitionColStats.put(newKey, colStatObj);
+        iterator.remove();
+      }
     }
-    StatsSetupConst.setColumnStatsState(part.getParameters(), colNames);
-    alterPartitionInCache(dbName, tableName, partVals, part);
+    partitionColStatsCache.putAll(newPartitionColStats);
+  }
+
+  public static synchronized void updatePartitionColStatsInCache(String dbName, String tableName,
+      List<String> partVals, List<ColumnStatisticsObj> colStatsObjs) {
+    for (ColumnStatisticsObj colStatObj : colStatsObjs) {
+      // Get old stats object if present
+      String key = CacheUtils.buildKey(dbName, tableName, partVals, colStatObj.getColName());
+      ColumnStatisticsObj oldStatsObj = partitionColStatsCache.get(key);
+      if (oldStatsObj != null) {
+        // Update existing stat object's field
+        LOG.debug("CachedStore: updating partition column stats for column: "
+            + colStatObj.getColName() + ", of table: " + tableName + " and database: " + dbName);
+        StatObjectConverter.setFieldsIntoOldStats(oldStatsObj, colStatObj);
+      } else {
+        // No stats exist for this key; add a new object to the cache
+        partitionColStatsCache.put(key, colStatObj);
+      }
+    }
   }
 
   public static synchronized int getCachedPartitionCount() {
@@ -262,10 +429,47 @@ public class SharedCache {
     return partitionColStatsCache.get(key);
   }
 
-  public static synchronized void addPartitionColStatsToCache(Map<String, ColumnStatisticsObj> aggrStatsPerPartition) {
-    partitionColStatsCache.putAll(aggrStatsPerPartition);
+  public static synchronized void addPartitionColStatsToCache(String dbName, String tableName,
+      Map<String, List<ColumnStatisticsObj>> colStatsPerPartition) {
+    for (Map.Entry<String, List<ColumnStatisticsObj>> entry : colStatsPerPartition.entrySet()) {
+      String partName = entry.getKey();
+      try {
+        List<String> partVals = Warehouse.getPartValuesFromPartName(partName);
+        for (ColumnStatisticsObj colStatObj : entry.getValue()) {
+          String key = CacheUtils.buildKey(dbName, tableName, partVals, colStatObj.getColName());
+          partitionColStatsCache.put(key, colStatObj);
+        }
+      } catch (MetaException e) {
+        LOG.info("Unable to add partition: " + partName + " to SharedCache", e);
+      }
+    }
   }
 
+  public static synchronized void refreshPartitionColStats(String dbName, String tableName,
+      Map<String, List<ColumnStatisticsObj>> newColStatsPerPartition) {
+    LOG.debug("CachedStore: updating cached partition column stats objects for database: " + dbName
+        + " and table: " + tableName);
+    removePartitionColStatsFromCache(dbName, tableName);
+    addPartitionColStatsToCache(dbName, tableName, newColStatsPerPartition);
+  }
+
+  public static synchronized void addTableColStatsToCache(String dbName, String tableName,
+      List<ColumnStatisticsObj> colStatsForTable) {
+    for (ColumnStatisticsObj colStatObj : colStatsForTable) {
+      String key = CacheUtils.buildKey(dbName, tableName, colStatObj.getColName());
+      tableColStatsCache.put(key, colStatObj);
+    }
+  }
+
+  public static synchronized void refreshTableColStats(String dbName, String tableName,
+      List<ColumnStatisticsObj> colStatsForTable) {
+    LOG.debug("CachedStore: updating cached table column stats objects for database: " + dbName
+        + " and table: " + tableName);
+    // Remove all old cache entries for this table
+    removeTableColStatsFromCache(dbName, tableName);
+    // Add new entries to cache
+    addTableColStatsToCache(dbName, tableName, colStatsForTable);
+  }
 
   public static void increSd(StorageDescriptor sd, byte[] sdHash) {
     ByteArrayWrapper byteArray = new ByteArrayWrapper(sdHash);
@@ -295,6 +499,7 @@ public class SharedCache {
 
   // Replace databases in databaseCache with the new list
   public static synchronized void refreshDatabases(List<Database> databases) {
+    LOG.debug("CachedStore: updating cached database objects");
     for (String dbName : listCachedDatabases()) {
       removeDatabaseFromCache(dbName);
     }
@@ -305,6 +510,7 @@ public class SharedCache {
 
   // Replace tables in tableCache with the new list
   public static synchronized void refreshTables(String dbName, List<Table> tables) {
+    LOG.debug("CachedStore: updating cached table objects for database: " + dbName);
     for (Table tbl : listCachedTables(dbName)) {
       removeTableFromCache(dbName, tbl.getTableName());
     }
@@ -313,16 +519,17 @@ public class SharedCache {
     }
   }
 
-  public static void refreshPartitions(String dbName, String tblName, List<Partition> partitions) {
-    List<String> keysToRemove = new ArrayList<String>();
-    for (Map.Entry<String, PartitionWrapper> entry : partitionCache.entrySet()) {
-      if (entry.getValue().getPartition().getDbName().equals(dbName)
-          && entry.getValue().getPartition().getTableName().equals(tblName)) {
-        keysToRemove.add(entry.getKey());
+  public static synchronized void refreshPartitions(String dbName, String tblName,
+      List<Partition> partitions) {
+    LOG.debug("CachedStore: updating cached partition objects for database: " + dbName
+        + " and table: " + tblName);
+    Iterator<Entry<String, PartitionWrapper>> iterator = partitionCache.entrySet().iterator();
+    while (iterator.hasNext()) {
+      PartitionWrapper partitionWrapper = iterator.next().getValue();
+      if (partitionWrapper.getPartition().getDbName().equals(dbName)
+          && partitionWrapper.getPartition().getTableName().equals(tblName)) {
+        iterator.remove();
       }
-    }
-    for (String key : keysToRemove) {
-      partitionCache.remove(key);
     }
     for (Partition part : partitions) {
       addPartitionToCache(dbName, tblName, part);

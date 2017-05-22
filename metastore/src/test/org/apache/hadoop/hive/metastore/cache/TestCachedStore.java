@@ -25,11 +25,22 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TestObjectStore.MockPartitionExpressionProxy;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,24 +48,450 @@ import org.junit.Test;
 
 public class TestCachedStore {
 
-  private CachedStore cachedStore = new CachedStore();
+  private ObjectStore objectStore;
+  private CachedStore cachedStore;
 
   @Before
   public void setUp() throws Exception {
     HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS, MockPartitionExpressionProxy.class.getName());
-
-    ObjectStore objectStore = new ObjectStore();
+    conf.setBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname, true);
+    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS,
+        MockPartitionExpressionProxy.class.getName());
+    objectStore = new ObjectStore();
     objectStore.setConf(conf);
+    cachedStore = new CachedStore();
+    cachedStore.setConf(conf);
+    // Stop the CachedStore cache update service. We'll start it explicitly to control the test
+    cachedStore.stopCacheUpdateService(1);
 
-    cachedStore.setRawStore(objectStore);
-
+    // Stop the CachedStore cache update service. We'll start it explicitly to control the test
+    cachedStore.stopCacheUpdateService(1);
     SharedCache.getDatabaseCache().clear();
     SharedCache.getTableCache().clear();
     SharedCache.getPartitionCache().clear();
     SharedCache.getSdCache().clear();
     SharedCache.getPartitionColStatsCache().clear();
   }
+
+  /**********************************************************************************************
+   * Methods that test CachedStore
+   *********************************************************************************************/
+
+  @Test
+  public void testDatabaseOps() throws Exception {
+    // Add a db via ObjectStore
+    String dbName = "testDatabaseOps";
+    String dbDescription = "testDatabaseOps";
+    String dbLocation = "file:/tmp";
+    Map<String, String> dbParams = new HashMap<String, String>();
+    String dbOwner = "user1";
+    Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    objectStore.createDatabase(db);
+    db = objectStore.getDatabase(dbName);
+    // Prewarm CachedStore
+    cachedStore.prewarm();
+
+    // Read database via CachedStore
+    Database dbNew = cachedStore.getDatabase(dbName);
+    Assert.assertEquals(db, dbNew);
+
+    // Add another db via CachedStore
+    final String dbName1 = "testDatabaseOps1";
+    final String dbDescription1 = "testDatabaseOps1";
+    Database db1 = new Database(dbName1, dbDescription1, dbLocation, dbParams);
+    db1.setOwnerName(dbOwner);
+    db1.setOwnerType(PrincipalType.USER);
+    cachedStore.createDatabase(db1);
+    db1 = cachedStore.getDatabase(dbName1);
+
+    // Read db via ObjectStore
+    dbNew = objectStore.getDatabase(dbName1);
+    Assert.assertEquals(db1, dbNew);
+
+    // Alter the db via CachedStore (can only alter owner or parameters)
+    db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    dbOwner = "user2";
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    cachedStore.alterDatabase(dbName, db);
+    db = cachedStore.getDatabase(dbName);
+
+    // Read db via ObjectStore
+    dbNew = objectStore.getDatabase(dbName);
+    Assert.assertEquals(db, dbNew);
+
+    // Add another db via ObjectStore
+    final String dbName2 = "testDatabaseOps2";
+    final String dbDescription2 = "testDatabaseOps2";
+    Database db2 = new Database(dbName2, dbDescription2, dbLocation, dbParams);
+    db2.setOwnerName(dbOwner);
+    db2.setOwnerType(PrincipalType.USER);
+    objectStore.createDatabase(db2);
+    db2 = objectStore.getDatabase(dbName2);
+
+    // Alter db "testDatabaseOps" via ObjectStore
+    dbOwner = "user1";
+    db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    objectStore.alterDatabase(dbName, db);
+    db = objectStore.getDatabase(dbName);
+
+    // Drop db "testDatabaseOps1" via ObjectStore
+    objectStore.dropDatabase(dbName1);
+
+    // We update twice to accurately detect if cache is dirty or not
+    updateCache(cachedStore, 100, 500, 100);
+    updateCache(cachedStore, 100, 500, 100);
+
+    // Read the newly added db via CachedStore
+    dbNew = cachedStore.getDatabase(dbName2);
+    Assert.assertEquals(db2, dbNew);
+
+    // Read the altered db via CachedStore (altered user from "user2" to "user1")
+    dbNew = cachedStore.getDatabase(dbName);
+    Assert.assertEquals(db, dbNew);
+
+    // Try to read the dropped db after cache update
+    try {
+      dbNew = cachedStore.getDatabase(dbName1);
+      Assert.fail("The database: " + dbName1
+          + " should have been removed from the cache after running the update service");
+    } catch (NoSuchObjectException e) {
+      // Expected
+    }
+
+    // Clean up
+    objectStore.dropDatabase(dbName);
+    objectStore.dropDatabase(dbName2);
+  }
+
+  @Test
+  public void testTableOps() throws Exception {
+    // Add a db via ObjectStore
+    String dbName = "testTableOps";
+    String dbDescription = "testTableOps";
+    String dbLocation = "file:/tmp";
+    Map<String, String> dbParams = new HashMap<String, String>();
+    String dbOwner = "user1";
+    Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    objectStore.createDatabase(db);
+    db = objectStore.getDatabase(dbName);
+
+    // Add a table via ObjectStore
+    String tblName = "tbl";
+    String tblOwner = "user1";
+    String serdeLocation = "file:/tmp";
+    FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
+    FieldSchema col2 = new FieldSchema("col2", "string", "string column");
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(col1);
+    cols.add(col2);
+    Map<String, String> serdeParams = new HashMap<String, String>();
+    Map<String, String> tblParams = new HashMap<String, String>();
+    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<String, String>());
+    StorageDescriptor sd =
+        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
+            null, serdeParams);
+    sd.setStoredAsSubDirectories(false);
+    Table tbl =
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+            null, null, TableType.MANAGED_TABLE.toString());
+    objectStore.createTable(tbl);
+    tbl = objectStore.getTable(dbName, tblName);
+
+    // Prewarm CachedStore
+    cachedStore.prewarm();
+
+    // Read database, table via CachedStore
+    Database dbNew = cachedStore.getDatabase(dbName);
+    Assert.assertEquals(db, dbNew);
+    Table tblNew = cachedStore.getTable(dbName, tblName);
+    Assert.assertEquals(tbl, tblNew);
+
+    // Add a new table via CachedStore
+    String tblName1 = "tbl1";
+    Table tbl1 =
+        new Table(tblName1, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+            null, null, TableType.MANAGED_TABLE.toString());
+    cachedStore.createTable(tbl1);
+    tbl1 = cachedStore.getTable(dbName, tblName1);
+
+    // Read via object store
+    tblNew = objectStore.getTable(dbName, tblName1);
+    Assert.assertEquals(tbl1, tblNew);
+
+    // Add a new table via ObjectStore
+    String tblName2 = "tbl2";
+    Table tbl2 =
+        new Table(tblName2, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+            null, null, TableType.MANAGED_TABLE.toString());
+    objectStore.createTable(tbl2);
+    tbl2 = objectStore.getTable(dbName, tblName2);
+
+    // Alter table "tbl" via ObjectStore
+    tblOwner = "user2";
+    tbl =
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+            null, null, TableType.MANAGED_TABLE.toString());
+    objectStore.alterTable(dbName, tblName, tbl);
+    tbl = objectStore.getTable(dbName, tblName);
+
+    // Drop table "tbl1" via ObjectStore
+    objectStore.dropTable(dbName, tblName1);
+
+    // We update twice to accurately detect if cache is dirty or not
+    updateCache(cachedStore, 100, 500, 100);
+    updateCache(cachedStore, 100, 500, 100);
+
+    // Read "tbl2" via CachedStore
+    tblNew = cachedStore.getTable(dbName, tblName2);
+    Assert.assertEquals(tbl2, tblNew);
+
+    // Read the altered "tbl" via CachedStore
+    tblNew = cachedStore.getTable(dbName, tblName);
+    Assert.assertEquals(tbl, tblNew);
+
+    // Try to read the dropped "tbl1" via CachedStore (should throw exception)
+    tblNew = cachedStore.getTable(dbName, tblName1);
+    Assert.assertNull(tblNew);
+
+    // Should return "tbl" and "tbl2"
+    List<String> tblNames = cachedStore.getTables(dbName, "*");
+    Assert.assertTrue(tblNames.contains(tblName));
+    Assert.assertTrue(!tblNames.contains(tblName1));
+    Assert.assertTrue(tblNames.contains(tblName2));
+
+    // Clean up
+    objectStore.dropTable(dbName, tblName);
+    objectStore.dropTable(dbName, tblName2);
+    objectStore.dropDatabase(dbName);
+  }
+
+  @Test
+  public void testPartitionOps() throws Exception {
+    // Add a db via ObjectStore
+    String dbName = "testPartitionOps";
+    String dbDescription = "testPartitionOps";
+    String dbLocation = "file:/tmp";
+    Map<String, String> dbParams = new HashMap<String, String>();
+    String dbOwner = "user1";
+    Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    objectStore.createDatabase(db);
+    db = objectStore.getDatabase(dbName);
+
+    // Add a table via ObjectStore
+    String tblName = "tbl";
+    String tblOwner = "user1";
+    String serdeLocation = "file:/tmp";
+    FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
+    FieldSchema col2 = new FieldSchema("col2", "string", "string column");
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(col1);
+    cols.add(col2);
+    Map<String, String> serdeParams = new HashMap<String, String>();
+    Map<String, String> tblParams = new HashMap<String, String>();
+    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd =
+        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
+            null, serdeParams);
+    FieldSchema ptnCol1 = new FieldSchema("part1", "string", "string partition column");
+    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
+    ptnCols.add(ptnCol1);
+    Table tbl =
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, ptnCols, tblParams, null, null,
+            TableType.MANAGED_TABLE.toString());
+    objectStore.createTable(tbl);
+    tbl = objectStore.getTable(dbName, tblName);
+    final String ptnColVal1 = "aaa";
+    Map<String, String> partParams = new HashMap<String, String>();
+    Partition ptn1 =
+        new Partition(Arrays.asList(ptnColVal1), dbName, tblName, 0, 0, sd, partParams);
+    objectStore.addPartition(ptn1);
+    ptn1 = objectStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal1));
+    final String ptnColVal2 = "bbb";
+    Partition ptn2 =
+        new Partition(Arrays.asList(ptnColVal2), dbName, tblName, 0, 0, sd, partParams);
+    objectStore.addPartition(ptn2);
+    ptn2 = objectStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal2));
+
+    // Prewarm CachedStore
+    cachedStore.prewarm();
+
+    // Read database, table, partition via CachedStore
+    Database dbNew = cachedStore.getDatabase(dbName);
+    Assert.assertEquals(db, dbNew);
+    Table tblNew = cachedStore.getTable(dbName, tblName);
+    Assert.assertEquals(tbl, tblNew);
+    Partition newPtn1 = cachedStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal1));
+    Assert.assertEquals(ptn1, newPtn1);
+    Partition newPtn2 = cachedStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal2));
+    Assert.assertEquals(ptn2, newPtn2);
+
+    // Add a new partition via ObjectStore
+    final String ptnColVal3 = "ccc";
+    Partition ptn3 =
+        new Partition(Arrays.asList(ptnColVal3), dbName, tblName, 0, 0, sd, partParams);
+    objectStore.addPartition(ptn3);
+    ptn3 = objectStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal3));
+
+    // Alter an existing partition ("aaa") via ObjectStore
+    final String ptnColVal1Alt = "aaaAlt";
+    Partition ptn1Atl =
+        new Partition(Arrays.asList(ptnColVal1Alt), dbName, tblName, 0, 0, sd, partParams);
+    objectStore.alterPartition(dbName, tblName, Arrays.asList(ptnColVal1), ptn1Atl);
+    ptn1Atl = objectStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal1Alt));
+
+    // Drop an existing partition ("bbb") via ObjectStore
+    objectStore.dropPartition(dbName, tblName, Arrays.asList(ptnColVal2));
+
+    // We update twice to accurately detect if cache is dirty or not
+    updateCache(cachedStore, 100, 500, 100);
+    updateCache(cachedStore, 100, 500, 100);
+
+    // Read the newly added partition via CachedStore
+    Partition newPtn = cachedStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal3));
+    Assert.assertEquals(ptn3, newPtn);
+
+    // Read the altered partition via CachedStore
+    newPtn = cachedStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal1Alt));
+    Assert.assertEquals(ptn1Atl, newPtn);
+
+    // Try to read the dropped partition via CachedStore
+    try {
+      newPtn = cachedStore.getPartition(dbName, tblName, Arrays.asList(ptnColVal2));
+      Assert.fail("The partition: " + ptnColVal2
+          + " should have been removed from the cache after running the update service");
+    } catch (NoSuchObjectException e) {
+      // Expected
+    }
+  }
+
+  //@Test
+  public void testTableColStatsOps() throws Exception {
+    // Add a db via ObjectStore
+    String dbName = "testTableColStatsOps";
+    String dbDescription = "testTableColStatsOps";
+    String dbLocation = "file:/tmp";
+    Map<String, String> dbParams = new HashMap<String, String>();
+    String dbOwner = "user1";
+    Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
+    db.setOwnerName(dbOwner);
+    db.setOwnerType(PrincipalType.USER);
+    objectStore.createDatabase(db);
+    db = objectStore.getDatabase(dbName);
+
+    // Add a table via ObjectStore
+    final String tblName = "tbl";
+    final String tblOwner = "user1";
+    final String serdeLocation = "file:/tmp";
+    final FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
+    // Stats values for col1
+    long col1LowVal = 5;
+    long col1HighVal = 500;
+    long col1Nulls = 10;
+    long col1DV = 20;
+    final  FieldSchema col2 = new FieldSchema("col2", "string", "string column");
+    // Stats values for col2
+    long col2MaxColLen = 100;
+    double col2AvgColLen = 45.5;
+    long col2Nulls = 5;
+    long col2DV = 40;
+    final FieldSchema col3 = new FieldSchema("col3", "boolean", "boolean column");
+    // Stats values for col3
+    long col3NumTrues = 100;
+    long col3NumFalses = 30;
+    long col3Nulls = 10;
+    final List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(col1);
+    cols.add(col2);
+    cols.add(col3);
+    Map<String, String> serdeParams = new HashMap<String, String>();
+    Map<String, String> tblParams = new HashMap<String, String>();
+    final SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd =
+        new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
+            null, serdeParams);
+    Table tbl =
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+            null, null, TableType.MANAGED_TABLE.toString());
+    objectStore.createTable(tbl);
+    tbl = objectStore.getTable(dbName, tblName);
+
+    // Add ColumnStatistics for tbl to metastore DB via ObjectStore
+    ColumnStatistics stats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+
+    // Col1
+    ColumnStatisticsData data1 = new ColumnStatisticsData();
+    ColumnStatisticsObj col1Stats = new ColumnStatisticsObj(col1.getName(), col1.getType(), data1);
+    LongColumnStatsData longStats = new LongColumnStatsData();
+    longStats.setLowValue(col1LowVal);
+    longStats.setHighValue(col1HighVal);
+    longStats.setNumNulls(col1Nulls);
+    longStats.setNumDVs(col1DV);
+    data1.setLongStats(longStats);
+    colStatObjs.add(col1Stats);
+
+    // Col2
+    ColumnStatisticsData data2 = new ColumnStatisticsData();
+    ColumnStatisticsObj col2Stats = new ColumnStatisticsObj(col2.getName(), col2.getType(), data2);
+    StringColumnStatsData stringStats = new StringColumnStatsData();
+    stringStats.setMaxColLen(col2MaxColLen);
+    stringStats.setAvgColLen(col2AvgColLen);
+    stringStats.setNumNulls(col2Nulls);
+    stringStats.setNumDVs(col2DV);
+    data2.setStringStats(stringStats);
+    colStatObjs.add(col2Stats);
+
+    // Col3
+    ColumnStatisticsData data3 = new ColumnStatisticsData();
+    ColumnStatisticsObj col3Stats = new ColumnStatisticsObj(col3.getName(), col3.getType(), data3);
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(col3NumTrues);
+    boolStats.setNumFalses(col3NumFalses);
+    boolStats.setNumNulls(col3Nulls);
+    data3.setBooleanStats(boolStats);
+    colStatObjs.add(col3Stats);
+
+    stats.setStatsDesc(statsDesc);
+    stats.setStatsObj(colStatObjs);
+
+    // Save to DB
+    objectStore.updateTableColumnStatistics(stats);
+
+    // Prewarm CachedStore
+    cachedStore.prewarm();
+
+    // Read table stats via CachedStore
+    ColumnStatistics newStats =
+        cachedStore.getTableColumnStatistics(dbName, tblName,
+            Arrays.asList(col1.getName(), col2.getName(), col3.getName()));
+    Assert.assertEquals(stats, newStats);
+  }
+
+  private void updateCache(CachedStore cachedStore, long frequency, long sleepTime,
+      long shutdownTimeout) throws InterruptedException {
+    // Set cache refresh period to 100 milliseconds
+    cachedStore.setCacheRefreshPeriod(100);
+    // Start the CachedStore update service
+    cachedStore.startCacheUpdateService();
+    // Sleep for 500 ms so that cache update is complete
+    Thread.sleep(500);
+    // Stop cache update service
+    cachedStore.stopCacheUpdateService(100);
+  }
+
+  /**********************************************************************************************
+   * Methods that test SharedCache
+   *********************************************************************************************/
 
   @Test
   public void testSharedStoreDb() {
@@ -159,6 +596,7 @@ public class TestCachedStore {
     Assert.assertEquals(SharedCache.getCachedTableCount(), 2);
     Assert.assertEquals(SharedCache.getSdCache().size(), 2);
   }
+
 
   @Test
   public void testSharedStorePartition() {
