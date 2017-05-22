@@ -229,14 +229,13 @@ public abstract class MessageFactory {
   /**
    * Factory method for building insert message
    *
-   * @param db Name of the database the insert occurred in
-   * @param table Name of the table the insert occurred in
-   * @param partVals Partition values for the partition that the insert occurred in, may be null if
+   * @param tableObj Table object where the insert occurred in
+   * @param ptnObj Partition object where the insert occurred in, may be null if
    *          the insert was done into a non-partitioned table
    * @param replace Flag to represent if INSERT OVERWRITE or INSERT INTO
    * @param files Iterator of file created
    * @return instance of InsertMessage
    */
-  public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, boolean replace, Iterator<String> files);
+  public abstract InsertMessage buildInsertMessage(Table tableObj, Partition ptnObj,
+                                                   boolean replace, Iterator<String> files);
 }
