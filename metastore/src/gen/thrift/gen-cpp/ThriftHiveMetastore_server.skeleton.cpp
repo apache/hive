@@ -302,6 +302,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_filter\n");
   }
 
+  int32_t get_num_partitions_by_filter(const std::string& db_name, const std::string& tbl_name, const std::string& filter) {
+    // Your implementation goes here
+    printf("get_num_partitions_by_filter\n");
+  }
+
   void get_part_specs_by_filter(std::vector<PartitionSpec> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int32_t max_parts) {
     // Your implementation goes here
     printf("get_part_specs_by_filter\n");

@@ -969,6 +969,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
     3:string filter, 4:i16 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
+  // get the partitions matching the given partition filter
+  i32 get_num_partitions_by_filter(1:string db_name 2:string tbl_name 3:string filter)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
   // List partitions as PartitionSpec instances.
   list<PartitionSpec> get_part_specs_by_filter(1:string db_name 2:string tbl_name
     3:string filter, 4:i32 max_parts=-1)

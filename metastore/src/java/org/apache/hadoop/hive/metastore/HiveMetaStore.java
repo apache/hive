@@ -4951,7 +4951,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw newMetaException(e);
       }
     }
-    
+
+    @Override
     public int get_num_partitions_by_filter(final String dbName,
                                             final String tblName, final String filter)
             throws TException {
