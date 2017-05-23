@@ -67,6 +67,10 @@ select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
 explain select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name);
 select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name);
 
+-- corr, lhs contain constant expressions (HIVE-16689)
+explain select count(*) as c from part as e where 100 < (select max(p_partkey) from part where p_name = e.p_name);
+select count(*) as c from part as e where 100 < (select max(p_partkey) from part where p_name = e.p_name);
+
 
 -- corr, equi-join predicate
 explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type);
