@@ -1952,7 +1952,7 @@ public class TestStreaming {
   }
 
   private static String getTableColumnsStr(String[] colNames, String[] colTypes) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < colNames.length; ++i) {
       sb.append(colNames[i] + " " + colTypes[i]);
       if (i<colNames.length-1) {
@@ -1967,7 +1967,7 @@ public class TestStreaming {
     if (partNames==null || partNames.length==0) {
       return "";
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < partNames.length; ++i) {
       sb.append(partNames[i] + " string");
       if (i < partNames.length-1) {
@@ -1979,7 +1979,7 @@ public class TestStreaming {
 
   // converts partNames,partVals into "partName1=val1, partName2=val2"
   private static String getPartsSpec(String[] partNames, List<String> partVals) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i=0; i < partVals.size(); ++i) {
       sb.append(partNames[i] + " = '" + partVals.get(i) + "'");
       if(i < partVals.size()-1) {
@@ -1992,7 +1992,7 @@ public class TestStreaming {
   private static String join(String[] values, String delimiter) {
     if(values==null)
       return null;
-    StringBuffer strbuf = new StringBuffer();
+    StringBuilder strbuf = new StringBuilder();
 
     boolean first = true;
 

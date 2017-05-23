@@ -813,7 +813,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     }
 
     private String getErrorMessage(Throwable t) {
-      StringBuffer sb = new StringBuffer(t.getMessage());
+      StringBuilder sb = new StringBuilder(t.getMessage());
       while (t.getCause() != null) {
         sb.append(t.getCause().getMessage());
         t = t.getCause();

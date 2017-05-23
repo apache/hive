@@ -10938,7 +10938,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode astNode = (ASTNode) queue.poll();
       if (astNode.getToken().getType() == HiveParser.TOK_TABREF) {
         int aliasIndex = 0;
-        StringBuffer additionalTabInfo = new StringBuffer();
+        StringBuilder additionalTabInfo = new StringBuilder();
         for (int index = 1; index < astNode.getChildCount(); index++) {
           ASTNode ct = (ASTNode) astNode.getChild(index);
           if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE

@@ -233,8 +233,8 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
 
   protected AbstractSerDe initSerDe(Configuration conf) throws SerDeException {
     Properties props = new Properties();
-    StringBuffer columnsBuffer = new StringBuffer();
-    StringBuffer typesBuffer = new StringBuffer();
+    StringBuilder columnsBuffer = new StringBuilder();
+    StringBuilder typesBuffer = new StringBuilder();
     boolean isFirst = true;
     for (FieldDesc colDesc : schema.getColumns()) {
       if (!isFirst) {

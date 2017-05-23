@@ -32,7 +32,7 @@ public class Utils {
 	  }
 	  
 	  int len = s.length();
-	  StringBuffer s2 = new StringBuffer(len);	  
+	  StringBuilder s2 = new StringBuilder(len);	  
 	  
 	  for (int i = 0; i < len; i++) {
 		char ch = s.charAt(i);
