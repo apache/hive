@@ -30,16 +30,16 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
  * associated with a table.
  */
 @SuppressWarnings("serial")
-public class NotNullConstraintInfo implements Serializable {
+public class NotNullConstraint implements Serializable {
 
   // Mapping from constraint name to list of not null columns
   Map<String, String> notNullConstraints;
   String databaseName;
   String tableName;
 
-  public NotNullConstraintInfo() {}
+  public NotNullConstraint() {}
 
-  public NotNullConstraintInfo(List<SQLNotNullConstraint> nns, String tableName, String databaseName) {
+  public NotNullConstraint(List<SQLNotNullConstraint> nns, String tableName, String databaseName) {
     this.databaseName = databaseName;
     this.tableName = tableName;
     this.notNullConstraints = new TreeMap<String, String>();

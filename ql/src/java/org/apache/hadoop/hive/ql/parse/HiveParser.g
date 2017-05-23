@@ -1232,9 +1232,9 @@ alterStatementSuffixAddCol
 alterStatementSuffixAddConstraint
 @init { pushMsg("add constraint statement", state); }
 @after { popMsg(state); }
-   :  KW_ADD (fk=alterForeignKeyWithName | alterSimpleConstraintWithName)
+   :  KW_ADD (fk=alterForeignKeyWithName | alterConstraintWithName)
    -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT alterForeignKeyWithName)
-   ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT alterSimpleConstraintWithName)
+   ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT alterConstraintWithName)
    ;
 
 alterStatementSuffixDropConstraint
@@ -2177,36 +2177,36 @@ relySpecification
     |  (KW_NORELY)? -> ^(TOK_NORELY)
     ;
 
-createSimpleConstraint
-@init { pushMsg("simple constraint", state); }
+createConstraint
+@init { pushMsg("pk or uk or nn constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? simpleTableConstraintType pkCols=columnParenthesesList constraintOptsCreate?
-    -> {$idfr.tree != null}?
-            ^(simpleTableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $idfr) constraintOptsCreate?)
-    -> ^(simpleTableConstraintType $pkCols constraintOptsCreate?)
+    : (KW_CONSTRAINT constraintName=identifier)? tableConstraintType pkCols=columnParenthesesList constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^(tableConstraintType $pkCols constraintOptsCreate?)
     ;
 
-alterSimpleConstraintWithName
-@init { pushMsg("simple constraint with key name", state); }
+alterConstraintWithName
+@init { pushMsg("pk or uk or nn constraint with name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT idfr=identifier simpleTableConstraintType pkCols=columnParenthesesList constraintOptsAlter?
-    -> ^(simpleTableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $idfr) constraintOptsAlter?)
+    : KW_CONSTRAINT constraintName=identifier tableConstraintType pkCols=columnParenthesesList constraintOptsAlter?
+    -> ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
     ;
 
 createForeignKey
 @init { pushMsg("foreign key", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsCreate?
-    -> {$idfr.tree != null}?
-            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $idfr) $fkCols $tabName $parCols constraintOptsCreate?)
+    : (KW_CONSTRAINT constraintName=identifier)? KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsCreate?)
     -> ^(TOK_FOREIGN_KEY $fkCols $tabName $parCols constraintOptsCreate?)
     ;
 
 alterForeignKeyWithName
 @init { pushMsg("foreign key with key name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
-    -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $idfr) $fkCols $tabName $parCols constraintOptsAlter?)
+    : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
+    -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
     ;
 
 skewedValueElement
@@ -2331,7 +2331,7 @@ tableConstraint
 @init { pushMsg("table constraint", state); }
 @after { popMsg(state); }
     : ( createForeignKey )
-    | ( createSimpleConstraint )
+    | ( createConstraint )
     ;
 
 columnNameTypeConstraint
@@ -2346,58 +2346,58 @@ columnConstraint[CommonTree fkColName]
 @init { pushMsg("column constraint", state); }
 @after { popMsg(state); }
     : ( foreignKeyConstraint[$fkColName] )
-    | ( simpleColConstraint )
+    | ( colConstraint )
     ;
 
 foreignKeyConstraint[CommonTree fkColName]
 @init { pushMsg("column constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsCreate?
-    -> {$idfr.tree != null}?
-            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $idfr) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsCreate?)
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsCreate?)
     -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsCreate?)
     ;
 
-simpleColConstraint
+colConstraint
 @init { pushMsg("column constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? simpleColumnConstraintType constraintOptsCreate?
-    -> {$idfr.tree != null}?
-            ^(simpleColumnConstraintType ^(TOK_CONSTRAINT_NAME $idfr) constraintOptsCreate?)
-    -> ^(simpleColumnConstraintType constraintOptsCreate?)
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsCreate?
+    -> {$constraintName.tree != null}?
+            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^(columnConstraintType constraintOptsCreate?)
     ;
 
 alterColumnConstraint[CommonTree fkColName]
 @init { pushMsg("alter column constraint", state); }
 @after { popMsg(state); }
     : ( alterForeignKeyConstraint[$fkColName] )
-    | ( alterSimpleColConstraint )
+    | ( alterColConstraint )
     ;
 
 alterForeignKeyConstraint[CommonTree fkColName]
 @init { pushMsg("alter column constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
-    -> {$idfr.tree != null}?
-            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $idfr) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
+    : (KW_CONSTRAINT constraintName=identifier)? KW_REFERENCES tabName=tableName LPAREN colName=columnName RPAREN constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
     -> ^(TOK_FOREIGN_KEY ^(TOK_TABCOLNAME {$fkColName}) $tabName ^(TOK_TABCOLNAME $colName) constraintOptsAlter?)
     ;
 
-alterSimpleColConstraint
+alterColConstraint
 @init { pushMsg("alter column constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT idfr=identifier)? simpleColumnConstraintType constraintOptsAlter?
-    -> {$idfr.tree != null}?
-            ^(simpleColumnConstraintType ^(TOK_CONSTRAINT_NAME $idfr) constraintOptsAlter?)
-    -> ^(simpleColumnConstraintType constraintOptsAlter?)
+    : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
+    -> {$constraintName.tree != null}?
+            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    -> ^(columnConstraintType constraintOptsAlter?)
     ;
 
-simpleColumnConstraintType
+columnConstraintType
     : KW_NOT KW_NULL       ->    TOK_NOT_NULL
-    | simpleTableConstraintType
+    | tableConstraintType
     ;
 
-simpleTableConstraintType
+tableConstraintType
     : KW_PRIMARY KW_KEY    ->    TOK_PRIMARY_KEY
     | KW_UNIQUE            ->    TOK_UNIQUE
     ;

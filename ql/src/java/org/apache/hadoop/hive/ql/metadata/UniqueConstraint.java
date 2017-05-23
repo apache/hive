@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
  * associated with a table.
  */
 @SuppressWarnings("serial")
-public class UniqueConstraintInfo implements Serializable {
+public class UniqueConstraint implements Serializable {
 
   public class UniqueConstraintCol {
     public String colName;
@@ -48,9 +48,9 @@ public class UniqueConstraintInfo implements Serializable {
   String tableName;
   String databaseName;
 
-  public UniqueConstraintInfo() {}
+  public UniqueConstraint() {}
 
-  public UniqueConstraintInfo(List<SQLUniqueConstraint> uks, String tableName, String databaseName) {
+  public UniqueConstraint(List<SQLUniqueConstraint> uks, String tableName, String databaseName) {
     this.tableName = tableName;
     this.databaseName = databaseName;
     uniqueConstraints = new TreeMap<String, List<UniqueConstraintCol>>();

@@ -57,6 +57,7 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -975,9 +976,9 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       createTable(tbl);
-      // Add primary keys and foreign keys.
-      // We need not do a deep retrieval of the Table Column Descriptor while persisting the PK/FK
-      // since this transaction involving create table is not yet committed.
+      // Add constraints.
+      // We need not do a deep retrieval of the Table Column Descriptor while persisting the
+      // constraints since this transaction involving create table is not yet committed.
       addPrimaryKeys(primaryKeys, false);
       addForeignKeys(foreignKeys, false);
       addUniqueConstraints(uniqueConstraints, false);
@@ -3526,32 +3527,39 @@ public class ObjectStore implements RawStore, Configurable {
     String currentConstraintName = null;
 
     for (int i = 0; i < fks.size(); i++) {
-      AttachedMTableInfo nParentTable = getMTable(fks.get(i).getPktable_db(), fks.get(i).getPktable_name(), retrieveCD);
+      final String pkTableDB = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_db());
+      final String pkTableName = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_name());
+      final String pkColumnName =HiveStringUtils.normalizeIdentifier(fks.get(i).getPkcolumn_name());
+      final String fkTableDB = HiveStringUtils.normalizeIdentifier(fks.get(i).getFktable_db());
+      final String fkTableName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFktable_name());
+      final String fkColumnName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFkcolumn_name());
+
+      // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
+      // For instance, this is the case when we are creating the table.
+      AttachedMTableInfo nParentTable = getMTable(pkTableDB, pkTableName, retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
-        throw new InvalidObjectException("Parent table not found: " + fks.get(i).getPktable_name());
+        throw new InvalidObjectException("Parent table not found: " + pkTableName);
       }
 
-      AttachedMTableInfo nChildTable = getMTable(fks.get(i).getFktable_db(), fks.get(i).getFktable_name(), retrieveCD);
+      AttachedMTableInfo nChildTable = getMTable(fkTableDB, fkTableName, retrieveCD);
       MTable childTable = nChildTable.mtbl;
       if (childTable == null) {
-        throw new InvalidObjectException("Child table not found: " + fks.get(i).getFktable_name());
+        throw new InvalidObjectException("Child table not found: " + fkTableName);
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       List<MFieldSchema> parentCols = parentCD == null ? null : parentCD.getCols();
-      int parentIntegerIndex =
-        getColumnIndexFromTableColumns(parentCols, fks.get(i).getPkcolumn_name());
+      int parentIntegerIndex = getColumnIndexFromTableColumns(parentCols, pkColumnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + fks.get(i).getPkcolumn_name());
+        throw new InvalidObjectException("Parent column not found: " + pkColumnName);
       }
 
       MColumnDescriptor childCD = retrieveCD ? nChildTable.mcd : childTable.getSd().getCD();
       List<MFieldSchema> childCols = childCD.getCols();
-      int childIntegerIndex =
-        getColumnIndexFromTableColumns(childCols, fks.get(i).getFkcolumn_name());
+      int childIntegerIndex = getColumnIndexFromTableColumns(childCols, fkColumnName);
       if (childIntegerIndex == -1) {
-        throw new InvalidObjectException("Child column not found: " + fks.get(i).getFkcolumn_name());
+        throw new InvalidObjectException("Child column not found: " + fkColumnName);
       }
 
       if (fks.get(i).getFk_name() == null) {
@@ -3563,12 +3571,11 @@ public class ObjectStore implements RawStore, Configurable {
         // However, this scenario can be ignored for practical purposes because of
         // the uniqueness of the generated constraint name.
         if (fks.get(i).getKey_seq() == 1) {
-          currentConstraintName = generateConstraintName(fks.get(i).getFktable_db(), fks.get(i).getFktable_name(),
-            fks.get(i).getPktable_db(), fks.get(i).getPktable_name(),
-            fks.get(i).getPkcolumn_name(), fks.get(i).getFkcolumn_name(), "fk");
+          currentConstraintName = generateConstraintName(
+            fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
         }
       } else {
-        currentConstraintName = fks.get(i).getFk_name();
+        currentConstraintName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFk_name());
       }
       Integer updateRule = fks.get(i).getUpdate_rule();
       Integer deleteRule = fks.get(i).getDelete_rule();
@@ -3605,19 +3612,24 @@ public class ObjectStore implements RawStore, Configurable {
     String constraintName = null;
 
     for (int i = 0; i < pks.size(); i++) {
-      AttachedMTableInfo nParentTable =
-        getMTable(pks.get(i).getTable_db(), pks.get(i).getTable_name(), retrieveCD);
+      final String tableDB = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_db());
+      final String tableName = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_name());
+      final String columnName = HiveStringUtils.normalizeIdentifier(pks.get(i).getColumn_name());
+
+      // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
+      // For instance, this is the case when we are creating the table.
+      AttachedMTableInfo nParentTable = getMTable(tableDB, tableName, retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
-        throw new InvalidObjectException("Parent table not found: " + pks.get(i).getTable_name());
+        throw new InvalidObjectException("Parent table not found: " + tableName);
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), pks.get(i).getColumn_name());
+        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
 
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
+        throw new InvalidObjectException("Parent column not found: " + columnName);
       }
       if (getPrimaryKeyConstraintName(
           parentTable.getDatabase().getName(), parentTable.getTableName()) != null) {
@@ -3626,11 +3638,10 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (pks.get(i).getPk_name() == null) {
         if (pks.get(i).getKey_seq() == 1) {
-          constraintName = generateConstraintName(pks.get(i).getTable_db(), pks.get(i).getTable_name(),
-            pks.get(i).getColumn_name(), "pk");
+          constraintName = generateConstraintName(tableDB, tableName, columnName, "pk");
         }
       } else {
-        constraintName = pks.get(i).getPk_name();
+        constraintName = HiveStringUtils.normalizeIdentifier(pks.get(i).getPk_name());
       }
 
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
@@ -3663,29 +3674,32 @@ public class ObjectStore implements RawStore, Configurable {
           throws InvalidObjectException, MetaException {
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
-  
+
     for (int i = 0; i < uks.size(); i++) {
-      AttachedMTableInfo nParentTable =
-        getMTable(uks.get(i).getTable_db(), uks.get(i).getTable_name(), retrieveCD);
+      final String tableDB = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_db());
+      final String tableName = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_name());
+      final String columnName = HiveStringUtils.normalizeIdentifier(uks.get(i).getColumn_name());
+
+      // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
+      // For instance, this is the case when we are creating the table.
+      AttachedMTableInfo nParentTable = getMTable(tableDB, tableName, retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
-        throw new InvalidObjectException("Parent table not found: " + uks.get(i).getTable_name());
+        throw new InvalidObjectException("Parent table not found: " + tableName);
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-          getColumnIndexFromTableColumns(parentCD == null ?
-              null : parentCD.getCols(), uks.get(i).getColumn_name());
+          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + uks.get(i).getColumn_name());
+        throw new InvalidObjectException("Parent column not found: " + columnName);
       }
       if (uks.get(i).getUk_name() == null) {
         if (uks.get(i).getKey_seq() == 1) {
-            constraintName = generateConstraintName(uks.get(i).getTable_db(), uks.get(i).getTable_name(),
-                uks.get(i).getColumn_name(), "uk");
+            constraintName = generateConstraintName(tableDB, tableName, columnName, "uk");
         }
       } else {
-        constraintName = uks.get(i).getUk_name();
+        constraintName = HiveStringUtils.normalizeIdentifier(uks.get(i).getUk_name());
       }
 
       int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
@@ -3718,27 +3732,30 @@ public class ObjectStore implements RawStore, Configurable {
           throws InvalidObjectException, MetaException {
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
-  
+
     for (int i = 0; i < nns.size(); i++) {
-      AttachedMTableInfo nParentTable =
-        getMTable(nns.get(i).getTable_db(), nns.get(i).getTable_name(), retrieveCD);
+      final String tableDB = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_db());
+      final String tableName = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_name());
+      final String columnName = HiveStringUtils.normalizeIdentifier(nns.get(i).getColumn_name());
+
+      // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
+      // For instance, this is the case when we are creating the table.
+      AttachedMTableInfo nParentTable = getMTable(tableDB, tableName, retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
-        throw new InvalidObjectException("Parent table not found: " + nns.get(i).getTable_name());
+        throw new InvalidObjectException("Parent table not found: " + tableName);
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-          getColumnIndexFromTableColumns(parentCD == null ?
-              null : parentCD.getCols(), nns.get(i).getColumn_name());
+          getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), columnName);
       if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + nns.get(i).getColumn_name());
+        throw new InvalidObjectException("Parent column not found: " + columnName);
       }
       if (nns.get(i).getNn_name() == null) {
-        constraintName = generateConstraintName(nns.get(i).getTable_db(), nns.get(i).getTable_name(),
-            nns.get(i).getColumn_name(), "nn");
+        constraintName = generateConstraintName(tableDB, tableName, columnName, "nn");
       } else {
-        constraintName = nns.get(i).getNn_name();
+        constraintName = HiveStringUtils.normalizeIdentifier(nns.get(i).getNn_name());
       }
 
       int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
@@ -8352,7 +8369,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       return getPrimaryKeysInternal(db_name, tbl_name, true, true);
     } catch (NoSuchObjectException e) {
-      throw new MetaException(e.getMessage());
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -8441,7 +8458,7 @@ public class ObjectStore implements RawStore, Configurable {
       return getForeignKeysInternal(parent_db_name,
         parent_tbl_name, foreign_db_name, foreign_tbl_name, true, true);
     } catch (NoSuchObjectException e) {
-      throw new MetaException(e.getMessage());
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -8563,7 +8580,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       return getUniqueConstraintsInternal(db_name, tbl_name, true, true);
     } catch (NoSuchObjectException e) {
-      throw new MetaException(e.getMessage());
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -8632,7 +8649,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       return getNotNullConstraintsInternal(db_name, tbl_name, true, true);
     } catch (NoSuchObjectException e) {
-      throw new MetaException(e.getMessage());
+      throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
   }
 

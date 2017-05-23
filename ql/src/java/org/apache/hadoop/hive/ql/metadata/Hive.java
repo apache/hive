@@ -4131,11 +4131,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Unique constraints associated with the table.
    * @throws HiveException
    */
-  public UniqueConstraintInfo getUniqueConstraints(String dbName, String tblName) throws HiveException {
+  public UniqueConstraint getUniqueConstraints(String dbName, String tblName) throws HiveException {
     try {
       List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
               new UniqueConstraintsRequest(dbName, tblName));
-      return new UniqueConstraintInfo(uniqueConstraints, tblName, dbName);
+      return new UniqueConstraint(uniqueConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -4149,11 +4149,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Not null constraints associated with the table.
    * @throws HiveException
    */
-  public NotNullConstraintInfo getNotNullConstraints(String dbName, String tblName) throws HiveException {
+  public NotNullConstraint getNotNullConstraints(String dbName, String tblName) throws HiveException {
     try {
       List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
               new NotNullConstraintsRequest(dbName, tblName));
-      return new NotNullConstraintInfo(notNullConstraints, tblName, dbName);
+      return new NotNullConstraint(notNullConstraints, tblName, dbName);
     } catch (Exception e) {
       throw new HiveException(e);
     }

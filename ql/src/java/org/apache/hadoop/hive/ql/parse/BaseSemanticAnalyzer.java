@@ -634,14 +634,14 @@ public abstract class BaseSemanticAnalyzer {
             new ArrayList<SQLUniqueConstraint>(), new ArrayList<SQLNotNullConstraint>());
   }
 
-  private static class SimpleConstraintInfo {
+  private static class ConstraintInfo {
     final String colName;
     final String constraintName;
     final boolean enable;
     final boolean validate;
     final boolean rely;
 
-    SimpleConstraintInfo(String colName, String constraintName,
+    ConstraintInfo(String colName, String constraintName,
         boolean enable, boolean validate, boolean rely) {
       this.colName = colName;
       this.constraintName = constraintName;
@@ -656,7 +656,7 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected static void processPrimaryKeys(String databaseName, String tableName,
       ASTNode child, List<SQLPrimaryKey> primaryKeys) throws SemanticException {
-    List<SimpleConstraintInfo> primaryKeyInfos = new ArrayList<SimpleConstraintInfo>();
+    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, primaryKeyInfos);
     constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
   }
@@ -664,15 +664,15 @@ public abstract class BaseSemanticAnalyzer {
   protected static void processPrimaryKeys(String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLPrimaryKey> primaryKeys)
           throws SemanticException {
-    List<SimpleConstraintInfo> primaryKeyInfos = new ArrayList<SimpleConstraintInfo>();
+    List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, primaryKeyInfos);
     constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
   }
 
   private static void constraintInfosToPrimaryKeys(String databaseName, String tableName,
-          List<SimpleConstraintInfo> primaryKeyInfos, List<SQLPrimaryKey> primaryKeys) {
+          List<ConstraintInfo> primaryKeyInfos, List<SQLPrimaryKey> primaryKeys) {
     int i = 1;
-    for (SimpleConstraintInfo primaryKeyInfo : primaryKeyInfos) {
+    for (ConstraintInfo primaryKeyInfo : primaryKeyInfos) {
       primaryKeys.add(new SQLPrimaryKey(databaseName, tableName, primaryKeyInfo.colName,
               i++, primaryKeyInfo.constraintName, primaryKeyInfo.enable,
               primaryKeyInfo.validate, primaryKeyInfo.rely));
@@ -684,7 +684,7 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected static void processUniqueConstraints(String databaseName, String tableName,
       ASTNode child, List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
-    List<SimpleConstraintInfo> uniqueInfos = new ArrayList<SimpleConstraintInfo>();
+    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, uniqueInfos);
     constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
   }
@@ -692,15 +692,15 @@ public abstract class BaseSemanticAnalyzer {
   protected static void processUniqueConstraints(String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLUniqueConstraint> uniqueConstraints)
           throws SemanticException {
-    List<SimpleConstraintInfo> uniqueInfos = new ArrayList<SimpleConstraintInfo>();
+    List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, uniqueInfos);
     constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
   }
 
   private static void constraintInfosToUniqueConstraints(String databaseName, String tableName,
-          List<SimpleConstraintInfo> uniqueInfos, List<SQLUniqueConstraint> uniqueConstraints) {
+          List<ConstraintInfo> uniqueInfos, List<SQLUniqueConstraint> uniqueConstraints) {
     int i = 1;
-    for (SimpleConstraintInfo uniqueInfo : uniqueInfos) {
+    for (ConstraintInfo uniqueInfo : uniqueInfos) {
       uniqueConstraints.add(new SQLUniqueConstraint(databaseName, tableName, uniqueInfo.colName,
               i++, uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
     }
@@ -709,14 +709,14 @@ public abstract class BaseSemanticAnalyzer {
   protected static void processNotNullConstraints(String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLNotNullConstraint> notNullConstraints)
           throws SemanticException {
-    List<SimpleConstraintInfo> notNullInfos = new ArrayList<SimpleConstraintInfo>();
+    List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, notNullInfos);
     constraintInfosToNotNullConstraints(databaseName, tableName, notNullInfos, notNullConstraints);
   }
 
   private static void constraintInfosToNotNullConstraints(String databaseName, String tableName,
-          List<SimpleConstraintInfo> notNullInfos, List<SQLNotNullConstraint> notNullConstraints) {
-    for (SimpleConstraintInfo notNullInfo : notNullInfos) {
+          List<ConstraintInfo> notNullInfos, List<SQLNotNullConstraint> notNullConstraints) {
+    for (ConstraintInfo notNullInfo : notNullInfos) {
       notNullConstraints.add(new SQLNotNullConstraint(databaseName, tableName, notNullInfo.colName,
               notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate, notNullInfo.rely));
     }
@@ -730,7 +730,7 @@ public abstract class BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private static void generateConstraintInfos(ASTNode child,
-      List<SimpleConstraintInfo> cstrInfos) throws SemanticException {
+      List<ConstraintInfo> cstrInfos) throws SemanticException {
     ImmutableList.Builder<String> columnNames = ImmutableList.builder();
     for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
       Tree columnName = child.getChild(0).getChild(j);
@@ -749,7 +749,7 @@ public abstract class BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private static void generateConstraintInfos(ASTNode child, List<String> columnNames,
-      List<SimpleConstraintInfo> cstrInfos) throws SemanticException {
+      List<ConstraintInfo> cstrInfos) throws SemanticException {
     // The ANTLR grammar looks like :
     // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
     //  constraintOptsCreate?
@@ -771,9 +771,11 @@ public abstract class BaseSemanticAnalyzer {
         constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
+        // validate is true by default if we enable the constraint
         validate = true;
       } else if (type == HiveParser.TOK_DISABLE) {
         enable = false;
+        // validate is false by default if we disable the constraint
         validate = false;
       } else if (type == HiveParser.TOK_VALIDATE) {
         validate = true;
@@ -795,7 +797,7 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     for (String columnName : columnNames) {
-      cstrInfos.add(new SimpleConstraintInfo(columnName, constraintName,
+      cstrInfos.add(new ConstraintInfo(columnName, constraintName,
           enable, validate, rely));
     }
   }
@@ -832,9 +834,11 @@ public abstract class BaseSemanticAnalyzer {
         constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
+        // validate is true by default if we enable the constraint
         validate = true;
       } else if (type == HiveParser.TOK_DISABLE) {
         enable = false;
+        // validate is false by default if we disable the constraint
         validate = false;
       } else if (type == HiveParser.TOK_VALIDATE) {
         validate = true;

@@ -42,10 +42,10 @@ import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.UniqueConstraintInfo;
-import org.apache.hadoop.hive.ql.metadata.UniqueConstraintInfo.UniqueConstraintCol;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraintInfo;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
@@ -279,7 +279,7 @@ public final class MetaDataFormatUtils {
   }
 
   public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-          UniqueConstraintInfo ukInfo, NotNullConstraintInfo nnInfo) {
+          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -372,7 +372,7 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getUniqueConstraintsInformation(StringBuilder constraintsInfo,
-      UniqueConstraintInfo ukInfo) {
+      UniqueConstraint ukInfo) {
     formatOutput("Table:",
                  ukInfo.getDatabaseName() + "." + ukInfo.getTableName(),
                  constraintsInfo);
@@ -385,7 +385,7 @@ public final class MetaDataFormatUtils {
   }
 
   private static void getNotNullConstraintsInformation(StringBuilder constraintsInfo,
-      NotNullConstraintInfo nnInfo) {
+      NotNullConstraint nnInfo) {
     formatOutput("Table:",
                  nnInfo.getDatabaseName() + "." + nnInfo.getTableName(),
                  constraintsInfo);
