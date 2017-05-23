@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.List;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
@@ -50,6 +51,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   private static com.google.common.base.Function<Table,Table> getTableModifier =
       com.google.common.base.Functions.identity();
+  private static com.google.common.base.Function<List<String>, List<String>> listPartitionNamesModifier =
+          com.google.common.base.Functions.identity();
 
   public static void setGetTableBehaviour(com.google.common.base.Function<Table,Table> modifier){
     getTableModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
@@ -63,8 +66,25 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     return getTableModifier;
   }
 
+  public static void setListPartitionNamesBehaviour(com.google.common.base.Function<List<String>, List<String>> modifier){
+    listPartitionNamesModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
+  }
+
+  public static void resetListPartitionNamesBehaviour(){
+    setListPartitionNamesBehaviour(null);
+  }
+
+  public static com.google.common.base.Function<List<String>, List<String>> getListPartitionNamesBehaviour() {
+    return listPartitionNamesModifier;
+  }
+
   @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     return getTableModifier.apply(super.getTable(dbName, tableName));
+  }
+
+  @Override
+  public List<String> listPartitionNames(String dbName, String tableName, short max) throws MetaException {
+    return listPartitionNamesModifier.apply(super.listPartitionNames(dbName, tableName, max));
   }
 }

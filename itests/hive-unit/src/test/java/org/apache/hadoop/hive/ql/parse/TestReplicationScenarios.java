@@ -386,7 +386,6 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
 
-
     advanceDumpDir();
 
     BehaviourInjection<Table,Table> ptnedTableNuller = new BehaviourInjection<Table,Table>(){
@@ -414,12 +413,14 @@ public class TestReplicationScenarios {
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
 
-    // The ptned table should miss in target as the table was marked cisrtually as dropped
+    // The ptned table should miss in target as the table was marked virtually as dropped
     verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
     verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
+    verifyIfTableNotExist(dbName + "_dupe", "ptned");
 
     // Verify if Drop table on a non-existing table is idempotent
     run("DROP TABLE " + dbName + ".ptned");
+    verifyIfTableNotExist(dbName, "ptned");
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -429,7 +430,79 @@ public class TestReplicationScenarios {
     assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true));
 
     verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
+    verifyIfTableNotExist(dbName + "_dupe", "ptned");
     verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
+  }
+
+  @Test
+  public void testBootstrapWithConcurrentDropPartition() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+
+    advanceDumpDir();
+
+    BehaviourInjection<List<String>, List<String>> listPartitionNamesNuller
+            = new BehaviourInjection<List<String>, List<String>>(){
+      @Nullable
+      @Override
+      public List<String> apply(@Nullable List<String> partitions) {
+        injectionPathCalled = true;
+        return new ArrayList<String>();
+      }
+    };
+    InjectableBehaviourObjectStore.setListPartitionNamesBehaviour(listPartitionNamesNuller);
+
+    // None of the partitions will be dumped as the partitions list was empty
+    run("REPL DUMP " + dbName);
+    listPartitionNamesNuller.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
+
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    // All partitions should miss in target as it was marked virtually as dropped
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")));
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")));
+
+    // Verify if drop partition on a non-existing partition is idempotent and just a noop.
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)");
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=2)");
+    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("1")));
+    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("2")));
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String postDropReplDumpLocn = getResult(0,0);
+    String postDropReplDumpId = getResult(0,1,true);
+    LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
+    assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true));
+
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")));
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")));
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
   }
 
   @Test
@@ -599,30 +672,14 @@ public class TestReplicationScenarios {
     // not existing, and thus, throwing a NoSuchObjectException, or returning nulls
     // or select * returning empty, depending on what we're testing.
 
-    Exception e = null;
-    try {
-      Table tbl = metaStoreClient.getTable(dbName + "_dupe", "unptned");
-      assertNull(tbl);
-    } catch (TException te) {
-      e = te;
-    }
-    assertNotNull(e);
-    assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyIfTableNotExist(dbName + "_dupe", "unptned");
 
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", empty);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned", ptn_data_1);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", empty);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned3", ptn_data_2);
 
-    Exception e2 = null;
-    try {
-      Table tbl = metaStoreClient.getTable(dbName+"_dupe","ptned2");
-      assertNull(tbl);
-    } catch (TException te) {
-      e2 = te;
-    }
-    assertNotNull(e2);
-    assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyIfTableNotExist(dbName + "_dupe", "ptned2");
   }
 
   @Test
@@ -732,15 +789,7 @@ public class TestReplicationScenarios {
     run("SELECT a from " + dbName + "_dupe.ptned");
     verifyResults(ptn_data_1);
 
-    Exception e2 = null;
-    try {
-      Table tbl = metaStoreClient.getTable(dbName+"_dupe","ptned2");
-      assertNull(tbl);
-    } catch (TException te) {
-      e2 = te;
-    }
-    assertNotNull(e2);
-    assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyIfTableNotExist(dbName +"_dupe", "ptned2");
 
     run("SELECT a from " + dbName + "_dupe.unptned_copy");
     verifyResults(unptn_data);
@@ -874,15 +923,7 @@ public class TestReplicationScenarios {
     // Replication done, we now do the following verifications:
 
     // verify that unpartitioned table rename succeeded.
-    Exception e = null;
-    try {
-      Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "unptned");
-      assertNull(tbl);
-    } catch (TException te) {
-      e = te;
-    }
-    assertNotNull(e);
-    assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyIfTableNotExist(dbName + "_dupe", "unptned");
     verifyRun("SELECT * from " + dbName + "_dupe.unptned_rn", unptn_data);
 
     // verify that partition rename succeded.
@@ -898,15 +939,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=22", ptn_data_2);
 
     // verify that ptned table rename succeded.
-    Exception e2 = null;
-    try {
-      Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "ptned2");
-      assertNull(tbl);
-    } catch (TException te) {
-      e2 = te;
-    }
-    assertNotNull(e2);
-    assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyIfTableNotExist(dbName + "_dupe", "ptned2");
     verifyRun("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2", ptn_data_2);
 
     // verify that ptned table property set worked
@@ -1967,6 +2000,50 @@ public class TestReplicationScenarios {
   private void printOutput() throws IOException {
     for (String s : getOutput()){
       LOG.info(s);
+    }
+  }
+
+  private void verifyIfTableNotExist(String dbName, String tableName){
+    Exception e = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName, tableName);
+      assertNull(tbl);
+    } catch (TException te) {
+      e = te;
+    }
+    assertNotNull(e);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+  }
+
+  private void verifyIfTableExist(String dbName, String tableName){
+    Exception e = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName, tableName);
+      assertNotNull(tbl);
+    } catch (TException te) {
+      assert(false);
+    }
+  }
+
+  private void verifyIfPartitionNotExist(String dbName, String tableName, List<String> partValues){
+    Exception e = null;
+    try {
+      Partition ptn = metaStoreClient.getPartition(dbName, tableName, partValues);
+      assertNull(ptn);
+    } catch (TException te) {
+      e = te;
+    }
+    assertNotNull(e);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+  }
+
+  private void verifyIfPartitionExist(String dbName, String tableName, List<String> partValues){
+    Exception e = null;
+    try {
+      Partition ptn = metaStoreClient.getPartition(dbName, tableName, partValues);
+      assertNotNull(ptn);
+    } catch (TException te) {
+      assert(false);
     }
   }
 
