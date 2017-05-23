@@ -7666,7 +7666,8 @@ public class ObjectStore implements RawStore, Configurable {
     // read the schema version stored in metastore db
     String dbSchemaVer = getMetaStoreSchemaVersion();
     // version of schema for this version of hive
-    String hiveSchemaVer = MetaStoreSchemaInfo.getHiveSchemaVersion();
+    IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(getConf());
+    String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
 
     if (dbSchemaVer == null) {
       if (strictValidation) {
@@ -7680,7 +7681,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Set by MetaStore " + USER + "@" + HOSTNAME);
       }
     } else {
-      if (MetaStoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
+      if (metastoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
         LOG.debug("Found expected HMS version of " + dbSchemaVer);
       } else {
         // metastore schema version is different than Hive distribution needs
@@ -7729,7 +7730,7 @@ public class ObjectStore implements RawStore, Configurable {
       } catch (JDODataStoreException e) {
         if (e.getCause() instanceof MissingTableException) {
           throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
-              + MetaStoreSchemaInfo.getHiveSchemaVersion());
+              + MetaStoreSchemaInfoFactory.get(getConf()).getHiveSchemaVersion());
         } else {
           throw MetaStoreUtils.newMetaException(e);
         }

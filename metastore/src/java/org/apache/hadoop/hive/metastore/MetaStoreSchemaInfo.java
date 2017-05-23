@@ -31,14 +31,13 @@ import org.apache.hive.common.util.HiveVersionInfo;
 import com.google.common.collect.ImmutableMap;
 
 
-public class MetaStoreSchemaInfo {
-  private static final String SQL_FILE_EXTENSION = ".sql";
-  private static final String UPGRADE_FILE_PREFIX = "upgrade-";
+public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
+  protected static final String UPGRADE_FILE_PREFIX = "upgrade-";
   private static final String INIT_FILE_PREFIX = "hive-schema-";
   private static final String VERSION_UPGRADE_LIST = "upgrade.order";
   private static final String PRE_UPGRADE_PREFIX = "pre-";
-  private final String dbType;
-  private final String hiveSchemaVersions[];
+  protected final String dbType;
+  private String[] hiveSchemaVersions;
   private final String hiveHome;
 
   // Some version upgrades often don't change schema. So they are equivalent to
@@ -55,6 +54,9 @@ public class MetaStoreSchemaInfo {
   public MetaStoreSchemaInfo(String hiveHome, String dbType) throws HiveMetaException {
     this.hiveHome = hiveHome;
     this.dbType = dbType;
+  }
+
+  private void loadAllUpgradeScripts(String dbType) throws HiveMetaException {
     // load upgrade order for the given dbType
     List<String> upgradeOrderList = new ArrayList<String>();
     String upgradeListFile = getMetaStoreScriptDir() + File.separator +
@@ -79,6 +81,7 @@ public class MetaStoreSchemaInfo {
    * @return
    * @throws HiveMetaException
    */
+  @Override
   public List<String> getUpgradeScripts(String fromVersion)
       throws HiveMetaException {
     List <String> upgradeScriptList = new ArrayList<String>();
@@ -87,6 +90,7 @@ public class MetaStoreSchemaInfo {
     if (getHiveSchemaVersion().equals(fromVersion)) {
       return upgradeScriptList;
     }
+    loadAllUpgradeScripts(dbType);
     // Find the list of scripts to execute for this upgrade
     int firstScript = hiveSchemaVersions.length;
     for (int i=0; i < hiveSchemaVersions.length; i++) {
@@ -112,6 +116,7 @@ public class MetaStoreSchemaInfo {
    * @return
    * @throws HiveMetaException
    */
+  @Override
   public String generateInitFileName(String toVersion) throws HiveMetaException {
     if (toVersion == null) {
       toVersion = getHiveSchemaVersion();
@@ -130,6 +135,7 @@ public class MetaStoreSchemaInfo {
    * Find the directory of metastore scripts
    * @return
    */
+  @Override
   public String getMetaStoreScriptDir() {
     return  hiveHome + File.separatorChar +
      "scripts" + File.separatorChar + "metastore" +
@@ -141,11 +147,13 @@ public class MetaStoreSchemaInfo {
     return UPGRADE_FILE_PREFIX +  fileVersion + "." + dbType + SQL_FILE_EXTENSION;
   }
 
-  public static String getPreUpgradeScriptName(int index, String upgradeScriptName) {
+  @Override
+  public String getPreUpgradeScriptName(int index, String upgradeScriptName) {
     return PRE_UPGRADE_PREFIX + index + "-" + upgradeScriptName;
   }
 
-  public static String getHiveSchemaVersion() {
+  @Override
+  public String getHiveSchemaVersion() {
     String hiveVersion = HiveVersionInfo.getShortVersion();
     return getEquivalentVersion(hiveVersion);
   }
@@ -160,21 +168,8 @@ public class MetaStoreSchemaInfo {
     }
   }
 
-  /**
-   * A dbVersion is compatible with hive version if it is greater or equal to
-   * the hive version. This is result of the db schema upgrade design principles
-   * followed in hive project. The state where db schema version is ahead of 
-   * hive software version is often seen when a 'rolling upgrade' or 
-   * 'rolling downgrade' is happening. This is a state where hive is functional 
-   * and returning non zero status for it is misleading.
-   *
-   * @param hiveVersion
-   *          version of hive software
-   * @param dbVersion
-   *          version of metastore rdbms schema
-   * @return true if versions are compatible
-   */
-  public static boolean isVersionCompatible(String hiveVersion, String dbVersion) {
+  @Override
+  public boolean isVersionCompatible(String hiveVersion, String dbVersion) {
     hiveVersion = getEquivalentVersion(hiveVersion);
     dbVersion = getEquivalentVersion(dbVersion);
     if (hiveVersion.equals(dbVersion)) {
