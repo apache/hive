@@ -128,7 +128,7 @@ public class TestSchemaTool extends TestCase {
     assertTrue(isValid);
 
     // upgrade to 1.1.0 schema and re-validate
-    schemaTool.doUpgrade("1.1.0");
+    schemaTool.doUpgrade("0.12.0");
     isValid = (boolean)schemaTool.validateSchemaTables(conn);
     assertTrue(isValid);
 

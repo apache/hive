@@ -733,7 +733,9 @@ public class HiveSchemaTool {
       LOG.debug("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
       return false;
     }
-
+    if (version.indexOf("-cdh") > 0) {
+      version = version.split("-")[0];
+    }
     // re-open the hms connection
     hmsConn = getConnectionToMetastore(false);
 
