@@ -667,6 +667,34 @@ public class TestSchemaTool extends TestCase {
     assertFalse(isValid);
   }
 
+  public void testHiveMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
+    schemaTool.doInit("1.1.0");
+    validateMetastoreDbPropertiesTable();
+  }
+
+  public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
+    schemaTool.doInit("0.14.0");
+    schemaTool.doUpgrade();
+    validateMetastoreDbPropertiesTable();
+  }
+
+  private void validateMetastoreDbPropertiesTable() throws HiveMetaException, IOException {
+    boolean isValid = (boolean) schemaTool.validateSchemaTables(conn);
+    assertTrue(isValid);
+    // adding same property key twice should throw unique key constraint violation exception
+    String[] scripts = new String[] {
+      "insert into METASTORE_DB_PROPERTIES values ('guid', 'test-uuid-1', 'dummy uuid 1')",
+      "insert into METASTORE_DB_PROPERTIES values ('guid', 'test-uuid-2', 'dummy uuid 2')", };
+    File scriptFile = generateTestScript(scripts);
+    Exception ex = null;
+    try {
+      schemaTool.runBeeLine(scriptFile.getPath());
+    } catch (Exception iox) {
+      ex = iox;
+    }
+    assertTrue(ex != null && ex instanceof IOException);
+  }
+
   private File generateTestScript(String [] stmts) throws IOException {
     File testScriptFile = File.createTempFile("schematest", ".sql");
     testScriptFile.deleteOnExit();

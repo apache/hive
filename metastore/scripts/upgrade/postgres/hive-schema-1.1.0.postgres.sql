@@ -1487,7 +1487,12 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 ------------------------------
 \i hive-txn-schema-0.13.0.postgres.sql;
 
--- -----------------------------------------------------------------
--- Record schema version. Should be the last step in the init script
--- -----------------------------------------------------------------
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '1.1.0', 'Hive release version 1.1.0');
+-- ------------------------------------------
+-- Cloudera specific metastore schema patches
+-- ------------------------------------------
+\i 040-HIVE-16556.postgres.sql;
+
+-- ------------------------------------------------------------------------------------------------------------------------------
+-- Record schema version. Should be the last step in the init script. Starting CDH-5.12.0 schema version must include CDH version
+-- ------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '1.1.0-cdh5.12.0', 'Hive release version 1.1.0-cdh5.12.0');
