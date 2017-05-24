@@ -20,14 +20,16 @@ package org.apache.hadoop.hive.ql.optimizer.physical.index;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.cache.CacheUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.HiveStringUtils;
 
 /**
  *
@@ -60,10 +63,17 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 public class IndexWhereTaskDispatcher implements Dispatcher {
 
   private final PhysicalContext physicalContext;
+  // To store table to index mapping
+  private final Map<String, List<Index>> indexMap;
+  private final List<String> supportedIndexes;
 
   public IndexWhereTaskDispatcher(PhysicalContext context) {
     super();
     physicalContext = context;
+    indexMap = Maps.newHashMap();
+    supportedIndexes = new ArrayList<String>();
+    supportedIndexes.add(CompactIndexHandler.class.getName());
+    supportedIndexes.add(BitmapIndexHandler.class.getName());
   }
 
   @Override
@@ -104,6 +114,21 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     return null;
   }
 
+  private List<Index> getIndex(Table table) throws SemanticException {
+    String indexCacheKey = CacheUtils.buildKey(
+        HiveStringUtils.normalizeIdentifier(table.getDbName()),
+        HiveStringUtils.normalizeIdentifier(table.getTableName()));
+    List<Index>indexList = indexMap.get(indexCacheKey);
+    if (indexList == null) {
+      indexList =  IndexUtils.getIndexes(table, supportedIndexes);
+      if (indexList == null) {
+        indexList = Collections.emptyList();
+      }
+      indexMap.put(indexCacheKey, indexList);
+    }
+    return indexList;
+  }
+
   /**
    * Create a set of rules that only matches WHERE predicates on columns we have
    * an index on.
@@ -112,16 +137,11 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
   private Map<Rule, NodeProcessor> createOperatorRules(ParseContext pctx) throws SemanticException {
     Map<Rule, NodeProcessor> operatorRules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    List<String> supportedIndexes = new ArrayList<String>();
-    supportedIndexes.add(CompactIndexHandler.class.getName());
-    supportedIndexes.add(BitmapIndexHandler.class.getName());
-
     // query the metastore to know what columns we have indexed
     Map<TableScanOperator, List<Index>> indexes = new HashMap<TableScanOperator, List<Index>>();
     for (Operator<? extends OperatorDesc> op : pctx.getTopOps().values()) {
       if (op instanceof TableScanOperator) {
-        List<Index> tblIndexes = IndexUtils.getIndexes(((TableScanOperator) op).getConf()
-            .getTableMetadata(), supportedIndexes);
+        List<Index> tblIndexes = getIndex(((TableScanOperator) op).getConf().getTableMetadata());
         if (tblIndexes.size() > 0) {
           indexes.put((TableScanOperator) op, tblIndexes);
         }
