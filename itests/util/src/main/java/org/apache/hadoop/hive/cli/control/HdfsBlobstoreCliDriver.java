@@ -33,7 +33,7 @@ public class HdfsBlobstoreCliDriver extends AbstractCoreBlobstoreCliDriver {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     super.beforeClass();
   }
 

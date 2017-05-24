@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
 
-import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
@@ -50,30 +49,24 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
-    try {
-      String hadoopVer = cliConfig.getHadoopVersion();
-      qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-          hiveConfDir, hadoopVer, initScript, cleanupScript);
+    String hadoopVer = cliConfig.getHadoopVersion();
+    qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR, hiveConfDir,
+        hadoopVer, initScript, cleanupScript);
 
-      if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
-        fail(String.format("%s must be set. Try setting in blobstore-conf.xml", HCONF_TEST_BLOBSTORE_PATH));
-      }
-
-      // do a one time initialization
-      setupUniqueTestPath();
-      qt.cleanUp();
-      qt.createSources();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization",e);
+    if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
+      fail(String.format("%s must be set. Try setting in blobstore-conf.xml",
+          HCONF_TEST_BLOBSTORE_PATH));
     }
+
+    // do a one time initialization
+    setupUniqueTestPath();
+    qt.cleanUp();
+    qt.createSources();
   }
 
   @Override
@@ -105,18 +98,10 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
   @Override
   @AfterClass
   public void shutdown() throws Exception {
-    try {
-      qt.shutdown();
-      if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
-        String rmUniquePathCommand = String.format("dfs -rmdir ${hiveconf:%s};", HCONF_TEST_BLOBSTORE_PATH_UNIQUE);
-        qt.executeAdhocCommand(rmUniquePathCommand);
-      }
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+    qt.shutdown();
+    String rmUniquePathCommand =
+        String.format("dfs -rm -r ${hiveconf:%s};", HCONF_TEST_BLOBSTORE_PATH_UNIQUE);
+    qt.executeAdhocCommand(rmUniquePathCommand);
   }
 
   static String debugHint = "\nSee ./itests/hive-blobstore/target/tmp/log/hive.log, "
