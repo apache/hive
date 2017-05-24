@@ -99,7 +99,7 @@ public class TxnUtils {
     }
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
     BitSet bitSet = new BitSet(exceptions.length);
-    bitSet.set(0, bitSet.length()); // for ValidCompactorTxnList, everything in exceptions are aborted
+    bitSet.set(0, exceptions.length); // for ValidCompactorTxnList, everything in exceptions are aborted
     return new ValidCompactorTxnList(exceptions, bitSet, highWater);
   }
 

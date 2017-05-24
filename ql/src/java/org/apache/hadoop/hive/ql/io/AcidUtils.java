@@ -534,6 +534,12 @@ public class AcidUtils {
      * more up to date ones.  Not {@code null}.
      */
     List<FileStatus> getObsolete();
+
+    /**
+     * Get the list of directories that has nothing but aborted transactions.
+     * @return the list of aborted directories
+     */
+    List<FileStatus> getAbortedDirectories();
   }
 
   public static class ParsedDelta implements Comparable<ParsedDelta> {
@@ -795,21 +801,22 @@ public class AcidUtils {
                                        boolean useFileIds,
                                        boolean ignoreEmptyFiles
                                        ) throws IOException {
-    return getAcidState(directory, conf, txnList, Ref.from(useFileIds), ignoreEmptyFiles);
+    return getAcidState(directory, conf, txnList, Ref.from(useFileIds), ignoreEmptyFiles, null);
   }
 
   public static Directory getAcidState(Path directory,
                                        Configuration conf,
                                        ValidTxnList txnList,
                                        Ref<Boolean> useFileIds,
-                                       boolean ignoreEmptyFiles
-                                       ) throws IOException {
+                                       boolean ignoreEmptyFiles,
+                                       Map<String, String> tblproperties) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
     // The following 'deltas' includes all kinds of delta files including insert & delete deltas.
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
     List<ParsedDelta> working = new ArrayList<ParsedDelta>();
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
+    final List<FileStatus> abortedDirectories = new ArrayList<>();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
     if (val == null || val) {
@@ -829,14 +836,14 @@ public class AcidUtils {
     final List<HdfsFileStatusWithId> original = new ArrayList<>();
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
-        getChildState(child.getFileStatus(), child, txnList, working,
-            originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
+        getChildState(child.getFileStatus(), child, txnList, working, originalDirectories, original,
+            obsolete, bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
       }
     } else {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, directory, hiddenFileFilter);
       for (FileStatus child : children) {
-        getChildState(
-            child, null, txnList, working, originalDirectories, original, obsolete, bestBase, ignoreEmptyFiles);
+        getChildState(child, null, txnList, working, originalDirectories, original, obsolete,
+            bestBase, ignoreEmptyFiles, abortedDirectories, tblproperties);
       }
     }
 
@@ -946,6 +953,11 @@ public class AcidUtils {
       public List<FileStatus> getObsolete() {
         return obsolete;
       }
+
+      @Override
+      public List<FileStatus> getAbortedDirectories() {
+        return abortedDirectories;
+      }
     };
   }
   /**
@@ -966,7 +978,7 @@ public class AcidUtils {
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
       ValidTxnList txnList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
-      boolean ignoreEmptyFiles) throws IOException {
+      boolean ignoreEmptyFiles, List<FileStatus> aborted, Map<String, String> tblproperties) throws IOException {
     Path p = child.getPath();
     String fn = p.getName();
     if (fn.startsWith(BASE_PREFIX) && child.isDir()) {
@@ -995,6 +1007,10 @@ public class AcidUtils {
       String deltaPrefix =
               (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
       ParsedDelta delta = parseDelta(child, deltaPrefix);
+      if (tblproperties != null && MetaStoreUtils.isInsertOnlyTable(tblproperties) &&
+          ValidTxnList.RangeResponse.ALL == txnList.isTxnRangeAborted(delta.minTransaction, delta.maxTransaction)) {
+        aborted.add(child);
+      }
       if (txnList.isTxnRangeValid(delta.minTransaction,
           delta.maxTransaction) !=
           ValidTxnList.RangeResponse.NONE) {

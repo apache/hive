@@ -91,7 +91,8 @@ public class TestTxnCommands2 {
     NONACIDORCTBL("nonAcidOrcTbl"),
     NONACIDPART("nonAcidPart"),
     NONACIDPART2("nonAcidPart2"),
-    ACIDNESTEDPART("acidNestedPart");
+    ACIDNESTEDPART("acidNestedPart"),
+    MMTBL("mmTbl");
 
     private final String name;
     @Override
@@ -143,6 +144,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("create table " + Table.ACIDNESTEDPART +
       "(a int, b int) partitioned by (p int, q int) clustered by (a) into " + BUCKET_COUNT +
       " buckets stored as orc TBLPROPERTIES (" + tableProperties + ")");
+    runStatementOnDriver("create table " + Table.MMTBL + "(a int, b int) TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')");
   }
 
   protected void dropTables() throws Exception {
@@ -662,11 +664,11 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000022_0000022_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000024_0000024_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000023_0000023_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000025_0000025_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
           Assert.assertEquals("bucket_00001", buckets[1].getPath().getName());
@@ -711,7 +713,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000023", status[i].getPath().getName());
+          Assert.assertEquals("base_0000025", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
           Assert.assertEquals("bucket_00001", buckets[1].getPath().getName());
@@ -738,7 +740,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
         (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000023", status[0].getPath().getName());
+    Assert.assertEquals("base_0000025", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(BUCKET_COUNT, buckets.length);
@@ -1639,6 +1641,64 @@ public class TestTxnCommands2 {
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] rExpected = {{5,6},{7,8},{11,11}};
     Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * Test compaction for Micro-managed table
+   * 1. Regular compaction shouldn't impact any valid subdirectories of MM tables
+   * 2. Compactions will only remove subdirectories for aborted transactions of MM tables, if any
+   * @throws Exception
+   */
+  @Test
+  public void testMmTableCompaction() throws Exception {
+    // 1. Insert some rows into MM table
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(3,4)");
+    // There should be 2 delta directories
+    verifyDirAndResult(2);
+
+    // 2. Perform a MINOR compaction. Since nothing was aborted, subdirs should stay.
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
+    runWorker(hiveConf);
+    verifyDirAndResult(2);
+
+    // 3. Let a transaction be aborted
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(5,6)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 3 delta directories. The new one is the aborted one.
+    verifyDirAndResult(3);
+
+    // 4. Perform a MINOR compaction again. This time it will remove the subdir for aborted transaction.
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
+    runWorker(hiveConf);
+    // The worker should remove the subdir for aborted transaction
+    verifyDirAndResult(2);
+
+    // 5. Run Cleaner. Shouldn't impact anything.
+    runCleaner(hiveConf);
+    verifyDirAndResult(2);
+  }
+
+  private void verifyDirAndResult(int expectedDeltas) throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    // Verify the content of subdirs
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    int sawDeltaTimes = 0;
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+      sawDeltaTimes++;
+      FileStatus[] files = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
+      Assert.assertEquals(1, files.length);
+      Assert.assertTrue(files[0].getPath().getName().equals("000000_0"));
+    }
+    Assert.assertEquals(expectedDeltas, sawDeltaTimes);
+
+    // Verify query result
+    int [][] resultData = new int[][] {{1,2}, {3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL);
+    Assert.assertEquals(stringifyValues(resultData), rs);
   }
 
   /**
