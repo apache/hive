@@ -831,16 +831,6 @@ CREATE INDEX `CONSTRAINTS_PARENT_TABLE_ID_INDEX` ON KEY_CONSTRAINTS (`PARENT_TBL
 
 CREATE INDEX `CONSTRAINTS_CONSTRAINT_TYPE_INDEX` ON KEY_CONSTRAINTS (`CONSTRAINT_TYPE`) USING BTREE;
 
--- -----------------------------
--- Metastore DB Properties table
--- -----------------------------
-CREATE TABLE IF NOT EXISTS `METASTORE_DB_PROPERTIES` (
-  `PROPERTY_KEY` varchar(255) NOT NULL,
-  `PROPERTY_VALUE` varchar(1000) NOT NULL,
-  `DESCRIPTION` varchar(1000),
- PRIMARY KEY(`PROPERTY_KEY`),
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 -- ----------------------------
 -- Transaction and Lock Tables
 -- ----------------------------
