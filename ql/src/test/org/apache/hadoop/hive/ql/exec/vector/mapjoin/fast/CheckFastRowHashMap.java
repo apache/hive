@@ -36,15 +36,16 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.VerifyLazy;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 import com.google.common.base.Preconditions;
 
@@ -76,8 +77,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       lazyBinaryDeserializeRead.set(bytes, offset, length);
 
       for (int index = 0; index < columnCount; index++) {
-        Writable writable = (Writable) row[index];
-        VerifyFastRow.verifyDeserializeRead(lazyBinaryDeserializeRead, (PrimitiveTypeInfo) typeInfos[index], writable);
+        verifyRead(lazyBinaryDeserializeRead, typeInfos[index], row[index]);
       }
       TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
 
@@ -132,8 +132,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       int index = 0;
       try {
         for (index = 0; index < columnCount; index++) {
-          Writable writable = (Writable) row[index];
-          VerifyFastRow.verifyDeserializeRead(lazyBinaryDeserializeRead, (PrimitiveTypeInfo) typeInfos[index], writable);
+          verifyRead(lazyBinaryDeserializeRead, typeInfos[index], row[index]);
         }
       } catch (Exception e) {
         thrown = true;
@@ -171,6 +170,39 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
         TestCase.assertTrue (ref == null);
       } else {
         TestCase.assertTrue (ref != null);
+      }
+    }
+  }
+
+  private static void verifyRead(LazyBinaryDeserializeRead lazyBinaryDeserializeRead,
+      TypeInfo typeInfo, Object expectedObject) throws IOException {
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      VerifyFastRow.verifyDeserializeRead(lazyBinaryDeserializeRead, typeInfo, expectedObject);
+    } else {
+      final Object complexFieldObj =
+          VerifyFastRow.deserializeReadComplexType(lazyBinaryDeserializeRead, typeInfo);
+      if (expectedObject == null) {
+        if (complexFieldObj != null) {
+          TestCase.fail("Field reports not null but object is null (class " +
+              complexFieldObj.getClass().getName() +
+              ", " + complexFieldObj.toString() + ")");
+        }
+      } else {
+        if (complexFieldObj == null) {
+          // It's hard to distinguish a union with null from a null union.
+          if (expectedObject instanceof UnionObject) {
+            UnionObject expectedUnion = (UnionObject) expectedObject;
+            if (expectedUnion.getObject() == null) {
+              return;
+            }
+          }
+          TestCase.fail("Field reports null but object is not null (class " +
+              expectedObject.getClass().getName() +
+              ", " + expectedObject.toString() + ")");
+        }
+      }
+      if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
+        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
       }
     }
   }
@@ -283,7 +315,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
 
     public void verify(VectorMapJoinFastHashTable map,
         HashTableKeyType hashTableKeyType,
-        PrimitiveTypeInfo[] valuePrimitiveTypeInfos, boolean doClipping,
+        TypeInfo[] valueTypeInfos, boolean doClipping,
         boolean useExactBytes, Random random) throws IOException {
       int mapSize = map.size();
       if (mapSize != count) {
@@ -368,10 +400,10 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
 
         List<Object[]> rows = element.getValueRows();
         if (!doClipping && !useExactBytes) {
-          verifyHashMapRows(rows, actualToValueMap, hashMapResult, valuePrimitiveTypeInfos);
+          verifyHashMapRows(rows, actualToValueMap, hashMapResult, valueTypeInfos);
         } else {
           int clipIndex = random.nextInt(rows.size());
-          verifyHashMapRowsMore(rows, actualToValueMap, hashMapResult, valuePrimitiveTypeInfos,
+          verifyHashMapRowsMore(rows, actualToValueMap, hashMapResult, valueTypeInfos,
               clipIndex, useExactBytes);
         }
       }

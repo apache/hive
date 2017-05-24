@@ -299,6 +299,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
       LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+
+      LlapCoordinator coordinator = LlapCoordinator.getInstance();
+      if (coordinator == null) {
+        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
+            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+      }
+
+      // Update the queryId to use the generated applicationId. See comment below about
+      // why this is done.
+      ApplicationId applicationId = coordinator.createExtClientAppId();
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, appJarLr,
           new ArrayList<LocalResource>(), fs, ctx, false, work,
           work.getVertexType(mapWork));
@@ -312,6 +323,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
               ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+
+
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
@@ -327,15 +340,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       if (LOG.isDebugEnabled()) {
         LOG.debug("NumEvents=" + eventList.size() + ", NumSplits=" + result.length);
       }
-
-      LlapCoordinator coordinator = LlapCoordinator.getInstance();
-      if (coordinator == null) {
-        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
-            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
-      }
-
-      // See the discussion in the implementation as to why we generate app ID.
-      ApplicationId applicationId = coordinator.createExtClientAppId();
 
       // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
@@ -440,6 +444,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
             .setDagIndex(taskSpec.getDagIdentifier()).setAppAttemptNumber(0).build();
     final SignableVertexSpec.Builder svsb = Converters.constructSignableVertexSpec(
         taskSpec, queryIdentifierProto, applicationId.toString(), queryUser, queryIdString);
+    svsb.setIsExternalSubmission(true);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);

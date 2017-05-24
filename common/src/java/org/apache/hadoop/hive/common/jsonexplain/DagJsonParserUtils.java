@@ -38,7 +38,7 @@ public class DagJsonParserUtils {
   }
 
   public static String attrsToString(Map<String, String> attrs) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (Entry<String, String> entry : attrs.entrySet()) {
       if (first) {

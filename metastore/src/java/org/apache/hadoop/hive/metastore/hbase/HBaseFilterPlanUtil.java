@@ -473,7 +473,7 @@ class HBaseFilterPlanUtil {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("ScanPlan:\n");
       for (Map.Entry<String, ScanMarkerPair> entry : markers.entrySet()) {
         sb.append("key=" + entry.getKey() + "[startMarker=" + entry.getValue().startMarker

@@ -109,7 +109,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 
@@ -203,7 +203,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 
@@ -304,7 +304,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 
@@ -444,7 +444,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 
@@ -584,7 +584,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 
@@ -723,7 +723,7 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       filter predicates:
                         0 {(_col2 > 15)}
                         1 

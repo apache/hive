@@ -19,31 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.OpenCSVSerde;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
@@ -52,26 +35,18 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazy.VerifyLazy;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleSerializeWrite;
+import org.apache.hadoop.hive.serde2.lazy.fast.StringToDouble;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-
-import com.google.common.base.Charsets;
 
 import junit.framework.TestCase;
 
@@ -87,209 +62,56 @@ public class TestVectorSerDeRow extends TestCase {
     LAZY_SIMPLE
   }
 
-  void deserializeAndVerify(Output output, DeserializeRead deserializeRead,
-              VectorRandomRowSource source, Object[] expectedRow)
-              throws HiveException, IOException {
-    deserializeRead.set(output.getData(),  0, output.getLength());
-    PrimitiveCategory[] primitiveCategories = source.primitiveCategories();
-    for (int i = 0; i < primitiveCategories.length; i++) {
-      Object expected = expectedRow[i];
-      PrimitiveCategory primitiveCategory = primitiveCategories[i];
-      PrimitiveTypeInfo primitiveTypeInfo = source.primitiveTypeInfos()[i];
-      if (!deserializeRead.readNextField()) {
-        throw new HiveException("Unexpected NULL when reading primitiveCategory " + primitiveCategory +
-            " expected (" + expected.getClass().getName() + ", " + expected.toString() + ") " +
-            " deserializeRead " + deserializeRead.getClass().getName());
-      }
-      switch (primitiveCategory) {
-      case BOOLEAN:
-        {
-          Boolean value = deserializeRead.currentBoolean;
-          BooleanWritable expectedWritable = (BooleanWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Boolean field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case BYTE:
-        {
-          Byte value = deserializeRead.currentByte;
-          ByteWritable expectedWritable = (ByteWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Byte field mismatch (expected " + (int) expected + " found " + (int) value + ")");
-          }
-        }
-        break;
-      case SHORT:
-        {
-          Short value = deserializeRead.currentShort;
-          ShortWritable expectedWritable = (ShortWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Short field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case INT:
-        {
-          Integer value = deserializeRead.currentInt;
-          IntWritable expectedWritable = (IntWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Int field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case LONG:
-        {
-          Long value = deserializeRead.currentLong;
-          LongWritable expectedWritable = (LongWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Long field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case DATE:
-        {
-          DateWritable value = deserializeRead.currentDateWritable;
-          DateWritable expectedWritable = (DateWritable) expected;
-          if (!value.equals(expectedWritable)) {
-            TestCase.fail("Date field mismatch (expected " + expected.toString() + " found " + value.toString() + ")");
-          }
-        }
-        break;
-      case FLOAT:
-        {
-          Float value = deserializeRead.currentFloat;
-          FloatWritable expectedWritable = (FloatWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Float field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case DOUBLE:
-        {
-          Double value = deserializeRead.currentDouble;
-          DoubleWritable expectedWritable = (DoubleWritable) expected;
-          if (!value.equals(expectedWritable.get())) {
-            TestCase.fail("Double field mismatch (expected " + expected + " found " + value + ")");
-          }
-        }
-        break;
-      case STRING:
-      case CHAR:
-      case VARCHAR:
-      case BINARY:
-        {
-          byte[] stringBytes =
-              Arrays.copyOfRange(
-                  deserializeRead.currentBytes,
-                  deserializeRead.currentBytesStart,
-                  deserializeRead.currentBytesStart + deserializeRead.currentBytesLength);
+  private void verifyRead(
+      DeserializeRead deserializeRead, TypeInfo typeInfo, Object expectedObject) throws IOException {
 
-          Text text = new Text(stringBytes);
-          String string = text.toString();
-
-          switch (primitiveCategory) {
-          case STRING:
-            {
-              Text expectedWritable = (Text) expected;
-              if (!string.equals(expectedWritable.toString())) {
-                TestCase.fail("String field mismatch (expected '" + expectedWritable.toString() + "' found '" + string + "')");
-              }
-            }
-            break;
-          case CHAR:
-            {
-              HiveChar hiveChar = new HiveChar(string, ((CharTypeInfo) primitiveTypeInfo).getLength());
-
-              HiveCharWritable expectedWritable = (HiveCharWritable) expected;
-              if (!hiveChar.equals(expectedWritable.getHiveChar())) {
-                TestCase.fail("Char field mismatch (expected '" + expectedWritable.getHiveChar() + "' found '" + hiveChar + "')");
-              }
-            }
-            break;
-          case VARCHAR:
-            {
-              HiveVarchar hiveVarchar = new HiveVarchar(string, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
-              HiveVarcharWritable expectedWritable = (HiveVarcharWritable) expected;
-              if (!hiveVarchar.equals(expectedWritable.getHiveVarchar())) {
-                TestCase.fail("Varchar field mismatch (expected '" + expectedWritable.getHiveVarchar() + "' found '" + hiveVarchar + "')");
-              }
-            }
-            break;
-          case BINARY:
-            {
-               BytesWritable expectedWritable = (BytesWritable) expected;
-              if (stringBytes.length != expectedWritable.getLength()){
-                TestCase.fail("Byte Array field mismatch (expected " + expected + " found " + stringBytes + ")");
-              }
-              byte[] expectedBytes = expectedWritable.getBytes();
-              for (int b = 0; b < stringBytes.length; b++) {
-                if (stringBytes[b] != expectedBytes[b]) {
-                  TestCase.fail("Byte Array field mismatch (expected " + expected + " found " + stringBytes + ")");
-                }
-              }
-            }
-            break;
-          default:
-            throw new HiveException("Unexpected primitive category " + primitiveCategory);
-          }
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      VectorVerifyFast.verifyDeserializeRead(deserializeRead, typeInfo, expectedObject);
+    } else {
+      Object complexFieldObj = VectorVerifyFast.deserializeReadComplexType(deserializeRead, typeInfo);
+      if (expectedObject == null) {
+        if (complexFieldObj != null) {
+          TestCase.fail("Field reports not null but object is null (class " + complexFieldObj.getClass().getName() +
+              ", " + complexFieldObj.toString() + ")");
         }
-        break;
-      case DECIMAL:
-        {
-          HiveDecimal value = deserializeRead.currentHiveDecimalWritable.getHiveDecimal();
-          if (value == null) {
-            TestCase.fail("Decimal field evaluated to NULL");
+      } else {
+        if (complexFieldObj == null) {
+          // It's hard to distinguish a union with null from a null union.
+          if (expectedObject instanceof UnionObject) {
+            UnionObject expectedUnion = (UnionObject) expectedObject;
+            if (expectedUnion.getObject() == null) {
+              return;
+            }
           }
-          HiveDecimalWritable expectedWritable = (HiveDecimalWritable) expected;
-          if (!value.equals(expectedWritable.getHiveDecimal())) {
-            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfo;
-            int precision = decimalTypeInfo.getPrecision();
-            int scale = decimalTypeInfo.getScale();
-            TestCase.fail("Decimal field mismatch (expected " + expectedWritable.getHiveDecimal() + " found " + value.toString() + ") precision " + precision + ", scale " + scale);
-          }
-        }
-        break;
-    case TIMESTAMP:
-      {
-        Timestamp value = deserializeRead.currentTimestampWritable.getTimestamp();
-        TimestampWritable expectedWritable = (TimestampWritable) expected;
-        if (!value.equals(expectedWritable.getTimestamp())) {
-          TestCase.fail("Timestamp field mismatch (expected " + expectedWritable.getTimestamp() + " found " + value.toString() + ")");
+          TestCase.fail("Field reports null but object is not null (class " + expectedObject.getClass().getName() +
+              ", " + expectedObject.toString() + ")");
         }
       }
-      break;
-    case INTERVAL_YEAR_MONTH:
-      {
-        HiveIntervalYearMonth value = deserializeRead.currentHiveIntervalYearMonthWritable.getHiveIntervalYearMonth();
-        HiveIntervalYearMonthWritable expectedWritable = (HiveIntervalYearMonthWritable) expected;
-        HiveIntervalYearMonth expectedValue = expectedWritable.getHiveIntervalYearMonth();
-        if (!value.equals(expectedValue)) {
-          TestCase.fail("HiveIntervalYearMonth field mismatch (expected " + expectedValue + " found " + value.toString() + ")");
-        }
+      if (!VerifyLazy.lazyCompare(typeInfo, complexFieldObj, expectedObject)) {
+        TestCase.fail("Comparision failed typeInfo " + typeInfo.toString());
       }
-      break;
-    case INTERVAL_DAY_TIME:
-      {
-        HiveIntervalDayTime value = deserializeRead.currentHiveIntervalDayTimeWritable.getHiveIntervalDayTime();
-        HiveIntervalDayTimeWritable expectedWritable = (HiveIntervalDayTimeWritable) expected;
-        HiveIntervalDayTime expectedValue = expectedWritable.getHiveIntervalDayTime();
-        if (!value.equals(expectedValue)) {
-          TestCase.fail("HiveIntervalDayTime field mismatch (expected " + expectedValue + " found " + value.toString() + ")");
-        }
-      }
-      break;
-
-    default:
-      throw new HiveException("Unexpected primitive category " + primitiveCategory);
     }
+  }
+
+  void deserializeAndVerify(
+      Output output, DeserializeRead deserializeRead,
+      VectorRandomRowSource source, Object[] expectedRow)
+      throws HiveException, IOException {
+
+    deserializeRead.set(output.getData(),  0, output.getLength());
+    TypeInfo[] typeInfos = source.typeInfos();
+    for (int i = 0; i < typeInfos.length; i++) {
+      Object expected = expectedRow[i];
+      TypeInfo typeInfo = typeInfos[i];
+      verifyRead(deserializeRead, typeInfo, expected);
     }
     TestCase.assertTrue(deserializeRead.isEndOfInputReached());
   }
 
-  void serializeBatch(VectorizedRowBatch batch, VectorSerializeRow vectorSerializeRow,
-           DeserializeRead deserializeRead, VectorRandomRowSource source, Object[][] randomRows,
-           int firstRandomRowIndex) throws HiveException, IOException {
+  void serializeBatch(
+      VectorizedRowBatch batch, VectorSerializeRow vectorSerializeRow,
+      DeserializeRead deserializeRead, VectorRandomRowSource source, Object[][] randomRows,
+      int firstRandomRowIndex) throws HiveException, IOException {
 
     Output output = new Output();
     for (int i = 0; i < batch.size; i++) {
@@ -312,10 +134,20 @@ public class TestVectorSerDeRow extends TestCase {
   void testVectorSerializeRow(Random r, SerializationType serializationType)
       throws HiveException, IOException, SerDeException {
 
+    for (int i = 0; i < 20; i++) {
+      innerTestVectorSerializeRow(r, serializationType);
+    }
+  }
+
+  void innerTestVectorSerializeRow(
+      Random r, SerializationType serializationType)
+      throws HiveException, IOException, SerDeException {
+
     String[] emptyScratchTypeNames = new String[0];
 
     VectorRandomRowSource source = new VectorRandomRowSource();
-    source.init(r);
+
+    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4, false);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
@@ -329,22 +161,25 @@ public class TestVectorSerDeRow extends TestCase {
     SerializeWrite serializeWrite;
     switch (serializationType) {
     case BINARY_SORTABLE:
-      deserializeRead = new BinarySortableDeserializeRead(source.primitiveTypeInfos(), /* useExternalBuffer */ false);
+      deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), /* useExternalBuffer */ false);
       serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       break;
     case LAZY_BINARY:
-      deserializeRead = new LazyBinaryDeserializeRead(source.primitiveTypeInfos(), /* useExternalBuffer */ false);
+      deserializeRead = new LazyBinaryDeserializeRead(source.typeInfos(), /* useExternalBuffer */ false);
       serializeWrite = new LazyBinarySerializeWrite(fieldCount);
       break;
     case LAZY_SIMPLE:
       {
         StructObjectInspector rowObjectInspector = source.rowStructObjectInspector();
-        LazySerDeParameters lazySerDeParams = getSerDeParams(rowObjectInspector);
-        byte separator = (byte) '\t';
-        deserializeRead = new LazySimpleDeserializeRead(source.primitiveTypeInfos(), /* useExternalBuffer */ false,
-            separator, lazySerDeParams);
-        serializeWrite = new LazySimpleSerializeWrite(fieldCount,
-            separator, lazySerDeParams);
+        // Use different separator values.
+        byte[] separators = new byte[] {(byte) 9, (byte) 2, (byte) 3, (byte) 4, (byte) 5, (byte) 6, (byte) 7, (byte) 8};
+        LazySerDeParameters lazySerDeParams = getSerDeParams(rowObjectInspector, separators);
+        deserializeRead =
+            new LazySimpleDeserializeRead(
+                source.typeInfos(),
+                /* useExternalBuffer */ false,
+                lazySerDeParams);
+        serializeWrite = new LazySimpleSerializeWrite(fieldCount, lazySerDeParams);
       }
       break;
     default:
@@ -353,7 +188,7 @@ public class TestVectorSerDeRow extends TestCase {
     VectorSerializeRow vectorSerializeRow = new VectorSerializeRow(serializeWrite);
     vectorSerializeRow.init(source.typeNames());
 
-    Object[][] randomRows = source.randomRows(100000);
+    Object[][] randomRows = source.randomRows(2000);
     int firstRandomRowIndex = 0;
     for (int i = 0; i < randomRows.length; i++) {
       Object[] row = randomRows[i];
@@ -372,7 +207,7 @@ public class TestVectorSerDeRow extends TestCase {
   }
 
   void examineBatch(VectorizedRowBatch batch, VectorExtractRow vectorExtractRow,
-      PrimitiveTypeInfo[] primitiveTypeInfos, Object[][] randomRows, int firstRandomRowIndex ) {
+      TypeInfo[] typeInfos, Object[][] randomRows, int firstRandomRowIndex ) {
 
     int rowSize = vectorExtractRow.getCount();
     Object[] row = new Object[rowSize];
@@ -385,12 +220,17 @@ public class TestVectorSerDeRow extends TestCase {
         Object rowObj = row[c];
         Object expectedObj = expectedRow[c];
         if (rowObj == null) {
+          if (expectedObj == null) {
+            continue;
+          }
           fail("Unexpected NULL from extractRow.  Expected class " +
-              expectedObj.getClass().getName() + " value " + expectedObj.toString() +
+              typeInfos[c].getCategory() + " value " + expectedObj +
               " batch index " + i + " firstRandomRowIndex " + firstRandomRowIndex);
         }
         if (!rowObj.equals(expectedObj)) {
-          fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" + primitiveTypeInfos[c].getPrimitiveCategory() + " actual value " + rowObj + " and expected value " + expectedObj + ")");
+          fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" +
+              typeInfos[c].getCategory() + " actual value " + rowObj +
+              " and expected value " + expectedObj + ")");
         }
       }
     }
@@ -400,126 +240,10 @@ public class TestVectorSerDeRow extends TestCase {
       SerializeWrite serializeWrite) throws HiveException, IOException {
     Output output = new Output();
     serializeWrite.set(output);
-    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
-    for (int i = 0; i < primitiveTypeInfos.length; i++) {
-      Object object = row[i];
-      PrimitiveCategory primitiveCategory = primitiveTypeInfos[i].getPrimitiveCategory();
-      switch (primitiveCategory) {
-      case BOOLEAN:
-        {
-          BooleanWritable expectedWritable = (BooleanWritable) object;
-          boolean value = expectedWritable.get();
-          serializeWrite.writeBoolean(value);
-        }
-        break;
-      case BYTE:
-        {
-          ByteWritable expectedWritable = (ByteWritable) object;
-          byte value = expectedWritable.get();
-          serializeWrite.writeByte(value);
-        }
-        break;
-      case SHORT:
-        {
-          ShortWritable expectedWritable = (ShortWritable) object;
-          short value = expectedWritable.get();
-          serializeWrite.writeShort(value);
-        }
-        break;
-      case INT:
-        {
-          IntWritable expectedWritable = (IntWritable) object;
-          int value = expectedWritable.get();
-          serializeWrite.writeInt(value);
-        }
-        break;
-      case LONG:
-        {
-          LongWritable expectedWritable = (LongWritable) object;
-          long value = expectedWritable.get();
-          serializeWrite.writeLong(value);
-          }
-        break;
-      case DATE:
-        {
-          DateWritable expectedWritable = (DateWritable) object;
-          Date value = expectedWritable.get();
-          serializeWrite.writeDate(value);
-        }
-        break;
-      case FLOAT:
-        {
-          FloatWritable expectedWritable = (FloatWritable) object;
-          float value = expectedWritable.get();
-          serializeWrite.writeFloat(value);
-        }
-        break;
-      case DOUBLE:
-        {
-          DoubleWritable expectedWritable = (DoubleWritable) object;
-          double value = expectedWritable.get();
-          serializeWrite.writeDouble(value);
-        }
-        break;
-      case STRING:
-        {
-          Text text = (Text) object;
-          serializeWrite.writeString(text.getBytes(), 0, text.getLength());
-        }
-        break;
-      case CHAR:
-        {
-          HiveCharWritable expectedWritable = (HiveCharWritable) object;
-          HiveChar value = expectedWritable.getHiveChar();
-          serializeWrite.writeHiveChar(value);
-        }
-        break;
-      case VARCHAR:
-        {
-          HiveVarcharWritable expectedWritable = (HiveVarcharWritable) object;
-          HiveVarchar value = expectedWritable.getHiveVarchar();
-          serializeWrite.writeHiveVarchar(value);
-        }
-        break;
-      case BINARY:
-        {
-          BytesWritable expectedWritable = (BytesWritable) object;
-          byte[] bytes = expectedWritable.getBytes();
-          int length = expectedWritable.getLength();
-          serializeWrite.writeBinary(bytes, 0, length);
-        }
-        break;
-      case TIMESTAMP:
-        {
-          TimestampWritable expectedWritable = (TimestampWritable) object;
-          Timestamp value = expectedWritable.getTimestamp();
-          serializeWrite.writeTimestamp(value);
-        }
-        break;
-      case INTERVAL_YEAR_MONTH:
-        {
-          HiveIntervalYearMonthWritable expectedWritable = (HiveIntervalYearMonthWritable) object;
-          HiveIntervalYearMonth value = expectedWritable.getHiveIntervalYearMonth();
-          serializeWrite.writeHiveIntervalYearMonth(value);
-        }
-        break;
-      case INTERVAL_DAY_TIME:
-        {
-          HiveIntervalDayTimeWritable expectedWritable = (HiveIntervalDayTimeWritable) object;
-          HiveIntervalDayTime value = expectedWritable.getHiveIntervalDayTime();
-          serializeWrite.writeHiveIntervalDayTime(value);
-        }
-        break;
-      case DECIMAL:
-        {
-          HiveDecimalWritable expectedWritable = (HiveDecimalWritable) object;
-          HiveDecimal value = expectedWritable.getHiveDecimal();
-          serializeWrite.writeHiveDecimal(value, ((DecimalTypeInfo)primitiveTypeInfos[i]).scale());
-        }
-        break;
-      default:
-        throw new HiveException("Unexpected primitive category " + primitiveCategory);
-      }
+    TypeInfo[] typeInfos = source.typeInfos();
+
+    for (int i = 0; i < typeInfos.length; i++) {
+      VectorVerifyFast.serializeWrite(serializeWrite, typeInfos[i], row[i]);
     }
     return output;
   }
@@ -531,29 +255,47 @@ public class TestVectorSerDeRow extends TestCase {
     tbl.setProperty("columns", fieldNames);
     tbl.setProperty("columns.types", fieldTypes);
 
-    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "NULL");
+    tbl.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, "\\N");
   }
 
-  private LazySerDeParameters getSerDeParams( StructObjectInspector rowObjectInspector) throws SerDeException {
-    return getSerDeParams(new Configuration(), new Properties(), rowObjectInspector);
+  private LazySerDeParameters getSerDeParams(
+      StructObjectInspector rowObjectInspector, byte[] separators) throws SerDeException {
+    return getSerDeParams(new Configuration(), new Properties(), rowObjectInspector, separators);
   }
 
-  private LazySerDeParameters getSerDeParams(Configuration conf, Properties tbl, StructObjectInspector rowObjectInspector) throws SerDeException {
+  private LazySerDeParameters getSerDeParams(
+      Configuration conf, Properties tbl, StructObjectInspector rowObjectInspector,
+      byte[] separators) throws SerDeException {
+
     String fieldNames = ObjectInspectorUtils.getFieldNames(rowObjectInspector);
     String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowObjectInspector);
     addToProperties(tbl, fieldNames, fieldTypes);
-    return new LazySerDeParameters(conf, tbl, LazySimpleSerDe.class.getName());
+    LazySerDeParameters lazySerDeParams = new LazySerDeParameters(conf, tbl, LazySimpleSerDe.class.getName());
+    for (int i = 0; i < separators.length; i++) {
+      lazySerDeParams.setSeparator(i, separators[i]);
+    }
+    return lazySerDeParams;
   }
 
-  void testVectorDeserializeRow(Random r, SerializationType serializationType,
-      boolean alternate1, boolean alternate2,
-      boolean useExternalBuffer)
-          throws HiveException, IOException, SerDeException {
+  void testVectorDeserializeRow(
+      Random r, SerializationType serializationType,
+      boolean alternate1, boolean alternate2, boolean useExternalBuffer)
+      throws HiveException, IOException, SerDeException {
+
+    for (int i = 0; i < 20; i++) {
+      innerTestVectorDeserializeRow(r, serializationType, alternate1, alternate2, useExternalBuffer);
+    }
+  }
+
+  void innerTestVectorDeserializeRow(
+      Random r, SerializationType serializationType,
+      boolean alternate1, boolean alternate2, boolean useExternalBuffer)
+      throws HiveException, IOException, SerDeException {
 
     String[] emptyScratchTypeNames = new String[0];
 
     VectorRandomRowSource source = new VectorRandomRowSource();
-    source.init(r);
+    source.init(r, VectorRandomRowSource.SupportedTypes.ALL, 4, false);
 
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
@@ -564,7 +306,7 @@ public class TestVectorSerDeRow extends TestCase {
       Arrays.fill(cv.isNull, true);
     }
 
-    PrimitiveTypeInfo[] primitiveTypeInfos = source.primitiveTypeInfos();
+    TypeInfo[] typeInfos = source.typeInfos();
     int fieldCount = source.typeNames().size();
     DeserializeRead deserializeRead;
     SerializeWrite serializeWrite;
@@ -572,7 +314,7 @@ public class TestVectorSerDeRow extends TestCase {
     case BINARY_SORTABLE:
       boolean useColumnSortOrderIsDesc = alternate1;
       if (!useColumnSortOrderIsDesc) {
-        deserializeRead = new BinarySortableDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer);
+        deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), useExternalBuffer);
         serializeWrite = new BinarySortableSerializeWrite(fieldCount);
       } else {
         boolean[] columnSortOrderIsDesc = new boolean[fieldCount];
@@ -596,7 +338,7 @@ public class TestVectorSerDeRow extends TestCase {
           }
         }
         serializeWrite = new BinarySortableSerializeWrite(columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
-        deserializeRead = new BinarySortableDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer,
+        deserializeRead = new BinarySortableDeserializeRead(source.typeInfos(), useExternalBuffer,
             columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
 
       }
@@ -606,7 +348,7 @@ public class TestVectorSerDeRow extends TestCase {
       }
       break;
     case LAZY_BINARY:
-      deserializeRead = new LazyBinaryDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer);
+      deserializeRead = new LazyBinaryDeserializeRead(source.typeInfos(), useExternalBuffer);
       serializeWrite = new LazyBinarySerializeWrite(fieldCount);
       break;
     case LAZY_SIMPLE:
@@ -624,7 +366,8 @@ public class TestVectorSerDeRow extends TestCase {
           tbl.setProperty(serdeConstants.ESCAPE_CHAR, escapeString);
         }
 
-        LazySerDeParameters lazySerDeParams = getSerDeParams(conf, tbl, rowObjectInspector);
+        LazySerDeParameters lazySerDeParams =
+            getSerDeParams(conf, tbl, rowObjectInspector, new byte[] { separator });
 
         if (useLazySimpleEscapes) {
           // LazySimple seems to throw away everything but \n and \r.
@@ -646,10 +389,9 @@ public class TestVectorSerDeRow extends TestCase {
             source.addEscapables(needsEscapeStr);
           }
         }
-        deserializeRead = new LazySimpleDeserializeRead(source.primitiveTypeInfos(), useExternalBuffer,
-            separator, lazySerDeParams);
-        serializeWrite = new LazySimpleSerializeWrite(fieldCount,
-            separator, lazySerDeParams);
+        deserializeRead =
+            new LazySimpleDeserializeRead(source.typeInfos(), useExternalBuffer, lazySerDeParams);
+        serializeWrite = new LazySimpleSerializeWrite(fieldCount, lazySerDeParams);
       }
       break;
     default:
@@ -667,7 +409,7 @@ public class TestVectorSerDeRow extends TestCase {
     VectorExtractRow vectorExtractRow = new VectorExtractRow();
     vectorExtractRow.init(source.typeNames());
 
-    Object[][] randomRows = source.randomRows(100000);
+    Object[][] randomRows = source.randomRows(2000);
     int firstRandomRowIndex = 0;
     for (int i = 0; i < randomRows.length; i++) {
       Object[] row = randomRows[i];
@@ -684,13 +426,13 @@ public class TestVectorSerDeRow extends TestCase {
       }
       batch.size++;
       if (batch.size == batch.DEFAULT_SIZE) {
-        examineBatch(batch, vectorExtractRow, primitiveTypeInfos, randomRows, firstRandomRowIndex);
+        examineBatch(batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex);
         firstRandomRowIndex = i + 1;
         batch.reset();
       }
     }
     if (batch.size > 0) {
-      examineBatch(batch, vectorExtractRow, primitiveTypeInfos, randomRows, firstRandomRowIndex);
+      examineBatch(batch, vectorExtractRow, typeInfos, randomRows, firstRandomRowIndex);
     }
   }
 

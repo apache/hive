@@ -56,11 +56,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-165	12
-27	12
-311	12
-97	12
 238	12
+86	12
+311	12
+27	12
+165	12
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -123,11 +123,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-165	12
-27	12
-311	12
-97	12
 238	12
+86	12
+311	12
+27	12
+165	12
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -192,11 +192,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-165	val_165	12
-27	val_27	12
-311	val_311	12
-97	val_97	12
 238	val_238	12
+86	val_86	12
+311	val_311	12
+27	val_27	12
+165	val_165	12
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -261,11 +261,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-165	val_165	12
-27	val_27	12
-311	val_311	12
-97	val_97	12
 238	val_238	12
+86	val_86	12
+311	val_311	12
+27	val_27	12
+165	val_165	12
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -445,8 +445,8 @@ POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-010	86	val_86	121	86	val_86	234
-010	311	val_311	121	311	val_311	234
-010	27	val_27	121	27	val_27	234
-010	238	val_238	121	238	val_238	234
 010	165	val_165	121	165	val_165	234
+010	238	val_238	121	238	val_238	234
+010	27	val_27	121	27	val_27	234
+010	311	val_311	121	311	val_311	234
+010	86	val_86	121	86	val_86	234

@@ -128,19 +128,19 @@ public class JoinCondDesc implements Serializable {
       sb.append("Outer Join ");
       break;
     case JoinDesc.LEFT_OUTER_JOIN:
-      sb.append("Left Outer Join");
+      sb.append("Left Outer Join ");
       break;
     case JoinDesc.RIGHT_OUTER_JOIN:
-      sb.append("Right Outer Join");
+      sb.append("Right Outer Join ");
       break;
     case JoinDesc.UNIQUE_JOIN:
-      sb.append("Unique Join");
+      sb.append("Unique Join ");
       break;
     case JoinDesc.LEFT_SEMI_JOIN:
       sb.append("Left Semi Join ");
       break;
     default:
-      sb.append("Unknow Join ");
+      sb.append("Unknown Join ");
       break;
     }
 
@@ -175,7 +175,7 @@ public class JoinCondDesc implements Serializable {
         join.put("type", "Left Semi");
         break;
       default:
-        join.put("type", "Unknow Join");
+        join.put("type", "Unknown Join");
         break;
       }
       join.put("left", left);

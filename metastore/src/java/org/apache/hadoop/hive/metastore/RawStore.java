@@ -578,14 +578,16 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
-   * Get all partition column statistics for a table
+   * Get all partition column statistics for a table in a db
+   *
    * @param dbName
    * @param tableName
-   * @return Map of partition column statistics
+   * @return Map of partition column statistics. Key in the map is partition name. Value is a list
+   *         of column stat object for each column in the partition
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
+  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException;
 
   /**

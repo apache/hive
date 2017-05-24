@@ -228,4 +228,26 @@ public class TestFileUtils {
     Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims));
     verify(shims).runDistCp(copySrc, copyDst, conf);
   }
+
+  @Test
+  public void testCopyWithDistCpAs() throws IOException {
+    Path copySrc = new Path("copySrc");
+    Path copyDst = new Path("copyDst");
+    HiveConf conf = new HiveConf(TestFileUtils.class);
+
+    FileSystem fs = copySrc.getFileSystem(conf);
+
+    String doAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+
+    HadoopShims shims = mock(HadoopShims.class);
+    when(shims.runDistCpAs(copySrc, copyDst, conf, doAsUser)).thenReturn(true);
+    when(shims.runDistCp(copySrc, copyDst, conf)).thenReturn(false);
+
+    // doAs when asked
+    Assert.assertTrue(FileUtils.distCp(fs, copySrc, copyDst, true, doAsUser, conf, shims));
+    verify(shims).runDistCpAs(copySrc, copyDst, conf, doAsUser);
+    // don't doAs when not asked
+    Assert.assertFalse(FileUtils.distCp(fs, copySrc, copyDst, true, null, conf, shims));
+    verify(shims).runDistCp(copySrc, copyDst, conf);
+  }
 }

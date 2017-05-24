@@ -205,6 +205,14 @@
      <version>${hadoop.version}</version>
      <scope>provided</scope>
    </dependency>
+   <dependency>
+     <groupId>junit</groupId>
+     <artifactId>junit</artifactId>
+     <scope>test</scope>
+   </dependency>
   </dependencies>
-
+  <build>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/main/test</testSourceDirectory>
+  </build>
 </project>

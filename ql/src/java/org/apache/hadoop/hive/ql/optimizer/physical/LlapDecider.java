@@ -182,7 +182,9 @@ public class LlapDecider implements PhysicalPlanResolver {
       }
       // We only increase the targets here.
       if (reduceWork.isAutoReduceParallelism()) {
-        int newMin = Math.max(reduceWork.getMinReduceTasks(), targetCount);
+        // Do not exceed the configured max reducers.
+        int newMin = Math.min(conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS),
+            Math.max(reduceWork.getMinReduceTasks(), targetCount));
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
           reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,

@@ -202,12 +202,14 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: []
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkOperator
-                      native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    projectedOutputColumns: [12, 13, 14]
+                    selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val 0.0) -> 14:double
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -217,11 +219,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-      Reduce Operator Tree:
 
   Stage: Stage-0
     Fetch Operator
@@ -371,12 +368,14 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: []
-                  Reduce Sink Vectorization:
-                      className: VectorReduceSinkOperator
-                      native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+                    projectedOutputColumns: [12, 13, 14]
+                    selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val null) -> 14:float
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -386,11 +385,6 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-      Reduce Operator Tree:
 
   Stage: Stage-0
     Fetch Operator

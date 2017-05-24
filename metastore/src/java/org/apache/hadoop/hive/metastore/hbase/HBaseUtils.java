@@ -956,9 +956,9 @@ public class HBaseUtils {
 
   private static List<String> desierliazeDbNameTableNameFromPartitionKey(byte[] key,
                                                                          Configuration conf) {
-    StringBuffer names = new StringBuffer();
+    StringBuilder names = new StringBuilder();
     names.append("dbName,tableName,");
-    StringBuffer types = new StringBuffer();
+    StringBuilder types = new StringBuilder();
     types.append("string,string,");
     BinarySortableSerDe serDe = new BinarySortableSerDe();
     Properties props = new Properties();
@@ -990,9 +990,9 @@ public class HBaseUtils {
   // Deserialize a partition key and return _only_ the partition values.
   private static List<String> deserializePartitionKey(List<FieldSchema> partitions, byte[] key,
       Configuration conf) {
-    StringBuffer names = new StringBuffer();
+    StringBuilder names = new StringBuilder();
     names.append("dbName,tableName,");
-    StringBuffer types = new StringBuffer();
+    StringBuilder types = new StringBuilder();
     types.append("string,string,");
     for (int i=0;i<partitions.size();i++) {
       names.append(partitions.get(i).getName());

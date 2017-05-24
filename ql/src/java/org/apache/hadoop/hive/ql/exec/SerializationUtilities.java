@@ -250,6 +250,7 @@ public class SerializationUtilities {
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
       kryo.register(Pair.class);
+      kryo.register(MemoryMonitorInfo.class);
 
       // This must be called after all the explicit register calls.
       return kryo.processHooks(kryoTypeHooks, globalHook);

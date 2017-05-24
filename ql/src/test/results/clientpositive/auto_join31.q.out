@@ -94,7 +94,7 @@ STAGE PLANS:
           TableScan
             Map Join Operator
               condition map:
-                   Right Outer Join0 to 1
+                   Right Outer Join 0 to 1
                    Inner Join 0 to 2
               keys:
                 0 _col0 (type: string)
@@ -169,7 +169,7 @@ STAGE PLANS:
           TableScan
             Map Join Operator
               condition map:
-                   Right Outer Join0 to 1
+                   Right Outer Join 0 to 1
                    Inner Join 0 to 2
               keys:
                 0 _col0 (type: string)
@@ -216,7 +216,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
                Inner Join 0 to 2
           keys:
             0 _col0 (type: string)

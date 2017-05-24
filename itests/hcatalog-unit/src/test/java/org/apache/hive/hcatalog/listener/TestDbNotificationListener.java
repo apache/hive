@@ -94,11 +94,14 @@ import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +120,20 @@ public class TestDbNotificationListener {
   private static MessageDeserializer md = null;
   private int startTime;
   private long firstEventId;
+
+  private static List<String> testsToSkipForReplV1BackwardCompatTesting =
+      new ArrayList<>(Arrays.asList("cleanupNotifs", "sqlTempTable"));
+  // Make sure we skip backward-compat checking for those tests that don't generate events
+
+  private static ReplicationV1CompatRule bcompat = null;
+
+  @Rule
+  public TestRule replV1BackwardCompatibleRule = bcompat;
+  // Note - above looks funny because it seems like we're instantiating a static var, and
+  // then a non-static var as the rule, but the reason this is required is because Rules
+  // are not allowed to be static, but we wind up needing it initialized from a static
+  // context. So, bcompat is initialzed in a static context, but this rule is initialized
+  // before the tests run, and will pick up an initialized value of bcompat.
 
   /* This class is used to verify that HiveMetaStore calls the non-transactional listeners with the
     * current event ID set by the DbNotificationListener class */
@@ -238,6 +255,8 @@ public class TestDbNotificationListener {
     msClient = new HiveMetaStoreClient(conf);
     driver = new Driver(conf);
     md = MessageFactory.getInstance().getDeserializer();
+
+    bcompat = new ReplicationV1CompatRule(msClient, conf, testsToSkipForReplV1BackwardCompatTesting );
   }
 
   @Before

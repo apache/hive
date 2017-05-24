@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.MuxOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -97,10 +98,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     JoinOperator joinOp = (JoinOperator) nd;
     long maxSize = context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-
     // adjust noconditional task size threshold for LLAP
-    maxSize = getNoConditionalTaskSizeForLlap(maxSize, context.conf);
-    joinOp.getConf().setNoConditionalTaskSize(maxSize);
+    MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(maxSize, context.conf);
+    joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
@@ -172,7 +172,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
   }
 
   @VisibleForTesting
-  public long getNoConditionalTaskSizeForLlap(final long maxSize, final HiveConf conf) {
+  public MemoryMonitorInfo getMemoryMonitorInfo(final long maxSize, final HiveConf conf) {
+    final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
+    final long memoryCheckInterval = conf.getLongVar(ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
+    final float inflationFactor = conf.getFloatVar(ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
+    final MemoryMonitorInfo memoryMonitorInfo;
     if ("llap".equalsIgnoreCase(conf.getVar(ConfVars.HIVE_EXECUTION_MODE))) {
       LlapClusterStateForCompile llapInfo = LlapClusterStateForCompile.getClusterInfo(conf);
       llapInfo.initClusterInfo();
@@ -190,24 +195,23 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           executorsPerNode = numExecutorsPerNodeFromCluster;
         }
       }
-      final int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
-      if (numSessions > 0) {
-        final int availableSlotsPerQuery = (int) ((double) executorsPerNode / numSessions);
-        final double overSubscriptionFactor = conf.getFloatVar(ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
-        final int maxSlotsPerQuery = conf.getIntVar(ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY);
-        final int slotsPerQuery = Math.min(maxSlotsPerQuery, availableSlotsPerQuery);
-        final long llapMaxSize = (long) (maxSize + (maxSize * overSubscriptionFactor * slotsPerQuery));
-        LOG.info("No conditional task size adjusted for LLAP. executorsPerNode: {}, numSessions: {}, " +
-            "availableSlotsPerQuery: {}, overSubscriptionFactor: {}, maxSlotsPerQuery: {}, slotsPerQuery: {}, " +
-            "noconditionalTaskSize: {}, adjustedNoconditionalTaskSize: {}", executorsPerNode, numSessions,
-          availableSlotsPerQuery, overSubscriptionFactor, maxSlotsPerQuery, slotsPerQuery, maxSize, llapMaxSize);
-        return Math.max(maxSize, llapMaxSize);
-      } else {
-        LOG.warn(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname + " returned value {}. Returning {}" +
-          " as no conditional task size for LLAP.", numSessions, maxSize);
-      }
+
+      // bounded by max executors
+      final int slotsPerQuery = Math.min(maxSlotsPerQuery, executorsPerNode);
+      final long llapMaxSize = (long) (maxSize + (maxSize * overSubscriptionFactor * slotsPerQuery));
+      // prevents under subscription
+      final long adjustedMaxSize = Math.max(maxSize, llapMaxSize);
+      memoryMonitorInfo = new MemoryMonitorInfo(true, executorsPerNode, maxSlotsPerQuery,
+        overSubscriptionFactor, maxSize, adjustedMaxSize, memoryCheckInterval, inflationFactor);
+    } else {
+      // for non-LLAP mode most of these are not relevant. Only noConditionalTaskSize is used by shared scan optimizer.
+      memoryMonitorInfo = new MemoryMonitorInfo(false, 1, maxSlotsPerQuery, overSubscriptionFactor, maxSize, maxSize,
+        memoryCheckInterval, inflationFactor);
     }
-    return maxSize;
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
+    }
+    return memoryMonitorInfo;
   }
 
   @SuppressWarnings("unchecked")
@@ -282,7 +286,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null,
-                  joinDesc.getNoConditionalTaskSize(), joinDesc.getInMemoryDataSize());
+                  joinDesc.getMemoryMonitorInfo(), joinDesc.getInMemoryDataSize());
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
       mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());

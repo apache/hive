@@ -1,0 +1,138 @@
+PREHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: create table tgt_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: create table tgt_rc_merge_test(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tgt_rc_merge_test
+PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show table extended like `tgt_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `tgt_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:tgt_rc_merge_test
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:2
+totalFileSize:342
+maxFileSize:171
+minFileSize:171
+#### A masked pattern was here ####
+
+PREHOOK: query: select count(1) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+10
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+46	-751895388
+PREHOOK: query: alter table tgt_rc_merge_test concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: alter table tgt_rc_merge_test concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+PREHOOK: query: show table extended like `tgt_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `tgt_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:tgt_rc_merge_test
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:243
+maxFileSize:243
+minFileSize:243
+#### A masked pattern was here ####
+
+PREHOOK: query: select count(1) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+10
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+#### A masked pattern was here ####
+46	-751895388
+PREHOOK: query: drop table src_rc_merge_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: drop table src_rc_merge_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: drop table tgt_rc_merge_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: drop table tgt_rc_merge_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test

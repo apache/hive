@@ -31,8 +31,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -59,6 +62,8 @@ public final class QFile {
 
   private static final Pattern USE_PATTERN =
       Pattern.compile("^\\s*use\\s.*", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ENTITYLIST_PATTERN =
+      Pattern.compile("(((PREHOOK|POSTHOOK): (Input|Output): \\S+\n)+)", Pattern.MULTILINE);
 
   private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
 
@@ -174,13 +179,29 @@ public final class QFile {
     return source;
   }
 
-  public void filterOutput() throws IOException {
-    String rawOutput = FileUtils.readFileToString(rawOutputFile, "UTF-8");
-    if (rewriteSourceTables) {
-      rawOutput = revertReplaceTableNames(rawOutput);
+  /**
+   * The PREHOOK/POSTHOOK Input/Output lists should be sorted again after reverting the database
+   * name in those strings to match the original Cli output.
+   * @param source The original query output
+   * @return The query output where the input/output list are alphabetically ordered
+   */
+  private String sortInputOutput(String source) {
+    Matcher matcher = ENTITYLIST_PATTERN.matcher(source);
+    while(matcher.find()) {
+      List<String> lines = Arrays.asList(matcher.group(1).split("\n"));
+      Collections.sort(lines);
+      source = source.replaceAll(matcher.group(1), String.join("\n", lines) + "\n");
     }
-    String filteredOutput = staticFilterSet.filter(specificFilterSet.filter(rawOutput));
-    FileUtils.writeStringToFile(outputFile, filteredOutput);
+    return source;
+  }
+
+  public void filterOutput() throws IOException {
+    String output = FileUtils.readFileToString(rawOutputFile, "UTF-8");
+    output = staticFilterSet.filter(specificFilterSet.filter(output));
+    if (rewriteSourceTables) {
+      output = sortInputOutput(revertReplaceTableNames(output));
+    }
+    FileUtils.writeStringToFile(outputFile, output);
   }
 
   public QTestProcessExecResult compareResults() throws IOException, InterruptedException {
@@ -285,6 +306,9 @@ public final class QFile {
         .addFilter(".*file\\..*\n", MASK_PATTERN)
         .addFilter(".*CreateTime.*\n", MASK_PATTERN)
         .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
+        .addFilter(".*lastUpdateTime.*\n", MASK_PATTERN)
+        .addFilter(".*lastAccessTime.*\n", MASK_PATTERN)
+        .addFilter(".*[Oo]wner.*\n", MASK_PATTERN)
         .addFilter("(?s)(" + MASK_PATTERN + ")+", MASK_PATTERN);
   }
 

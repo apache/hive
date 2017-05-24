@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -133,7 +132,8 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       timestamp.setNanos(0);
       return;
     }
-    this.timestamp = t;
+    timestamp.setTime(t.getTime());
+    timestamp.setNanos(t.getNanos());
     bytesEmpty = true;
     timestampEmpty = false;
   }

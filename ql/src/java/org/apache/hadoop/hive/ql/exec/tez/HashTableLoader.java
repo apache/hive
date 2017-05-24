@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
   private Configuration hconf;
   private MapJoinDesc desc;
   private TezContext tezContext;
+  private String cacheKey;
 
   @Override
   public void init(ExecMapperContext context, MapredContext mrContext, Configuration hconf,
@@ -70,6 +73,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
     this.tezContext = (TezContext) mrContext;
     this.hconf = hconf;
     this.desc = joinOp.getConf();
+    this.cacheKey = joinOp.getCacheKey();
   }
 
   @Override
@@ -147,25 +151,36 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       }
       nwayConf.setNumberOfPartitions(numPartitions);
     }
-    final float inflationFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
-    final long memoryCheckInterval = HiveConf.getLongVar(hconf,
-      HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
-    final boolean isLlap = "llap".equals(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
-    long numEntries = 0;
-    long noCondTaskSize = desc.getNoConditionalTaskSize();
-    boolean doMemCheck = isLlap && inflationFactor > 0.0f && noCondTaskSize > 0 && memoryCheckInterval > 0;
+    MemoryMonitorInfo memoryMonitorInfo = desc.getMemoryMonitorInfo();
+    boolean doMemCheck = false;
+    long effectiveThreshold = 0;
+    if (memoryMonitorInfo != null) {
+      effectiveThreshold = memoryMonitorInfo.getEffectiveThreshold(desc.getMaxMemoryAvailable());
+
+      // hash table loading happens in server side, LlapDecider could kick out some fragments to run outside of LLAP.
+      // Flip the flag at runtime in case if we are running outside of LLAP
+      if (!LlapDaemonInfo.INSTANCE.isLlap()) {
+        memoryMonitorInfo.setLlap(false);
+      }
+      if (memoryMonitorInfo.doMemoryMonitoring()) {
+        doMemCheck = true;
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Memory monitoring for hash table loader enabled. {}", memoryMonitorInfo);
+        }
+      }
+    }
+
     if (!doMemCheck) {
-      LOG.info("Not doing hash table memory monitoring. isLlap: {} inflationFactor: {} noConditionalTaskSize: {} " +
-        "memoryCheckInterval: {}", isLlap, inflationFactor, noCondTaskSize, memoryCheckInterval);
-    } else {
-      LOG.info("Memory monitoring for hash table loader enabled. noconditionalTaskSize: {} inflationFactor: {} ",
-        noCondTaskSize, inflationFactor);
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Not doing hash table memory monitoring. {}", memoryMonitorInfo);
+      }
     }
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
         continue;
       }
 
+      long numEntries = 0;
       String inputName = parentToInput.get(pos);
       LogicalInput input = tezContext.getInput(inputName);
 
@@ -219,36 +234,39 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           tableContainer = new HashMapWrapper(hconf, keyCount);
         }
 
-        LOG.info("Using tableContainer: " + tableContainer.getClass().getSimpleName());
+        LOG.info("Loading hash table for input: {} cacheKey: {} tableContainer: {} smallTablePos: {}", inputName,
+          cacheKey, tableContainer.getClass().getSimpleName(), pos);
 
         tableContainer.setSerde(keyCtx, valCtx);
         while (kvReader.next()) {
           tableContainer.putRow((Writable) kvReader.getCurrentKey(), (Writable) kvReader.getCurrentValue());
           numEntries++;
-          if (doMemCheck && ((numEntries % memoryCheckInterval) == 0)) {
+          if (doMemCheck && (numEntries % memoryMonitorInfo.getMemoryCheckInterval() == 0)) {
             final long estMemUsage = tableContainer.getEstimatedMemorySize();
-            final long threshold = (long) (inflationFactor * noCondTaskSize);
-            // guard against poor configuration of noconditional task size. We let hash table grow till 2/3'rd memory
-            // available for container/executor
-            final long effectiveThreshold = (long) Math.max(threshold, (2.0/3.0) * desc.getMaxMemoryAvailable());
             if (estMemUsage > effectiveThreshold) {
-              String msg = "Hash table loading exceeded memory limits." +
-                " estimatedMemoryUsage: " + estMemUsage + " noconditionalTaskSize: " + noCondTaskSize +
-                " inflationFactor: " + inflationFactor + " threshold: " + threshold +
-                " effectiveThreshold: " + effectiveThreshold;
+              String msg = "Hash table loading exceeded memory limits for input: " + inputName +
+                " numEntries: " + numEntries + " estimatedMemoryUsage: " + estMemUsage +
+                " effectiveThreshold: " + effectiveThreshold + " memoryMonitorInfo: " + memoryMonitorInfo;
               LOG.error(msg);
               throw new MapJoinMemoryExhaustionError(msg);
             } else {
               if (LOG.isInfoEnabled()) {
-                LOG.info("Checking hash table loader memory usage.. numEntries: {} estimatedMemoryUsage: {} " +
-                  "effectiveThreshold: {}", numEntries, estMemUsage, effectiveThreshold);
+                LOG.info("Checking hash table loader memory usage for input: {} numEntries: {} " +
+                  "estimatedMemoryUsage: {} effectiveThreshold: {}", inputName, numEntries, estMemUsage,
+                  effectiveThreshold);
               }
             }
           }
         }
         tableContainer.seal();
-        LOG.info("Finished loading hashtable using " + tableContainer.getClass() + ". Small table position: " + pos);
         mapJoinTables[pos] = tableContainer;
+        if (doMemCheck) {
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {} estimatedMemoryUsage: {}",
+            inputName, cacheKey, numEntries, tableContainer.getEstimatedMemorySize());
+        } else {
+          LOG.info("Finished loading hash table for input: {} cacheKey: {} numEntries: {}", inputName, cacheKey,
+            numEntries);
+        }
       } catch (Exception e) {
         throw new HiveException(e);
       }

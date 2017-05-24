@@ -27,12 +27,15 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -95,6 +98,7 @@ public class TestJdbcWithMiniLlap {
   private static MiniHS2 miniHS2 = null;
   private static String dataFileDir;
   private static Path kvDataFilePath;
+  private static Path dataTypesFilePath;
   private static final String tmpDir = System.getProperty("test.tmp.dir");
 
   private static HiveConf conf = null;
@@ -120,6 +124,7 @@ public class TestJdbcWithMiniLlap {
 
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
+    dataTypesFilePath = new Path(dataFileDir, "datatypes.txt");
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
     miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
@@ -167,37 +172,31 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
-  private void createTableWithComplexTypes(String tableName) throws Exception {
+  private void createDataTypesTable(String tableName) throws Exception {
     Statement stmt = hs2Conn.createStatement();
 
     // create table
     stmt.execute("DROP TABLE IF EXISTS " + tableName);
-    stmt.execute("CREATE TABLE " + tableName
-        + " (c0 int, c1 array<int>, c2 map<int, string>, c3 struct<f1:int, f2:string, f3:array<int>>, c4 array<struct<f1:int, f2:string, f3:array<int>>>)");
-
-    // load data
-    stmt.execute("insert into " + tableName
-        + " select 1"
-        + ", array(1, 2, 3)"
-        + ", map(1, 'one', 2, 'two')"
-        + ", named_struct('f1', 1, 'f2', 'two', 'f3', array(1,2,3))"
-        + ", array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4)))");
-
-    // Inserting nulls into complex columns doesn't work without this CASE workaround - what a hack.
-    stmt.execute("insert into " + tableName
-        + " select 2"
-        + ", case when 2 = 2 then null else array(1, 2, 3) end"
-        + ", case when 2 = 2 then null else map(1, 'one', 2, 'two') end"
-        + ", case when 2 = 2 then null else named_struct('f1', 1, 'f2', 'two', 'f3', array(1,2,3)) end"
-        + ", case when 2 = 2 then null else array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4))) end");
-
-    // TODO: test nested nulls in complex types. Currently blocked by HIVE-16587.
-    //stmt.execute("insert into " + tableName
-    //    + " select 3"
-    //    + ", array(1, 2, null)"
-    //    + ", map(1, 'one', 2, null)"
-    //    + ", named_struct('f1', cast(null as int), 'f2', cast(null as string), 'f3', array(1,2,null))"
-    //    + ", array(named_struct('f1', 11, 'f2', 'two', 'f3', array(2,3,4)))");
+    // tables with various types
+    stmt.execute("create table " + tableName
+        + " (c1 int, c2 boolean, c3 double, c4 string,"
+        + " c5 array<int>, c6 map<int,string>, c7 map<string,string>,"
+        + " c8 struct<r:string,s:int,t:double>,"
+        + " c9 tinyint, c10 smallint, c11 float, c12 bigint,"
+        + " c13 array<array<string>>,"
+        + " c14 map<int, map<int,int>>,"
+        + " c15 struct<r:int,s:struct<a:int,b:string>>,"
+        + " c16 array<struct<m:map<string,string>,n:int>>,"
+        + " c17 timestamp, "
+        + " c18 decimal(16,7), "
+        + " c19 binary, "
+        + " c20 date,"
+        + " c21 varchar(20),"
+        + " c22 char(15),"
+        + " c23 binary"
+        + ")");
+    stmt.execute("load data local inpath '"
+        + dataTypesFilePath.toString() + "' into table " + tableName);
     stmt.close();
   }
 
@@ -254,102 +253,178 @@ public class TestJdbcWithMiniLlap {
   }
 
   @Test(timeout = 60000)
-  public void testComplexTypes() throws Exception {
-    createTableWithComplexTypes("complex1");
+  public void testDataTypes() throws Exception {
+    createDataTypesTable("datatypes");
     RowCollector2 rowCollector = new RowCollector2();
-    String query = "select * from complex1";
+    String query = "select * from datatypes";
     int rowCount = processQuery(query, 1, rowCollector);
-    assertEquals(2, rowCount);
+    assertEquals(3, rowCount);
 
     // Verify schema
-    FieldDesc c0Desc = rowCollector.schema.getColumns().get(0);
-    assertEquals("complex1.c0", c0Desc.getName());
-    assertEquals("int", c0Desc.getTypeInfo().getTypeName());
+    String[][] colNameTypes = new String[][] {
+        {"datatypes.c1", "int"},
+        {"datatypes.c2", "boolean"},
+        {"datatypes.c3", "double"},
+        {"datatypes.c4", "string"},
+        {"datatypes.c5", "array<int>"},
+        {"datatypes.c6", "map<int,string>"},
+        {"datatypes.c7", "map<string,string>"},
+        {"datatypes.c8", "struct<r:string,s:int,t:double>"},
+        {"datatypes.c9", "tinyint"},
+        {"datatypes.c10", "smallint"},
+        {"datatypes.c11", "float"},
+        {"datatypes.c12", "bigint"},
+        {"datatypes.c13", "array<array<string>>"},
+        {"datatypes.c14", "map<int,map<int,int>>"},
+        {"datatypes.c15", "struct<r:int,s:struct<a:int,b:string>>"},
+        {"datatypes.c16", "array<struct<m:map<string,string>,n:int>>"},
+        {"datatypes.c17", "timestamp"},
+        {"datatypes.c18", "decimal(16,7)"},
+        {"datatypes.c19", "binary"},
+        {"datatypes.c20", "date"},
+        {"datatypes.c21", "varchar(20)"},
+        {"datatypes.c22", "char(15)"},
+        {"datatypes.c23", "binary"},
+    };
+    FieldDesc fieldDesc;
+    assertEquals(23, rowCollector.numColumns);
+    for (int idx = 0; idx < rowCollector.numColumns; ++idx) {
+      fieldDesc = rowCollector.schema.getColumns().get(idx);
+      assertEquals("ColName idx=" + idx, colNameTypes[idx][0], fieldDesc.getName());
+      assertEquals("ColType idx=" + idx, colNameTypes[idx][1], fieldDesc.getTypeInfo().getTypeName());
+    }
 
-    FieldDesc c1Desc = rowCollector.schema.getColumns().get(1);
-    assertEquals("complex1.c1", c1Desc.getName());
-    assertEquals("array<int>", c1Desc.getTypeInfo().getTypeName());
-
-    FieldDesc c2Desc = rowCollector.schema.getColumns().get(2);
-    assertEquals("complex1.c2", c2Desc.getName());
-    assertEquals("map<int,string>", c2Desc.getTypeInfo().getTypeName());
-
-    FieldDesc c3Desc = rowCollector.schema.getColumns().get(3);
-    assertEquals("complex1.c3", c3Desc.getName());
-    assertEquals(Category.STRUCT, c3Desc.getTypeInfo().getCategory());
-    verifyStructFieldSchema((StructTypeInfo) c3Desc.getTypeInfo());
-
-    FieldDesc c4Desc = rowCollector.schema.getColumns().get(4);
-    assertEquals("complex1.c4", c4Desc.getName());
-    assertEquals(Category.LIST, c4Desc.getTypeInfo().getCategory());
-    TypeInfo c4ElementType = ((ListTypeInfo) c4Desc.getTypeInfo()).getListElementTypeInfo();
-    assertEquals(Category.STRUCT, c4ElementType.getCategory());
-    verifyStructFieldSchema((StructTypeInfo) c4ElementType);
-
-    // First row
+    // First row is all nulls
     Object[] rowValues = rowCollector.rows.get(0);
-    assertEquals(Integer.valueOf(1), ((Integer) rowValues[0]));
+    for (int idx = 0; idx < rowCollector.numColumns; ++idx) {
+      assertEquals("idx=" + idx, null, rowValues[idx]);
+    }
 
-    // assertEquals("[1, 2, 3]", rowValues[1]);
-    List<?> c1Value = (List<?>) rowValues[1];
-    assertEquals(3, c1Value.size());
-    assertEquals(Integer.valueOf(1), c1Value.get(0));
-    assertEquals(Integer.valueOf(2), c1Value.get(1));
-    assertEquals(Integer.valueOf(3), c1Value.get(2));
-
-    // assertEquals("{1=one, 2=two}", rowValues[2]);
-    Map<?,?> c2Value = (Map<?,?>) rowValues[2];
-    assertEquals(2, c2Value.size());
-    assertEquals("one", c2Value.get(Integer.valueOf(1)));
-    assertEquals("two", c2Value.get(Integer.valueOf(2)));
-
-    //  assertEquals("[1, two, [1, 2, 3]]", rowValues[3]);
-    List<?> c3Value = (List<?>) rowValues[3];
-    assertEquals(Integer.valueOf(1), c3Value.get(0));
-    assertEquals("two", c3Value.get(1));
-    List<?> f3Value = (List<?>) c3Value.get(2);
-    assertEquals(Integer.valueOf(1), f3Value.get(0));
-    assertEquals(Integer.valueOf(2), f3Value.get(1));
-    assertEquals(Integer.valueOf(3), f3Value.get(2));
-
-    // assertEquals("[[11, two, [2, 3, 4]]]", rowValues[4]);
-    List<?> c4Value = (List<?>) rowValues[4];
-    assertEquals(1, c4Value.size());
-    List<?> c4Element = (List<?>) c4Value.get(0);
-    assertEquals(Integer.valueOf(11), c4Element.get(0));
-    assertEquals("two", c4Element.get(1));
-    f3Value = (List<?>) c4Element.get(2);
-    assertEquals(3, f3Value.size());
-    assertEquals(Integer.valueOf(2), f3Value.get(0));
-    assertEquals(Integer.valueOf(3), f3Value.get(1));
-    assertEquals(Integer.valueOf(4), f3Value.get(2));
-
-    // Second row
+    // Second Row
     rowValues = rowCollector.rows.get(1);
-    assertEquals(Integer.valueOf(2), ((Integer) rowValues[0]));
-    assertEquals(null, rowValues[1]);
-    assertEquals(null, rowValues[2]);
-    assertEquals(null, rowValues[3]);
-    assertEquals(null, rowValues[4]);
-  }
+    assertEquals(Integer.valueOf(-1), rowValues[0]);
+    assertEquals(Boolean.FALSE, rowValues[1]);
+    assertEquals(Double.valueOf(-1.1d), rowValues[2]);
+    assertEquals("", rowValues[3]);
 
-  private void verifyStructFieldSchema(StructTypeInfo structType) {
-    assertEquals("f1", structType.getAllStructFieldNames().get(0));
-    TypeInfo f1Type = structType.getStructFieldTypeInfo("f1");
-    assertEquals(Category.PRIMITIVE, f1Type.getCategory());
-    assertEquals(PrimitiveCategory.INT, ((PrimitiveTypeInfo) f1Type).getPrimitiveCategory());
+    List<?> c5Value = (List<?>) rowValues[4];
+    assertEquals(0, c5Value.size());
 
-    assertEquals("f2", structType.getAllStructFieldNames().get(1));
-    TypeInfo f2Type = structType.getStructFieldTypeInfo("f2");
-    assertEquals(Category.PRIMITIVE, f2Type.getCategory());
-    assertEquals(PrimitiveCategory.STRING, ((PrimitiveTypeInfo) f2Type).getPrimitiveCategory());
+    Map<?,?> c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(0, c6Value.size());
 
-    assertEquals("f3", structType.getAllStructFieldNames().get(2));
-    TypeInfo f3Type = structType.getStructFieldTypeInfo("f3");
-    assertEquals(Category.LIST, f3Type.getCategory());
-    assertEquals(
-        PrimitiveCategory.INT,
-        ((PrimitiveTypeInfo) ((ListTypeInfo) f3Type).getListElementTypeInfo()).getPrimitiveCategory());
+    Map<?,?> c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(0, c7Value.size());
+
+    List<?> c8Value = (List<?>) rowValues[7];
+    assertEquals(null, c8Value.get(0));
+    assertEquals(null, c8Value.get(1));
+    assertEquals(null, c8Value.get(2));
+
+    assertEquals(Byte.valueOf((byte) -1), rowValues[8]);
+    assertEquals(Short.valueOf((short) -1), rowValues[9]);
+    assertEquals(Float.valueOf(-1.0f), rowValues[10]);
+    assertEquals(Long.valueOf(-1l), rowValues[11]);
+
+    List<?> c13Value = (List<?>) rowValues[12];
+    assertEquals(0, c13Value.size());
+
+    Map<?,?> c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(0, c14Value.size());
+
+    List<?> c15Value = (List<?>) rowValues[14];
+    assertEquals(null, c15Value.get(0));
+    assertEquals(null, c15Value.get(1));
+
+    List<?> c16Value = (List<?>) rowValues[15];
+    assertEquals(0, c16Value.size());
+
+    assertEquals(null, rowValues[16]);
+    assertEquals(null, rowValues[17]);
+    assertEquals(null, rowValues[18]);
+    assertEquals(null, rowValues[19]);
+    assertEquals(null, rowValues[20]);
+    assertEquals(null, rowValues[21]);
+    assertEquals(null, rowValues[22]);
+
+    // Third row
+    rowValues = rowCollector.rows.get(2);
+    assertEquals(Integer.valueOf(1), rowValues[0]);
+    assertEquals(Boolean.TRUE, rowValues[1]);
+    assertEquals(Double.valueOf(1.1d), rowValues[2]);
+    assertEquals("1", rowValues[3]);
+
+    c5Value = (List<?>) rowValues[4];
+    assertEquals(2, c5Value.size());
+    assertEquals(Integer.valueOf(1), c5Value.get(0));
+    assertEquals(Integer.valueOf(2), c5Value.get(1));
+
+    c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(2, c6Value.size());
+    assertEquals("x", c6Value.get(Integer.valueOf(1)));
+    assertEquals("y", c6Value.get(Integer.valueOf(2)));
+
+    c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(1, c7Value.size());
+    assertEquals("v", c7Value.get("k"));
+
+    c8Value = (List<?>) rowValues[7];
+    assertEquals("a", c8Value.get(0));
+    assertEquals(Integer.valueOf(9), c8Value.get(1));
+    assertEquals(Double.valueOf(2.2d), c8Value.get(2));
+
+    assertEquals(Byte.valueOf((byte) 1), rowValues[8]);
+    assertEquals(Short.valueOf((short) 1), rowValues[9]);
+    assertEquals(Float.valueOf(1.0f), rowValues[10]);
+    assertEquals(Long.valueOf(1l), rowValues[11]);
+
+    c13Value = (List<?>) rowValues[12];
+    assertEquals(2, c13Value.size());
+    List<?> listVal = (List<?>) c13Value.get(0);
+    assertEquals("a", listVal.get(0));
+    assertEquals("b", listVal.get(1));
+    listVal = (List<?>) c13Value.get(1);
+    assertEquals("c", listVal.get(0));
+    assertEquals("d", listVal.get(1));
+
+    c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(2, c14Value.size());
+    Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(2, mapVal.size());
+    assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
+    assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(2));
+    assertEquals(1, mapVal.size());
+    assertEquals(Integer.valueOf(22), mapVal.get(Integer.valueOf(21)));
+
+    c15Value = (List<?>) rowValues[14];
+    assertEquals(Integer.valueOf(1), c15Value.get(0));
+    listVal = (List<?>) c15Value.get(1);
+    assertEquals(2, listVal.size());
+    assertEquals(Integer.valueOf(2), listVal.get(0));
+    assertEquals("x", listVal.get(1));
+
+    c16Value = (List<?>) rowValues[15];
+    assertEquals(2, c16Value.size());
+    listVal = (List<?>) c16Value.get(0);
+    assertEquals(2, listVal.size());
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(0, mapVal.size());
+    assertEquals(Integer.valueOf(1), listVal.get(1));
+    listVal = (List<?>) c16Value.get(1);
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(2, mapVal.size());
+    assertEquals("b", mapVal.get("a"));
+    assertEquals("d", mapVal.get("c"));
+    assertEquals(Integer.valueOf(2), listVal.get(1));
+
+    assertEquals(Timestamp.valueOf("2012-04-22 09:00:00.123456789"), rowValues[16]);
+    assertEquals(new BigDecimal("123456789.123456"), rowValues[17]);
+    assertArrayEquals("abcd".getBytes("UTF-8"), (byte[]) rowValues[18]);
+    assertEquals(Date.valueOf("2013-01-01"), rowValues[19]);
+    assertEquals("abc123", rowValues[20]);
+    assertEquals("abc123         ", rowValues[21]);
+    assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 
   private interface RowProcessor {
@@ -369,7 +444,8 @@ public class TestJdbcWithMiniLlap {
 
       String[] arr = new String[numColumns];
       for (int idx = 0; idx < numColumns; ++idx) {
-        arr[idx] = row.getValue(idx).toString();
+        Object val = row.getValue(idx);
+        arr[idx] = (val == null ? null : val.toString());
       }
       rows.add(arr);
     }

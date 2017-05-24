@@ -31,14 +31,14 @@ import java.util.Set;
 class GroupingValidator {
 
   private final Map<String, Set<Integer>> visited;
-  private final StringBuffer partitionKeyBuilder;
+  private final StringBuilder partitionKeyBuilder;
   private long groups;
   private String lastPartitionKey;
   private int lastBucketId = -1;
 
   GroupingValidator() {
     visited = new HashMap<String, Set<Integer>>();
-    partitionKeyBuilder = new StringBuffer(64);
+    partitionKeyBuilder = new StringBuilder(64);
   }
 
   /**

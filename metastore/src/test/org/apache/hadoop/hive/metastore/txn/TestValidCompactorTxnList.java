@@ -29,7 +29,7 @@ public class TestValidCompactorTxnList {
   @Test
   public void minTxnHigh() {
     BitSet bitSet = new BitSet(2);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 2);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 4}, bitSet, 2);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
@@ -38,7 +38,7 @@ public class TestValidCompactorTxnList {
   @Test
   public void maxTxnLow() {
     BitSet bitSet = new BitSet(2);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 2);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{13, 14}, bitSet, 12);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.ALL, rsp);
@@ -61,7 +61,7 @@ public class TestValidCompactorTxnList {
   @Test
   public void exceptionsAllBelow() {
     BitSet bitSet = new BitSet(2);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 2);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{3, 6}, bitSet, 3);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
@@ -70,7 +70,7 @@ public class TestValidCompactorTxnList {
   @Test
   public void exceptionsInMidst() {
     BitSet bitSet = new BitSet(1);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 1);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{8}, bitSet, 7);
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE, rsp);
@@ -78,7 +78,7 @@ public class TestValidCompactorTxnList {
   @Test
   public void exceptionsAbveHighWaterMark() {
     BitSet bitSet = new BitSet(4);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 4);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{8, 11, 17, 29}, bitSet, 15);
     Assert.assertArrayEquals("", new long[]{8, 11}, txns.getInvalidTransactions());
     ValidTxnList.RangeResponse rsp = txns.isTxnRangeValid(7, 9);
@@ -90,9 +90,9 @@ public class TestValidCompactorTxnList {
   @Test
   public void writeToString() {
     BitSet bitSet = new BitSet(4);
-    bitSet.set(0, bitSet.length());
+    bitSet.set(0, 4);
     ValidTxnList txns = new ValidCompactorTxnList(new long[]{7, 9, 10, Long.MAX_VALUE}, bitSet, 8);
-    Assert.assertEquals("8:" + Long.MAX_VALUE + ":7:", txns.writeToString());
+    Assert.assertEquals("8:" + Long.MAX_VALUE + "::7", txns.writeToString());
     txns = new ValidCompactorTxnList();
     Assert.assertEquals(Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + "::", txns.writeToString());
     txns = new ValidCompactorTxnList(new long[0], new BitSet(), 23);

@@ -23,12 +23,19 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public class TestReplicationScenariosAcrossInstances {
   @Rule
   public final TestName testName = new TestName();
+
+  @Rule
+  public TestRule replV1BackwardCompat = primary.getReplivationV1CompatRule(new ArrayList<String>());
+
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
 
   private static WarehouseInstance primary, replica;
@@ -59,7 +66,7 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void testIncrementalFunctionReplication() throws Throwable {
+  public void testCreateFunctionIncrementalReplication() throws Throwable {
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
@@ -78,6 +85,26 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
+  public void testDropFunctionIncrementalReplication() throws Throwable {
+    primary.run("CREATE FUNCTION " + primaryDbName
+        + ".testFunction as 'com.yahoo.sketches.hive.theta.DataToSketchUDAF' "
+        + "using jar  'ivy://com.yahoo.datasketches:sketches-hive:0.8.2'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+        .run("REPL STATUS " + replicatedDbName)
+        .verify(bootStrapDump.lastReplicationId);
+
+    primary.run("Drop FUNCTION " + primaryDbName + ".testFunction ");
+
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    replica.load(replicatedDbName, incrementalDump.dumpLocation)
+        .run("REPL STATUS " + replicatedDbName)
+        .verify(incrementalDump.lastReplicationId)
+        .run("SHOW FUNCTIONS LIKE '*testfunction*'")
+        .verify(null);
+  }
+
+  @Test
   public void testBootstrapFunctionReplication() throws Throwable {
     primary.run("CREATE FUNCTION " + primaryDbName
         + ".testFunction as 'com.yahoo.sketches.hive.theta.DataToSketchUDAF' "
@@ -88,4 +115,5 @@ public class TestReplicationScenariosAcrossInstances {
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
         .verify(replicatedDbName + ".testFunction");
   }
+
 }

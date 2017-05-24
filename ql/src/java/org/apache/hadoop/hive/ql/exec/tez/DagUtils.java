@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -847,12 +848,15 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf));
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE, getTempArchivesFromConf(conf));
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE,
+        getTempFilesFromConf(conf), null);
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE,
+        getTempArchivesFromConf(conf), null);
     return tmpResources;
   }
 
-  private static String[] getTempFilesFromConf(Configuration conf) {
+  public static String[] getTempFilesFromConf(Configuration conf) {
+    if (conf == null) return new String[0]; // In tests.
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
@@ -888,19 +892,32 @@ public class DagUtils {
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
-      String[] inputOutputJars) throws IOException, LoginException {
+      String[] inputOutputJars, String[] skipJars) throws IOException, LoginException {
     if (inputOutputJars == null) return null;
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars);
+    addTempResources(conf, tmpResources, hdfsDirPathStr,
+        LocalResourceType.FILE, inputOutputJars, skipJars);
     return tmpResources;
   }
 
   private void addTempResources(Configuration conf,
       List<LocalResource> tmpResources, String hdfsDirPathStr,
       LocalResourceType type,
-      String[] files) throws IOException {
+      String[] files, String[] skipFiles) throws IOException {
+    HashSet<Path> skipFileSet = null;
+    if (skipFiles != null) {
+      skipFileSet = new HashSet<>();
+      for (String skipFile : skipFiles) {
+        if (StringUtils.isBlank(skipFile)) continue;
+        skipFileSet.add(new Path(skipFile));
+      }
+    }
     for (String file : files) {
       if (!StringUtils.isNotBlank(file)) {
+        continue;
+      }
+      if (skipFileSet != null && skipFileSet.contains(new Path(file))) {
+        LOG.info("Skipping vertex resource " + file + " that already exists in the session");
         continue;
       }
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));

@@ -4344,14 +4344,14 @@ public class TestVectorStringExpressions {
       return value.toLowerCase();
     }
     case 8: {
-      StringBuffer sb = new StringBuffer(8);
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < control.nextInt(12); i++) {
         sb.append((char) ('a' + control.nextInt(26)));
       }
       return sb.toString();
     }
     case 9: {
-      StringBuffer sb = new StringBuffer(8);
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < control.nextInt(12); i++) {
         sb.append((char) ('A' + control.nextInt(26)));
       }
@@ -4361,7 +4361,7 @@ public class TestVectorStringExpressions {
   }
 
   private String generateCandidate(Random control, String pattern) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     final StringTokenizer tokens = new StringTokenizer(pattern, "%");
     final boolean leftAnchor = pattern.startsWith("%");
     final boolean rightAnchor = pattern.endsWith("%");

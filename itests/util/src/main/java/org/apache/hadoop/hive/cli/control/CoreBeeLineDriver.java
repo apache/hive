@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.fail;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
@@ -52,17 +54,38 @@ public class CoreBeeLineDriver extends CliAdapter {
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
 
-//  private static QTestUtil.QTestSetup miniZKCluster = null;
-
   public CoreBeeLineDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
     queryDirectory = new File(testCliConfig.getQueryDirectory());
     logDirectory = new File(testCliConfig.getLogDir());
     resultsDirectory = new File(testCliConfig.getResultsDir());
-    testDataDirectory = new File(hiveRootDirectory, "data" + File.separator + "files");
+    String testDataDirectoryName = System.getProperty("test.data.dir");
+    if (testDataDirectoryName == null) {
+      testDataDirectory = new File(hiveRootDirectory, "data" + File.separator + "files");
+    } else {
+      testDataDirectory = new File(testDataDirectoryName);
+    }
     testScriptDirectory = new File(hiveRootDirectory, "data" + File.separator + "scripts");
     initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
     cleanupScript = new File(testScriptDirectory, testCliConfig.getCleanupScript());
+  }
+
+  private static MiniHS2 createMiniServer() throws Exception {
+    HiveConf hiveConf = new HiveConf();
+    // We do not need Zookeeper at the moment
+    hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+
+    MiniHS2 miniHS2 = new MiniHS2.Builder()
+        .withConf(hiveConf)
+        .cleanupLocalDirOnStartup(true)
+        .build();
+
+    miniHS2.start(new HashMap<String, String>());
+
+    System.err.println(HiveConfUtil.dumpConfig(miniHS2.getHiveConf()));
+
+    return miniHS2;
   }
 
   @Override
@@ -77,27 +100,17 @@ public class CoreBeeLineDriver extends CliAdapter {
       rewriteSourceTables = false;
     }
 
-    HiveConf hiveConf = new HiveConf();
-    // We do not need Zookeeper at the moment
-    hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
-        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
-
-    // But if we need later we can enable it with this, or create one ourself
-//    miniZKCluster = new QTestUtil.QTestSetup();
-//    miniZKCluster.preTest(hiveConf);
-
-    hiveConf.logVars(System.err);
-    System.err.flush();
-
-    miniHS2 = new MiniHS2.Builder().withConf(hiveConf).cleanupLocalDirOnStartup(true).build();
-
-    miniHS2.start(new HashMap<String, String>());
+    String beeLineUrl = System.getProperty("test.beeline.url");
+    if (StringUtils.isEmpty(beeLineUrl)) {
+      miniHS2 = createMiniServer();
+      beeLineUrl = miniHS2.getJdbcURL();
+    }
 
     clientBuilder = new QFileClientBuilder()
         .setJdbcDriver("org.apache.hive.jdbc.HiveDriver")
-        .setJdbcUrl(miniHS2.getJdbcURL())
-        .setUsername("user")
-        .setPassword("password");
+        .setJdbcUrl(beeLineUrl)
+        .setUsername(System.getProperty("test.beeline.user", "user"))
+        .setPassword(System.getProperty("test.beeline.password", "password"));
 
     fileBuilder = new QFileBuilder()
         .setLogDirectory(logDirectory)
@@ -135,9 +148,6 @@ public class CoreBeeLineDriver extends CliAdapter {
     if (miniHS2 != null) {
       miniHS2.stop();
     }
-    //    if (miniZKCluster != null) {
-    //      miniZKCluster.tearDown();
-    //    }
   }
 
   public void runTest(QFile qFile) throws Exception {

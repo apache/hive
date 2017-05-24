@@ -100,8 +100,8 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Left Outer Join1 to 2
-                     Left Outer Join0 to 3
+                     Left Outer Join 1 to 2
+                     Left Outer Join 0 to 3
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -214,8 +214,8 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Left Outer Join1 to 2
-                     Right Outer Join0 to 3
+                     Left Outer Join 1 to 2
+                     Right Outer Join 0 to 3
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -325,8 +325,8 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Right Outer Join1 to 2
-                     Left Outer Join0 to 3
+                     Right Outer Join 1 to 2
+                     Left Outer Join 0 to 3
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -436,8 +436,8 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Right Outer Join1 to 2
-                     Right Outer Join0 to 3
+                     Right Outer Join 1 to 2
+                     Right Outer Join 0 to 3
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -551,7 +551,7 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Left Outer Join0 to 2
+                     Left Outer Join 0 to 2
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -568,7 +568,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -681,7 +681,7 @@ STAGE PLANS:
               Join Operator
                 condition map:
                      Inner Join 0 to 1
-                     Right Outer Join0 to 2
+                     Right Outer Join 0 to 2
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -698,7 +698,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -957,7 +957,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -973,7 +973,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -1098,7 +1098,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -1239,7 +1239,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -1255,7 +1255,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -1380,7 +1380,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)
@@ -1520,8 +1520,8 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
-                     Left Outer Join1 to 2
+                     Left Outer Join 0 to 1
+                     Left Outer Join 1 to 2
                 keys:
                   0 _col3 (type: string)
                   1 _col0 (type: string)

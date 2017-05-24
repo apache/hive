@@ -7203,23 +7203,18 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
+  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException {
-    final boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
-    final double ndvTuner = HiveConf.getFloatVar(getConf(),
-        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
-    return new GetHelper<Map<String, ColumnStatisticsObj>>(dbName, tableName, true, false) {
+    return new GetHelper<Map<String, List<ColumnStatisticsObj>>>(dbName, tableName, true, false) {
       @Override
-      protected Map<String, ColumnStatisticsObj> getSqlResult(
-          GetHelper<Map<String, ColumnStatisticsObj>> ctx) throws MetaException {
-        return directSql.getAggrColStatsForTablePartitions(dbName, tblName,
-            useDensityFunctionForNDVEstimation, ndvTuner);
+      protected Map<String, List<ColumnStatisticsObj>> getSqlResult(
+          GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException {
+        return directSql.getColStatsForTablePartitions(dbName, tblName);
       }
 
       @Override
-      protected Map<String, ColumnStatisticsObj> getJdoResult(
-          GetHelper<Map<String, ColumnStatisticsObj>> ctx) throws MetaException,
+      protected Map<String, List<ColumnStatisticsObj>> getJdoResult(
+          GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException,
           NoSuchObjectException {
         // This is fast path for query optimizations, if we can find this info
         // quickly using directSql, do it. No point in failing back to slow path
@@ -7701,7 +7696,8 @@ public class ObjectStore implements RawStore, Configurable {
     // read the schema version stored in metastore db
     String dbSchemaVer = getMetaStoreSchemaVersion();
     // version of schema for this version of hive
-    String hiveSchemaVer = MetaStoreSchemaInfo.getHiveSchemaVersion();
+    IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(getConf());
+    String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
 
     if (dbSchemaVer == null) {
       if (strictValidation) {
@@ -7715,7 +7711,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Set by MetaStore " + USER + "@" + HOSTNAME);
       }
     } else {
-      if (MetaStoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
+      if (metastoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
         LOG.debug("Found expected HMS version of " + dbSchemaVer);
       } else {
         // metastore schema version is different than Hive distribution needs
@@ -7764,7 +7760,7 @@ public class ObjectStore implements RawStore, Configurable {
       } catch (JDODataStoreException e) {
         if (e.getCause() instanceof MissingTableException) {
           throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
-              + MetaStoreSchemaInfo.getHiveSchemaVersion());
+              + MetaStoreSchemaInfoFactory.get(getConf()).getHiveSchemaVersion());
         } else {
           throw e;
         }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,18 +32,20 @@ public class TestMetaStoreSchemaInfo {
     // first argument is hiveVersion, it is compatible if 2nd argument - dbVersion is
     // greater than or equal to it
     // check the compatible case
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.1"));
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.2"));
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("1.0.2", "2.0.1"));
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("0.0.9", "9.0.0"));
+    IMetaStoreSchemaInfo metastoreSchemaInfo =
+        MetaStoreSchemaInfoFactory.get(new HiveConf(TestMetaStoreSchemaInfo.class));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.1"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.2"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("1.0.2", "2.0.1"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.9", "9.0.0"));
 
     // check equivalent versions, should be compatible
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("0.13.0", "0.13.1"));
-    Assert.assertTrue(MetaStoreSchemaInfo.isVersionCompatible("0.13.1", "0.13.0"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.13.0", "0.13.1"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.13.1", "0.13.0"));
 
     // check incompatible versions
-    Assert.assertFalse(MetaStoreSchemaInfo.isVersionCompatible("0.1.1", "0.1.0"));
-    Assert.assertFalse(MetaStoreSchemaInfo.isVersionCompatible("4.0.1", "0.1.0"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("0.1.1", "0.1.0"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.1", "0.1.0"));
 
   }
 

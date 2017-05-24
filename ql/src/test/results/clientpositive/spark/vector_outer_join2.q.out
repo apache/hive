@@ -359,7 +359,7 @@ STAGE PLANS:
                     Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
+                           Left Outer Join 0 to 1
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -377,7 +377,7 @@ STAGE PLANS:
                       Statistics: Num rows: 22 Data size: 5804 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col1 (type: bigint)
                           1 _col0 (type: bigint)

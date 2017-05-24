@@ -17,10 +17,10 @@ Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
-    limit:100
+    limit:-1
     Stage-1
       Reducer 10
-      File Output Operator [FS_55]
+      File Output Operator [FS_56]
         Limit [LIM_54] (rows=100 width=385)
           Number of rows:100
           Select Operator [SEL_53] (rows=1023990 width=385)
@@ -36,14 +36,14 @@ Stage-0
                     PartitionCols:_col0
                     Group By Operator [GBY_48] (rows=2047980 width=385)
                       Output:["_col0","_col1","_col2","_col3"],aggregations:["avg(_col5)","avg(_col17)","avg(_col16)"],keys:_col19
-                      Merge Join Operator [MERGEJOIN_105] (rows=2047980 width=385)
+                      Merge Join Operator [MERGEJOIN_106] (rows=2047980 width=385)
                         Conds:RS_44._col13, _col24, _col25=RS_45._col0, _col1, _col2(Inner),Output:["_col5","_col16","_col17","_col19"]
                       <-Map 16 [SIMPLE_EDGE]
                         SHUFFLE [RS_45]
                           PartitionCols:_col0, _col1, _col2
                           Select Operator [SEL_23] (rows=1861800 width=385)
                             Output:["_col0","_col1","_col2"]
-                            Filter Operator [FIL_98] (rows=1861800 width=385)
+                            Filter Operator [FIL_99] (rows=1861800 width=385)
                               predicate:(((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null)
                               TableScan [TS_18] (rows=1861800 width=385)
                                 default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
@@ -52,14 +52,14 @@ Stage-0
                           PartitionCols:_col13, _col24, _col25
                           Filter Operator [FIL_43] (rows=393687 width=135)
                             predicate:(((_col24 = 'M') and (_col25 = '4 yr Degree') and _col6 BETWEEN 100 AND 150) or ((_col24 = 'D') and (_col25 = 'Primary') and _col6 BETWEEN 50 AND 100) or ((_col24 = 'U') and (_col25 = 'Advanced Degree') and _col6 BETWEEN 150 AND 200))
-                            Merge Join Operator [MERGEJOIN_104] (rows=4724247 width=135)
+                            Merge Join Operator [MERGEJOIN_105] (rows=4724247 width=135)
                               Conds:RS_40._col11=RS_41._col0(Inner),Output:["_col5","_col6","_col13","_col16","_col17","_col19","_col24","_col25"]
                             <-Map 16 [SIMPLE_EDGE]
                               SHUFFLE [RS_41]
                                 PartitionCols:_col0
                                 Select Operator [SEL_20] (rows=1861800 width=385)
                                   Output:["_col0","_col1","_col2"]
-                                  Filter Operator [FIL_97] (rows=1861800 width=385)
+                                  Filter Operator [FIL_98] (rows=1861800 width=385)
                                     predicate:(((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null)
                                      Please refer to the previous TableScan [TS_18]
                             <-Reducer 6 [SIMPLE_EDGE]
@@ -67,70 +67,70 @@ Stage-0
                                 PartitionCols:_col11
                                 Filter Operator [FIL_39] (rows=4294770 width=135)
                                   predicate:(((_col21) IN ('KY', 'GA', 'NM') and _col7 BETWEEN 100 AND 200) or ((_col21) IN ('MT', 'OR', 'IN') and _col7 BETWEEN 150 AND 300) or ((_col21) IN ('WI', 'MO', 'WV') and _col7 BETWEEN 50 AND 250))
-                                  Merge Join Operator [MERGEJOIN_103] (rows=25768635 width=135)
+                                  Merge Join Operator [MERGEJOIN_104] (rows=25768635 width=135)
                                     Conds:RS_36._col12=RS_37._col0(Inner),Output:["_col5","_col6","_col7","_col11","_col13","_col16","_col17","_col19","_col21"]
                                   <-Map 15 [SIMPLE_EDGE]
                                     SHUFFLE [RS_37]
                                       PartitionCols:_col0
                                       Select Operator [SEL_17] (rows=10000000 width=1014)
                                         Output:["_col0","_col1"]
-                                        Filter Operator [FIL_96] (rows=10000000 width=1014)
+                                        Filter Operator [FIL_97] (rows=10000000 width=1014)
                                           predicate:((ca_state) IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') and (ca_country = 'United States') and ca_address_sk is not null)
                                           TableScan [TS_15] (rows=40000000 width=1014)
                                             default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state","ca_country"]
                                   <-Reducer 5 [SIMPLE_EDGE]
                                     SHUFFLE [RS_36]
                                       PartitionCols:_col12
-                                      Merge Join Operator [MERGEJOIN_102] (rows=23426032 width=135)
+                                      Merge Join Operator [MERGEJOIN_103] (rows=23426032 width=135)
                                         Conds:RS_33._col14=RS_34._col0(Inner),Output:["_col5","_col6","_col7","_col11","_col12","_col13","_col16","_col17","_col19"]
                                       <-Map 14 [SIMPLE_EDGE]
                                         SHUFFLE [RS_34]
                                           PartitionCols:_col0
                                           Select Operator [SEL_14] (rows=72 width=200)
                                             Output:["_col0","_col1"]
-                                            Filter Operator [FIL_95] (rows=72 width=200)
+                                            Filter Operator [FIL_96] (rows=72 width=200)
                                               predicate:r_reason_sk is not null
                                               TableScan [TS_12] (rows=72 width=200)
                                                 default@reason,reason,Tbl:COMPLETE,Col:NONE,Output:["r_reason_sk","r_reason_desc"]
                                       <-Reducer 4 [SIMPLE_EDGE]
                                         SHUFFLE [RS_33]
                                           PartitionCols:_col14
-                                          Merge Join Operator [MERGEJOIN_101] (rows=21296393 width=135)
+                                          Merge Join Operator [MERGEJOIN_102] (rows=21296393 width=135)
                                             Conds:RS_30._col2, _col4=RS_31._col0, _col5(Inner),Output:["_col5","_col6","_col7","_col11","_col12","_col13","_col14","_col16","_col17"]
                                           <-Map 13 [SIMPLE_EDGE]
                                             SHUFFLE [RS_31]
                                               PartitionCols:_col0, _col5
                                               Select Operator [SEL_11] (rows=14398467 width=92)
                                                 Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
-                                                Filter Operator [FIL_94] (rows=14398467 width=92)
+                                                Filter Operator [FIL_95] (rows=14398467 width=92)
                                                   predicate:(wr_item_sk is not null and wr_order_number is not null and wr_refunded_cdemo_sk is not null and wr_returning_cdemo_sk is not null and wr_refunded_addr_sk is not null and wr_reason_sk is not null)
                                                   TableScan [TS_9] (rows=14398467 width=92)
                                                     default@web_returns,web_returns,Tbl:COMPLETE,Col:NONE,Output:["wr_item_sk","wr_refunded_cdemo_sk","wr_refunded_addr_sk","wr_returning_cdemo_sk","wr_reason_sk","wr_order_number","wr_fee","wr_refunded_cash"]
                                           <-Reducer 3 [SIMPLE_EDGE]
                                             SHUFFLE [RS_30]
                                               PartitionCols:_col2, _col4
-                                              Merge Join Operator [MERGEJOIN_100] (rows=19360357 width=135)
+                                              Merge Join Operator [MERGEJOIN_101] (rows=19360357 width=135)
                                                 Conds:RS_27._col1=RS_28._col0(Inner),Output:["_col2","_col4","_col5","_col6","_col7"]
                                               <-Map 12 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_28]
                                                   PartitionCols:_col0
                                                   Select Operator [SEL_8] (rows=36524 width=1119)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_93] (rows=36524 width=1119)
+                                                    Filter Operator [FIL_94] (rows=36524 width=1119)
                                                       predicate:((d_year = 1998) and d_date_sk is not null)
                                                       TableScan [TS_6] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                                               <-Reducer 2 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_27]
                                                   PartitionCols:_col1
-                                                  Merge Join Operator [MERGEJOIN_99] (rows=17600325 width=135)
+                                                  Merge Join Operator [MERGEJOIN_100] (rows=17600325 width=135)
                                                     Conds:RS_24._col0=RS_25._col2(Inner),Output:["_col1","_col2","_col4","_col5","_col6","_col7"]
                                                   <-Map 1 [SIMPLE_EDGE]
                                                     SHUFFLE [RS_24]
                                                       PartitionCols:_col0
                                                       Select Operator [SEL_2] (rows=4602 width=585)
                                                         Output:["_col0"]
-                                                        Filter Operator [FIL_91] (rows=4602 width=585)
+                                                        Filter Operator [FIL_92] (rows=4602 width=585)
                                                           predicate:wp_web_page_sk is not null
                                                           TableScan [TS_0] (rows=4602 width=585)
                                                             default@web_page,web_page,Tbl:COMPLETE,Col:NONE,Output:["wp_web_page_sk"]
@@ -139,7 +139,7 @@ Stage-0
                                                       PartitionCols:_col2
                                                       Select Operator [SEL_5] (rows=16000296 width=135)
                                                         Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
-                                                        Filter Operator [FIL_92] (rows=16000296 width=135)
+                                                        Filter Operator [FIL_93] (rows=16000296 width=135)
                                                           predicate:((ws_sales_price BETWEEN 100 AND 150 or ws_sales_price BETWEEN 50 AND 100 or ws_sales_price BETWEEN 150 AND 200) and (ws_net_profit BETWEEN 100 AND 200 or ws_net_profit BETWEEN 150 AND 300 or ws_net_profit BETWEEN 50 AND 250) and ws_order_number is not null and ws_item_sk is not null and ws_web_page_sk is not null and ws_sold_date_sk is not null)
                                                           TableScan [TS_3] (rows=144002668 width=135)
                                                             default@web_sales,web_sales,Tbl:COMPLETE,Col:NONE,Output:["ws_sold_date_sk","ws_item_sk","ws_web_page_sk","ws_order_number","ws_quantity","ws_sales_price","ws_net_profit"]

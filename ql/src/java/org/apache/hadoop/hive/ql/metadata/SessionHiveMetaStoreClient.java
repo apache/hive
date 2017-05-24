@@ -30,8 +30,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -56,6 +61,8 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.thrift.TException;
 
@@ -112,6 +119,18 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
     // Try underlying client
     super.drop_table_with_environment_context(dbname,  name, deleteData, envContext);
+  }
+
+  @Override
+  public void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException {
+    // First try temp table
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tableName);
+    if (table != null) {
+      truncateTempTable(table);
+      return;
+    }
+    // Try underlying client
+    super.truncateTable(dbName, tableName, partNames);
   }
 
   @Override
@@ -507,6 +526,63 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return true;
     }
     return false;
+  }
+
+  private boolean needToUpdateStats(Map<String,String> props, EnvironmentContext environmentContext) {
+    if (null == props) {
+      return false;
+    }
+    boolean statsPresent = false;
+    for (String stat : StatsSetupConst.supportedStats) {
+      String statVal = props.get(stat);
+      if (statVal != null && Long.parseLong(statVal) > 0) {
+        statsPresent = true;
+        //In the case of truncate table, we set the stats to be 0.
+        props.put(stat, "0");
+      }
+    }
+    //first set basic stats to true
+    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
+    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+    //then invalidate column stats
+    StatsSetupConst.clearColumnStatsState(props);
+    return statsPresent;
+  }
+
+  private void truncateTempTable(org.apache.hadoop.hive.metastore.api.Table table) throws MetaException, TException {
+
+    boolean isAutopurge = "true".equalsIgnoreCase(table.getParameters().get("auto.purge"));
+    try {
+      // this is not transactional
+      Path location = new Path(table.getSd().getLocation());
+
+      FileSystem fs = location.getFileSystem(conf);
+      HadoopShims.HdfsEncryptionShim shim
+              = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+      if (!shim.isPathEncrypted(location)) {
+        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
+        FileStatus targetStatus = fs.getFileStatus(location);
+        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+        FileUtils.moveToTrash(fs, location, conf, isAutopurge);
+        fs.mkdirs(location);
+        HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
+      } else {
+        FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        if ((statuses != null) && (statuses.length > 0)) {
+          boolean success = Hive.trashFiles(fs, statuses, conf, isAutopurge);
+          if (!success) {
+            throw new HiveException("Error in deleting the contents of " + location.toString());
+          }
+        }
+      }
+
+      EnvironmentContext environmentContext = new EnvironmentContext();
+      if (needToUpdateStats(table.getParameters(), environmentContext)) {
+        alter_table_with_environmentContext(table.getDbName(), table.getTableName(), table, environmentContext);
+      }
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
+    }
   }
 
   private void dropTempTable(org.apache.hadoop.hive.metastore.api.Table table, boolean deleteData,

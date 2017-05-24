@@ -73,7 +73,7 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-                   Right Outer Join0 to 2
+                   Right Outer Join 0 to 2
               filter predicates:
                 0 
                 1 
@@ -233,7 +233,7 @@ STAGE PLANS:
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
-                   Right Outer Join0 to 2
+                   Right Outer Join 0 to 2
               filter predicates:
                 0 
                 1 

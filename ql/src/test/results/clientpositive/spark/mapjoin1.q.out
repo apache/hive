@@ -68,7 +68,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -163,7 +163,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       filter predicates:
                         0 
                         1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
@@ -263,7 +263,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       filter predicates:
                         0 
                         1 {(UDFToDouble(_col1.key) > 200.0)}
@@ -360,7 +360,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -455,7 +455,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       filter predicates:
                         0 
                         1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
@@ -555,7 +555,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
-                           Right Outer Join0 to 1
+                           Right Outer Join 0 to 1
                       filter predicates:
                         0 
                         1 {(UDFToDouble(_col1.key) > 200.0)}

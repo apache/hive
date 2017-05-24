@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.hcatalog.api.repl.ReplicationV1CompatRule;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
+import org.junit.rules.TestRule;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ class WarehouseInstance {
   private HiveMetaStoreClient client;
   private HiveConf hconf;
 
+  private static int schemaNameCounter = 0;
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
   /**
@@ -60,7 +63,7 @@ class WarehouseInstance {
         + Path.SEPARATOR
         + TestReplicationScenarios.class.getCanonicalName().replace('.', '_')
         + "_"
-        + System.currentTimeMillis();
+        + System.nanoTime();
 
     if (metaStoreUri != null) {
       hconf.setVar(HiveConf.ConfVars.METASTOREURIS, metaStoreUri);
@@ -73,6 +76,10 @@ class WarehouseInstance {
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, hiveWarehouseLocation + "/cmroot/");
+    String schemaName = "APP" + schemaNameCounter++;
+    System.setProperty("datanucleus.mapping.Schema", schemaName);
+    hconf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
+        "jdbc:derby:memory:${test.tmp.dir}/" + schemaName + ";create=true");
     int metaStorePort = MetaStoreUtils.startMetaStore(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR, hiveWarehouseLocation + "/hrepl/");
     hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
@@ -141,7 +148,7 @@ class WarehouseInstance {
   }
 
   WarehouseInstance verify(String data) throws IOException {
-    verifyResults(new String[] { data });
+    verifyResults(data == null ? new String[] {} : new String[] { data });
     return this;
   }
 
@@ -177,6 +184,10 @@ class WarehouseInstance {
     for (String s : getOutput()) {
       TestReplicationScenariosAcrossInstances.LOG.info(s);
     }
+  }
+
+  public ReplicationV1CompatRule getReplivationV1CompatRule(List<String> testsToSkip){
+    return new ReplicationV1CompatRule(client,hconf,testsToSkip);
   }
 
   static class Tuple {

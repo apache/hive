@@ -148,7 +148,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(explainLevels = { Level.USER })
   public String getTbl() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(this.tableMetadata.getCompleteName());
     sb.append("," + alias);
     if (isAcidTable()) {

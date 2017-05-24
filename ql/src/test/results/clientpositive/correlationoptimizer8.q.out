@@ -511,7 +511,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -723,7 +723,7 @@ STAGE PLANS:
                 Statistics: Num rows: 397 Data size: 4019 Basic stats: COMPLETE Column stats: NONE
                 Join Operator
                   condition map:
-                       Left Outer Join0 to 1
+                       Left Outer Join 0 to 1
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -748,7 +748,7 @@ STAGE PLANS:
                 Statistics: Num rows: 397 Data size: 4019 Basic stats: COMPLETE Column stats: NONE
                 Join Operator
                   condition map:
-                       Left Outer Join0 to 1
+                       Left Outer Join 0 to 1
                   keys:
                     0 _col0 (type: string)
                     1 _col0 (type: string)
@@ -765,7 +765,7 @@ STAGE PLANS:
             Statistics: Num rows: 397 Data size: 4019 Basic stats: COMPLETE Column stats: NONE
             Join Operator
               condition map:
-                   Left Outer Join0 to 1
+                   Left Outer Join 0 to 1
               keys:
                 0 _col0 (type: string)
                 1 _col0 (type: string)

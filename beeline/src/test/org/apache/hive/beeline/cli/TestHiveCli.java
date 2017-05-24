@@ -47,6 +47,7 @@ public class TestHiveCli {
   private final static String SOURCE_CONTEXT3 =
       "create table if not exists test.testSrcTbl3(sc3 string);";
   private final static String SOURCE_CONTEXT4 = "show tables;!ls;show tables;\nquit;";
+  private final static String SOURCE_CONTEXT5 = "-- test;\n;show tables;\nquit;";
   final static String CMD =
       "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
           + "string);\n";
@@ -161,6 +162,14 @@ public class TestHiveCli {
     File f = generateTmpFile(SOURCE_CONTEXT4);
     verifyCMD("source " + f.getPath() + ";" + "desc testSrcTbl4;\nquit;\n", "src", os,
         new String[] { "--database", "test" }, ERRNO_OTHER, true);
+    f.delete();
+  }
+
+  @Test
+  public void testSourceCmd4() {
+    File f = generateTmpFile(SOURCE_CONTEXT5);
+    verifyCMD("source " + f.getPath() + ";", "testtbl", os,
+      new String[] { "--database", "test" }, ERRNO_OK, true);
     f.delete();
   }
 

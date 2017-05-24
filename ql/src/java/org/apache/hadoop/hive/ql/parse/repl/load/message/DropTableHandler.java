@@ -38,13 +38,15 @@ public class DropTableHandler extends AbstractMessageHandler {
     DropTableDesc dropTableDesc = new DropTableDesc(
         actualDbName + "." + actualTblName,
         null, true, true,
-        eventOnlyReplicationSpec(context));
+        eventOnlyReplicationSpec(context)
+    );
     Task<DDLWork> dropTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, dropTableDesc),
         context.hiveConf
     );
-    context.log
-        .debug("Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName());
+    context.log.debug(
+        "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()
+    );
     databasesUpdated.put(actualDbName, context.dmd.getEventTo());
     return Collections.singletonList(dropTableTask);
   }

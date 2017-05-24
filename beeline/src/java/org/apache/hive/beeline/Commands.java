@@ -889,9 +889,8 @@ public class Commands {
     BufferedReader reader = null;
     try {
       reader = new BufferedReader(new FileReader(sourceFile));
-      String extra = reader.readLine();
-      String lines = null;
-      while (extra != null) {
+      String lines = null, extra;
+      while ((extra = reader.readLine()) != null) {
         if (beeLine.isComment(extra)) {
           continue;
         }
@@ -900,7 +899,6 @@ public class Commands {
         } else {
           lines += "\n" + extra;
         }
-        extra = reader.readLine();
       }
       String[] cmds = lines.split(beeLine.getOpts().getDelimiter());
       for (String c : cmds) {

@@ -303,14 +303,14 @@ public class HiveConnection implements java.sql.Connection {
 
 
   private void openTransport() throws Exception {
-      assumeSubject =
-          JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
-              .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
-      transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
-      if (!transport.isOpen()) {
-        transport.open();
-        logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
-      }
+    assumeSubject =
+        JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT.equals(sessConfMap
+            .get(JdbcConnectionParams.AUTH_KERBEROS_AUTH_TYPE));
+    transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
+    if (!transport.isOpen()) {
+      transport.open();
+    }
+    logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
   }
 
   public String getConnectedUrl() {

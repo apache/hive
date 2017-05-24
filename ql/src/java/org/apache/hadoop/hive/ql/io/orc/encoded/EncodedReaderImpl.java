@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
 import org.apache.orc.OrcProto;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import sun.misc.Cleaner;
 
 
@@ -1229,10 +1231,26 @@ class EncodedReaderImpl implements EncodedReader {
     ByteBuffer slice = null;
     ByteBuffer compressed = current.getChunk();
     long cbStartOffset = current.getOffset();
-    int b0 = compressed.get() & 0xff;
-    int b1 = compressed.get() & 0xff;
-    int b2 = compressed.get() & 0xff;
+    int b0 = -1, b1 = -1, b2 = -1;
+    // First, read the CB header. Due to ORC estimates, ZCR, etc. this can be complex.
+    if (compressed.remaining() >= 3) {
+      // The overwhelming majority of cases will go here. Read 3 bytes. Tada!
+      b0 = compressed.get() & 0xff;
+      b1 = compressed.get() & 0xff;
+      b2 = compressed.get() & 0xff;
+    } else {
+      // Bad luck! Handle the corner cases where 3 bytes are in multiple blocks.
+      int[] bytes = new int[3];
+      current = readLengthBytesFromSmallBuffers(
+          current, cbStartOffset, bytes, badEstimates, isTracingEnabled);
+      if (current == null) return null;
+      compressed = current.getChunk();
+      b0 = bytes[0];
+      b1 = bytes[1];
+      b2 = bytes[2];
+    }
     int chunkLength = (b2 << 15) | (b1 << 7) | (b0 >> 1);
+
     if (chunkLength > bufferSize) {
       throw new IllegalArgumentException("Buffer size too small. size = " +
           bufferSize + " needed = " + chunkLength);
@@ -1252,7 +1270,8 @@ class EncodedReaderImpl implements EncodedReader {
           cbStartOffset, cbEndOffset, chunkLength, current, toDecompress, cacheBuffers);
     }
     if (current.getEnd() < cbEndOffset && !current.hasContiguousNext()) {
-      badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, current, 0));
+      badEstimates.add(addIncompleteCompressionBuffer(
+          cbStartOffset, current, 0, isTracingEnabled));
       return null; // This is impossible to read from this chunk.
     }
 
@@ -1304,10 +1323,54 @@ class EncodedReaderImpl implements EncodedReader {
         }
         tmp.removeSelf();
       } else {
-        badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, tmp, extraChunkCount));
+        badEstimates.add(addIncompleteCompressionBuffer(
+            cbStartOffset, tmp, extraChunkCount, isTracingEnabled));
         return null; // This is impossible to read from this chunk.
       }
     }
+  }
+
+
+  @VisibleForTesting
+  static BufferChunk readLengthBytesFromSmallBuffers(BufferChunk first, long cbStartOffset,
+      int[] result, List<IncompleteCb> badEstimates, boolean isTracingEnabled) throws IOException {
+    if (!first.hasContiguousNext()) {
+      badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, first, 0, isTracingEnabled));
+      return null; // This is impossible to read from this chunk.
+    }
+    int ix = readLengthBytes(first.getChunk(), result, 0);
+    assert ix < 3; // Otherwise we wouldn't be here.
+    DiskRangeList current = first.next;
+    first.removeSelf();
+    while (true) {
+      if (!(current instanceof BufferChunk)) {
+        throw new IOException(
+            "Trying to extend compressed block into uncompressed block " + current);
+      }
+      BufferChunk currentBc = (BufferChunk) current;
+      ix = readLengthBytes(currentBc.getChunk(), result, ix);
+      if (ix == 3) return currentBc; // Done, we have 3 bytes. Continue reading this buffer.
+      DiskRangeList tmp = current;
+      current = current.hasContiguousNext() ? current.next : null;
+      if (current != null) {
+        if (isTracingEnabled) {
+          LOG.trace("Removing partial CB " + tmp + " from ranges after copying its contents");
+        }
+        tmp.removeSelf();
+      } else {
+        badEstimates.add(addIncompleteCompressionBuffer(cbStartOffset, tmp, -1, isTracingEnabled));
+        return null; // This is impossible to read from this chunk.
+      }
+    }
+  }
+
+  private static int readLengthBytes(ByteBuffer compressed, int[] bytes, int ix) {
+    int byteCount = compressed.remaining();
+    while (byteCount > 0 && ix < 3) {
+      bytes[ix++] = compressed.get() & 0xff;
+      --byteCount;
+    }
+    return ix;
   }
 
   private void releaseBuffers(Collection<ByteBuffer> toRelease, boolean isFromDataReader) {
@@ -1342,12 +1405,12 @@ class EncodedReaderImpl implements EncodedReader {
   }
 
 
-  private IncompleteCb addIncompleteCompressionBuffer(
-      long cbStartOffset, DiskRangeList target, int extraChunkCount) {
+  private static IncompleteCb addIncompleteCompressionBuffer(long cbStartOffset,
+      DiskRangeList target, int extraChunkCountToLog, boolean isTracingEnabled) {
     IncompleteCb icb = new IncompleteCb(cbStartOffset, target.getEnd());
     if (isTracingEnabled) {
-      LOG.trace("Replacing " + target + " (and " + extraChunkCount + " previous chunks) with "
-          + icb + " in the buffers");
+      LOG.trace("Replacing " + target + " (and " + extraChunkCountToLog
+          + " previous chunks) with " + icb + " in the buffers");
     }
     target.replaceSelfWith(icb);
     return icb;

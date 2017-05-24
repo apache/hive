@@ -206,7 +206,8 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
       LOG.debug("Checking map join optimization for operator {} using TS stats", joinOp);
       for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
         if (isBigTableBranch(parentOp)) {
-          if (bigTablePosition < 0 && bigTableCandidateSet.contains(pos)) {
+          if (bigTablePosition < 0 && bigTableCandidateSet.contains(pos)
+              && !containUnionWithoutRS(parentOp.getParentOperators().get(0))) {
             LOG.debug("Found a big table branch with parent operator {} and position {}", parentOp, pos);
             bigTablePosition = pos;
             bigTableFound = true;

@@ -64,8 +64,8 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join0 to 1
-                     Right Outer Join1 to 2
+                     Left Outer Join 0 to 1
+                     Right Outer Join 1 to 2
                 filter predicates:
                   0 {(KEY.reducesinkkey0 < 10)}
                   1 

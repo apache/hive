@@ -123,6 +123,7 @@ public class TezTask extends Task<TezWork> {
     return counters;
   }
 
+
   @Override
   public int execute(DriverContext driverContext) {
     int rc = 1;
@@ -161,8 +162,12 @@ public class TezTask extends Task<TezWork> {
         // create the tez tmp dir
         scratchDir = utils.createTezDir(scratchDir, conf);
 
+        // This is used to compare global and vertex resources. Global resources are originally
+        // derived from session conf via localizeTempFilesFromConf. So, use that here.
+        Configuration sessionConf =
+            (session != null && session.getConf() != null) ? session.getConf() : conf;
         Map<String,LocalResource> inputOutputLocalResources =
-            getExtraLocalResources(jobConf, scratchDir, inputOutputJars);
+            getExtraLocalResources(jobConf, scratchDir, inputOutputJars, sessionConf);
 
         // Ensure the session is open and has the necessary local resources
         updateSession(session, jobConf, scratchDir, inputOutputJars, inputOutputLocalResources);
@@ -273,10 +278,11 @@ public class TezTask extends Task<TezWork> {
    * Converted the list of jars into local resources
    */
   Map<String,LocalResource> getExtraLocalResources(JobConf jobConf, Path scratchDir,
-      String[] inputOutputJars) throws Exception {
+      String[] inputOutputJars, Configuration sessionConf) throws Exception {
     final Map<String,LocalResource> resources = new HashMap<String,LocalResource>();
-    final List<LocalResource> localResources = utils.localizeTempFiles(
-        scratchDir.toString(), jobConf, inputOutputJars);
+    // Skip the files already in session local resources...
+    final List<LocalResource> localResources = utils.localizeTempFiles(scratchDir.toString(),
+        jobConf, inputOutputJars, DagUtils.getTempFilesFromConf(sessionConf));
     if (null != localResources) {
       for (LocalResource lr : localResources) {
         resources.put(utils.getBaseName(lr), lr);
