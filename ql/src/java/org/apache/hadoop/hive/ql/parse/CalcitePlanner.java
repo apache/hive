@@ -1744,9 +1744,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 8. Merge, remove and reduce Project if possible
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       basePlan = hepPlan(basePlan, false, mdProvider, executorProvider,
-           HiveProjectMergeRule.INSTANCE, ProjectRemoveRule.INSTANCE);
+           HiveProjectMergeRule.INSTANCE, ProjectRemoveRule.INSTANCE, HiveSortMergeRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-        "Calcite: Prejoin ordering transformation, Merge Project-Project");
+          "Calcite: Prejoin ordering transformation, Merge Project-Project, Merge Sort-Sort");
 
       // 9. Rerun PPD through Project as column pruning would have introduced
       // DT above scans; By pushing filter just above TS, Hive can push it into
@@ -2887,7 +2887,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
         ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
         if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null,null);
+          // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
+          srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = this.relToHiveRR.get(srcRel);
           qbp.setSelExprForClause(detsClauseName, SemanticAnalyzer.genSelectDIAST(rr));
         }
@@ -3049,14 +3050,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @param qb
      * @param srcRel
      * @param outermostOB
-     * @return Pair<RelNode, RelNode> Key- OB RelNode, Value - Input Select for
-     *         top constraining Select
+     * @return RelNode OB RelNode
      * @throws SemanticException
      */
-    private Pair<RelNode, RelNode> genOBLogicalPlan(QB qb, RelNode srcRel, boolean outermostOB)
-        throws SemanticException {
+    private RelNode genOBLogicalPlan(QB qb, Pair<RelNode, RowResolver> selPair,
+        boolean outermostOB) throws SemanticException {
+      // selPair.getKey() is the operator right before OB
+      // selPair.getValue() is RR which only contains columns needed in result
+      // set. Extra columns needed by order by will be absent from it.
+      RelNode srcRel = selPair.getKey();
+      RowResolver selectOutputRR = selPair.getValue();
       RelNode sortRel = null;
-      RelNode originalOBChild = null;
+      RelNode returnRel = null;
 
       QBParseInfo qbp = getQBParseInfo(qb);
       String dest = qbp.getClauseNames().iterator().next();
@@ -3064,7 +3069,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (obAST != null) {
         // 1. OB Expr sanity test
-        // in strict mode, in the presence of order by, limit must be specified
+        // in strict mode, in the presence of order by, limit must be
+        // specified
         Integer limit = qb.getParseInfo().getDestLimit(dest);
         if (limit == null) {
           String error = StrictChecks.checkNoLimit(conf);
@@ -3096,11 +3102,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
           obASTExpr = (ASTNode) obASTExprLst.get(i);
           nullObASTExpr = (ASTNode) obASTExpr.getChild(0);
           ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
-          Map<ASTNode, ExprNodeDesc> astToExprNDescMap = genAllExprNodeDesc(ref, inputRR);
-          ExprNodeDesc obExprNDesc = astToExprNDescMap.get(ref);
-          if (obExprNDesc == null)
+          Map<ASTNode, ExprNodeDesc> astToExprNDescMap = null;
+          ExprNodeDesc obExprNDesc = null;
+          // first try to get it from select
+          // in case of udtf, selectOutputRR may be null.
+          if (selectOutputRR != null) {
+            try {
+              astToExprNDescMap = genAllExprNodeDesc(ref, selectOutputRR);
+              obExprNDesc = astToExprNDescMap.get(ref);
+            } catch (SemanticException ex) {
+              // we can tolerate this as this is the previous behavior
+              LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
+                  + ex.getMessage());
+            }
+          }
+          // then try to get it from all
+          if (obExprNDesc == null) {
+            astToExprNDescMap = genAllExprNodeDesc(ref, inputRR);
+            obExprNDesc = astToExprNDescMap.get(ref);
+          }
+          if (obExprNDesc == null) {
             throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
-
+          }
           // 2.2 Convert ExprNode to RexNode
           rnd = converter.convert(obExprNDesc);
 
@@ -3126,8 +3149,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else if (nullObASTExpr.getType() == HiveParser.TOK_NULLS_LAST) {
             nullOrder = RelFieldCollation.NullDirection.LAST;
           } else {
-            throw new SemanticException(
-                    "Unexpected null ordering option: " + nullObASTExpr.getType());
+            throw new SemanticException("Unexpected null ordering option: "
+                + nullObASTExpr.getType());
           }
 
           // 2.5 Add to field collations
@@ -3174,7 +3197,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   "Duplicates detected when adding columns to RR: see previous message",
                   UnsupportedFeature.Duplicates_in_RR);
             }
-            originalOBChild = srcRel;
           }
         } else {
           if (!RowResolver.add(outputRR, inputRR)) {
@@ -3199,9 +3221,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
             outputRR, sortRel);
         relToHiveRR.put(sortRel, outputRR);
         relToHiveColNameCalcitePosMap.put(sortRel, hiveColNameCalcitePosMap);
-      }
 
-      return (new Pair<RelNode, RelNode>(sortRel, originalOBChild));
+        if (selectOutputRR != null) {
+          List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
+              new Function<RelDataTypeField, RexNode>() {
+                @Override
+                public RexNode apply(RelDataTypeField input) {
+                  return new RexInputRef(input.getIndex(), input.getType());
+                }
+              });
+          List<RexNode> selectedRefs = Lists.newArrayList();
+          for (int index = 0; index < selectOutputRR.getColumnInfos().size(); index++) {
+            selectedRefs.add(originalInputRefs.get(index));
+          }
+          // We need to add select since order by schema may have more columns than result schema.
+          returnRel = genSelectRelNode(selectedRefs, selectOutputRR, sortRel);
+        } else {
+          returnRel = sortRel;
+        }
+      }
+      return returnRel;
     }
 
     private RelNode genLimitLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
@@ -3532,8 +3571,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
      *
      * @throws SemanticException
      */
-    private RelNode genSelectLogicalPlan(QB qb, RelNode srcRel, RelNode starSrcRel,
-                                         ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR)
+    /**
+     * @param qb
+     * @param srcRel
+     * @param starSrcRel
+     * @param outerNameToPosMap
+     * @param outerRR
+     * @param isAllColRefRewrite
+     *          when it is true, it means that it is called from group by *, where we use
+     *          genSelectLogicalPlan to rewrite *
+     * @return RelNode: the select relnode RowResolver: i.e., originalRR, the RR after select when there is an order by.
+     * @throws SemanticException
+     */
+    private Pair<RelNode,RowResolver> genSelectLogicalPlan(QB qb, RelNode srcRel, RelNode starSrcRel,
+                                         ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR, boolean isAllColRefRewrite)
         throws SemanticException {
       // 0. Generate a Select Node for Windowing
       // Exclude the newly-generated select columns from */etc. resolution.
@@ -3798,15 +3849,64 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 8. Build Calcite Rel
       RelNode outputRel = null;
       if (genericUDTF != null) {
-        // The basic idea for CBO support of UDTF is to treat UDTF as a special project.
-        // In AST return path, as we just need to generate a SEL_EXPR, we just need to remember the expressions and the alias.
-        // In OP return path, we need to generate a SEL and then a UDTF following old semantic analyzer.
-        outputRel = genUDTFPlan(genericUDTF, genericUDTFName, udtfTableAlias, udtfColAliases, qb, calciteColLst, out_rwsch, srcRel);
-      }
-      else{
-        outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
-      }
+        // The basic idea for CBO support of UDTF is to treat UDTF as a special
+        // project.
+        // In AST return path, as we just need to generate a SEL_EXPR, we just
+        // need to remember the expressions and the alias.
+        // In OP return path, we need to generate a SEL and then a UDTF
+        // following old semantic analyzer.
+        outputRel = genUDTFPlan(genericUDTF, genericUDTFName, udtfTableAlias, udtfColAliases, qb,
+            calciteColLst, out_rwsch, srcRel);
+      } else {
+        String dest = qbp.getClauseNames().iterator().next();
+        ASTNode obAST = qbp.getOrderByForClause(dest);
 
+        RowResolver originalRR = null;
+        // We only support limited unselected column following by order by.
+        // TODO: support unselected columns in genericUDTF and windowing functions.
+        // We examine the order by in this query block and adds in column needed
+        // by order by in select list.
+        if (obAST != null && !(selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI) && !isAllColRefRewrite) {
+          // 1. OB Expr sanity test
+          // in strict mode, in the presence of order by, limit must be
+          // specified
+          Integer limit = qb.getParseInfo().getDestLimit(dest);
+          if (limit == null) {
+            String error = StrictChecks.checkNoLimit(conf);
+            if (error != null) {
+              throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
+            }
+          }
+          List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
+              new Function<RelDataTypeField, RexNode>() {
+                @Override
+                public RexNode apply(RelDataTypeField input) {
+                  return new RexInputRef(input.getIndex(), input.getType());
+                }
+              });
+          originalRR = out_rwsch.duplicate();
+          for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
+            ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
+            String internalName = SemanticAnalyzer.getColumnInternalName(out_rwsch.getColumnInfos()
+                .size() + i);
+            colInfo.setInternalName(internalName);
+            // if there is any confict, then we do not generate it in the new select
+            // otherwise, we add it into the calciteColLst and generate the new select
+            if (!out_rwsch.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
+                colInfo)) {
+              LOG.trace("Column already present in RR. skipping.");
+            } else {
+              calciteColLst.add(originalInputRefs.get(i));
+            }
+          }
+          outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
+          // outputRel is the generated augmented select with extra unselected
+          // columns, and originalRR is the original generated select
+          return new Pair<RelNode, RowResolver>(outputRel, originalRR);
+        } else {
+          outputRel = genSelectRelNode(calciteColLst, out_rwsch, srcRel);
+        }
+      }
       // 9. Handle select distinct as GBY if there exist windowing functions
       if (selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI) {
         ImmutableBitSet groupSet = ImmutableBitSet.range(outputRel.getRowType().getFieldList().size());
@@ -3824,7 +3924,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         this.relToHiveRR.put(outputRel, groupByOutputRowResolver);
       }
 
-      return outputRel;
+      return new Pair<RelNode, RowResolver>(outputRel, null);
     }
 
     private RelNode genUDTFPlan(GenericUDTF genericUDTF, String genericUDTFName, String outputTableAlias,
@@ -4051,51 +4151,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       srcRel = (gbHavingRel == null) ? srcRel : gbHavingRel;
 
       // 5. Build Rel for Select Clause
-      selectRel = genSelectLogicalPlan(qb, srcRel, starSrcRel, outerNameToPosMap, outerRR);
+      Pair<RelNode, RowResolver> selPair = genSelectLogicalPlan(qb, srcRel, starSrcRel, outerNameToPosMap, outerRR, false);
+      selectRel = selPair.getKey();
       srcRel = (selectRel == null) ? srcRel : selectRel;
 
       // 6. Build Rel for OB Clause
-      Pair<RelNode, RelNode> obTopProjPair = genOBLogicalPlan(qb, srcRel, outerMostQB);
-      obRel = obTopProjPair.getKey();
-      RelNode topConstrainingProjArgsRel = obTopProjPair.getValue();
+      obRel = genOBLogicalPlan(qb, selPair, outerMostQB);
       srcRel = (obRel == null) ? srcRel : obRel;
 
       // 7. Build Rel for Limit Clause
       limitRel = genLimitLogicalPlan(qb, srcRel);
       srcRel = (limitRel == null) ? srcRel : limitRel;
 
-      // 8. Introduce top constraining select if needed.
-      // NOTES:
-      // 1. Calcite can not take an expr in OB; hence it needs to be added as VC
-      // in the input select; In such cases we need to introduce a select on top
-      // to ensure VC is not visible beyond Limit, OB.
-      // 2. Hive can not preserve order across select. In subqueries OB is used
-      // to get a deterministic set of tuples from following limit. Hence we
-      // introduce the constraining select above Limit (if present) instead of
-      // OB.
-      // 3. The top level OB will not introduce constraining select due to Hive
-      // limitation(#2) stated above. The RR for OB will not include VC. Thus
-      // Result Schema will not include exprs used by top OB. During AST Conv,
-      // in the PlanModifierForASTConv we would modify the top level OB to
-      // migrate exprs from input sel to SortRel (Note that Calcite doesn't
-      // support this; but since we are done with Calcite at this point its OK).
-      if (topConstrainingProjArgsRel != null) {
-        List<RexNode> originalInputRefs = Lists.transform(topConstrainingProjArgsRel.getRowType()
-            .getFieldList(), new Function<RelDataTypeField, RexNode>() {
-          @Override
-          public RexNode apply(RelDataTypeField input) {
-            return new RexInputRef(input.getIndex(), input.getType());
-          }
-        });
-        RowResolver topConstrainingProjRR = new RowResolver();
-        if (!RowResolver.add(topConstrainingProjRR,
-            this.relToHiveRR.get(topConstrainingProjArgsRel))) {
-          LOG.warn("Duplicates detected when adding columns to RR: see previous message");
-        }
-        srcRel = genSelectRelNode(originalInputRefs, topConstrainingProjRR, srcRel);
-      }
-
-      // 9. Incase this QB corresponds to subquery then modify its RR to point
+      // 8. Incase this QB corresponds to subquery then modify its RR to point
       // to subquery alias
       // TODO: cleanup this
       if (qb.getParseInfo().getAlias() != null) {

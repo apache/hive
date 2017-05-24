@@ -65,14 +65,18 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [5, 0, 1, 2, 3, 4]
-                    selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                    projectedOutputColumns: [0, 1, 2, 3, 4]
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [5, 0, 1, 2, 3, 4]
+                        selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -170,14 +174,18 @@ STAGE PLANS:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumns: [3, 0, 1, 2]
-                    selectExpressions: ConstantVectorExpression(val null) -> 3:tinyint
+                    projectedOutputColumns: [0, 1, 2]
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [3, 0, 1, 2]
+                        selectExpressions: ConstantVectorExpression(val null) -> 3:tinyint
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -231,8 +239,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -246,11 +252,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: []
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkEmptyKeyOperator
+                          projectedOutputColumns: [12, 13, 14]
+                          selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val 0.0) -> 14:double
+                        Limit Vectorization:
+                            className: VectorLimitOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -258,30 +267,9 @@ STAGE PLANS:
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-            Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumns: [0, 1, 2]
-                    selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val 0.0) -> 2:double
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -439,8 +427,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
-      Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -454,11 +440,14 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: []
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkEmptyKeyOperator
+                          projectedOutputColumns: [12, 13, 14]
+                          selectExpressions: ConstantVectorExpression(val null) -> 12:float, ConstantVectorExpression(val null) -> 13:bigint, ConstantVectorExpression(val null) -> 14:float
+                        Limit Vectorization:
+                            className: VectorLimitOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -466,30 +455,9 @@ STAGE PLANS:
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Reducer 2 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-            Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumns: [0, 1, 2]
-                    selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val null) -> 2:float
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
 
   Stage: Stage-0
     Fetch Operator

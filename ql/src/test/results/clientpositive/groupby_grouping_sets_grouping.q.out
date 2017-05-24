@@ -317,8 +317,8 @@ STAGE PLANS:
             predicate: ((grouping(_col2, 1) = 1) or (grouping(_col2, 0) = 1)) (type: boolean)
             Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1) + grouping(_col2, 0)) (type: int)
-              outputColumnNames: _col0, _col1, _col2
+              expressions: _col0 (type: int), _col1 (type: int), (grouping(_col2, 1) + grouping(_col2, 0)) (type: int), CASE WHEN (((grouping(_col2, 1) + grouping(_col2, 0)) = 1)) THEN (_col0) ELSE (null) END (type: int)
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -332,7 +332,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col2 (type: int), CASE WHEN ((_col2 = 1)) THEN (_col0) ELSE (null) END (type: int)
+              key expressions: _col2 (type: int), _col3 (type: int)
               sort order: -+
               Statistics: Num rows: 6 Data size: 60 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: int), _col1 (type: int)

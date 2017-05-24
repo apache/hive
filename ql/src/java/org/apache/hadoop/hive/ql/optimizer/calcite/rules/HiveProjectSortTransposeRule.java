@@ -18,22 +18,33 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptCluster;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
-import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.calcite.rel.RelCollationImpl;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCallBinding;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.validate.SqlMonotonicity;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 import com.google.common.collect.ImmutableList;
@@ -67,15 +78,15 @@ public class HiveProjectSortTransposeRule extends RelOptRule {
     final HiveSortLimit sort = call.rel(1);
     final RelOptCluster cluster = project.getCluster();
 
-    // Determine mapping between project input and output fields. If sort
-    // relies on non-trivial expressions, we can't push.
+    // Determine mapping between project input and output fields. 
+    // In Hive, Sort is always based on RexInputRef
+    // We only need to check if project can contain all the positions that sort needs.
     final Mappings.TargetMapping map =
         RelOptUtil.permutationIgnoreCast(
             project.getProjects(), project.getInput().getRowType()).inverse();
+    Set<Integer> needed = new HashSet<>();
     for (RelFieldCollation fc : sort.getCollation().getFieldCollations()) {
-      if (map.getTarget(fc.getFieldIndex()) < 0) {
-        return;
-      }
+      needed.add(fc.getFieldIndex());
       final RexNode node = project.getProjects().get(map.getTarget(fc.getFieldIndex()));
       if (node.isA(SqlKind.CAST)) {
         // Check whether it is a monotonic preserving cast, otherwise we cannot push
@@ -88,12 +99,35 @@ public class HiveProjectSortTransposeRule extends RelOptRule {
         }
       }
     }
+    Map<Integer,Integer> m = new HashMap<>();
+    for (int projPos = 0; projPos < project.getChildExps().size(); projPos++) {
+      RexNode expr = project.getChildExps().get(projPos);
+      if (expr instanceof RexInputRef) {
+        Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
+        if (positions.size() > 1) {
+          continue;
+        } else {
+          int parentPos = positions.iterator().next();
+          if(needed.contains(parentPos)){
+            m.put(parentPos, projPos);
+            needed.remove(parentPos);
+          }
+        }
+      }
+    }
+    if(!needed.isEmpty()){
+      return;
+    }
+    
+    List<RelFieldCollation> fieldCollations = new ArrayList<>();
+    for (RelFieldCollation fc : sort.getCollation().getFieldCollations()) {
+      fieldCollations.add(new RelFieldCollation(m.get(fc.getFieldIndex()), fc.direction,
+          fc.nullDirection));
+    }
 
-    // Create new collation
-    final RelCollation newCollation =
-        RelCollationTraitDef.INSTANCE.canonize(
-            RexUtil.apply(map, sort.getCollation()));
-
+    RelTraitSet traitSet = sort.getCluster().traitSetOf(HiveRelNode.CONVENTION);
+    RelCollation newCollation = traitSet.canonize(RelCollationImpl.of(fieldCollations));
+    
     // New operators
     final RelNode newProject = project.copy(sort.getInput().getTraitSet(),
             ImmutableList.<RelNode>of(sort.getInput()));

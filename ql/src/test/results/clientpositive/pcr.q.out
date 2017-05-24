@@ -1427,10 +1427,10 @@ STAGE PLANS:
               Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col1
+                outputColumnNames: _col0
                 Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
                   null sort order: a
                   sort order: +
                   Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
@@ -1534,8 +1534,8 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
+        /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -2366,7 +2366,7 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1/ds=2000-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -2377,24 +2377,28 @@ STAGE PLANS:
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  column.name.delimiter ,
-                  columns _col0,_col1,_col3,_col4
-                  columns.types int,string,int,string
-                  escape.delim \
-                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    column.name.delimiter ,
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int,string,int,string
+                    escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -2407,7 +2411,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
-              value expressions: _col1 (type: string), _col3 (type: int), _col4 (type: string)
+              value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -2419,7 +2423,7 @@ STAGE PLANS:
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
               column.name.delimiter ,
-              columns _col0,_col1,_col3,_col4
+              columns _col0,_col1,_col2,_col3
               columns.types int,string,int,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -2429,7 +2433,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
                 column.name.delimiter ,
-                columns _col0,_col1,_col3,_col4
+                columns _col0,_col1,_col2,_col3
                 columns.types int,string,int,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -2672,8 +2676,8 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_1:t2]
+        /pcr_t1/ds=2000-04-08 [$hdt$_0:$hdt$_0:t1]
+        /pcr_t1/ds=2000-04-09 [$hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -2684,24 +2688,28 @@ STAGE PLANS:
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  column.name.delimiter ,
-                  columns _col0,_col1,_col3,_col4
-                  columns.types int,string,int,string
-                  escape.delim \
-                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    column.name.delimiter ,
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int,string,int,string
+                    escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -2714,7 +2722,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
-              value expressions: _col1 (type: string), _col3 (type: int), _col4 (type: string)
+              value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -2726,7 +2734,7 @@ STAGE PLANS:
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
               column.name.delimiter ,
-              columns _col0,_col1,_col3,_col4
+              columns _col0,_col1,_col2,_col3
               columns.types int,string,int,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -2736,7 +2744,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
                 column.name.delimiter ,
-                columns _col0,_col1,_col3,_col4
+                columns _col0,_col1,_col2,_col3
                 columns.types int,string,int,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -4846,10 +4854,10 @@ STAGE PLANS:
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), hr (type: string)
-                outputColumnNames: _col0, _col1, _col3
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col3 (type: string)
+                  key expressions: _col0 (type: string), _col2 (type: string)
                   null sort order: aa
                   sort order: ++
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -4956,8 +4964,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:srcpart]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -5139,8 +5147,8 @@ STAGE PLANS:
               name: default.srcpart
             name: default.srcpart
       Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [srcpart]
-        /srcpart/ds=2008-04-09/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
+        /srcpart/ds=2008-04-09/hr=11 [$hdt$_0:srcpart]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

@@ -1166,11 +1166,11 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: double)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 96000 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: double)
                     sort order: +
-                    Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 96000 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 2.0E-5
         Reducer 3 
             Execution mode: llap
@@ -1193,7 +1193,7 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 70
+      limit: -1
       Processor Tree:
         ListSink
 
