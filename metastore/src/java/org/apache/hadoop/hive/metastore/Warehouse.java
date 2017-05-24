@@ -220,6 +220,18 @@ public class Warehouse {
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
+  public void recycleDirToCmPath(Path f, boolean ifCopy, boolean ifPurge) throws MetaException {
+    // ifCopy input is just a place holder to support copy of data files to cmroot.
+    // Currently we through exception if it is set to true.
+    // This flag is useful in case of rename where the data won't be deleted and hence should be copied instead of move.
+    // Shall remove this exception once it is supported.
+    if (ifCopy) {
+      throw new MetaException("CM doesn't support copying of files to cmroot. It only supports move right now.");
+    }
+    cm.recycle(f, ifPurge);
+    return;
+  }
+
   public boolean isEmpty(Path path) throws IOException, MetaException {
     ContentSummary contents = getFs(path).getContentSummary(path);
     if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {

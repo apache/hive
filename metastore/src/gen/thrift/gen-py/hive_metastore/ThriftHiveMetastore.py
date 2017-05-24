@@ -230,6 +230,15 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
+  def cm_recycle(self, dataPath, isCopy, isPurge):
+    """
+    Parameters:
+     - dataPath
+     - isCopy
+     - isPurge
+    """
+    pass
+
   def get_tables(self, db_name, pattern):
     """
     Parameters:
@@ -2242,6 +2251,41 @@ class Client(fb303.FacebookService.Client, Iface):
       iprot.readMessageEnd()
       raise x
     result = truncate_table_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.o1 is not None:
+      raise result.o1
+    return
+
+  def cm_recycle(self, dataPath, isCopy, isPurge):
+    """
+    Parameters:
+     - dataPath
+     - isCopy
+     - isPurge
+    """
+    self.send_cm_recycle(dataPath, isCopy, isPurge)
+    self.recv_cm_recycle()
+
+  def send_cm_recycle(self, dataPath, isCopy, isPurge):
+    self._oprot.writeMessageBegin('cm_recycle', TMessageType.CALL, self._seqid)
+    args = cm_recycle_args()
+    args.dataPath = dataPath
+    args.isCopy = isCopy
+    args.isPurge = isPurge
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_cm_recycle(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = cm_recycle_result()
     result.read(iprot)
     iprot.readMessageEnd()
     if result.o1 is not None:
@@ -7036,6 +7080,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["drop_table"] = Processor.process_drop_table
     self._processMap["drop_table_with_environment_context"] = Processor.process_drop_table_with_environment_context
     self._processMap["truncate_table"] = Processor.process_truncate_table
+    self._processMap["cm_recycle"] = Processor.process_cm_recycle
     self._processMap["get_tables"] = Processor.process_get_tables
     self._processMap["get_tables_by_type"] = Processor.process_get_tables_by_type
     self._processMap["get_table_meta"] = Processor.process_get_table_meta
@@ -7876,6 +7921,28 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("truncate_table", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_cm_recycle(self, seqid, iprot, oprot):
+    args = cm_recycle_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = cm_recycle_result()
+    try:
+      self._handler.cm_recycle(args.dataPath, args.isCopy, args.isPurge)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except MetaException as o1:
+      msg_type = TMessageType.REPLY
+      result.o1 = o1
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("cm_recycle", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -15584,6 +15651,163 @@ class truncate_table_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('truncate_table_result')
+    if self.o1 is not None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.o1)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class cm_recycle_args:
+  """
+  Attributes:
+   - dataPath
+   - isCopy
+   - isPurge
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'dataPath', None, None, ), # 1
+    (2, TType.BOOL, 'isCopy', None, None, ), # 2
+    (3, TType.BOOL, 'isPurge', None, None, ), # 3
+  )
+
+  def __init__(self, dataPath=None, isCopy=None, isPurge=None,):
+    self.dataPath = dataPath
+    self.isCopy = isCopy
+    self.isPurge = isPurge
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.dataPath = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.isCopy = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.isPurge = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('cm_recycle_args')
+    if self.dataPath is not None:
+      oprot.writeFieldBegin('dataPath', TType.STRING, 1)
+      oprot.writeString(self.dataPath)
+      oprot.writeFieldEnd()
+    if self.isCopy is not None:
+      oprot.writeFieldBegin('isCopy', TType.BOOL, 2)
+      oprot.writeBool(self.isCopy)
+      oprot.writeFieldEnd()
+    if self.isPurge is not None:
+      oprot.writeFieldBegin('isPurge', TType.BOOL, 3)
+      oprot.writeBool(self.isPurge)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.dataPath)
+    value = (value * 31) ^ hash(self.isCopy)
+    value = (value * 31) ^ hash(self.isPurge)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class cm_recycle_result:
+  """
+  Attributes:
+   - o1
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, o1=None,):
+    self.o1 = o1
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = MetaException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('cm_recycle_result')
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)

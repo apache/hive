@@ -2066,6 +2066,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void cm_recycle(final String dataPath, final boolean isCopy, final boolean isPurge) throws MetaException {
+      wh.recycleDirToCmPath(new Path(dataPath), isCopy, isPurge);
+      return;
+    }
+
+    @Override
     public void truncate_table(final String dbName, final String tableName, List<String> partNames)
       throws NoSuchObjectException, MetaException {
       try {

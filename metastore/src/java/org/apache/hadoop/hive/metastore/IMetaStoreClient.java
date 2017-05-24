@@ -322,6 +322,17 @@ public interface IMetaStoreClient {
    */
   void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
 
+  /**
+   * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
+   *
+   * @param dataPath Path of the data files to be recycled to cmroot
+   * @param isCopy
+   *          If this flag is true, then files will be copied recursively to cmroot else will be moved.
+   * @param isPurge
+   *          When set to true files which needs to be recycled are not moved to Trash
+   */
+  void recycleDirToCmPath(String dataPath, boolean isCopy, boolean isPurge) throws MetaException, TException;
+
   boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException;
 

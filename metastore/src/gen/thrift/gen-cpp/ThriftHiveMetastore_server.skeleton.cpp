@@ -157,6 +157,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("truncate_table\n");
   }
 
+  void cm_recycle(const std::string& dataPath, const bool isCopy, const bool isPurge) {
+    // Your implementation goes here
+    printf("cm_recycle\n");
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
