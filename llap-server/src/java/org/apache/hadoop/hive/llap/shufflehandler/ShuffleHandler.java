@@ -113,6 +113,8 @@ import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.jboss.netty.util.CharsetUtil;
 
+import io.netty.util.NetUtil;
+
 public class ShuffleHandler implements AttemptRegistrationListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(ShuffleHandler.class);
@@ -317,6 +319,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       throw new RuntimeException(ex);
     }
     bootstrap.setPipelineFactory(pipelineFact);
+    bootstrap.setOption("backlog", NetUtil.SOMAXCONN);
     port = conf.getInt(SHUFFLE_PORT_CONFIG_KEY, DEFAULT_SHUFFLE_PORT);
     Channel ch = bootstrap.bind(new InetSocketAddress(port));
     accepted.add(ch);
@@ -326,7 +329,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     if (dirWatcher != null) {
       dirWatcher.start();
     }
-    LOG.info("LlapShuffleHandler" + " listening on port " + port);
+    LOG.info("LlapShuffleHandler" + " listening on port " + port + " (SOMAXCONN: " + bootstrap.getOption("backlog")
+      + ")");
   }
 
   public static void initializeAndStart(Configuration conf) throws Exception {
