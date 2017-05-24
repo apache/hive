@@ -96,7 +96,6 @@ b	NULL	NULL
 	NULL	NULL
 # Detailed Table Information	NULL	NULL
 Database:           	escape_comments_db  	NULL
-Owner:              	user                	NULL
 #### A masked pattern was here ####
 LastAccessTime:     	UNKNOWN             	NULL
 Protect Mode:       	None                	NULL
@@ -171,7 +170,6 @@ b	NULL	NULL
 	NULL	NULL
 # Detailed Table Information	NULL	NULL
 Database:           	escape_comments_db  	NULL
-Owner:              	user                	NULL
 #### A masked pattern was here ####
 LastAccessTime:     	UNKNOWN             	NULL
 Protect Mode:       	None                	NULL
