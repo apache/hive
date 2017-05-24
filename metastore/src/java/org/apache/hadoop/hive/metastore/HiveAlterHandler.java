@@ -220,7 +220,7 @@ public class HiveAlterHandler implements AlterHandler {
                   + newDbName + "." + newTblName + " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
-            if (srcFs.exists(srcPath) && srcFs.rename(srcPath, destPath)) {
+            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath, true)) {
               dataWasMoved = true;
             }
           } catch (IOException e) {
@@ -515,7 +515,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath);
+              wh.renameDir(srcPath, destPath, true);
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }
@@ -569,7 +569,7 @@ public class HiveAlterHandler implements AlterHandler {
           LOG.error("Revert the data move in renaming a partition.");
           try {
             if (destFs.exists(destPath)) {
-              wh.renameDir(destPath, srcPath);
+              wh.renameDir(destPath, srcPath, false);
             }
           } catch (MetaException me) {
             LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath

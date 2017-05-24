@@ -196,8 +196,13 @@ public class Warehouse {
     return false;
   }
 
-  public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
+  public boolean renameDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
     try {
+      if (needCmRecycle) {
+        // Recycle the source files to cmroot. As we just rename the source path, we should copy the
+        // files to cmroot instead of moving it.
+        cm.recycle(sourcePath, false, false);
+      }
       FileSystem fs = getFs(sourcePath);
       return FileUtils.rename(fs, sourcePath, destPath, conf);
     } catch (Exception ex) {
@@ -215,13 +220,13 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    cm.recycle(f, ifPurge);
+    cm.recycle(f, true, ifPurge);
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
-    cm.recycle(f, ifPurge);
+    cm.recycle(f, true, ifPurge);
     return;
   }
 

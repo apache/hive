@@ -133,11 +133,13 @@ public class ReplChangeManager {
    * Move a path into cmroot. If the path is a directory (of a partition, or table if nonpartitioned),
    *   recursively move files inside directory to cmroot. Note the table must be managed table
    * @param path a single file or directory
-   * @param ifPurge if the file should skip Trash when delete
+   * @param isMove if the files to be copied or moved to cmpath. Copy if false and move if true.
+   * @param ifPurge if the file should skip Trash when delete.
+   *                This is referred only if isMove is true.
    * @return int
    * @throws MetaException
    */
-  int recycle(Path path, boolean ifPurge) throws MetaException {
+  int recycle(Path path, boolean isMove, boolean ifPurge) throws MetaException {
     if (!enabled) {
       return 0;
     }
@@ -148,14 +150,10 @@ public class ReplChangeManager {
       if (fs.isDirectory(path)) {
         FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
         for (FileStatus file : files) {
-          count += recycle(file.getPath(), ifPurge);
+          count += recycle(file.getPath(), isMove, ifPurge);
         }
       } else {
         Path cmPath = getCMPath(hiveConf, checksumFor(path, fs));
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
-        }
 
         // set timestamp before moving to cmroot, so we can
         // avoid race condition CM remove the file before setting
@@ -163,10 +161,26 @@ public class ReplChangeManager {
         long now = System.currentTimeMillis();
         fs.setTimes(path, now, now);
 
-        boolean succ = fs.rename(path, cmPath);
+        boolean success = false;
+        if (isMove) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
+          }
+          success = fs.rename(path, cmPath);
+        } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Copying " + path.toString() + " to " + cmPath.toString());
+          }
+          // Copy the file only if cmroot already have the same file. If copy is invoked with
+          // destination file exist throws IOException.
+          if (!fs.exists(cmPath)) {
+            success = FileUtils.copy(fs, path, fs, cmPath, false, false, hiveConf);
+          }
+        }
+
         // Ignore if a file with same content already exist in cmroot
         // We might want to setXAttr for the new location in the future
-        if (!succ) {
+        if (!success) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("A file with the same content of " + path.toString() + " already exists, ignore");
           }
@@ -192,7 +206,7 @@ public class ReplChangeManager {
         // Tag if we want to remain in trash after deletion.
         // If multiple files share the same content, then
         // any file claim remain in trash would be granted
-        if (!ifPurge) {
+        if (isMove && !ifPurge) {
           try {
             fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
           } catch (UnsupportedOperationException e) {

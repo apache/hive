@@ -3173,7 +3173,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
          * TODO: Use the hard link feature of hdfs
          * once https://issues.apache.org/jira/browse/HDFS-3370 is done
          */
-        pathCreated = wh.renameDir(sourcePath, destPath);
+        pathCreated = wh.renameDir(sourcePath, destPath, false);
 
         // Setting success to false to make sure that if the listener fails, rollback happens.
         success = false;
@@ -3200,7 +3200,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success || !pathCreated) {
           ms.rollbackTransaction();
           if (pathCreated) {
-            wh.renameDir(destPath, sourcePath);
+            wh.renameDir(destPath, sourcePath, false);
           }
         }
 
