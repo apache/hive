@@ -1261,8 +1261,8 @@ STAGE PLANS:
             alias: tbl
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: int)
-              outputColumnNames: value, key
+              expressions: key (type: int), value (type: int)
+              outputColumnNames: key, value
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 keys: value (type: int), key (type: int)
@@ -1471,8 +1471,8 @@ STAGE PLANS:
             alias: tbl
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: value (type: int), key (type: int)
-              outputColumnNames: value, key
+              expressions: key (type: int), value (type: int)
+              outputColumnNames: key, value
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 keys: value (type: int), key (type: int)

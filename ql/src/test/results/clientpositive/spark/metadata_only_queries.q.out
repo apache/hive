@@ -199,8 +199,8 @@ STAGE PLANS:
                   alias: stats_tbl
                   Statistics: Num rows: 9999 Data size: 1030908 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: s (type: string), bo (type: boolean), bin (type: binary), si (type: smallint), i (type: int), b (type: bigint)
-                    outputColumnNames: s, bo, bin, si, i, b
+                    expressions: si (type: smallint), i (type: int), b (type: bigint), bo (type: boolean), s (type: string), bin (type: binary)
+                    outputColumnNames: si, i, b, bo, s, bin
                     Statistics: Num rows: 9999 Data size: 1030908 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b)
@@ -255,8 +255,8 @@ STAGE PLANS:
                   alias: stats_tbl_part
                   Statistics: Num rows: 9489 Data size: 978785 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: s (type: string), bo (type: boolean), bin (type: binary), si (type: smallint), i (type: int), b (type: bigint)
-                    outputColumnNames: s, bo, bin, si, i, b
+                    expressions: si (type: smallint), i (type: int), b (type: bigint), bo (type: boolean), s (type: string), bin (type: binary)
+                    outputColumnNames: si, i, b, bo, s, bin
                     Statistics: Num rows: 9489 Data size: 978785 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b)

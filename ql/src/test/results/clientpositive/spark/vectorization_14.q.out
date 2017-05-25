@@ -85,8 +85,8 @@ STAGE PLANS:
                     predicate: ((((ctinyint <= cbigint) and ((cint <= cdouble) or (ctimestamp2 < ctimestamp1))) and (cdouble < ctinyint)) and ((cbigint > -257) or (cfloat < cint))) (type: boolean)
                     Statistics: Num rows: 606 Data size: 18603 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double)
-                      outputColumnNames: ctimestamp1, cfloat, cstring1, cboolean1, cdouble
+                      expressions: cfloat (type: float), cdouble (type: double), cstring1 (type: string), ctimestamp1 (type: timestamp), cboolean1 (type: boolean)
+                      outputColumnNames: cfloat, cdouble, cstring1, ctimestamp1, cboolean1
                       Statistics: Num rows: 606 Data size: 18603 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: stddev_samp((- ((- 26.28) + cdouble))), max(cfloat), stddev_pop(cfloat), count(cfloat), var_pop(cfloat), var_samp(cfloat)

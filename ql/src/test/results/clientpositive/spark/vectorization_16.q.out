@@ -58,8 +58,8 @@ STAGE PLANS:
                     predicate: ((cstring2 like '%b%') and ((cdouble >= -1.389) or (cstring1 < 'a'))) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: cstring1 (type: string), cdouble (type: double), ctimestamp1 (type: timestamp)
-                      outputColumnNames: cstring1, cdouble, ctimestamp1
+                      expressions: cdouble (type: double), cstring1 (type: string), ctimestamp1 (type: timestamp)
+                      outputColumnNames: cdouble, cstring1, ctimestamp1
                       Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count(cdouble), stddev_samp(cdouble), min(cdouble)

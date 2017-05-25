@@ -44,8 +44,8 @@ STAGE PLANS:
             alias: grpby_test
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: int_col_7 (type: int), int_col_5 (type: int)
-              outputColumnNames: int_col_7, int_col_5
+              expressions: int_col_5 (type: int), int_col_7 (type: int)
+              outputColumnNames: int_col_5, int_col_7
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: max(least(COALESCE(int_col_5,(- 279)),COALESCE(int_col_7,476)))
