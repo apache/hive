@@ -46,6 +46,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -481,7 +482,7 @@ class SparkClientImpl implements SparkClient {
 
       final Process child = pb.start();
       int childId = childIdGenerator.incrementAndGet();
-      final List<String> childErrorLog = new ArrayList<String>();
+      final List<String> childErrorLog = Collections.synchronizedList(new ArrayList<String>());
       redirect("stdout-redir-" + childId, new Redirector(child.getInputStream()));
       redirect("stderr-redir-" + childId, new Redirector(child.getErrorStream(), childErrorLog));
 
@@ -492,9 +493,12 @@ class SparkClientImpl implements SparkClient {
             int exitCode = child.waitFor();
             if (exitCode != 0) {
               StringBuilder errStr = new StringBuilder();
-              for (String s : childErrorLog) {
-                errStr.append(s);
-                errStr.append('\n');
+              synchronized(childErrorLog) {
+                Iterator iter = childErrorLog.iterator();
+                while(iter.hasNext()){
+                  errStr.append(iter.next());
+                  errStr.append('\n');
+                }
               }
 
               rpcServer.cancelClient(clientId,

@@ -77,6 +77,7 @@ import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.ConverterUtils;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
@@ -198,7 +199,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", workDirs=" + Arrays.toString(localDirs) +
       ", shufflePort=" + shufflePort +
       ", waitQueueSize= " + waitQueueSize +
-      ", enablePreemption= " + enablePreemption;
+      ", enablePreemption= " + enablePreemption +
+      ", versionInfo= (" + HiveVersionInfo.getBuildVersion() + ")";
     LOG.info(logMsg);
     final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
     // Time based log retrieval may not fetch the above log line so logging to stderr for debugging purpose.

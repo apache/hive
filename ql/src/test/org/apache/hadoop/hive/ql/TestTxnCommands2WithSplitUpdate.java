@@ -444,11 +444,11 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000022_0000022_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000024_0000024_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000023_0000023_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000025_0000025_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -457,7 +457,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_0000022_0000022_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_0000024_0000024_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -504,7 +504,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000023", status[i].getPath().getName());
+          Assert.assertEquals("base_0000025", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -530,7 +530,7 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
         (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000023", status[0].getPath().getName());
+    Assert.assertEquals("base_0000025", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.STAGING_DIR_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(1, buckets.length);

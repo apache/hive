@@ -73,7 +73,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -1984,7 +1986,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tabName = qb.getTabNameForAlias(alias);
       String cteName = tabName.toLowerCase();
 
-      Table tab = db.getTable(tabName, false);
+      // Get table details from tabNameToTabObject cache
+      Table tab = getTableObjectByName(tabName, false);
+      if (tab != null) {
+        // do a deep copy, in case downstream changes it.
+        tab = new Table(tab.getTTable().deepCopy());
+      }
       if (tab == null ||
               tab.getDbName().equals(SessionState.get().getCurrentDatabase())) {
         Table materializedTab = ctx.getMaterializedTable(cteName);
@@ -10980,14 +10987,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Table getTableObjectByName(String tableName) throws HiveException {
+  private Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
     if (!tabNameToTabObject.containsKey(tableName)) {
-      Table table = db.getTable(tableName);
-      tabNameToTabObject.put(tableName, table);
+      Table table = db.getTable(tableName, throwException);
+      if (table != null) {
+        tabNameToTabObject.put(tableName, table);
+      }
       return table;
     } else {
       return tabNameToTabObject.get(tableName);
     }
+  }
+
+  private Table getTableObjectByName(String tableName) throws HiveException {
+    return getTableObjectByName(tableName, true);
   }
 
   private void walkASTMarkTABREF(ASTNode ast, Set<String> cteAlias)
@@ -12019,6 +12032,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> bucketCols = new ArrayList<String>();
     List<SQLPrimaryKey> primaryKeys = new ArrayList<SQLPrimaryKey>();
     List<SQLForeignKey> foreignKeys = new ArrayList<SQLForeignKey>();
+    List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
+    List<SQLNotNullConstraint> notNullConstraints = new ArrayList<>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     String comment = null;
@@ -12111,7 +12126,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         selectStmt = child;
         break;
       case HiveParser.TOK_TABCOLLIST:
-        cols = getColumns(child, true, primaryKeys, foreignKeys);
+        cols = getColumns(child, true, primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints);
         break;
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
@@ -12225,7 +12241,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           comment,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames,
-          skewedValues, primaryKeys, foreignKeys);
+          skewedValues, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
@@ -12321,7 +12337,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFormatParams.lineDelim, comment, storageFormat.getInputFormat(),
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
-    skewedColNames, skewedValues, true, primaryKeys, foreignKeys);
+	        skewedColNames, skewedValues, true, primaryKeys, foreignKeys,
+	        uniqueConstraints, notNullConstraints);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);

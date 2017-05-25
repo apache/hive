@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
 import org.json.JSONArray;
+import com.google.common.annotations.VisibleForTesting;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,7 +86,8 @@ public final class Op {
     }
   }
 
-  private void inlineJoinOp() throws Exception {
+  @VisibleForTesting
+  void inlineJoinOp() throws Exception {
     // inline map join operator
     if (this.type == OpType.MAPJOIN) {
       // get the map for posToVertex

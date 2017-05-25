@@ -41,9 +41,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -104,7 +106,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
   public void describeTable(DataOutputStream out, String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
       boolean isFormatted, boolean isExt, boolean isPretty,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats, PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo) throws HiveException {
+      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
+      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     MapBuilder builder = MapBuilder.create();
     builder.put("columns", makeColsUnformatted(cols));
 
@@ -120,6 +124,12 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       }
       if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
         builder.put("foreignKeyInfo", fkInfo);
+      }
+      if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
+        builder.put("uniqueConstraintInfo", ukInfo);
+      }
+      if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
+        builder.put("notNullConstraintInfo", nnInfo);
       }
     }
 

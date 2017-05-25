@@ -56,7 +56,9 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -1405,7 +1407,7 @@ public class TestHBaseStore {
     List<SQLPrimaryKey> pk = Arrays.asList(
         new SQLPrimaryKey(DB, tableName, pkColNames[0], 0, pkName, true, false, true));
 
-    store.createTableWithConstraints(table, pk, null);
+    store.createTableWithConstraints(table, pk, null, null, null);
 
     pk = store.getPrimaryKeys(DB, tableName);
 
@@ -1441,7 +1443,7 @@ public class TestHBaseStore {
         new SQLForeignKey(DB, pkTable, pkColNames[0], DB, tableName, fkColNames[0], 0, 1, 2,
             fkName, pkName, true, false, false));
 
-    store.createTableWithConstraints(table, null, fk);
+    store.createTableWithConstraints(table, null, fk, null, null);
 
     fk = store.getForeignKeys(DB, pkTable, DB, tableName);
 
@@ -1760,12 +1762,142 @@ public class TestHBaseStore {
     List<SQLPrimaryKey> pk = Arrays.asList(
         new SQLPrimaryKey(DB, tableName, pkColNames[0], 0, pkName, true, false, true));
 
-    store.createTableWithConstraints(table, pk, null);
+    store.createTableWithConstraints(table, pk, null, null, null);
 
     store.addPrimaryKeys(pk);
   }
 
+  @Test
+  public void createTableWithUniqueConstraint() throws Exception {
+    String tableName = "uktable";
+    String ukName = "test_uk";
+    String ukColNames[] = { "col0" };
+    Table table = createMultiColumnTable(tableName, "int");
 
+    List<SQLUniqueConstraint> uk = Arrays.asList(
+        new SQLUniqueConstraint(DB, tableName, ukColNames[0], 0, ukName, true, false, true));
+
+    store.createTableWithConstraints(table, null, null, uk, null);
+
+    uk = store.getUniqueConstraints(DB, tableName);
+
+    Assert.assertNotNull(uk);
+    Assert.assertEquals(1, uk.size());
+    Assert.assertEquals(DB, uk.get(0).getTable_db());
+    Assert.assertEquals(tableName, uk.get(0).getTable_name());
+    Assert.assertEquals(ukColNames[0], uk.get(0).getColumn_name());
+    Assert.assertEquals(0, uk.get(0).getKey_seq());
+    Assert.assertEquals(ukName, uk.get(0).getUk_name());
+    Assert.assertTrue(uk.get(0).isEnable_cstr());
+    Assert.assertFalse(uk.get(0).isValidate_cstr());
+    Assert.assertTrue(uk.get(0).isRely_cstr());
+
+    // Drop the unique constraint
+    store.dropConstraint(DB, tableName, ukName);
+
+    uk = store.getUniqueConstraints(DB, tableName);
+    Assert.assertNull(uk);
+  }
+
+  @Test
+  public void addMultiUniqueConstraints() throws Exception {
+    String tableName = "mcuktable";
+    String ukName = "test_uk";
+    String ukName2 = "test_uk2";
+    String ukColNames[] = { "col0", "col1" };
+    Table table = createMultiColumnTable(tableName, "int", "double", "timestamp");
+
+    List<SQLUniqueConstraint> uks = Arrays.asList(
+        new SQLUniqueConstraint(DB, tableName, ukColNames[0], 0, ukName, true, false, true),
+        new SQLUniqueConstraint(DB, tableName, ukColNames[1], 0, ukName2, true, false, true)
+    );
+
+    store.createTable(table);
+    store.addUniqueConstraints(uks);
+
+    uks = store.getUniqueConstraints(DB, tableName);
+
+    Assert.assertNotNull(uks);
+    Assert.assertEquals(2, uks.size());
+    SQLUniqueConstraint[] sorted = uks.toArray(new SQLUniqueConstraint[2]);
+    Arrays.sort(sorted, new Comparator<SQLUniqueConstraint>() {
+      @Override
+      public int compare(SQLUniqueConstraint o1, SQLUniqueConstraint o2) {
+        if (o1.getUk_name().equals(o2.getUk_name())) {
+          return o1.getColumn_name().compareTo(o2.getColumn_name());
+        } else {
+          return o1.getUk_name().compareTo(o2.getUk_name());
+        }
+      }
+    });
+
+    Assert.assertEquals(DB, sorted[0].getTable_db());
+    Assert.assertEquals(tableName, sorted[0].getTable_name());
+    Assert.assertEquals(ukColNames[0], sorted[0].getColumn_name());
+    Assert.assertEquals(0, sorted[0].getKey_seq());
+    Assert.assertEquals(ukName, sorted[0].getUk_name());
+    Assert.assertTrue(sorted[0].isEnable_cstr());
+    Assert.assertFalse(sorted[0].isValidate_cstr());
+    Assert.assertTrue(sorted[0].isRely_cstr());
+
+    Assert.assertEquals(DB, sorted[1].getTable_db());
+    Assert.assertEquals(tableName, sorted[1].getTable_name());
+    Assert.assertEquals(ukColNames[1], sorted[1].getColumn_name());
+    Assert.assertEquals(0, sorted[1].getKey_seq());
+    Assert.assertEquals(ukName2, sorted[1].getUk_name());
+    Assert.assertTrue(sorted[1].isEnable_cstr());
+    Assert.assertFalse(sorted[1].isValidate_cstr());
+    Assert.assertTrue(sorted[1].isRely_cstr());
+  }
+
+  @Test
+  public void addMultiNotNullConstraints() throws Exception {
+    String tableName = "mcnntable";
+    String nnName = "test_nn";
+    String nnName2 = "test_nn2";
+    String nnColNames[] = { "col0", "col1" };
+    Table table = createMultiColumnTable(tableName, "int", "double", "timestamp");
+
+    List<SQLNotNullConstraint> nns = Arrays.asList(
+        new SQLNotNullConstraint(DB, tableName, nnColNames[0], nnName, true, false, true),
+        new SQLNotNullConstraint(DB, tableName, nnColNames[1], nnName2, true, false, true)
+    );
+
+    store.createTable(table);
+    store.addNotNullConstraints(nns);
+
+    nns = store.getNotNullConstraints(DB, tableName);
+
+    Assert.assertNotNull(nns);
+    Assert.assertEquals(2, nns.size());
+    SQLNotNullConstraint[] sorted = nns.toArray(new SQLNotNullConstraint[2]);
+    Arrays.sort(sorted, new Comparator<SQLNotNullConstraint>() {
+      @Override
+      public int compare(SQLNotNullConstraint o1, SQLNotNullConstraint o2) {
+        if (o1.getNn_name().equals(o2.getNn_name())) {
+          return o1.getColumn_name().compareTo(o2.getColumn_name());
+        } else {
+          return o1.getNn_name().compareTo(o2.getNn_name());
+        }
+      }
+    });
+
+    Assert.assertEquals(DB, sorted[0].getTable_db());
+    Assert.assertEquals(tableName, sorted[0].getTable_name());
+    Assert.assertEquals(nnColNames[0], sorted[0].getColumn_name());
+    Assert.assertEquals(nnName, sorted[0].getNn_name());
+    Assert.assertTrue(sorted[0].isEnable_cstr());
+    Assert.assertFalse(sorted[0].isValidate_cstr());
+    Assert.assertTrue(sorted[0].isRely_cstr());
+
+    Assert.assertEquals(DB, sorted[1].getTable_db());
+    Assert.assertEquals(tableName, sorted[1].getTable_name());
+    Assert.assertEquals(nnColNames[1], sorted[1].getColumn_name());
+    Assert.assertEquals(nnName2, sorted[1].getNn_name());
+    Assert.assertTrue(sorted[1].isEnable_cstr());
+    Assert.assertFalse(sorted[1].isValidate_cstr());
+    Assert.assertTrue(sorted[1].isRely_cstr());
+  }
 
   private Table createMockTableAndPartition(String partType, String partVal) throws Exception {
     List<FieldSchema> cols = new ArrayList<FieldSchema>();

@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -132,7 +133,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
    * {"input_tables":[{"tablename": "default@test_sambavi_v1", "tabletype": "TABLE"}],
    *  "input partitions":["default@srcpart@ds=2008-04-08/hr=11"]}
    */
-  private static JSONObject getJSONDependencies(ExplainWork work)
+  @VisibleForTesting
+  static JSONObject getJSONDependencies(ExplainWork work)
       throws Exception {
     assert(work.getDependency());
 
@@ -202,7 +204,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static String falseCondNameVectorizationEnabled =
       HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + " IS false";
 
-  private ImmutablePair<Boolean, JSONObject> outputPlanVectorization(PrintStream out, boolean jsonOutput)
+  @VisibleForTesting
+  ImmutablePair<Boolean, JSONObject> outputPlanVectorization(PrintStream out, boolean jsonOutput)
       throws Exception {
 
     if (out != null) {
@@ -422,7 +425,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
   }
 
-  private JSONObject collectAuthRelatedEntities(PrintStream out, ExplainWork work)
+  @VisibleForTesting
+  JSONObject collectAuthRelatedEntities(PrintStream out, ExplainWork work)
       throws Exception {
 
     BaseSemanticAnalyzer analyzer = work.getAnalyzer();
@@ -486,7 +490,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return sb.toString();
   }
 
-  private JSONObject outputMap(Map<?, ?> mp, boolean hasHeader, PrintStream out,
+  @VisibleForTesting
+  JSONObject outputMap(Map<?, ?> mp, boolean hasHeader, PrintStream out,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     TreeMap<Object, Object> tree = getBasictypeKeyedMap(mp);
@@ -696,7 +701,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outputPlan(work, out, extended, jsonOutput, indent, "");
   }
 
-  private JSONObject outputPlan(Object work, PrintStream out,
+  @VisibleForTesting
+  JSONObject outputPlan(Object work, PrintStream out,
       boolean extended, boolean jsonOutput, int indent, String appendToHeader) throws Exception {
     // Check if work has an explain annotation
     Annotation note = AnnotationUtils.getAnnotation(work.getClass(), Explain.class);
@@ -1072,7 +1078,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return null;
   }
 
-  private JSONObject outputDependencies(Task<?> task,
+  @VisibleForTesting
+  JSONObject outputDependencies(Task<?> task,
       PrintStream out, JSONObject parentJson, boolean jsonOutput, boolean taskType, int indent)
       throws Exception {
 

@@ -491,7 +491,12 @@ public class Rpc implements Closeable {
     void sendHello(Channel c) throws Exception {
       byte[] hello = client.hasInitialResponse() ?
         client.evaluateChallenge(new byte[0]) : new byte[0];
-      c.writeAndFlush(new SaslMessage(clientId, hello));
+      c.writeAndFlush(new SaslMessage(clientId, hello)).addListener(future -> {
+        if (!future.isSuccess()) {
+          LOG.error("Failed to send hello to server", future.cause());
+          onError(future.cause());
+        }
+      });
     }
 
   }

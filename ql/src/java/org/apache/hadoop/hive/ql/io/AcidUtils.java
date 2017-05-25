@@ -345,7 +345,7 @@ public class AcidUtils {
     public static final String SPLIT_UPDATE_STRING = "split_update";
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
-    public static final int INSERT_ONLY_BIT = 0x03;
+    public static final int INSERT_ONLY_BIT = 0x04;
     public static final String INSERT_ONLY_STRING = "insert_only";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String LEGACY_VALUE_STRING = TransactionalValidationListener.LEGACY_TRANSACTIONAL_PROPERTY;
@@ -374,6 +374,7 @@ public class AcidUtils {
       AcidOperationalProperties obj = new AcidOperationalProperties();
       obj.setSplitUpdate(true);
       obj.setHashBasedMerge(false);
+      obj.setInsertOnly(false);
       return obj;
     }
 
@@ -417,6 +418,8 @@ public class AcidUtils {
           case HASH_BASED_MERGE_STRING:
             obj.setHashBasedMerge(true);
             break;
+          case INSERT_ONLY_STRING:
+            obj.setInsertOnly(true);
           default:
             throw new IllegalArgumentException(
                 "Unexpected value " + option + " for ACID operational properties!");
@@ -437,6 +440,9 @@ public class AcidUtils {
       }
       if ((properties & HASH_BASED_MERGE_BIT)  > 0) {
         obj.setHashBasedMerge(true);
+      }
+      if ((properties & INSERT_ONLY_BIT) > 0) {
+        obj.setInsertOnly(true);
       }
       return obj;
     }

@@ -1,97 +1,153 @@
-PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, primary key (a) disable novalidate)
+PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING, primary key (a) disable novalidate)
+POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+PREHOOK: query: CREATE TABLE table2 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate)
+POSTHOOK: query: CREATE TABLE table2 (a STRING, b STRING, CONSTRAINT pk1 PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
-PREHOOK: query: CREATE TABLE table3 (x string, PRIMARY KEY (x) disable novalidate, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE)
+PREHOOK: query: CREATE TABLE table3 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table3
-POSTHOOK: query: CREATE TABLE table3 (x string, PRIMARY KEY (x) disable novalidate, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE)
+POSTHOOK: query: CREATE TABLE table3 (x string NOT NULL DISABLE, PRIMARY KEY (x) DISABLE, CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table3
-PREHOOK: query: CREATE TABLE table4 (x string, y string, PRIMARY KEY (x) disable novalidate, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE, 
-CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a)  DISABLE NOVALIDATE)
+PREHOOK: query: CREATE TABLE table4 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a) DISABLE, 
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table4
-POSTHOOK: query: CREATE TABLE table4 (x string, y string, PRIMARY KEY (x) disable novalidate, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE, 
-CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a)  DISABLE NOVALIDATE)
+POSTHOOK: query: CREATE TABLE table4 (x string CONSTRAINT nn4_1 NOT NULL DISABLE, y string CONSTRAINT nn4_2 NOT NULL DISABLE, UNIQUE (x) DISABLE, CONSTRAINT fk2 FOREIGN KEY (x) REFERENCES table2(a) DISABLE, 
+CONSTRAINT fk3 FOREIGN KEY (y) REFERENCES table2(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table4
-PREHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) disable novalidate, FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE)
+PREHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table5
-POSTHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) disable novalidate, FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE)
+POSTHOOK: query: CREATE TABLE table5 (x string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table5
-PREHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) disable novalidate, FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE,
-CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a)  DISABLE NOVALIDATE)
+PREHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table6
-POSTHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) disable novalidate, FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE,
-CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a)  DISABLE NOVALIDATE)
+POSTHOOK: query: CREATE TABLE table6 (x string, y string, PRIMARY KEY (x) DISABLE, FOREIGN KEY (x) REFERENCES table2(a) DISABLE,
+CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table6
-PREHOOK: query: CREATE TABLE table7 (a STRING, b STRING, primary key (a) disable novalidate rely)
+PREHOOK: query: CREATE TABLE table7 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table7
-POSTHOOK: query: CREATE TABLE table7 (a STRING, b STRING, primary key (a) disable novalidate rely)
+POSTHOOK: query: CREATE TABLE table7 (a STRING, b STRING, PRIMARY KEY (a) DISABLE RELY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table7
-PREHOOK: query: CREATE TABLE table8 (a STRING, b STRING, constraint pk8 primary key (a) disable novalidate norely)
+PREHOOK: query: CREATE TABLE table8 (a STRING, b STRING, CONSTRAINT pk8 PRIMARY KEY (a) DISABLE NORELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table8
-POSTHOOK: query: CREATE TABLE table8 (a STRING, b STRING, constraint pk8 primary key (a) disable novalidate norely)
+POSTHOOK: query: CREATE TABLE table8 (a STRING, b STRING, CONSTRAINT pk8 PRIMARY KEY (a) DISABLE NORELY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table8
-PREHOOK: query: CREATE TABLE table9 (a STRING, b STRING, primary key (a, b) disable novalidate rely)
+PREHOOK: query: CREATE TABLE table9 (a STRING, b STRING, PRIMARY KEY (a, b) DISABLE RELY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table9
-POSTHOOK: query: CREATE TABLE table9 (a STRING, b STRING, primary key (a, b) disable novalidate rely)
+POSTHOOK: query: CREATE TABLE table9 (a STRING, b STRING, PRIMARY KEY (a, b) DISABLE RELY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table9
-PREHOOK: query: CREATE TABLE table10 (a STRING, b STRING, constraint pk10 primary key (a) disable novalidate norely, foreign key (a, b) references table9(a, b) disable novalidate)
+PREHOOK: query: CREATE TABLE table10 (a STRING, b STRING, CONSTRAINT pk10 PRIMARY KEY (a) DISABLE NORELY, FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table10
-POSTHOOK: query: CREATE TABLE table10 (a STRING, b STRING, constraint pk10 primary key (a) disable novalidate norely, foreign key (a, b) references table9(a, b) disable novalidate)
+POSTHOOK: query: CREATE TABLE table10 (a STRING, b STRING, CONSTRAINT pk10 PRIMARY KEY (a) DISABLE NORELY, FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table10
-PREHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, constraint pk11 primary key (a) disable novalidate rely, constraint fk11_1 foreign key (a, b) references table9(a, b) disable novalidate,
-constraint fk11_2 foreign key (c) references table4(x) disable novalidate)
+PREHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4(x) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table11
-POSTHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, constraint pk11 primary key (a) disable novalidate rely, constraint fk11_1 foreign key (a, b) references table9(a, b) disable novalidate,
-constraint fk11_2 foreign key (c) references table4(x) disable novalidate)
+POSTHOOK: query: CREATE TABLE table11 (a STRING, b STRING, c STRING, CONSTRAINT pk11 PRIMARY KEY (a) DISABLE RELY, CONSTRAINT fk11_1 FOREIGN KEY (a, b) REFERENCES table9(a, b) DISABLE,
+CONSTRAINT fk11_2 FOREIGN KEY (c) REFERENCES table4(x) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table11
+PREHOOK: query: CREATE TABLE table12 (a STRING CONSTRAINT nn12_1 NOT NULL DISABLE NORELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table12
+POSTHOOK: query: CREATE TABLE table12 (a STRING CONSTRAINT nn12_1 NOT NULL DISABLE NORELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table12
+PREHOOK: query: CREATE TABLE table13 (a STRING NOT NULL DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table13
+POSTHOOK: query: CREATE TABLE table13 (a STRING NOT NULL DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table13
+PREHOOK: query: CREATE TABLE table14 (a STRING CONSTRAINT nn14_1 NOT NULL DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table14
+POSTHOOK: query: CREATE TABLE table14 (a STRING CONSTRAINT nn14_1 NOT NULL DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table14
+PREHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4(x) DISABLE, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table15
+POSTHOOK: query: CREATE TABLE table15 (a STRING REFERENCES table4(x) DISABLE, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table15
+PREHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4(x) DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table16
+POSTHOOK: query: CREATE TABLE table16 (a STRING CONSTRAINT nn16_1 REFERENCES table4(x) DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table16
+PREHOOK: query: CREATE TABLE table17 (a STRING CONSTRAINT uk17_1 UNIQUE DISABLE RELY, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table17
+POSTHOOK: query: CREATE TABLE table17 (a STRING CONSTRAINT uk17_1 UNIQUE DISABLE RELY, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table17
+PREHOOK: query: CREATE TABLE table18 (a STRING, b STRING, CONSTRAINT uk18_1 UNIQUE (b) DISABLE RELY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table18
+POSTHOOK: query: CREATE TABLE table18 (a STRING, b STRING, CONSTRAINT uk18_1 UNIQUE (b) DISABLE RELY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table18
 PREHOOK: query: DESCRIBE EXTENDED table1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table1
@@ -125,6 +181,7 @@ x                   	string
 #### A masked pattern was here ####
 Constraints	Primary Key for default.table3:[x], Constraint Name: #### A masked pattern was here ####	 
 Foreign Keys for default.table3:[ {Constraint Name: fk1, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}]	 	 
+Not Null Constraints for default.table3:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
 PREHOOK: query: DESCRIBE EXTENDED table4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table4
@@ -135,8 +192,9 @@ x                   	string
 y                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-Constraints	Primary Key for default.table4:[x], Constraint Name: #### A masked pattern was here ####	 
-Foreign Keys for default.table4:[ {Constraint Name: fk2, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}, {Constraint Name: fk3, (Parent Column Name: default.table2.a, Column Name: y, Key Sequence: 1)}]	 	 
+Constraints	Foreign Keys for default.table4:[ {Constraint Name: fk2, (Parent Column Name: default.table2.a, Column Name: x, Key Sequence: 1)}, {Constraint Name: fk3, (Parent Column Name: default.table2.a, Column Name: y, Key Sequence: 1)}]	 
+Unique Constraints for default.table4:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 	 
+Not Null Constraints for default.table4:[ {Constraint Name: nn4_1, Column Name: x}, {Constraint Name: nn4_2, Column Name: y}]	 	 
 PREHOOK: query: DESCRIBE EXTENDED table5
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table5
@@ -217,7 +275,82 @@ c                   	string
 	 	 
 #### A masked pattern was here ####
 Constraints	Primary Key for default.table11:[a], Constraint Name: pk11	 
-Foreign Keys for default.table11:[ {Constraint Name: fk11_1, (Parent Column Name: default.table9.a, Column Name: a, Key Sequence: 1), (Parent Column Name: default.table9.b, Column Name: b, Key Sequence: 2)}, {Constraint Name: fk11_2, (Parent Column Name: default.table4.x, Column Name: c, Key Sequence: 1)}]	 	 
+Foreign Keys for default.table11:[ {Constraint Name: fk11_1, (Parent Column Name: default.table9.a, Column Name: a, Key Sequence: 1), (Parent Column Name: default.table9.b, Column Name: b, Key Sequence: 2)}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table12
+POSTHOOK: query: DESCRIBE EXTENDED table12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table12
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Not Null Constraints for default.table12:[ {Constraint Name: nn12_1, Column Name: a}]	 
+PREHOOK: query: DESCRIBE EXTENDED table13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table13
+POSTHOOK: query: DESCRIBE EXTENDED table13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table13
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Not Null Constraints for default.table13:[ {Constraint Name: #### A masked pattern was here ####, Column Name: a}]	 
+PREHOOK: query: DESCRIBE EXTENDED table14
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table14
+POSTHOOK: query: DESCRIBE EXTENDED table14
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table14
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Not Null Constraints for default.table14:[ {Constraint Name: nn14_1, Column Name: a}]	 
+PREHOOK: query: DESCRIBE EXTENDED table15
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table15
+POSTHOOK: query: DESCRIBE EXTENDED table15
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table15
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE EXTENDED table16
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table16
+POSTHOOK: query: DESCRIBE EXTENDED table16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table16
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE EXTENDED table17
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table17
+POSTHOOK: query: DESCRIBE EXTENDED table17
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table17
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Unique Constraints for default.table17:[ {Constraint Name: uk17_1, (Column Name: a, Key Sequence: 1)}]	 
+PREHOOK: query: DESCRIBE EXTENDED table18
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table18
+POSTHOOK: query: DESCRIBE EXTENDED table18
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table18
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Unique Constraints for default.table18:[ {Constraint Name: uk18_1, (Column Name: b, Key Sequence: 1)}]	 
 PREHOOK: query: DESCRIBE FORMATTED table1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table1
@@ -349,6 +482,12 @@ Table:              	default.table3
 Constraint Name:    	fk1                 	 
 Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
 	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table3      	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	x                   	 
+	 	 
 PREHOOK: query: DESCRIBE FORMATTED table4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table4
@@ -387,11 +526,6 @@ Storage Desc Params:
 	 	 
 # Constraints	 	 
 	 	 
-# Primary Key	 	 
-Table:              	default.table4      	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Names:       	x                   	 
-	 	 
 # Foreign Keys	 	 
 Table:              	default.table4      	 
 Constraint Name:    	fk2                 	 
@@ -399,6 +533,21 @@ Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1
 	 	 
 Constraint Name:    	fk3                 	 
 Parent Column Name:default.table2.a	Column Name:y       	Key Sequence:1      
+	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.table4      	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:x       	Key Sequence:1      	 
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table4      	 
+Constraint Name:    	nn4_1               	 
+Column Name:        	x                   	 
+	 	 
+Constraint Name:    	nn4_2               	 
+Column Name:        	y                   	 
 	 	 
 PREHOOK: query: DESCRIBE FORMATTED table5
 PREHOOK: type: DESCTABLE
@@ -723,8 +872,290 @@ Constraint Name:    	fk11_1
 Parent Column Name:default.table9.a	Column Name:a       	Key Sequence:1      
 Parent Column Name:default.table9.b	Column Name:b       	Key Sequence:2      
 	 	 
-Constraint Name:    	fk11_2              	 
-Parent Column Name:default.table4.x	Column Name:c       	Key Sequence:1      
+PREHOOK: query: DESCRIBE FORMATTED table12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table12
+POSTHOOK: query: DESCRIBE FORMATTED table12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table12
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table12     	 
+Constraint Name:    	nn12_1              	 
+Column Name:        	a                   	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table13
+POSTHOOK: query: DESCRIBE FORMATTED table13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table13
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table13     	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	a                   	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table14
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table14
+POSTHOOK: query: DESCRIBE FORMATTED table14
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table14
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table14     	 
+Constraint Name:    	nn14_1              	 
+Column Name:        	a                   	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table15
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table15
+POSTHOOK: query: DESCRIBE FORMATTED table15
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table15
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED table16
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table16
+POSTHOOK: query: DESCRIBE FORMATTED table16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table16
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED table17
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table17
+POSTHOOK: query: DESCRIBE FORMATTED table17
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table17
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.table17     	 
+Constraint Name:    	uk17_1              	 
+Column Name:a       	Key Sequence:1      	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table18
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table18
+POSTHOOK: query: DESCRIBE FORMATTED table18
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table18
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.table18     	 
+Constraint Name:    	uk18_1              	 
+Column Name:b       	Key Sequence:1      	 
 	 	 
 PREHOOK: query: ALTER TABLE table2 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
@@ -734,9 +1165,21 @@ PREHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE table3 DROP CONSTRAINT fk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table4 DROP CONSTRAINT nn4_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table4 DROP CONSTRAINT nn4_1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 PREHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE table6 DROP CONSTRAINT fk4
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
 PREHOOK: query: DESCRIBE EXTENDED table2
 PREHOOK: type: DESCTABLE
@@ -758,6 +1201,19 @@ x                   	string
 	 	 
 #### A masked pattern was here ####
 Constraints	Primary Key for default.table3:[x], Constraint Name: #### A masked pattern was here ####	 
+Not Null Constraints for default.table3:[ {Constraint Name: #### A masked pattern was here ####, Column Name: x}]	 	 
+PREHOOK: query: DESCRIBE EXTENDED table4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table4
+POSTHOOK: query: DESCRIBE EXTENDED table4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table4
+x                   	string              	                    
+y                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+Constraints	Unique Constraints for default.table4:[ {Constraint Name: #### A masked pattern was here ####, (Column Name: x, Key Sequence: 1)}]	 
+Not Null Constraints for default.table4:[ {Constraint Name: nn4_2, Column Name: y}]	 	 
 PREHOOK: query: DESCRIBE EXTENDED table6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table6
@@ -769,6 +1225,26 @@ y                   	string
 	 	 
 #### A masked pattern was here ####
 Constraints	Primary Key for default.table6:[x], Constraint Name: #### A masked pattern was here ####	 
+PREHOOK: query: DESCRIBE EXTENDED table16
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table16
+POSTHOOK: query: DESCRIBE EXTENDED table16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table16
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE EXTENDED table18
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table18
+POSTHOOK: query: DESCRIBE EXTENDED table18
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table18
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2
@@ -845,6 +1321,61 @@ Storage Desc Params:
 Table:              	default.table3      	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table3      	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	x                   	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table4
+POSTHOOK: query: DESCRIBE FORMATTED table4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table4
+# col_name            	data_type           	comment             
+	 	 
+x                   	string              	                    
+y                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.table4      	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:x       	Key Sequence:1      	 
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table4      	 
+Constraint Name:    	nn4_2               	 
+Column Name:        	y                   	 
+	 	 
 PREHOOK: query: DESCRIBE FORMATTED table6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table6
@@ -887,17 +1418,99 @@ Storage Desc Params:
 Table:              	default.table6      	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Names:       	x                   	 
-PREHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 primary key (a) disable novalidate
+PREHOOK: query: DESCRIBE FORMATTED table16
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table16
+POSTHOOK: query: DESCRIBE FORMATTED table16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table16
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED table18
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table18
+POSTHOOK: query: DESCRIBE FORMATTED table18
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table18
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 primary key (a) disable novalidate
+POSTHOOK: query: ALTER TABLE table2 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE RELY
+PREHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a)  DISABLE NOVALIDATE RELY
+POSTHOOK: query: ALTER TABLE table3 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2(a) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a)  DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a)  DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE table6 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1(a) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4(x) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table16
+PREHOOK: Output: default@table16
+POSTHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4(x) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table16
+POSTHOOK: Output: default@table16
+PREHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: DESCRIBE FORMATTED table2
 PREHOOK: type: DESCTABLE
@@ -988,6 +1601,12 @@ Table:              	default.table3
 Constraint Name:    	fk1                 	 
 Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
 	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table3      	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	x                   	 
+	 	 
 PREHOOK: query: DESCRIBE FORMATTED table6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table6
@@ -1039,6 +1658,244 @@ Parent Column Name:default.table1.a	Column Name:y       	Key Sequence:1
 Constraint Name:    	#### A masked pattern was here ####	 
 Parent Column Name:default.table2.a	Column Name:x       	Key Sequence:1      
 	 	 
+PREHOOK: query: DESCRIBE FORMATTED table16
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table16
+POSTHOOK: query: DESCRIBE FORMATTED table16
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table16
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED table18
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table18
+POSTHOOK: query: DESCRIBE FORMATTED table18
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table18
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.table18     	 
+Constraint Name:    	uk18_2              	 
+Column Name:a       	Key Sequence:1      	 
+Column Name:b       	Key Sequence:2      	 
+	 	 
+PREHOOK: query: ALTER TABLE table12 CHANGE COLUMN b b STRING CONSTRAINT nn12_2 NOT NULL DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table12
+PREHOOK: Output: default@table12
+POSTHOOK: query: ALTER TABLE table12 CHANGE COLUMN b b STRING CONSTRAINT nn12_2 NOT NULL DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table12
+POSTHOOK: Output: default@table12
+PREHOOK: query: ALTER TABLE table13 CHANGE b b STRING NOT NULL DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@table13
+PREHOOK: Output: default@table13
+POSTHOOK: query: ALTER TABLE table13 CHANGE b b STRING NOT NULL DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@table13
+POSTHOOK: Output: default@table13
+PREHOOK: query: DESCRIBE FORMATTED table12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table12
+POSTHOOK: query: DESCRIBE FORMATTED table12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table12
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table12     	 
+Constraint Name:    	nn12_1              	 
+Column Name:        	a                   	 
+	 	 
+Constraint Name:    	nn12_2              	 
+Column Name:        	b                   	 
+	 	 
+PREHOOK: query: DESCRIBE FORMATTED table13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table13
+POSTHOOK: query: DESCRIBE FORMATTED table13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table13
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table13     	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	a                   	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
+	 	 
+PREHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: query: DESCRIBE FORMATTED table12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table12
+POSTHOOK: query: DESCRIBE FORMATTED table12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table12
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.table12     	 
+Constraint Name:    	nn12_1              	 
+Column Name:        	a                   	 
+	 	 
 PREHOOK: query: CREATE DATABASE DbConstraint
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:DbConstraint
@@ -1051,11 +1908,11 @@ PREHOOK: Input: database:dbconstraint
 POSTHOOK: query: USE DbConstraint
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:dbconstraint
-PREHOOK: query: CREATE TABLE Table2 (a STRING, b STRING, constraint Pk1 primary key (a) disable novalidate)
+PREHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: DbConstraint@Table2
 PREHOOK: Output: database:dbconstraint
-POSTHOOK: query: CREATE TABLE Table2 (a STRING, b STRING, constraint Pk1 primary key (a) disable novalidate)
+POSTHOOK: query: CREATE TABLE Table2 (a STRING, b STRING NOT NULL DISABLE, CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: DbConstraint@Table2
 POSTHOOK: Output: database:dbconstraint
@@ -1076,6 +1933,7 @@ b                   	string
 	 	 
 #### A masked pattern was here ####
 Constraints	Primary Key for dbconstraint.table2:[a], Constraint Name: pk1	 
+Not Null Constraints for dbconstraint.table2:[ {Constraint Name: #### A masked pattern was here ####, Column Name: b}]	 	 
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
@@ -1118,6 +1976,12 @@ Storage Desc Params:
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
 Column Names:       	a                   	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	dbconstraint.table2 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
+	 	 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
@@ -1132,6 +1996,7 @@ a                   	string
 b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
+Constraints	Not Null Constraints for dbconstraint.table2:[ {Constraint Name: #### A masked pattern was here ####, Column Name: b}]	 
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
@@ -1167,9 +2032,17 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 primary key (a) disable novalidate
+	 	 
+# Constraints	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	dbconstraint.table2 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
+	 	 
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 primary key (a) disable novalidate
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
@@ -1213,9 +2086,15 @@ Storage Desc Params:
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	pk1                 	 
 Column Names:       	a                   	 
-PREHOOK: query: ALTER TABLE DbConstraint.Table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
+	 	 
+# Not Null Constraints	 	 
+Table:              	dbconstraint.table2 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
+	 	 
+PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE DbConstraint.Table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
@@ -1264,4 +2143,10 @@ Column Names:       	a
 Table:              	dbconstraint.table2 	 
 Constraint Name:    	fkx                 	 
 Parent Column Name:default.table1.a	Column Name:b       	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	dbconstraint.table2 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
 	 	 

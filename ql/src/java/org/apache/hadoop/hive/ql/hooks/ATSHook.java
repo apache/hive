@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -78,7 +79,8 @@ public class ATSHook implements ExecuteWithHookContext {
   private static boolean defaultATSDomainCreated = false;
   private static final String DEFAULT_ATS_DOMAIN = "hive_default_ats";
 
-  private enum OtherInfoTypes {
+  @VisibleForTesting
+  enum OtherInfoTypes {
     QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, SESSION_ID, THREAD_NAME, VERSION,
     CLIENT_IP_ADDRESS, HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF, LLAP_APP_ID
   };

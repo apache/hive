@@ -87,6 +87,12 @@ POSTHOOK: query: select * from simple_from_mm1 s1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm1
 #### A masked pattern was here ####
+0
+0
+98
+98
+100
+100
 PREHOOK: query: alter table simple_from_mm1 unset tblproperties('transactional_properties', 'transactional')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@simple_from_mm1
@@ -103,6 +109,12 @@ POSTHOOK: query: select * from simple_from_mm1 s2 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm1
 #### A masked pattern was here ####
+0
+0
+98
+98
+100
+100
 PREHOOK: query: insert into table simple_from_mm1 select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -126,6 +138,15 @@ POSTHOOK: query: select * from simple_from_mm1 s3 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm1
 #### A masked pattern was here ####
+0
+0
+0
+98
+98
+98
+100
+100
+100
 PREHOOK: query: drop table simple_from_mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_from_mm1
@@ -184,6 +205,12 @@ POSTHOOK: query: select * from simple_from_mm2 s1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm2
 #### A masked pattern was here ####
+0
+0
+98
+98
+100
+100
 PREHOOK: query: alter table simple_from_mm2 set tblproperties("transactional"="false", 'transactional_properties'='false')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@simple_from_mm2
@@ -200,6 +227,12 @@ POSTHOOK: query: select * from simple_from_mm2 s2 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm2
 #### A masked pattern was here ####
+0
+0
+98
+98
+100
+100
 PREHOOK: query: insert into table simple_from_mm2 select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -223,6 +256,15 @@ POSTHOOK: query: select * from simple_from_mm2 s3 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_from_mm2
 #### A masked pattern was here ####
+0
+0
+0
+98
+98
+98
+100
+100
+100
 PREHOOK: query: drop table simple_from_mm2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_from_mm2
@@ -266,6 +308,9 @@ POSTHOOK: query: select * from simple_to_mm s1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_to_mm
 #### A masked pattern was here ####
+0
+98
+100
 PREHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@simple_to_mm
@@ -283,6 +328,9 @@ POSTHOOK: query: select * from simple_to_mm s2 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_to_mm
 #### A masked pattern was here ####
+0
+98
+100
 PREHOOK: query: insert into table simple_to_mm select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -321,6 +369,15 @@ POSTHOOK: query: select * from simple_to_mm s3 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_to_mm
 #### A masked pattern was here ####
+0
+0
+0
+98
+98
+98
+100
+100
+100
 PREHOOK: query: drop table simple_to_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_to_mm
@@ -398,6 +455,15 @@ POSTHOOK: Input: default@part_from_mm1
 POSTHOOK: Input: default@part_from_mm1@key_mm=455
 POSTHOOK: Input: default@part_from_mm1@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	455
+0	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
 PREHOOK: query: alter table part_from_mm1 unset tblproperties('transactional_properties', 'transactional')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@part_from_mm1
@@ -418,6 +484,15 @@ POSTHOOK: Input: default@part_from_mm1
 POSTHOOK: Input: default@part_from_mm1@key_mm=455
 POSTHOOK: Input: default@part_from_mm1@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	455
+0	456
+98	455
+98	455
+98	456
+100	455
+100	455
+100	456
 PREHOOK: query: insert into table part_from_mm1 partition(key_mm='456') select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -462,6 +537,21 @@ POSTHOOK: Input: default@part_from_mm1@key_mm=455
 POSTHOOK: Input: default@part_from_mm1@key_mm=456
 POSTHOOK: Input: default@part_from_mm1@key_mm=457
 #### A masked pattern was here ####
+0	455
+0	455
+0	456
+0	456
+0	457
+98	455
+98	455
+98	456
+98	456
+98	457
+100	455
+100	455
+100	456
+100	456
+100	457
 PREHOOK: query: drop table part_from_mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_from_mm1
@@ -526,6 +616,12 @@ POSTHOOK: Input: default@part_from_mm2
 POSTHOOK: Input: default@part_from_mm2@key_mm=455
 POSTHOOK: Input: default@part_from_mm2@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
 PREHOOK: query: alter table part_from_mm2 set tblproperties("transactional"="false", 'transactional_properties'='false')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@part_from_mm2
@@ -546,6 +642,12 @@ POSTHOOK: Input: default@part_from_mm2
 POSTHOOK: Input: default@part_from_mm2@key_mm=455
 POSTHOOK: Input: default@part_from_mm2@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
 PREHOOK: query: insert into table part_from_mm2 partition(key_mm='457') select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -575,6 +677,15 @@ POSTHOOK: Input: default@part_from_mm2@key_mm=455
 POSTHOOK: Input: default@part_from_mm2@key_mm=456
 POSTHOOK: Input: default@part_from_mm2@key_mm=457
 #### A masked pattern was here ####
+0	455
+0	456
+0	457
+98	455
+98	456
+98	457
+100	455
+100	456
+100	457
 PREHOOK: query: drop table part_from_mm2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_from_mm2
@@ -637,6 +748,12 @@ POSTHOOK: Input: default@part_to_mm
 POSTHOOK: Input: default@part_to_mm@key_mm=455
 POSTHOOK: Input: default@part_to_mm@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
 PREHOOK: query: alter table part_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@part_to_mm
@@ -658,6 +775,12 @@ POSTHOOK: Input: default@part_to_mm
 POSTHOOK: Input: default@part_to_mm@key_mm=455
 POSTHOOK: Input: default@part_to_mm@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	456
+98	455
+98	456
+100	455
+100	456
 PREHOOK: query: insert into table part_to_mm partition(key_mm='456') select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -702,6 +825,18 @@ POSTHOOK: Input: default@part_to_mm@key_mm=455
 POSTHOOK: Input: default@part_to_mm@key_mm=456
 POSTHOOK: Input: default@part_to_mm@key_mm=457
 #### A masked pattern was here ####
+0	455
+0	456
+0	456
+0	457
+98	455
+98	456
+98	456
+98	457
+100	455
+100	456
+100	456
+100	457
 PREHOOK: query: drop table part_to_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_to_mm
