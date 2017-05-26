@@ -193,7 +193,7 @@ public class TestDruidStorageHandler {
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
 
     Path segmentOutputPath = JobHelper
-            .makeSegmentOutputPath(new Path(segmentRootPath), localFileSystem, dataSegment);
+            .makeFileNamePath(new Path(segmentRootPath), localFileSystem, dataSegment, JobHelper.INDEX_ZIP);
     Path indexPath = new Path(segmentOutputPath, "index.zip");
     DataSegment dataSegmentWithLoadspect = DataSegment.builder(dataSegment).loadSpec(
             ImmutableMap.<String, Object>of("path", indexPath)).build();

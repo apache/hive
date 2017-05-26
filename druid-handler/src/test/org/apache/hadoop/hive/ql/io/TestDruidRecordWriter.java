@@ -23,7 +23,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.metamx.common.Granularity;
 import io.druid.data.input.Firehose;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.impl.DimensionSchema;
@@ -33,7 +32,7 @@ import io.druid.data.input.impl.MapInputRowParser;
 import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.data.input.impl.TimeAndDimsParseSpec;
 import io.druid.data.input.impl.TimestampSpec;
-import io.druid.granularity.QueryGranularities;
+import io.druid.java.util.common.granularity.Granularities;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
 import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
@@ -110,7 +109,7 @@ public class TestDruidRecordWriter {
           )
   );
 
-  // This test need this patch https://github.com/druid-io/druid/pull/3483
+  // This test fails due to conflict of guava classes with hive-exec jar.
   @Ignore
   @Test
   public void testWrite() throws IOException, SegmentLoadingException {
@@ -136,7 +135,7 @@ public class TestDruidRecordWriter {
                     new HyperUniquesAggregatorFactory("unique_hosts", "unique_hosts")
             },
             new UniformGranularitySpec(
-                    Granularity.DAY, QueryGranularities.NONE, ImmutableList.of(INTERVAL_FULL)
+                    Granularities.DAY, Granularities.NONE, ImmutableList.of(INTERVAL_FULL)
             ),
             objectMapper
     );
@@ -167,7 +166,7 @@ public class TestDruidRecordWriter {
               ) {
                 return new DruidWritable(ImmutableMap.<String, Object>builder().putAll(input)
                         .put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-                                Granularity.DAY.truncate(
+                                Granularities.DAY.bucketStart(
                                         new DateTime((long) input
                                                 .get(DruidTable.DEFAULT_TIMESTAMP_COLUMN)))
                                         .getMillis()
@@ -194,7 +193,7 @@ public class TestDruidRecordWriter {
             ImmutableList.of("host"),
             ImmutableList.of("visited_sum", "unique_hosts"),
             null,
-            QueryGranularities.NONE
+            Granularities.NONE
     );
 
     List<InputRow> rows = Lists.newArrayList();

@@ -21,7 +21,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.metamx.common.Granularity;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -29,7 +28,7 @@ import io.druid.data.input.impl.MapInputRowParser;
 import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.data.input.impl.TimeAndDimsParseSpec;
 import io.druid.data.input.impl.TimestampSpec;
-import io.druid.granularity.QueryGranularity;
+import io.druid.java.util.common.granularity.Granularity;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
@@ -106,8 +105,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             hdfsDataSegmentPusherConfig, jc, DruidStorageHandlerUtils.JSON_MAPPER);
 
     final GranularitySpec granularitySpec = new UniformGranularitySpec(
-            Granularity.valueOf(segmentGranularity),
-            QueryGranularity.fromString(
+            Granularity.fromString(segmentGranularity),
+            Granularity.fromString(
                     tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
                             ? "NONE"
                             : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
