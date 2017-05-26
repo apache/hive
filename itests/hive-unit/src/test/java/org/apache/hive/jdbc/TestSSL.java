@@ -384,6 +384,55 @@ public class TestSSL {
     hs2Conn.close();
   }
 
+  /***
+   * Test a new connection when server sends a certificate with wrong CN
+   * (sends a certificate for www.example.com instead of localhost)
+   * Opening a new connection with this wrong certificate should fail
+   * @throws Exception
+   */
+  @Test
+  public void testConnectionWrongCertCN() throws Exception {
+    // This call sets the default ssl params including the correct keystore in the server config
+    setSslConfOverlay(confOverlay);
+    // Replace default keystore with keystore for www.example.com
+    confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname, dataFileDir + File.separator
+        + EXAMPLEDOTCOM_KEY_STORE_NAME);
+    // Binary (TCP) mode
+    setBinaryConfOverlay(confOverlay);
+    miniHS2.start(confOverlay);
+    try {
+      hs2Conn =
+          DriverManager.getConnection(miniHS2.getJdbcURL("default", SSL_CONN_PARAMS),
+              System.getProperty("user.name"), "bar");
+      fail("SSL connection, with the server providing wrong certifcate (with CN www.example.com, "
+          + "instead of localhost), should fail");
+    } catch (SQLException e) {
+      // Expected error: should throw java.security.cert.CertificateException
+      assertEquals("08S01", e.getSQLState().trim());
+      assertTrue(e.toString().contains("java.security.cert.CertificateException"));
+    }
+
+    miniHS2.stop();
+
+    // Http mode
+    setHttpConfOverlay(confOverlay);
+    miniHS2.start(confOverlay);
+    try {
+      hs2Conn =
+          DriverManager.getConnection(miniHS2.getJdbcURL("default", SSL_CONN_PARAMS),
+              System.getProperty("user.name"), "bar");
+      fail("SSL connection, with the server providing wrong certifcate (with CN www.example.com, "
+          + "instead of localhost), should fail");
+    } catch (SQLException e) {
+      // Expected error: should throw javax.net.ssl.SSLPeerUnverifiedException
+      assertEquals("08S01", e.getSQLState().trim());
+      assertTrue(e.toString().contains("javax.net.ssl.SSLException: Certificate for"));
+    }
+    // Revert to default keystore path
+    confOverlay.put(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname, dataFileDir + File.separator
+        + LOCALHOST_KEY_STORE_NAME);
+  }
+
   /**
    * Test HMS server with SSL
    * @throws Exception

@@ -26,6 +26,7 @@ import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.conn_452.ssl.DefaultHostnameVerifier;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -331,7 +332,7 @@ public class HiveConnection implements java.sql.Connection {
               sslTrustStorePassword.toCharArray());
           socketFactory = new SSLSocketFactory(sslTrustStore);
         }
-        socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        socketFactory.setHostnameVerifier(new DefaultHostnameVerifier());
         Scheme sslScheme = new Scheme("https", 443, socketFactory);
         httpClient.getConnectionManager().getSchemeRegistry().register(sslScheme);
       }
