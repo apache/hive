@@ -428,7 +428,7 @@ public class MapOperator extends AbstractMapOperator {
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Adding alias " + alias + " to work list for file "
               + onefile);
         }
@@ -469,7 +469,7 @@ public class MapOperator extends AbstractMapOperator {
         if (prev != null && !prev.equals(context.rowObjectInspector)) {
           throw new HiveException("Conflict on row inspector for " + context.alias);
         }
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("dump " + context.op + " " + context.rowObjectInspector.getTypeName());
         }
       }
@@ -509,7 +509,7 @@ public class MapOperator extends AbstractMapOperator {
     Path fpath = getExecContext().getCurrentInputPath();
     String nominalPath = getNominalPath(fpath);
     Map<Operator<?>, MapOpCtx> contexts = opCtxMap.get(nominalPath);
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       StringBuilder builder = new StringBuilder();
       for (MapOpCtx context : contexts.values()) {
         if (builder.length() > 0) {
@@ -517,7 +517,7 @@ public class MapOperator extends AbstractMapOperator {
         }
         builder.append(context.alias);
       }
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
       }
     }
@@ -567,7 +567,7 @@ public class MapOperator extends AbstractMapOperator {
 
   protected final void rowsForwarded(int childrenDone, int rows) {
     numRows += rows;
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       while (numRows >= cntr) {
         cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
         if (cntr < 0 || numRows < 0) {

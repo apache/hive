@@ -56,9 +56,6 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
 
   public static final Logger l4j = LoggerFactory.getLogger(RecordProcessor.class);
 
-  // used to log memory usage periodically
-  protected boolean isLogInfoEnabled = false;
-  protected boolean isLogTraceEnabled = false;
   protected MRTaskReporter reporter;
 
   protected PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -81,9 +78,6 @@ public abstract class RecordProcessor extends InterruptibleProcessing {
     this.reporter = mrReporter;
     this.inputs = inputs;
     this.outputs = outputs;
-
-    isLogInfoEnabled = l4j.isInfoEnabled();
-    isLogTraceEnabled = l4j.isTraceEnabled();
 
     checkAbortCondition();
 

@@ -257,7 +257,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("useUniformHash " + vectorReduceSinkInfo.getUseUniformHash());
   
       LOG.debug("reduceSinkKeyColumnMap " +
@@ -315,7 +315,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     reduceSkipTag = conf.getSkipTag();
     reduceTagByte = (byte) conf.getTag();
 
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("Using tag = " + (int) reduceTagByte);
     }
 
@@ -409,7 +409,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     // forward is not called
     if (null != out) {
       numRows++;
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         if (numRows == cntr) {
           cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
           if (cntr < 0 || numRows < 0) {
@@ -438,7 +438,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     super.closeOp(abort);
     out = null;
     reducerHash = null;
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info(toString() + ": records written - " + numRows);
     }
     recordCounter.set(numRows);

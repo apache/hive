@@ -750,7 +750,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
           flushHashTable(true);
           hashAggr = false;
         } else {
-          if (isLogTraceEnabled) {
+          if (LOG.isTraceEnabled()) {
             LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
                 + " #total = " + numRowsInput + " reduction = " + 1.0
                 * (numRowsHashTbl / numRowsInput) + " minReduction = "
@@ -948,7 +948,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       // Update the number of entries that can fit in the hash table
       numEntriesHashTable =
           (int) (maxHashTblMemory / (fixedRowSize + (totalVariableSize / numEntriesVarSize)));
-      if (isLogTraceEnabled) {
+      if (LOG.isTraceEnabled()) {
         LOG.trace("Hash Aggr: #hash table = " + numEntries
             + " #max in hash table = " + numEntriesHashTable);
       }
@@ -999,14 +999,14 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       }
       hashAggregations.clear();
       hashAggregations = null;
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("Hash Table completed flushed");
       }
       return;
     }
 
     int oldSize = hashAggregations.size();
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("Hash Tbl flush: #hash table = " + oldSize);
     }
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
@@ -1018,7 +1018,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
         }
         return;
@@ -1058,10 +1058,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   public void flush() throws HiveException{
     try {
       if (hashAggregations != null) {
-	if (isLogInfoEnabled) {
-	  LOG.info("Begin Hash Table flush: size = "
-	      + hashAggregations.size());
-	}
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Begin Hash Table flush: size = " + hashAggregations.size());
+        }
         Iterator iter = hashAggregations.entrySet().iterator();
         while (iter.hasNext()) {
           Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter

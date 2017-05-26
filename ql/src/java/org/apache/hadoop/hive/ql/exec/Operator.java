@@ -219,9 +219,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected transient OutputCollector out;
   protected transient final Logger LOG = LoggerFactory.getLogger(getClass().getName());
   protected transient final Logger PLOG = LoggerFactory.getLogger(Operator.class.getName()); // for simple disabling logs from all operators
-  protected transient final boolean isLogInfoEnabled = LOG.isInfoEnabled() && PLOG.isInfoEnabled();
-  protected transient final boolean isLogDebugEnabled = LOG.isDebugEnabled() && PLOG.isDebugEnabled();
-  protected transient final boolean isLogTraceEnabled = LOG.isTraceEnabled() && PLOG.isTraceEnabled();
   protected transient String alias;
   protected transient Reporter reporter;
   protected String id;
@@ -330,7 +327,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("Initializing operator " + this);
     }
 
@@ -369,7 +366,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
           || childOperatorsArray.length != childOperators.size()) {
         throw new AssertionError("Internal error during operator initialization");
       }
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Initialization Done " + id + " " + getName());
       }
 
@@ -382,7 +379,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Initialization Done " + id + " " + getName() + " done is reset.");
     }
 
@@ -495,13 +492,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Operator " + id + " " + getName() + " initialized");
     }
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Initializing children of " + id + " " + getName());
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
@@ -540,7 +537,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Initializing child " + id + " " + getName());
     }
     // Double the size of the array if needed
@@ -581,7 +578,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public abstract void process(Object row, int tag) throws HiveException;
 
   protected final void defaultStartGroup() throws HiveException {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Starting group");
     }
 
@@ -589,20 +586,20 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Starting group for children:");
     }
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.startGroup();
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Start group Done");
     }
   }
 
   protected final void defaultEndGroup() throws HiveException {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Ending group");
     }
 
@@ -610,14 +607,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Ending group for children:");
     }
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.endGroup();
     }
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("End group Done");
     }
   }
@@ -652,9 +649,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         if(parent==null){
           continue;
         }
-	if (isLogDebugEnabled) {
-	  LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
-	}
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("allInitializedParentsAreClosed? parent.state = " + parent.state);
+        }
         if (!(parent.state == State.CLOSE || parent.state == State.UNINIT)) {
           return false;
         }
@@ -667,7 +664,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // since it is called by its parents' main thread, so no
   // more than 1 thread should call this close() function.
   public void close(boolean abort) throws HiveException {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("close called for operator " + this);
     }
 
@@ -677,7 +674,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     // check if all parents are finished
     if (!allInitializedParentsAreClosed()) {
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Not all parent operators are closed. Not closing.");
       }
       return;
@@ -686,7 +683,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
-    if (isLogInfoEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.info("Closing operator " + this);
     }
 
@@ -705,13 +702,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
 
       for (Operator<? extends OperatorDesc> op : childOperators) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Closing child = " + op);
         }
         op.close(abort);
       }
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug(id + " Close done");
       }
     } catch (HiveException e) {
@@ -938,7 +935,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void logStats() {
-    if (isLogInfoEnabled && !statsMap.isEmpty()) {
+    if (LOG.isInfoEnabled() && !statsMap.isEmpty()) {
       StringBuilder sb = new StringBuilder();
       for (Map.Entry<String, LongWritable> e : statsMap.entrySet()) {
         sb.append(e.getKey()).append(":").append(e.getValue()).append(", ");
@@ -1364,7 +1361,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setOpTraits(OpTraits metaInfo) {
-    if (isLogDebugEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.debug("Setting traits (" + metaInfo + ") on " + this);
     }
     if (conf != null) {
@@ -1375,7 +1372,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void setStatistics(Statistics stats) {
-    if (isLogDebugEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.debug("Setting stats (" + stats + ") on " + this);
     }
     if (conf != null) {

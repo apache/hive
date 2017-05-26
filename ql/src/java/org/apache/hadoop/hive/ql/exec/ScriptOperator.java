@@ -300,7 +300,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   void displayBrokenPipeInfo() {
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("The script did not consume all input data. This is considered as an error.");
       LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
     }
@@ -346,7 +346,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         }
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
           LOG.info("tablename=" + tableName);
           LOG.info("partname=" + partitionName);
@@ -680,7 +680,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("ErrorStreamProcessor calling reporter.progress()");
         }
         lastReportTime = now;
@@ -738,7 +738,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           }
           proc.processLine(row);
         }
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("StreamThread " + name + " done");
         }
 

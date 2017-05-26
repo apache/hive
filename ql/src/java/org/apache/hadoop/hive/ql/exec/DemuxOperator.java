@@ -188,7 +188,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
       }
       newChildOperatorsTag[i] = toArray(childOperatorTags);
     }
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("newChildOperatorsTag " + Arrays.toString(newChildOperatorsTag));
     }
 
@@ -214,15 +214,14 @@ public class DemuxOperator extends Operator<DemuxDesc>
   @Override
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("Operator " + id + " " + getName() + " initialized");
       LOG.info("Initializing children of " + id + " " + getName());
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      if (isLogInfoEnabled) {
-	LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
-	    childOperatorsArray[i].getName() +
-	    " " + childInputObjInspectors[i].length);
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
+          childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
       }
       // We need to initialize those MuxOperators first because if we first
       // initialize other operators, the states of all parents of those MuxOperators
@@ -247,10 +246,9 @@ public class DemuxOperator extends Operator<DemuxDesc>
       }
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      if (isLogInfoEnabled) {
-	LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
-	    childOperatorsArray[i].getName() +
-	    " " + childInputObjInspectors[i].length);
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
+          childOperatorsArray[i].getName() + " " + childInputObjInspectors[i].length);
       }
       if (!(childOperatorsArray[i] instanceof MuxOperator)) {
         childOperatorsArray[i].initialize(hconf, childInputObjInspectors[i]);
@@ -275,7 +273,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     endGroupIfNecessary(currentChildIndex);
 
     int oldTag = newTagToOldTag[tag];
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       cntrs[tag]++;
       if (cntrs[tag] == nextCntrs[tag]) {
         LOG.debug(id + " (newTag, childIndex, oldTag)=(" + tag + ", " + currentChildIndex + ", "
@@ -311,9 +309,9 @@ public class DemuxOperator extends Operator<DemuxDesc>
       int newTag = i;
       int oldTag = newTagToOldTag[i];
       int childIndex = newTagToChildIndex[newTag];
-      if (isLogInfoEnabled) {
-	LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
-	    + oldTag + "),  forwarded " + cntrs[newTag] + " rows");
+      if (LOG.isInfoEnabled()) {
+        LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
+          + oldTag + "),  forwarded " + cntrs[newTag] + " rows");
       }
     }
   }
