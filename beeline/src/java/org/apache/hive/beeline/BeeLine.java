@@ -135,7 +135,6 @@ public class BeeLine implements Closeable {
   private OutputFile recordOutputFile = null;
   private PrintStream outputStream = new PrintStream(System.out, true);
   private PrintStream errorStream = new PrintStream(System.err, true);
-  private InputStream inputStream = System.in;
   private ConsoleReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector;
@@ -1031,10 +1030,10 @@ public class BeeLine implements Closeable {
       // by appending a newline to the end of inputstream
       InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
           new ByteArrayInputStream((new String("\n")).getBytes()));
-      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getErrorStream());
+      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getOutputStream());
       consoleReader.setCopyPasteDetection(true); // jline will detect if <tab> is regular character
     } else {
-      consoleReader = new ConsoleReader(getInputStream(), getErrorStream());
+      consoleReader = new ConsoleReader();
     }
 
     //disable the expandEvents for the purpose of backward compatibility
@@ -2252,10 +2251,6 @@ public class BeeLine implements Closeable {
 
   PrintStream getErrorStream() {
     return errorStream;
-  }
-
-  InputStream getInputStream() {
-    return inputStream;
   }
 
   ConsoleReader getConsoleReader() {

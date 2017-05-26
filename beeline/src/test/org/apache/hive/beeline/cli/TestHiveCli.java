@@ -113,7 +113,7 @@ public class TestHiveCli {
 
   @Test
   public void testSetPromptValue() {
-    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", errS, null,
+    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", os, null,
         ERRNO_OK, true);
   }
 
@@ -222,21 +222,21 @@ public class TestHiveCli {
   public void testUseCurrentDB1() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OK, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OK, true);
   }
 
   @Test
   public void testUseCurrentDB2() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
-        "hive (testDB)>", errS, null, ERRNO_OK, true);
+        "hive (testDB)>", os, null, ERRNO_OK, true);
   }
 
   @Test
   public void testUseCurrentDB3() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OK, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OK, true);
   }
 
   @Test
