@@ -1282,11 +1282,10 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testIncrementalDumpAfterDrop() throws IOException {
-    String testName = "incrementalDumpAfterDrop";
+  public void testIncrementalInsertDropUnpartitionedTable() throws IOException {
+    String testName = "incrementalInsertDropUnpartitionedTable";
     String dbName = createDB(testName);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
 
     advanceDumpDir();
     run("REPL DUMP " + dbName);
@@ -1296,24 +1295,10 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
-    String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
-    String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
 
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
     run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
     verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
-
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')");
-
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=20)");
-    run("ALTER TABLE " + dbName + ".ptned RENAME PARTITION (b=20) TO PARTITION (b=2");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
 
     run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".unptned");
     verifySetup("SELECT a from " + dbName + ".unptned_tmp ORDER BY a", unptn_data);
@@ -1326,10 +1311,8 @@ public class TestReplicationScenarios {
     // Drop all the tables
     run("DROP TABLE " + dbName + ".unptned");
     run("DROP TABLE " + dbName + ".unptned_tmp");
-    run("DROP TABLE " + dbName + ".ptned");
     verifyFail("SELECT * FROM " + dbName + ".unptned");
     verifyFail("SELECT * FROM " + dbName + ".unptned_tmp");
-    verifyFail("SELECT * FROM " + dbName + ".ptned");
 
     // Dump all the events except DROP
     advanceDumpDir();
@@ -1342,8 +1325,6 @@ public class TestReplicationScenarios {
     // Need to find the tables and data as drop is not part of this dump
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
     verifyRun("SELECT a from " + dbName + "_dupe.unptned_tmp ORDER BY a", unptn_data);
 
     // Dump the drop events and check if tables are getting dropped in target as well
@@ -1357,6 +1338,76 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     verifyFail("SELECT * FROM " + dbName + ".unptned");
     verifyFail("SELECT * FROM " + dbName + ".unptned_tmp");
+  }
+
+  @Test
+  public void testIncrementalInsertDropPartitionedTable() throws IOException {
+    String testName = "incrementalInsertDropPartitionedTable";
+    String dbName = createDB(testName);
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
+    String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
+
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')");
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=20)");
+    run("ALTER TABLE " + dbName + ".ptned RENAME PARTITION (b=20) TO PARTITION (b=2");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')");
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+
+    run("CREATE TABLE " + dbName + ".ptned_tmp AS SELECT * FROM " + dbName + ".ptned");
+    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=1) ORDER BY a", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+
+    // Get the last repl ID corresponding to all insert/alter/create events except DROP.
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String lastDumpIdWithoutDrop = getResult(0, 1);
+
+    // Drop all the tables
+    run("DROP TABLE " + dbName + ".ptned_tmp");
+    run("DROP TABLE " + dbName + ".ptned");
+    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp");
+    verifyFail("SELECT * FROM " + dbName + ".ptned");
+
+    // Dump all the events except DROP
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutDrop);
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+
+    // Need to find the tables and data as drop is not part of this dump
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=1) ORDER BY a", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+
+    // Dump the drop events and check if tables are getting dropped in target as well
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp");
     verifyFail("SELECT * FROM " + dbName + ".ptned");
   }
 

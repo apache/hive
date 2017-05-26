@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.

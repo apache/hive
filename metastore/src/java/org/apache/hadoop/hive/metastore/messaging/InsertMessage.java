@@ -22,8 +22,6 @@ package org.apache.hadoop.hive.metastore.messaging;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-import java.util.Map;
-
 /**
  * HCat message sent when an insert is done to a table or partition.
  */
