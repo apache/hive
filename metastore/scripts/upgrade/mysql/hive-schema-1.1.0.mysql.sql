@@ -826,10 +826,11 @@ SOURCE hive-txn-schema-0.13.0.mysql.sql;
 -- -------------------------------------------
 SOURCE 041-HIVE-16556.mysql.sql;
 
+ALTER TABLE VERSION ADD COLUMN SCHEMA_VERSION_V2 VARCHAR(255);
 -- ----------------------------------------------------------------------------------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script. Starting CDH-5.12.0 the schema version should also include CDH version
 -- -----------------------------------------------------------------------------------------------------------------------------------------
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '1.1.0-cdh5.12.0', 'Hive release version 1.1.0-cdh5.12.0');
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, SCHEMA_VERSION_V2, VERSION_COMMENT) VALUES (1, '1.1.0', '1.1.0-cdh5.12.0', 'Hive release version 1.1.0-cdh5.12.0');
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

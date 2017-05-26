@@ -236,7 +236,7 @@ public class TestSchemaTool extends TestCase {
    boolean isValid = schemaTool.validateSchemaVersions(conn);
    // Test an invalid case with multiple versions
    String[] scripts = new String[] {
-       "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+      "insert into VERSION (VER_ID, SCHEMA_VERSION, SCHEMA_VERSION_V2, VERSION_COMMENT) values(100, '2.2.0', '2.2.0', 'Hive release version 2.2.0')"
    };
    File scriptFile = generateTestScript(scripts);
    schemaTool.runBeeLine(scriptFile.getPath());

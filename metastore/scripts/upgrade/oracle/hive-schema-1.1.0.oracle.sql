@@ -787,7 +787,8 @@ CREATE INDEX FUNC_RU_N49 ON FUNC_RU (FUNC_ID);
 -- ------------------------------------------
 @041-HIVE-16556.oracle.sql;
 
+ALTER TABLE VERSION ADD SCHEMA_VERSION_V2 VARCHAR2(255);
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script. Starting CDH5.12.0 schema version must include the CDH version as well
 -- -----------------------------------------------------------------
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '1.1.0-cdh5.12.0', 'Hive release version 1.1.0-cdh5.12.0');
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, SCHEMA_VERSION_V2, VERSION_COMMENT) VALUES (1, '1.1.0', '1.1.0-cdh5.12.0', 'Hive release version 1.1.0-cdh5.12.0');

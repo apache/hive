@@ -927,6 +927,9 @@
       <field name ="versionComment">
         <column name="VERSION_COMMENT" length="255" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
+      <field name ="schemaVersionV2">
+        <column name="SCHEMA_VERSION_V2" length="255" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
     </class>
 
     <class name="MMetastoreDBProperties" table="METASTORE_DB_PROPERTIES" identity-type="application" detachable="true">
