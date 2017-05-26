@@ -121,7 +121,7 @@ public class MiniLlapCluster extends AbstractService {
     this.ioBytesPerService = ioBytesPerService;
 
     LlapDaemonInfo.initialize("mini-llap-cluster", numExecutorsPerService, execMemoryPerService,
-        ioBytesPerService, ioIsDirect, llapIoEnabled);
+        ioBytesPerService, ioIsDirect, llapIoEnabled, "-1");
 
     // Setup Local Dirs
     localDirs = new String[numLocalDirs];
