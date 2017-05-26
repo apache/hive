@@ -7326,6 +7326,11 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+    // return schema version V2 if available else fall back to schemaVersion
+    String schemaVersionV2 = mSchemaVer.getSchemaVersionV2();
+    if(schemaVersionV2 != null) {
+      return schemaVersionV2;
+    }
     return mSchemaVer.getSchemaVersion();
   }
 

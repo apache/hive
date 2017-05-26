@@ -4,14 +4,22 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hive.common.util.HiveVersionInfo;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -33,7 +41,8 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     super(hiveHome, dbType);
   }
 
-  private String[] loadAllCDHUpgradeScripts(String dbType) throws HiveMetaException {
+  @VisibleForTesting
+  String[] loadAllCDHUpgradeScripts(String dbType) throws HiveMetaException {
     List<String> cdhUpgradeOrderList = new ArrayList<String>();
 
     String upgradeListFile =
@@ -109,6 +118,12 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     return fullVersion.split("-")[0];
   }
 
+  /**
+   * returns the CDH version from the HiveVersionAnnotation.java This annotation is created during
+   * the build time. Check saveVersion.sh and common/pom.xml for more details
+   * 
+   * @return CDH version string excluding the SNAPSHOT
+   */
   @Override
   public String getHiveSchemaVersion() {
     return HiveVersionInfo.getVersion().replaceAll("-SNAPSHOT", "");
@@ -125,13 +140,29 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     // the cdh.upgrade.order file will list all the upgrade paths
     // to reach the current distribution version.
     String[] cdhSchemaVersions = loadAllCDHUpgradeScripts(dbType);
-    for (int i=0; i < cdhSchemaVersions.length; i++) {
-      if (compareCDHVersions((cdhSchemaVersions[i].split("-to-"))[1].split("-")[1], cdhVersion.split("-")[1]) <= 0) {
+    String targetCdhVersion = cdhVersion.split("-")[1];
+    String[] versionParts = from.split("-");
+    String fromCdhVersion = null;
+    if (versionParts.length > 1) {
+      // from version contains cdh version
+      fromCdhVersion = versionParts[1];
+    }
+    for (int i = 0; i < cdhSchemaVersions.length; i++) {
+      // we should skip all the upgrade paths where target is lower than current version
+      String toVersionFromUpgradePath = cdhSchemaVersions[i].split("-to-")[1].split("-")[1];
+      if (fromCdhVersion != null
+        && compareCDHVersions(fromCdhVersion, toVersionFromUpgradePath) >= 0) {
+        System.out.println("Current version is higher than or equal to " + toVersionFromUpgradePath
+          + " Skipping file " + cdhSchemaVersions[i]);
+        continue;
+      }
+      if (compareCDHVersions(toVersionFromUpgradePath, targetCdhVersion) <= 0) {
         String scriptFile = generateUpgradeFileName(cdhSchemaVersions[i]);
         minorUpgradeList.add(scriptFile);
       } else {
-        System.out.println("Upgrade script version is newer than current hive version, skipping file "
-                      + cdhSchemaVersions[i]);
+        System.out
+          .println("Upgrade script version is newer than current hive version, skipping file "
+            + cdhSchemaVersions[i]);
       }
     }
     return minorUpgradeList;
@@ -201,5 +232,56 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     }
 
     return (compareCDHVersions(cdhFullVersion[1], hmsFullVersion[1]) > 0) ? false : true;
+  }
+
+  @Override
+  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo)
+    throws HiveMetaException {
+    String versionQuery;
+    boolean needsQuotedIdentifier =
+      HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType()).needsQuotedIdentifier();
+    if (needsQuotedIdentifier) {
+      versionQuery = "select * from \"VERSION\" t";
+    } else {
+      versionQuery = "select * from VERSION t";
+    }
+
+    try (Connection metastoreDbConnection =
+      HiveSchemaHelper.getConnectionToMetastore(connectionInfo)) {
+      Statement stmt = metastoreDbConnection.createStatement();
+      ResultSet res = stmt.executeQuery(versionQuery);
+      if (!res.next()) {
+        throw new HiveMetaException("Could not find version info in metastore VERSION table.");
+      }
+      // get schema_version_v2 if available else fall-back to schema_version
+      String version = getSchemaVersion(res);
+      if (res.next()) {
+        throw new HiveMetaException("Multiple versions were found in metastore.");
+      }
+      return version;
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
+    }
+  }
+
+  private String getSchemaVersion(ResultSet res) throws SQLException {
+    String version = getColumnValue(res, "SCHEMA_VERSION_V2");
+    if (version == null) {
+      version = getColumnValue(res, "SCHEMA_VERSION");
+    }
+    return version;
+  }
+
+  private String getColumnValue(ResultSet res, String columnName) throws SQLException {
+    if (res.getMetaData() == null) {
+      throw new IllegalArgumentException("ResultSet metadata cannot be null");
+    }
+    int numCols = res.getMetaData().getColumnCount();
+    for (int i = 1; i <= numCols; i++) {
+      if (columnName.equalsIgnoreCase(res.getMetaData().getColumnName(i))) {
+        return res.getString(i);
+      }
+    }
+    return null;
   }
 }
