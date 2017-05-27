@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.beeline;
+package org.apache.hadoop.hive.metastore.tools;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
@@ -78,6 +78,12 @@ public class HiveSchemaHelper {
     } catch (ClassNotFoundException e) {
       throw new HiveMetaException("Failed to load driver", e);
     }
+  }
+
+  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info)
+    throws HiveMetaException {
+    return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getPrintInfo(),
+      info.getHiveConf());
   }
 
   public static String getValidConfVar(HiveConf.ConfVars confVar, HiveConf hiveConf)
@@ -492,6 +498,48 @@ public class HiveSchemaHelper {
       return new OracleCommandParser(dbOpts, msUsername, msPassword, hiveConf);
     } else {
       throw new IllegalArgumentException("Unknown dbType " + dbName);
+    }
+  }
+
+  public static class MetaStoreConnectionInfo {
+    private final String userName;
+    private final String password;
+    private final boolean printInfo;
+    private final HiveConf hiveConf;
+    private final String dbType;
+
+    public MetaStoreConnectionInfo(String userName, String password, boolean printInfo,
+      HiveConf hiveConf, String dbType) {
+      super();
+      this.userName = userName;
+      this.password = password;
+      this.printInfo = printInfo;
+      this.hiveConf = hiveConf;
+      this.dbType = dbType;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public boolean isPrintInfo() {
+      return printInfo;
+    }
+
+    public HiveConf getHiveConf() {
+      return hiveConf;
+    }
+
+    public String getUsername() {
+      return userName;
+    }
+
+    public boolean getPrintInfo() {
+      return printInfo;
+    }
+
+    public String getDbType() {
+      return dbType;
     }
   }
 }
