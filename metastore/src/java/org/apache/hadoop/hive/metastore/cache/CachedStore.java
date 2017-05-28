@@ -116,7 +116,7 @@ public class CachedStore implements RawStore, Configurable {
   private static ReentrantReadWriteLock partitionColStatsCacheLock = new ReentrantReadWriteLock(
       true);
   private static AtomicBoolean isPartitionColStatsCacheDirty = new AtomicBoolean(false);
-  RawStore rawStore;
+  RawStore rawStore = null;
   Configuration conf;
   private PartitionExpressionProxy expressionProxy = null;
   // Default value set to 100 milliseconds for test purpose
@@ -197,11 +197,13 @@ public class CachedStore implements RawStore, Configurable {
   public void setConf(Configuration conf) {
     String rawStoreClassName = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHED_RAW_STORE_IMPL,
         ObjectStore.class.getName());
-    try {
-      rawStore = ((Class<? extends RawStore>) MetaStoreUtils.getClass(
-          rawStoreClassName)).newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException("Cannot instantiate " + rawStoreClassName, e);
+    if (rawStore == null) {
+      try {
+        rawStore = ((Class<? extends RawStore>) MetaStoreUtils.getClass(
+            rawStoreClassName)).newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot instantiate " + rawStoreClassName, e);
+      }
     }
     rawStore.setConf(conf);
     Configuration oldConf = this.conf;
@@ -330,8 +332,9 @@ public class CachedStore implements RawStore, Configurable {
       String rawStoreClassName =
           HiveConf.getVar(cachedStore.conf, HiveConf.ConfVars.METASTORE_CACHED_RAW_STORE_IMPL,
               ObjectStore.class.getName());
+      RawStore rawStore = null;
       try {
-        RawStore rawStore =
+        rawStore =
             ((Class<? extends RawStore>) MetaStoreUtils.getClass(rawStoreClassName)).newInstance();
         rawStore.setConf(cachedStore.conf);
         List<String> dbNames = rawStore.getAllDatabases();
@@ -356,6 +359,14 @@ public class CachedStore implements RawStore, Configurable {
         LOG.error("Updating CachedStore: error getting database names", e);
       } catch (InstantiationException | IllegalAccessException e) {
         throw new RuntimeException("Cannot instantiate " + rawStoreClassName, e);
+      } finally {
+        try {
+          if (rawStore != null) {
+            rawStore.shutdown();
+          }
+        } catch (Exception e) {
+          LOG.error("Error shutting down RawStore", e);
+        }
       }
     }
 
