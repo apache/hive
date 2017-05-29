@@ -498,12 +498,12 @@ public class TestSSL {
    * Test SSL client connection to SSL server
    * @throws Exception
    */
-  // FIXME: Failing since 5.11. Have to check why.
+  @Test
   public void testSSLDeprecatConfig() throws Exception {
     setSslConfOverlay(confOverlay);
     // Test in binary mode
     setBinaryConfOverlay(confOverlay);
-    clearSslConfOverlay(confOverlay);
+    confOverlay.remove(ConfVars.HIVE_SERVER2_USE_SSL.varname);
     confOverlay.put("hive.server2.enable.SSL", "true");
     // Start HS2 with SSL
     miniHS2.start(confOverlay);
