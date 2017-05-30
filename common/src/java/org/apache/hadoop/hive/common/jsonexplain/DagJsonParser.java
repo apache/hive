@@ -117,7 +117,11 @@ public abstract class DagJsonParser implements JsonParser {
     // print out the vertex dependency in root stage
     for (Stage candidate : this.stages.values()) {
       if (candidate.tezStageDependency != null && candidate.tezStageDependency.size() > 0) {
-        printer.println("Vertex dependency in root stage");
+        if (candidate.parentStages.size() == 0) {
+          printer.println("Vertex dependency in root stage");
+        } else {
+          printer.println("Vertex dependency in " + candidate.externalName);
+        }
         for (Entry<Vertex, List<Connection>> entry : candidate.tezStageDependency.entrySet()) {
           StringBuilder sb = new StringBuilder();
           sb.append(entry.getKey().name);
