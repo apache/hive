@@ -26,8 +26,8 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.orc.OrcProto;
-import org.apache.orc.impl.OrcTail;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.impl.OrcTail;
 
 /**
  * OrcFileSplit. Holds file meta info
@@ -46,7 +46,7 @@ public class OrcNewSplit extends FileSplit {
     // so just pass nulls to this super constructor.
     super(null, 0, 0, null);
   }
-  
+
   public OrcNewSplit(OrcSplit inner) throws IOException {
     super(inner.getPath(), inner.getStart(), inner.getLength(),
           inner.getLocations());

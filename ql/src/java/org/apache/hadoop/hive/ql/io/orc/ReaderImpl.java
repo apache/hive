@@ -26,11 +26,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReaderImpl extends org.apache.orc.impl.ReaderImpl
+public class ReaderImpl extends org.apache.hive.orc.impl.ReaderImpl
                         implements Reader {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReaderImpl.class);

@@ -19,9 +19,9 @@ package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.util.List;
 
-import org.apache.orc.CompressionKind;
-import org.apache.orc.OrcProto.Type;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.OrcProto.Type;
+import org.apache.hive.orc.TypeDescription;
 
 public interface ConsumerFileMetadata {
   int getStripeCount();

@@ -19,10 +19,10 @@ package org.apache.hadoop.hive.llap.io.metadata;
 
 import java.util.List;
 
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcProto.ColumnEncoding;
-import org.apache.orc.OrcProto.RowIndex;
-import org.apache.orc.OrcProto.RowIndexEntry;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.OrcProto.ColumnEncoding;
+import org.apache.hive.orc.OrcProto.RowIndex;
+import org.apache.hive.orc.OrcProto.RowIndexEntry;
 
 public interface ConsumerStripeMetadata {
   int getStripeIx();

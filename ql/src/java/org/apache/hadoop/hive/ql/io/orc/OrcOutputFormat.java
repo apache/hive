@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.orc.CompressionKind;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;

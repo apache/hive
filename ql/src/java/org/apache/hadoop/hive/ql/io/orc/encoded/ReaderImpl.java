@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DataCache;
-import org.apache.orc.DataReader;
+import org.apache.hive.orc.DataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
 
 

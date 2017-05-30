@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import org.apache.orc.impl.RecordReaderUtils;
+import org.apache.hive.orc.impl.RecordReaderUtils;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;

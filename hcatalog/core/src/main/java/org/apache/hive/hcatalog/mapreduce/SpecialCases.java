@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
-import org.apache.orc.OrcConf;
+import org.apache.hive.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
@@ -114,7 +114,7 @@ public class SpecialCases {
 
       if (jobProperties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName())==null
           || jobProperties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()).isEmpty()) {
-     
+
         jobProperties.put(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(),
           AvroSerDe.getSchemaFromCols(properties, colNames, colTypes, null).toString());
       }

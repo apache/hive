@@ -43,7 +43,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.TypeDescription;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
