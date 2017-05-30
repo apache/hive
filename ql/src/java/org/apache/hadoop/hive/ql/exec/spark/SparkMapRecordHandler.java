@@ -58,15 +58,12 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
   private static final Logger LOG = LoggerFactory.getLogger(SparkMapRecordHandler.class);
   private AbstractMapOperator mo;
   private MapredLocalWork localWork = null;
-  private boolean isLogInfoEnabled = false;
   private ExecMapperContext execContext;
 
   @Override
   public <K, V> void init(JobConf job, OutputCollector<K, V> output, Reporter reporter) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
-
-    isLogInfoEnabled = LOG.isInfoEnabled();
 
     try {
       jc = job;
@@ -134,7 +131,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
       // Since there is no concept of a group, we don't invoke
       // startGroup/endGroup for a mapper
       mo.process((Writable) value);
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         logMemoryInfo();
       }
     } catch (Throwable e) {
@@ -182,7 +179,7 @@ public class SparkMapRecordHandler extends SparkRecordHandler {
         }
       }
 
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         logCloseInfo();
       }
 

@@ -26,6 +26,8 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMa
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMappedBufferTotalCapacity;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMaxFileDescriptorCount;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonOpenFileDescriptorCount;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonResidentSetSize;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonVirtualMemorySize;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -34,12 +36,17 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metrics;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.util.ResourceCalculatorProcessTree;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 
@@ -51,24 +58,34 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
   private final String name;
   private final String sessionId;
   private final MetricsRegistry registry;
+  private final ResourceCalculatorProcessTree processTree;
+  private final String daemonPid = LlapDaemonInfo.INSTANCE.getPID();
 
-  private LlapDaemonJvmMetrics(String displayName, String sessionId) {
+  private LlapDaemonJvmMetrics(String displayName, String sessionId, final Configuration conf) {
     this.name = displayName;
     this.sessionId = sessionId;
+    Class<? extends ResourceCalculatorProcessTree> clazz = conf.getClass(YarnConfiguration.NM_CONTAINER_MON_PROCESS_TREE,
+      null, ResourceCalculatorProcessTree.class);
+    this.processTree = ResourceCalculatorProcessTree.getResourceCalculatorProcessTree("" + daemonPid, clazz, conf);
+    if (processTree != null) {
+      this.processTree.setConf(conf);
+    }
     this.registry = new MetricsRegistry("LlapDaemonJvmRegistry");
     this.registry.tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME).tag(SessionId, sessionId);
   }
 
-  public static LlapDaemonJvmMetrics create(String displayName, String sessionId) {
+  public static LlapDaemonJvmMetrics create(String displayName, String sessionId,
+    final Configuration conf) {
     MetricsSystem ms = LlapMetricsSystem.instance();
-    return ms.register(displayName, "LlapDaemon JVM Metrics", new LlapDaemonJvmMetrics(displayName, sessionId));
+    return ms.register(displayName, "LlapDaemon JVM Metrics",
+      new LlapDaemonJvmMetrics(displayName, sessionId, conf));
   }
 
   @Override
   public void getMetrics(MetricsCollector collector, boolean b) {
     MetricsRecordBuilder rb = collector.addRecord(LlapDaemonJVMMetrics)
         .setContext("jvm")
-        .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME)
+        .tag(ProcessName, MetricsUtils.METRICS_PROCESS_NAME + "(PID: " + daemonPid + ")")
         .tag(SessionId, sessionId);
     getJvmMetrics(rb);
   }
@@ -100,6 +117,12 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
       openFileHandles = ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
       maxFileHandles = ((UnixOperatingSystemMXBean) os).getMaxFileDescriptorCount();
     }
+    long rss = 0;
+    long vmem = 0;
+    if (processTree != null) {
+      rss = processTree.getRssMemorySize();
+      vmem = processTree.getVirtualMemorySize();
+    }
     rb.addGauge(LlapDaemonDirectBufferCount, directBufferCount)
       .addGauge(LlapDaemonDirectBufferTotalCapacity, directBufferTotalCapacity)
       .addGauge(LlapDaemonDirectBufferMemoryUsed, directBufferMemoryUsed)
@@ -107,7 +130,9 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
       .addGauge(LlapDaemonMappedBufferTotalCapacity, mappedBufferTotalCapacity)
       .addGauge(LlapDaemonMappedBufferMemoryUsed, mappedBufferMemoryUsed)
       .addGauge(LlapDaemonOpenFileDescriptorCount, openFileHandles)
-      .addGauge(LlapDaemonMaxFileDescriptorCount, maxFileHandles);
+      .addGauge(LlapDaemonMaxFileDescriptorCount, maxFileHandles)
+      .addGauge(LlapDaemonResidentSetSize, rss)
+      .addGauge(LlapDaemonVirtualMemorySize, vmem);
   }
 
   public String getName() {

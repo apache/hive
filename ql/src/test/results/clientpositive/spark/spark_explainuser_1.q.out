@@ -228,7 +228,7 @@ select src1.key as k1, src1.value as v1,
 POSTHOOK: type: QUERY
 Plan not optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 3 <- Reducer 2 (GROUP)
 
@@ -2821,7 +2821,7 @@ FROM (select x.key AS key, count(1) AS cnt
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 3 <- Map 2 (GROUP)
 Reducer 4 <- Reducer 3 (GROUP)
 
@@ -4178,7 +4178,7 @@ sort by j.p_name)
 POSTHOOK: type: QUERY
 Plan not optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 
@@ -4400,7 +4400,7 @@ order by p_name
 POSTHOOK: type: QUERY
 Plan not optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 
 Stage-0
@@ -4725,7 +4725,7 @@ order by p_name
 POSTHOOK: type: QUERY
 Plan not optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (PARTITION-LEVEL SORT)
 Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT)
 
@@ -5484,7 +5484,7 @@ POSTHOOK: query: explain FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAM
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 3 <- Map 2 (GROUP)
 Reducer 4 <- Reducer 3 (GROUP)
 
@@ -5606,7 +5606,7 @@ POSTHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.va
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (GROUP)
 
@@ -5654,7 +5654,7 @@ POSTHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1 k joi
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (GROUP)
 
@@ -5702,7 +5702,7 @@ POSTHOOK: query: explain select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (GROUP)
 
@@ -5748,7 +5748,7 @@ POSTHOOK: query: explain FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key select 
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (GROUP)
 
@@ -5792,7 +5792,7 @@ POSTHOOK: query: explain FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key select
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 3 <- Map 2 (GROUP)
 Reducer 4 <- Reducer 3 (GROUP)
 
@@ -5881,7 +5881,7 @@ POSTHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.va
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-1
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (GROUP)
 

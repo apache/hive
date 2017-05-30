@@ -126,7 +126,7 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
       // to
       // create ObjectInspectors.
       needsTransform[p] = (inputObjInspectors[p] != outputObjInspector);
-      if (isLogInfoEnabled && needsTransform[p]) {
+      if (LOG.isInfoEnabled() && needsTransform[p]) {
         LOG.info("Union Operator needs to transform row from parent[" + p
             + "] from " + inputObjInspectors[p] + " to " + outputObjInspector);
       }

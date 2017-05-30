@@ -17,8 +17,16 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.VersionUtil;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -39,6 +47,7 @@ import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.query.BaseQuery;
+import io.druid.query.select.SelectQueryConfig;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
 import io.druid.segment.column.ColumnConfig;
@@ -50,7 +59,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
@@ -75,17 +84,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,10 +97,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import static org.apache.hadoop.hive.ql.exec.Utilities.jarFinderGetJar;
 
 /**
  * Utils class for Druid storage handler.
@@ -116,6 +116,20 @@ public final class DruidStorageHandlerUtils {
    * Mapper to use to serialize/deserialize Druid objects (SMILE)
    */
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
+
+  static
+  {
+    // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
+    InjectableValues.Std injectableValues = new InjectableValues.Std().addValue(
+        SelectQueryConfig.class,
+        new SelectQueryConfig(false)
+    );
+    JSON_MAPPER.setInjectableValues(injectableValues);
+    SMILE_MAPPER.setInjectableValues(injectableValues);
+    HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
+    JSON_MAPPER.registerModule(hiveDruidSerializationModule);
+    SMILE_MAPPER.registerModule(hiveDruidSerializationModule);
+  }
 
   private static final int NUM_RETRIES = 8;
 

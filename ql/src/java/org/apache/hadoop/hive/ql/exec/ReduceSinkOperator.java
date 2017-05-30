@@ -167,7 +167,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("keys size is " + keys.size());
         for (ExprNodeDesc k : keys) {
           LOG.debug("Key exprNodeDesc " + k.getExprString());
@@ -215,7 +215,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("Using tag = " + tag);
       }
 
@@ -310,7 +310,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // TODO: this is fishy - we init object inspectors based on first tag. We
         //       should either init for each tag, or if rowInspector doesn't really
         //       matter, then we can create this in ctor and get rid of firstRow.
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
               conf.getNumDistributionKeys());
         }
@@ -461,7 +461,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       keyHashCode = ObjectInspectorUtils.getBucketHashCode(bucketFieldValues, partitionObjectInspectors);
     }
     int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
-    if (isLogTraceEnabled) {
+    if (LOG.isTraceEnabled()) {
       LOG.trace("Going to return hash code " + hashCode);
     }
     return hashCode;
@@ -508,7 +508,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (null != out) {
       numRows++;
       runTimeNumRows++;
-      if (isLogInfoEnabled) {
+      if (LOG.isTraceEnabled()) {
         if (numRows == cntr) {
           cntr = logEveryNRows == 0 ? cntr * 10 : numRows + logEveryNRows;
           if (cntr < 0 || numRows < 0) {
@@ -543,7 +543,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     out = null;
     random = null;
     reducerHash = null;
-    if (isLogInfoEnabled) {
+    if (LOG.isTraceEnabled()) {
       LOG.info(toString() + ": records written - " + numRows);
     }
     recordCounter.set(numRows);

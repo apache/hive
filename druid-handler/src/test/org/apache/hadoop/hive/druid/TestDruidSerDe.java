@@ -554,7 +554,7 @@ public class TestDruidSerDe {
     Query<?> query = null;
     DruidQueryRecordReader<?, ?> reader = null;
     List<?> resultsList = null;
-    ObjectMapper mapper = new DefaultObjectMapper();
+    ObjectMapper mapper = DruidStorageHandlerUtils.JSON_MAPPER;
     switch (queryType) {
       case Query.TIMESERIES:
         query = mapper.readValue(jsonQuery, TimeseriesQuery.class);

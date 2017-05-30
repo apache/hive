@@ -19,7 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.Map;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 /**
  * HCat message sent when an insert is done to a table or partition.
@@ -43,18 +44,25 @@ public abstract class InsertMessage extends EventMessage {
   public abstract boolean isReplace();
 
   /**
-   * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a
-   * partition.
-   * @return Map of partition keyvalues, or null.
-   */
-  public abstract Map<String,String> getPartitionKeyValues();
-
-  /**
    * Get list of file name and checksum created as a result of this DML operation
    *
    * @return The iterable of files
    */
   public abstract Iterable<String> getFiles();
+
+  /**
+   * Get the table object associated with the insert
+   *
+   * @return The Json format of Table object
+   */
+  public abstract Table getTableObj() throws Exception;
+
+  /**
+   * Get the partition object associated with the insert
+   *
+   * @return The Json format of Partition object if the table is partitioned else return null.
+   */
+  public abstract Partition getPtnObj() throws Exception;
 
   @Override
   public EventMessage checkValid() {

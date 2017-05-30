@@ -38,6 +38,8 @@ public enum LlapDaemonJvmInfo implements MetricsInfo {
   LlapDaemonMappedBufferMemoryUsed("Estimate of memory that JVM is using for mapped byte buffers in bytes"),
   LlapDaemonOpenFileDescriptorCount("Number of open file descriptors"),
   LlapDaemonMaxFileDescriptorCount("Maximum number of file descriptors"),
+  LlapDaemonResidentSetSize("Resident memory (RSS) used by llap daemon process in bytes"),
+  LlapDaemonVirtualMemorySize("Virtual memory (VMEM) used by llap daemon process in bytes")
   ;
 
   private final String desc;

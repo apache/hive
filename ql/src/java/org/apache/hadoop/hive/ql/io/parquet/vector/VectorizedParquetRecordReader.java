@@ -259,6 +259,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   @Override
   public void close() throws IOException {
+    if (reader != null) {
+      reader.close();
+    }
   }
 
   @Override

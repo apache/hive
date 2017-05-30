@@ -1227,8 +1227,9 @@ public class TestDbNotificationListener {
     FieldSchema partCol1 = new FieldSchema("ds", "string", "no comment");
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     List<String> partCol1Vals = Arrays.asList("today");
-    LinkedHashMap<String, String> partKeyVals = new LinkedHashMap<String, String>();
-    partKeyVals.put("ds", "today");
+    List<String> partKeyVals = new ArrayList<String>();
+    partKeyVals.add("today");
+
     partCols.add(partCol1);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, partCols,
@@ -1264,9 +1265,9 @@ public class TestDbNotificationListener {
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
     InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
-    Map<String,String> partKeyValsFromNotif = insertMessage.getPartitionKeyValues();
+    List<String> ptnValues = insertMessage.getPtnObj().getValues();
 
-    assertMapEquals(partKeyVals, partKeyValsFromNotif);
+    assertEquals(partKeyVals, ptnValues);
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 3);
@@ -1528,29 +1529,14 @@ public class TestDbNotificationListener {
     InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
     System.out.println("InsertMessage: " + insertMsg.toString());
     if (dbName != null ){
-      assertEquals(dbName, insertMsg.getDB());
+      assertEquals(dbName, insertMsg.getTableObj().getDbName());
     }
     if (tblName != null){
-      assertEquals(tblName, insertMsg.getTable());
+      assertEquals(tblName, insertMsg.getTableObj().getTableName());
     }
     // Should have files
     Iterator<String> files = insertMsg.getFiles().iterator();
     assertTrue(files.hasNext());
-  }
-
-
-  private void assertMapEquals(Map<String, String> map1, Map<String, String> map2) {
-    // non ordered, non-classed map comparison - use sparingly instead of assertEquals
-    // only if you're sure that the order does not matter.
-    if ((map1 == null) || (map2 == null)){
-      assertNull(map1);
-      assertNull(map2);
-    }
-    assertEquals(map1.size(),map2.size());
-    for (String k : map1.keySet()){
-      assertTrue(map2.containsKey(k));
-      assertEquals(map1.get(k), map2.get(k));
-    }
   }
 
   @Test

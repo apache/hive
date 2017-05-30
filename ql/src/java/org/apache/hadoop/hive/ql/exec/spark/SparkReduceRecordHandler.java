@@ -75,7 +75,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private final Deserializer[] inputValueDeserializer = new Deserializer[Byte.MAX_VALUE];
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
-  private final boolean isLogInfoEnabled = LOG.isInfoEnabled();
 
   // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
@@ -338,7 +337,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
       row.clear();
       row.add(keyObject);
       row.add(valueObject[tag]);
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         logMemoryInfo();
       }
       try {
@@ -390,7 +389,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           reducer.process(batch, tag);
           rowIdx = 0;
           batchBytes = 0;
-          if (isLogInfoEnabled) {
+          if (LOG.isInfoEnabled()) {
             logMemoryInfo();
           }
         }
@@ -399,7 +398,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         VectorizedBatchUtil.setBatchSize(batch, rowIdx);
         reducer.process(batch, tag);
       }
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         logMemoryInfo();
       }
     } catch (Exception e) {
@@ -441,7 +440,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         LOG.trace("End Group");
         reducer.endGroup();
       }
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         logCloseInfo();
       }
 

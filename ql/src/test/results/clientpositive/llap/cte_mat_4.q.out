@@ -51,7 +51,7 @@ on a.key=b.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-4
 Reducer 3 <- Map 2 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
 
 Stage-3
@@ -201,7 +201,7 @@ on a.key=b.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
-Vertex dependency in root stage
+Vertex dependency in Stage-4
 Reducer 3 <- Map 2 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
 
 Stage-3

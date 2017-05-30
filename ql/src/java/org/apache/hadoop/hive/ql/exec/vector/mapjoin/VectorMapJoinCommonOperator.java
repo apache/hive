@@ -280,7 +280,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     outputProjection = projectionMapping.getOutputColumns();
     outputTypeInfos = projectionMapping.getTypeInfos();
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       int[] orderDisplayable = new int[order.length];
       for (int i = 0; i < order.length; i++) {
         orderDisplayable[i] = (int) order[i];
@@ -338,7 +338,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    * columns and new scratch columns.
    */
   protected void setupVOutContext(List<String> outputColumnNames) {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor outputColumnNames " + outputColumnNames);
     }
     if (outputColumnNames.size() != outputProjection.length) {
@@ -350,7 +350,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
       int outputColumn = outputProjection[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator constructor addProjectionColumn " + i + " columnName " + columnName + " outputColumn " + outputColumn);
       }
     }
@@ -423,7 +423,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     needCommonSetup = true;
     needHashTableSetup = true;
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       int[] currentScratchColumns = vOutContext.currentScratchColumns();
       LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator initializeOp currentScratchColumns " + Arrays.toString(currentScratchColumns));
 
@@ -515,7 +515,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
       overflowBatch.cols[outputColumn] = VectorizedBatchUtil.createColumnVector(typeInfo);
 
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug(getLoggingPrefix() + " VectorMapJoinCommonOperator initializeOp overflowBatch outputColumn " + outputColumn + " class " + overflowBatch.cols[outputColumn].getClass().getSimpleName());
       }
     }
@@ -526,7 +526,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    */
   protected void commonSetup(VectorizedRowBatch batch) throws HiveException {
 
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("VectorMapJoinInnerCommonOperator commonSetup begin...");
       displayBatchColumns(batch, "batch");
       displayBatchColumns(overflowBatch, "overflowBatch");

@@ -275,7 +275,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables == null) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("mapJoinTables is null");
         }
       } else {
@@ -292,7 +292,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void flushToFile() throws IOException, HiveException {
     // get tmp file URI
     Path tmpURI = getExecContext().getLocalWork().getTmpPath();
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("Temp URI for side table: " + tmpURI);
     }
     for (byte tag = 0; tag < mapJoinTables.length; tag++) {

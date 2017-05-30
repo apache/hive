@@ -25,12 +25,13 @@ public enum LlapDaemonInfo {
 
   private static final class LlapDaemonInfoHolder {
     public LlapDaemonInfoHolder(int numExecutors, long executorMemory, long cacheSize,
-        boolean isDirectCache, boolean isLlapIo) {
+      boolean isDirectCache, boolean isLlapIo, final String pid) {
       this.numExecutors = numExecutors;
       this.executorMemory = executorMemory;
       this.cacheSize = cacheSize;
       this.isDirectCache = isDirectCache;
       this.isLlapIo = isLlapIo;
+      this.PID = pid;
     }
 
     final int numExecutors;
@@ -38,6 +39,7 @@ public enum LlapDaemonInfo {
     final long cacheSize;
     final boolean isDirectCache;
     final boolean isLlapIo;
+    final String PID;
   }
 
   // add more variables as required
@@ -51,13 +53,14 @@ public enum LlapDaemonInfo {
     long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
     boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
     boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
-    initialize(appName, numExecutors, executorMemoryBytes, ioMemoryBytes, isDirectCache, isLlapIo);
+    String pid = System.getenv("JVM_PID");
+    initialize(appName, numExecutors, executorMemoryBytes, ioMemoryBytes, isDirectCache, isLlapIo, pid);
   }
 
   public static void initialize(String appName, int numExecutors, long executorMemoryBytes,
-      long ioMemoryBytes, boolean isDirectCache, boolean isLlapIo) {
+    long ioMemoryBytes, boolean isDirectCache, boolean isLlapIo, final String pid) {
     INSTANCE.dataRef.set(new LlapDaemonInfoHolder(numExecutors, executorMemoryBytes, ioMemoryBytes,
-        isDirectCache, isLlapIo));
+        isDirectCache, isLlapIo, pid));
   }
 
   public boolean isLlap() {
@@ -89,4 +92,7 @@ public enum LlapDaemonInfo {
     return dataRef.get().isLlapIo;
   }
 
+  public String getPID() {
+    return dataRef.get().PID;
+  }
 }

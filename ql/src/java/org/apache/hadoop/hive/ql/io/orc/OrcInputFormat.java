@@ -158,7 +158,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   private static final Logger LOG = LoggerFactory.getLogger(OrcInputFormat.class);
-  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
   static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
@@ -1682,7 +1681,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
-          if (isDebugEnabled) {
+          if (LOG.isDebugEnabled()) {
             LOG.debug("Split strategy: {}", splitStrategy);
           }
 
@@ -1725,7 +1724,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           + context.numFilesCounter.get());
     }
 
-    if (isDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       for (OrcSplit split : splits) {
         LOG.debug(split + " projected_columns_uncompressed_size: "
             + split.getColumnarProjectionSize());
@@ -1795,7 +1794,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   @Override
   public InputSplit[] getSplits(JobConf job,
                                 int numSplits) throws IOException {
-    if (isDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("getSplits started");
     }
     Configuration conf = job;
@@ -1805,7 +1804,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
-    if (isDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("getSplits finished");
     }
     return result.toArray(new InputSplit[result.size()]);
@@ -2100,7 +2099,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     for (int i = 0; i < includeStripe.length; ++i) {
       includeStripe[i] = (i >= stripeStats.size()) ||
           isStripeSatisfyPredicate(stripeStats.get(i), sarg, filterColumns, evolution);
-      if (isDebugEnabled && !includeStripe[i]) {
+      if (LOG.isDebugEnabled() && !includeStripe[i]) {
         LOG.debug("Eliminating ORC stripe-" + i + " of file '" + filePath
             + "'  as it did not satisfy predicate condition.");
       }

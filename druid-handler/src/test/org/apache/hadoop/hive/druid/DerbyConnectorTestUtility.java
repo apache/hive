@@ -23,6 +23,8 @@ import com.google.common.base.Suppliers;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.storage.derby.DerbyConnector;
+import io.druid.metadata.storage.derby.DerbyMetadataStorage;
+
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 import org.skife.jdbi.v2.DBI;
@@ -46,7 +48,7 @@ public class DerbyConnectorTestUtility extends DerbyConnector {
           Supplier<MetadataStorageTablesConfig> dbTables,
           String jdbcUri
   ) {
-    super(config, dbTables, new DBI(jdbcUri + ";create=true"));
+    super(new DerbyMetadataStorage(config.get()), config, dbTables, new DBI(jdbcUri + ";create=true"));
     this.jdbcUri = jdbcUri;
   }
 

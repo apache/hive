@@ -104,7 +104,7 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-        if (isLogInfoEnabled) {
+        if (LOG.isInfoEnabled()) {
           LOG.info("ORC merge file input path: " + k.getInputPath());
         }
       }
@@ -132,7 +132,7 @@ public class OrcFileMergeOperator extends
 
         Path outPath = getOutPath();
         outWriter = OrcFile.createWriter(outPath, options);
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.info("ORC merge file output path: " + outPath);
         }
       }
@@ -157,7 +157,7 @@ public class OrcFileMergeOperator extends
       outWriter.appendStripe(buffer, 0, buffer.length, v.getStripeInformation(),
           v.getStripeStatistics());
 
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("Merged stripe from file " + k.getInputPath() + " [ offset : "
             + v.getStripeInformation().getOffset() + " length: "
             + v.getStripeInformation().getLength() + " row: "

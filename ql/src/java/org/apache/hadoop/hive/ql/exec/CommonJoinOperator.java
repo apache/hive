@@ -383,7 +383,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       joinEmitInterval = -1;
     }
 
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
     }
   }

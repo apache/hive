@@ -152,7 +152,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -210,7 +210,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishInnerRepeated(batch, joinResult, hashMapResults[0]);
@@ -220,7 +220,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -374,7 +374,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +
