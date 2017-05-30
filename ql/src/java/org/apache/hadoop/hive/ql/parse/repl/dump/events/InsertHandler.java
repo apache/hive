@@ -23,18 +23,15 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.thrift.TException;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-
-import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class InsertHandler extends AbstractEventHandler {
 
@@ -45,11 +42,10 @@ class InsertHandler extends AbstractEventHandler {
   @Override
   public void handle(Context withinContext) throws Exception {
     InsertMessage insertMsg = deserializer.getInsertMessage(event.getMessage());
-    org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(withinContext, insertMsg);
-    Map<String, String> partSpec = insertMsg.getPartitionKeyValues();
+    org.apache.hadoop.hive.ql.metadata.Table qlMdTable = tableObject(insertMsg);
     List<Partition> qlPtns = null;
-    if (qlMdTable.isPartitioned() && !partSpec.isEmpty()) {
-      qlPtns = Collections.singletonList(withinContext.db.getPartition(qlMdTable, partSpec, false));
+    if (qlMdTable.isPartitioned() && (null != insertMsg.getPtnObj())) {
+      qlPtns = Collections.singletonList(partitionObject(qlMdTable, insertMsg));
     }
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
 
@@ -88,13 +84,13 @@ class InsertHandler extends AbstractEventHandler {
     dmd.write();
   }
 
-  private org.apache.hadoop.hive.ql.metadata.Table tableObject(
-      Context withinContext, InsertMessage insertMsg) throws TException {
-    return new org.apache.hadoop.hive.ql.metadata.Table(
-        withinContext.db.getMSC().getTable(
-            insertMsg.getDB(), insertMsg.getTable()
-        )
-    );
+  private org.apache.hadoop.hive.ql.metadata.Table tableObject(InsertMessage insertMsg) throws Exception {
+    return new org.apache.hadoop.hive.ql.metadata.Table(insertMsg.getTableObj());
+  }
+
+  private org.apache.hadoop.hive.ql.metadata.Partition partitionObject(
+          org.apache.hadoop.hive.ql.metadata.Table qlMdTable, InsertMessage insertMsg) throws Exception {
+    return new org.apache.hadoop.hive.ql.metadata.Partition(qlMdTable, insertMsg.getPtnObj());
   }
 
   private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {

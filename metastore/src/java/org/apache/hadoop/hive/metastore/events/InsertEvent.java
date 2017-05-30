@@ -24,20 +24,16 @@ import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class InsertEvent extends ListenerEvent {
 
-  // Note that this event is fired from the client, so rather than having full metastore objects
-  // we have just the string names, but that's fine for what we need.
-  private final String db;
-  private final String table;
-  private final Map<String, String> keyValues;
+  private final Table tableObj;
+  private final Partition ptnObj;
   private final boolean replace;
   private final List<String> files;
   private List<String> fileChecksums = new ArrayList<String>();
@@ -55,42 +51,36 @@ public class InsertEvent extends ListenerEvent {
       InsertEventRequestData insertData, boolean status, HMSHandler handler) throws MetaException,
       NoSuchObjectException {
     super(status, handler);
-    this.db = db;
-    this.table = table;
+
+    GetTableRequest req = new GetTableRequest(db, table);
+    req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
+    this.tableObj = handler.get_table_req(req).getTable();
+    if (partVals != null) {
+      this.ptnObj = handler.get_partition(db, table, partVals);
+    } else {
+      this.ptnObj = null;
+    }
 
     // If replace flag is not set by caller, then by default set it to true to maintain backward compatibility
     this.replace = (insertData.isSetReplace() ? insertData.isReplace() : true);
     this.files = insertData.getFilesAdded();
-    GetTableRequest req = new GetTableRequest(db, table);
-    req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
-    Table t = handler.get_table_req(req).getTable();
-    keyValues = new LinkedHashMap<String, String>();
-    if (partVals != null) {
-      for (int i = 0; i < partVals.size(); i++) {
-        keyValues.put(t.getPartitionKeys().get(i).getName(), partVals.get(i));
-      }
-    }
     if (insertData.isSetFilesAddedChecksum()) {
       fileChecksums = insertData.getFilesAddedChecksum();
     }
   }
 
-  public String getDb() {
-    return db;
+  /**
+   * @return Table object
+   */
+  public Table getTableObj() {
+    return tableObj;
   }
 
   /**
-   * @return The table.
+   * @return Partition object
    */
-  public String getTable() {
-    return table;
-  }
-
-  /**
-   * @return List of values for the partition keys.
-   */
-  public Map<String, String> getPartitionKeyValues() {
-    return keyValues;
+  public Partition getPartitionObj() {
+    return ptnObj;
   }
 
   /**
