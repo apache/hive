@@ -30,7 +30,7 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritableV1;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.orc.impl.SerializationUtils;
+import org.apache.hive.orc.impl.SerializationUtils;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
@@ -111,11 +111,11 @@ public class TestHiveDecimalOrcSerializationUtils extends HiveDecimalTestBase {
         fail();
       }
       byte[] bytes = outputStream.toByteArray();
-  
+
       ByteArrayOutputStream outputStreamExpected = new ByteArrayOutputStream();
       SerializationUtils.writeBigInteger(outputStreamExpected, bigInteger);
       byte[] bytesExpected = outputStreamExpected.toByteArray();
-  
+
       // System.out.println("TEST_FAST_SERIALIZATION_UTILS_WRITE_BIG_INTEGER check streams");
       // System.out.println("TEST_FAST_SERIALIZATION_UTILS_WRITE_BIG_INTEGER bytes1        " + displayBytes(bytes, 0, bytes.length));
       if (!StringExpr.equal(bytes, 0, bytes.length, bytesExpected, 0, bytesExpected.length)) {

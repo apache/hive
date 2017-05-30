@@ -35,18 +35,18 @@ import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.CreateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.orc.CompressionCodec;
-import org.apache.orc.DataReader;
-import org.apache.orc.OrcConf;
-import org.apache.orc.impl.OutStream;
-import org.apache.orc.impl.RecordReaderUtils;
-import org.apache.orc.impl.StreamName;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.impl.BufferChunk;
+import org.apache.hive.orc.CompressionCodec;
+import org.apache.hive.orc.DataReader;
+import org.apache.hive.orc.OrcConf;
+import org.apache.hive.orc.impl.OutStream;
+import org.apache.hive.orc.impl.RecordReaderUtils;
+import org.apache.hive.orc.impl.StreamName;
+import org.apache.hive.orc.StripeInformation;
+import org.apache.hive.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 
 /**
  * Encoded reader implementation.
@@ -374,7 +374,7 @@ class EncodedReaderImpl implements EncodedReader {
               if (sctx.stripeLevelStream == null) {
                 sctx.stripeLevelStream = POOLS.csdPool.take();
                 // We will be using this for each RG while also sending RGs to processing.
-                // To avoid buffers being unlocked, run refcount one ahead; so each RG 
+                // To avoid buffers being unlocked, run refcount one ahead; so each RG
                  // processing will decref once, and the
                 // last one will unlock the buffers.
                 sctx.stripeLevelStream.incRef();

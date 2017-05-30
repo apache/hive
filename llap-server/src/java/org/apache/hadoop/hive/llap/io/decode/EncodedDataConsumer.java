@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.TypeDescription;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {

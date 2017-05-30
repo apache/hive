@@ -42,9 +42,9 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.OrcUtils;
+import org.apache.hive.orc.TypeDescription;
 
 /**
  * A MapReduce/Hive input format for ORC files.

@@ -48,14 +48,14 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.OrcProto.ColumnEncoding;
-import org.apache.orc.OrcProto.RowIndex;
-import org.apache.orc.OrcProto.RowIndexEntry;
-import org.apache.orc.OrcProto.Type;
-import org.apache.orc.TypeDescription;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.OrcUtils;
+import org.apache.hive.orc.OrcProto.ColumnEncoding;
+import org.apache.hive.orc.OrcProto.RowIndex;
+import org.apache.hive.orc.OrcProto.RowIndexEntry;
+import org.apache.hive.orc.OrcProto.Type;
+import org.apache.hive.orc.TypeDescription;
 
 public class GenericColumnVectorProducer implements ColumnVectorProducer {
   private final SerDeLowLevelCacheImpl cache;

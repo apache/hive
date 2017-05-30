@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  *
  * One Reader can support multiple concurrent RecordReader.
  */
-public interface Reader extends org.apache.orc.Reader {
+public interface Reader extends org.apache.hive.orc.Reader {
 
   /**
    * Get the object inspector for looking at the objects.
@@ -55,7 +55,7 @@ public interface Reader extends org.apache.orc.Reader {
    * @throws IOException
    */
   RecordReader rowsOptions(Options options) throws IOException;
-  
+
   /**
    * Create a RecordReader that will scan the entire file.
    * This is a legacy method and rowsOptions is preferred.

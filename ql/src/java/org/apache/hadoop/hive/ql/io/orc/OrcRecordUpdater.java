@@ -25,9 +25,9 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.orc.impl.AcidStats;
-import org.apache.orc.impl.OrcAcidUtils;
-import org.apache.orc.OrcConf;
+import org.apache.hive.orc.impl.AcidStats;
+import org.apache.hive.orc.impl.OrcAcidUtils;
+import org.apache.hive.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -284,7 +284,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         return acidStats.inserts;
       }
     }
-    //if we got here, we looked at all delta files in this txn, prior to current statement and didn't 
+    //if we got here, we looked at all delta files in this txn, prior to current statement and didn't
     //find any inserts...
     return 0;
   }

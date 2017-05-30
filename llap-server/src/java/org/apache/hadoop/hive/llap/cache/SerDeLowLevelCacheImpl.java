@@ -39,8 +39,8 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hive.common.util.Ref;
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcProto.ColumnEncoding;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.OrcProto.ColumnEncoding;
 
 import com.google.common.base.Function;
 
@@ -142,7 +142,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       this.rowCount = rowCount;
       this.data = encodings == null ? null : new LlapDataBuffer[encodings.length][][];
     }
- 
+
     @Override
     public String toString() {
       return toCoordinateString() + " with encodings [" + Arrays.toString(encodings)
@@ -219,7 +219,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     sb.append("]");
     return sb.toString();
   }
-  
+
 
   public static String toString(LlapDataBuffer[][] data) {
     if (data == null) return "null";
@@ -614,7 +614,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
         }
         to.data[colIx] = fromColData;
       }
-    } 
+    }
   }
 
   @Override

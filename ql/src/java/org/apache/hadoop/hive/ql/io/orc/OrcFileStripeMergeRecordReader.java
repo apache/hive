@@ -27,8 +27,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.orc.OrcProto;
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.StripeInformation;
 
 public class OrcFileStripeMergeRecordReader implements
     RecordReader<OrcFileKeyWrapper, OrcFileValueWrapper> {

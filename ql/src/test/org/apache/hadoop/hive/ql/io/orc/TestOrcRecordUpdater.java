@@ -41,8 +41,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.impl.OrcAcidUtils;
-import org.apache.orc.tools.FileDump;
+import org.apache.hive.orc.impl.OrcAcidUtils;
+import org.apache.hive.orc.tools.FileDump;
 import org.junit.Test;
 
 public class TestOrcRecordUpdater {

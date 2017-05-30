@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.StripeInformation;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 
 public interface EncodedReader {
 

@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.orc.CompressionKind;
-import org.apache.orc.impl.MemoryManager;
-import org.apache.orc.StripeInformation;
+import org.apache.hive.orc.CompressionKind;
+import org.apache.hive.orc.impl.MemoryManager;
+import org.apache.hive.orc.StripeInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,7 +51,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 import org.junit.Test;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
@@ -1116,7 +1116,7 @@ public class TestOrcRawRecordMerger {
     testRecordReaderIncompleteDelta(true);
   }
   /**
-   * 
+   *
    * @param use130Format true means use delta_0001_0001_0000 format, else delta_0001_00001
    */
   private void testRecordReaderIncompleteDelta(boolean use130Format) throws Exception {

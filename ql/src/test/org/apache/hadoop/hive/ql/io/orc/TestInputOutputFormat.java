@@ -121,9 +121,9 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
-import org.apache.orc.OrcProto;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.PhysicalFsWriter;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.TypeDescription;
+import org.apache.hive.orc.impl.PhysicalFsWriter;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -3570,7 +3570,7 @@ public class TestInputOutputFormat {
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
             .setSchema(fileSchema)
-            .compress(org.apache.orc.CompressionKind.NONE));
+            .compress(org.apache.hive.orc.CompressionKind.NONE));
     VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
     batch.size = 1000;
     LongColumnVector lcv = ((LongColumnVector) ((StructColumnVector) batch.cols[1]).fields[0]);
@@ -3648,7 +3648,7 @@ public class TestInputOutputFormat {
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
             .setSchema(fileSchema)
-            .compress(org.apache.orc.CompressionKind.NONE));
+            .compress(org.apache.hive.orc.CompressionKind.NONE));
     VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
     batch.size = 1000;
     StructColumnVector scv = (StructColumnVector)batch.cols[5];

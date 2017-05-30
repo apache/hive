@@ -66,8 +66,8 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.orc.impl.OrcAcidUtils;
-import org.apache.orc.tools.FileDump;
+import org.apache.hive.orc.impl.OrcAcidUtils;
+import org.apache.hive.orc.tools.FileDump;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
@@ -1732,7 +1732,7 @@ public class TestStreaming {
     txnBatch.write("name4,2,more Streaming unlimited".getBytes());
     txnBatch.write("name5,2,even more Streaming unlimited".getBytes());
     txnBatch.commit();
-    
+
     expectedEx = null;
     txnBatch.beginNextTransaction();
     writer.enableErrors();
@@ -1778,7 +1778,7 @@ public class TestStreaming {
     }
     Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
       expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
-    
+
     r = msClient.showTxns();
     Assert.assertEquals("HWM didn't match", 6, r.getTxn_high_water_mark());
     ti = r.getOpen_txns();

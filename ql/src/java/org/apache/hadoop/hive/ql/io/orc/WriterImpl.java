@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.orc.impl.PhysicalWriter;
+import org.apache.hive.orc.impl.PhysicalWriter;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -75,14 +75,14 @@ import com.google.common.annotations.VisibleForTesting;
  *
  * This class is unsynchronized like most Stream objects, so from the creation of an OrcFile and all
  * access to a single instance has to be from a single thread.
- * 
+ *
  * There are no known cases where these happen between different threads today.
- * 
+ *
  * Caveat: the MemoryManager is created during WriterOptions create, that has to be confined to a single
  * thread as well.
- * 
+ *
  */
-public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer {
+public class WriterImpl extends org.apache.hive.orc.impl.WriterImpl implements Writer {
 
   private final ObjectInspector inspector;
   private final VectorizedRowBatch internalBatch;

@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
-import org.apache.orc.impl.RunLengthByteReader;
+import org.apache.hive.orc.impl.RunLengthByteReader;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,13 +36,13 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
-import org.apache.orc.CompressionCodec;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.TypeDescription.Category;
-import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.SettableUncompressedStream;
-import org.apache.orc.impl.TreeReaderFactory;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.CompressionCodec;
+import org.apache.hive.orc.TypeDescription;
+import org.apache.hive.orc.TypeDescription.Category;
+import org.apache.hive.orc.impl.PositionProvider;
+import org.apache.hive.orc.impl.SettableUncompressedStream;
+import org.apache.hive.orc.impl.TreeReaderFactory;
+import org.apache.hive.orc.OrcProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

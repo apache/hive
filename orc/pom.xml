@@ -179,6 +179,38 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Below we shade all of the org.apache.orc class names in hive-orc
+	   to a unique orc.apache.hive.orc prefix. This allows clients to
+	   use both Hive 2.2 and the standalone orc project. The uses in
+	   Hive 2.2 have been changed to use the org.apache.hive.orc prefix.
+	   In Hive 2.3 and beyond, hive uses the standalone ORC project. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>org.apache.hive:hive-orc</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.orc</pattern>
+                  <shadedPattern>org.apache.hive.orc</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
