@@ -63,6 +63,8 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
+
 import javax.jdo.Query;
 
 public class TestObjectStore {
@@ -204,21 +206,62 @@ public class TestObjectStore {
   public void testTableOps() throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     Database db1 = new Database(DB1, "description", "locationurl", null);
     objectStore.createDatabase(db1);
-    StorageDescriptor sd = new StorageDescriptor(null, "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
+    StorageDescriptor sd1 = new StorageDescriptor(ImmutableList.of(new FieldSchema("pk_col", "double", null)),
+            "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
+            null, null, null);
     HashMap<String,String> params = new HashMap<String,String>();
     params.put("EXTERNAL", "false");
-    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
+    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd1, null, params, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
 
     List<String> tables = objectStore.getAllTables(DB1);
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals(TABLE1, tables.get(0));
 
-    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
+    StorageDescriptor sd2 = new StorageDescriptor(ImmutableList.of(new FieldSchema("fk_col", "double", null)),
+            "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
+            null, null, null);
+    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd2, null, params, null, null, "MANAGED_TABLE");
     objectStore.alterTable(DB1, TABLE1, newTbl1);
     tables = objectStore.getTables(DB1, "new*");
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals("new" + TABLE1, tables.get(0));
+
+    objectStore.createTable(tbl1);
+    tables = objectStore.getAllTables(DB1);
+    Assert.assertEquals(2, tables.size());
+
+    List<SQLForeignKey> foreignKeys = objectStore.getForeignKeys(DB1, TABLE1, null, null);
+    Assert.assertEquals(0, foreignKeys.size());
+
+    SQLPrimaryKey pk = new SQLPrimaryKey(DB1, TABLE1, "pk_col", 1,
+            "pk_const_1", false, false, false);
+    objectStore.addPrimaryKeys(ImmutableList.of(pk));
+    SQLForeignKey fk = new SQLForeignKey(DB1, TABLE1, "pk_col",
+            DB1, "new" + TABLE1, "fk_col", 1,
+            0, 0, "fk_const_1", "pk_const_1", false, false, false);
+    objectStore.addForeignKeys(ImmutableList.of(fk));
+
+    // Retrieve from PK side
+    foreignKeys = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    Assert.assertEquals(1, foreignKeys.size());
+
+    List<SQLForeignKey> fks = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    if (fks != null) {
+      for (SQLForeignKey fkcol : fks) {
+        objectStore.dropConstraint(fkcol.getFktable_db(), fkcol.getFktable_name(), fkcol.getFk_name());
+      }
+    }
+    // Retrieve from FK side
+    foreignKeys = objectStore.getForeignKeys(DB1, TABLE1, null, null);
+    Assert.assertEquals(0, foreignKeys.size());
+    // Retrieve from PK side
+    foreignKeys = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    Assert.assertEquals(0, foreignKeys.size());
+
+    objectStore.dropTable(DB1, TABLE1);
+    tables = objectStore.getAllTables(DB1);
+    Assert.assertEquals(1, tables.size());
 
     objectStore.dropTable(DB1, "new" + TABLE1);
     tables = objectStore.getAllTables(DB1);
