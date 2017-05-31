@@ -1,6 +1,50 @@
-PREHOOK: query: explain select sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog from ( select ss_customer_sk customer_sk ,ss_item_sk item_sk from store_sales JOIN date_dim ON store_sales.ss_sold_date_sk = date_dim.d_date_sk where d_month_seq between 1193 and 1193 + 11 group by ss_customer_sk ,ss_item_sk) ssci full outer join ( select cs_bill_customer_sk customer_sk ,cs_item_sk item_sk from catalog_sales JOIN date_dim ON catalog_sales.cs_sold_date_sk = date_dim.d_date_sk where d_month_seq between 1193 and 1193 + 11 group by cs_bill_customer_sk ,cs_item_sk) csci on (ssci.customer_sk=csci.customer_sk and ssci.item_sk = csci.item_sk) limit 100
+PREHOOK: query: explain
+with ssci as (
+select ss_customer_sk customer_sk
+      ,ss_item_sk item_sk
+from store_sales,date_dim
+where ss_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by ss_customer_sk
+        ,ss_item_sk),
+csci as(
+ select cs_bill_customer_sk customer_sk
+      ,cs_item_sk item_sk
+from catalog_sales,date_dim
+where cs_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by cs_bill_customer_sk
+        ,cs_item_sk)
+ select  sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only
+      ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only
+      ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog
+from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
+                               and ssci.item_sk = csci.item_sk)
+limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog from ( select ss_customer_sk customer_sk ,ss_item_sk item_sk from store_sales JOIN date_dim ON store_sales.ss_sold_date_sk = date_dim.d_date_sk where d_month_seq between 1193 and 1193 + 11 group by ss_customer_sk ,ss_item_sk) ssci full outer join ( select cs_bill_customer_sk customer_sk ,cs_item_sk item_sk from catalog_sales JOIN date_dim ON catalog_sales.cs_sold_date_sk = date_dim.d_date_sk where d_month_seq between 1193 and 1193 + 11 group by cs_bill_customer_sk ,cs_item_sk) csci on (ssci.customer_sk=csci.customer_sk and ssci.item_sk = csci.item_sk) limit 100
+POSTHOOK: query: explain
+with ssci as (
+select ss_customer_sk customer_sk
+      ,ss_item_sk item_sk
+from store_sales,date_dim
+where ss_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by ss_customer_sk
+        ,ss_item_sk),
+csci as(
+ select cs_bill_customer_sk customer_sk
+      ,cs_item_sk item_sk
+from catalog_sales,date_dim
+where cs_sold_date_sk = d_date_sk
+  and d_month_seq between 1212 and 1212 + 11
+group by cs_bill_customer_sk
+        ,cs_item_sk)
+ select  sum(case when ssci.customer_sk is not null and csci.customer_sk is null then 1 else 0 end) store_only
+      ,sum(case when ssci.customer_sk is null and csci.customer_sk is not null then 1 else 0 end) catalog_only
+      ,sum(case when ssci.customer_sk is not null and csci.customer_sk is not null then 1 else 0 end) store_and_catalog
+from ssci full outer join csci on (ssci.customer_sk=csci.customer_sk
+                               and ssci.item_sk = csci.item_sk)
+limit 100
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -48,7 +92,7 @@ Stage-0
                                 Select Operator [SEL_5] (rows=8116 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_44] (rows=8116 width=1119)
-                                    predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
+                                    predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
                                     TableScan [TS_3] (rows=73049 width=1119)
                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
                             <-Map 1 [SIMPLE_EDGE]
@@ -78,7 +122,7 @@ Stage-0
                                 Select Operator [SEL_19] (rows=8116 width=1119)
                                   Output:["_col0"]
                                   Filter Operator [FIL_46] (rows=8116 width=1119)
-                                    predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
+                                    predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
                                      Please refer to the previous TableScan [TS_3]
                             <-Map 9 [SIMPLE_EDGE]
                               SHUFFLE [RS_20]

@@ -1,4 +1,5 @@
-PREHOOK: query: explain with sr_items as
+PREHOOK: query: explain
+with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
  from store_returns,
@@ -63,7 +64,8 @@ PREHOOK: query: explain with sr_items as
          ,sr_item_qty
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain with sr_items as
+POSTHOOK: query: explain
+with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
  from store_returns,

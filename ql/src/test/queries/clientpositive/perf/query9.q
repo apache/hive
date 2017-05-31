@@ -1,11 +1,12 @@
 set hive.mapred.mode=nonstrict;
-
-explain select case when (select count(*)
-                  from store_sales
+-- start query 1 in stream 0 using template query9.tpl and seed 1490436826
+explain
+select case when (select count(*) 
+                  from store_sales 
                   where ss_quantity between 1 and 20) > 409437
-            then (select avg(ss_ext_list_price)
-                  from store_sales
-                  where ss_quantity between 1 and 20)
+            then (select avg(ss_ext_list_price) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 1 and 20) end bucket1 ,
@@ -14,7 +15,7 @@ explain select case when (select count(*)
                   where ss_quantity between 21 and 40) > 4595804
             then (select avg(ss_ext_list_price)
                   from store_sales
-                  where ss_quantity between 21 and 40)
+                  where ss_quantity between 21 and 40) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 21 and 40) end bucket2,
@@ -48,3 +49,5 @@ explain select case when (select count(*)
 from reason
 where r_reason_sk = 1
 ;
+
+-- end query 1 in stream 0 using template query9.tpl
