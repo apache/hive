@@ -55,7 +55,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
   }
 
   @Override
-  public RelOptCost getScanCost(HiveTableScan ts) {
+  public RelOptCost getScanCost(HiveTableScan ts, RelMetadataQuery mq) {
     return HiveCost.FACTORY.makeZeroCost();
   }
 

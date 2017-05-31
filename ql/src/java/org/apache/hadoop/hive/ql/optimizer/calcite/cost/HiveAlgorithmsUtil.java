@@ -60,8 +60,8 @@ public class HiveAlgorithmsUtil {
         * Double.parseDouble(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_CBO_COST_MODEL_HDFS_READ));
   }
 
-  public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr) {
-    return new HiveCost(hr.getRows(), 0, 0);
+  public static RelOptCost computeCardinalityBasedCost(HiveRelNode hr, RelMetadataQuery mq) {
+    return new HiveCost(mq.getRowCount(hr), 0, 0);
   }
 
   public HiveCost computeScanCost(double cardinality, double avgTupleSize) {

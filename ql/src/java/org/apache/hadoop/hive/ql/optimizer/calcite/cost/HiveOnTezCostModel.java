@@ -78,8 +78,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
   }
 
   @Override
-  public RelOptCost getScanCost(HiveTableScan ts) {
-    return algoUtils.computeScanCost(ts.getRows(), RelMetadataQuery.instance().getAverageRowSize(ts));
+  public RelOptCost getScanCost(HiveTableScan ts, RelMetadataQuery mq) {
+    return algoUtils.computeScanCost(mq.getRowCount(ts), mq.getAverageRowSize(ts));
   }
 
   @Override
