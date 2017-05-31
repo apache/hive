@@ -21,14 +21,12 @@ package org.apache.hadoop.hive.metastore.model;
 public class MVersionTable {
   private String schemaVersion;
   private String versionComment;
-  private String schemaVersionV2;
 
   public MVersionTable() {}
 
-  public MVersionTable(String schemaVersion, String versionComment, String schemaVersionV2) {
+  public MVersionTable(String schemaVersion, String versionComment) {
     this.schemaVersion = schemaVersion;
     this.versionComment = versionComment;
-    this.schemaVersionV2 = schemaVersionV2;
   }
   /**
    * @return the versionComment
@@ -54,14 +52,6 @@ public class MVersionTable {
    */
   public void setSchemaVersion(String schemaVersion) {
     this.schemaVersion = schemaVersion;
-  }
-
-  public String getSchemaVersionV2() {
-    return schemaVersionV2;
-  }
-
-  public void setSchemaVersionV2(String schemaVersionV2) {
-    this.schemaVersionV2 = schemaVersionV2;
   }
 
 }
