@@ -17,21 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionSerializer implements JsonWriter.Serializer {
-  public static final String FIELD_NAME="function";
+  public static final String FIELD_NAME = "function";
   private Function function;
+  private HiveConf hiveConf;
 
-  public FunctionSerializer(Function function) {
+  public FunctionSerializer(Function function, HiveConf hiveConf) {
+    this.hiveConf = hiveConf;
     this.function = function;
   }
 
@@ -39,9 +49,33 @@ public class FunctionSerializer implements JsonWriter.Serializer {
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    List<ResourceUri> resourceUris = new ArrayList<>();
+    for (ResourceUri uri : function.getResourceUris()) {
+      Path inputPath = new Path(uri.getUri());
+      if ("hdfs".equals(inputPath.toUri().getScheme())) {
+        FileSystem fileSystem = inputPath.getFileSystem(hiveConf);
+        Path qualifiedUri = PathBuilder.fullyQualifiedHDFSUri(inputPath, fileSystem);
+        String checkSum = ReplChangeManager.getChksumString(qualifiedUri, fileSystem);
+        String newFileUri = ReplChangeManager.encodeFileUri(qualifiedUri.toString(), checkSum);
+        resourceUris.add(new ResourceUri(uri.getResourceType(), newFileUri));
+      } else {
+        resourceUris.add(uri);
+      }
+    }
+    Function copyObj = new Function(this.function);
+    if (!resourceUris.isEmpty()) {
+      assert resourceUris.size() == this.function.getResourceUris().size();
+      copyObj.setResourceUris(resourceUris);
+    }
+
     try {
+      //This is required otherwise correct work object on repl load wont be created.
+      writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.REPL_SCOPE.toString(),
+          "all");
+      writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+          additionalPropertiesProvider.getCurrentReplicationState());
       writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(function, UTF_8));
+          .writeStringField(FIELD_NAME, serializer.toString(copyObj, UTF_8));
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }

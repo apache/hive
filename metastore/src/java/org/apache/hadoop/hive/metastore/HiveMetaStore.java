@@ -6377,7 +6377,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (func == null) {
           throw new NoSuchObjectException("Function " + funcName + " does not exist");
         }
+        // if copy of jar to change management fails we fail the metastore transaction, since the
+        // user might delete the jars on HDFS externally after dropping the function, hence having
+        // a copy is required to allow incremental replication to work correctly.
+        if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
+          for (ResourceUri uri : func.getResourceUris()) {
+            if (uri.getUri().toLowerCase().startsWith("hdfs:")) {
+              wh.addToChangeManagement(new Path(uri.getUri()));
+            }
+          }
+        }
 
+        // if the operation on metastore fails, we don't do anything in change management, but fail
+        // the metastore transaction, as having a copy of the jar in change management is not going
+        // to cause any problem, the cleaner thread will remove this when this jar expires.
         ms.dropFunction(dbName, funcName);
         if (transactionalListeners.size() > 0) {
           transactionalListenerResponses =
@@ -6385,7 +6398,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                     EventType.DROP_FUNCTION,
                                                     new DropFunctionEvent(func, true, this));
         }
-
         success = ms.commitTransaction();
       } finally {
         if (!success) {

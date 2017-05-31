@@ -37,7 +37,7 @@ public class MetaData {
     this(null, null, null, new ReplicationSpec(), null);
   }
 
-  MetaData(Database db, Table table, Iterable<Partition> partitions,
+  public MetaData(Database db, Table table, Iterable<Partition> partitions,
       ReplicationSpec replicationSpec, Function function) {
     this.db = db;
     this.table = table;

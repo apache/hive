@@ -47,6 +47,9 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class TestReplChangeManager {
   private static HiveMetaStoreClient client;
   private static HiveConf hiveConf;
@@ -163,28 +166,28 @@ public class TestReplChangeManager {
     createFile(part3Path, "p3");
     String path3Chksum = ReplChangeManager.getChksumString(part3Path, fs);
 
-    Assert.assertTrue(part1Path.getFileSystem(hiveConf).exists(part1Path));
-    Assert.assertTrue(part2Path.getFileSystem(hiveConf).exists(part2Path));
-    Assert.assertTrue(part3Path.getFileSystem(hiveConf).exists(part3Path));
+    assertTrue(part1Path.getFileSystem(hiveConf).exists(part1Path));
+    assertTrue(part2Path.getFileSystem(hiveConf).exists(part2Path));
+    assertTrue(part3Path.getFileSystem(hiveConf).exists(part3Path));
 
     ReplChangeManager cm = ReplChangeManager.getInstance(hiveConf);
     // verify cm.recycle(db, table, part) api moves file to cmroot dir
     int ret = cm.recycle(part1Path, false);
     Assert.assertEquals(ret, 1);
-    Path cmPart1Path = ReplChangeManager.getCMPath(part1Path, hiveConf, path1Chksum);
-    Assert.assertTrue(cmPart1Path.getFileSystem(hiveConf).exists(cmPart1Path));
+    Path cmPart1Path = ReplChangeManager.getCMPath(hiveConf, path1Chksum);
+    assertTrue(cmPart1Path.getFileSystem(hiveConf).exists(cmPart1Path));
 
     // Verify dropPartition recycle part files
     client.dropPartition(dbName, tblName, Arrays.asList("20160102"));
-    Assert.assertFalse(part2Path.getFileSystem(hiveConf).exists(part2Path));
-    Path cmPart2Path = ReplChangeManager.getCMPath(part2Path, hiveConf, path2Chksum);
-    Assert.assertTrue(cmPart2Path.getFileSystem(hiveConf).exists(cmPart2Path));
+    assertFalse(part2Path.getFileSystem(hiveConf).exists(part2Path));
+    Path cmPart2Path = ReplChangeManager.getCMPath(hiveConf, path2Chksum);
+    assertTrue(cmPart2Path.getFileSystem(hiveConf).exists(cmPart2Path));
 
     // Verify dropTable recycle partition files
     client.dropTable(dbName, tblName);
-    Assert.assertFalse(part3Path.getFileSystem(hiveConf).exists(part3Path));
-    Path cmPart3Path = ReplChangeManager.getCMPath(part3Path, hiveConf, path3Chksum);
-    Assert.assertTrue(cmPart3Path.getFileSystem(hiveConf).exists(cmPart3Path));
+    assertFalse(part3Path.getFileSystem(hiveConf).exists(part3Path));
+    Path cmPart3Path = ReplChangeManager.getCMPath(hiveConf, path3Chksum);
+    assertTrue(cmPart3Path.getFileSystem(hiveConf).exists(cmPart3Path));
 
     client.dropDatabase(dbName, true, true);
   }
@@ -233,28 +236,28 @@ public class TestReplChangeManager {
     createFile(filePath3, "f3");
     String fileChksum3 = ReplChangeManager.getChksumString(filePath3, fs);
 
-    Assert.assertTrue(filePath1.getFileSystem(hiveConf).exists(filePath1));
-    Assert.assertTrue(filePath2.getFileSystem(hiveConf).exists(filePath2));
-    Assert.assertTrue(filePath3.getFileSystem(hiveConf).exists(filePath3));
+    assertTrue(filePath1.getFileSystem(hiveConf).exists(filePath1));
+    assertTrue(filePath2.getFileSystem(hiveConf).exists(filePath2));
+    assertTrue(filePath3.getFileSystem(hiveConf).exists(filePath3));
 
     ReplChangeManager cm = ReplChangeManager.getInstance(hiveConf);
     // verify cm.recycle(Path) api moves file to cmroot dir
     cm.recycle(filePath1, false);
-    Assert.assertFalse(filePath1.getFileSystem(hiveConf).exists(filePath1));
+    assertFalse(filePath1.getFileSystem(hiveConf).exists(filePath1));
 
-    Path cmPath1 = ReplChangeManager.getCMPath(filePath1, hiveConf, fileChksum1);
-    Assert.assertTrue(cmPath1.getFileSystem(hiveConf).exists(cmPath1));
+    Path cmPath1 = ReplChangeManager.getCMPath(hiveConf, fileChksum1);
+    assertTrue(cmPath1.getFileSystem(hiveConf).exists(cmPath1));
 
     // Verify dropTable recycle table files
     client.dropTable(dbName, tblName);
 
-    Path cmPath2 = ReplChangeManager.getCMPath(filePath2, hiveConf, fileChksum2);
-    Assert.assertFalse(filePath2.getFileSystem(hiveConf).exists(filePath2));
-    Assert.assertTrue(cmPath2.getFileSystem(hiveConf).exists(cmPath2));
+    Path cmPath2 = ReplChangeManager.getCMPath(hiveConf, fileChksum2);
+    assertFalse(filePath2.getFileSystem(hiveConf).exists(filePath2));
+    assertTrue(cmPath2.getFileSystem(hiveConf).exists(cmPath2));
 
-    Path cmPath3 = ReplChangeManager.getCMPath(filePath3, hiveConf, fileChksum3);
-    Assert.assertFalse(filePath3.getFileSystem(hiveConf).exists(filePath3));
-    Assert.assertTrue(cmPath3.getFileSystem(hiveConf).exists(cmPath3));
+    Path cmPath3 = ReplChangeManager.getCMPath(hiveConf, fileChksum3);
+    assertFalse(filePath3.getFileSystem(hiveConf).exists(filePath3));
+    assertTrue(cmPath3.getFileSystem(hiveConf).exists(cmPath3));
 
     client.dropDatabase(dbName, true, true);
   }
@@ -294,17 +297,17 @@ public class TestReplChangeManager {
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, false);
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl3, true);
 
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part11, hiveConf, fileChksum11)));
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part12, hiveConf, fileChksum12)));
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part21, hiveConf, fileChksum21)));
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part22, hiveConf, fileChksum22)));
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part31, hiveConf, fileChksum31)));
-    Assert.assertTrue(fs.exists(ReplChangeManager.getCMPath(part32, hiveConf, fileChksum32)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum11)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum12)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum21)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum22)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum31)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum32)));
 
-    fs.setTimes(ReplChangeManager.getCMPath(part11, hiveConf, fileChksum11), now - 86400*1000*2, now - 86400*1000*2);
-    fs.setTimes(ReplChangeManager.getCMPath(part21, hiveConf, fileChksum21), now - 86400*1000*2, now - 86400*1000*2);
-    fs.setTimes(ReplChangeManager.getCMPath(part31, hiveConf, fileChksum31), now - 86400*1000*2, now - 86400*1000*2);
-    fs.setTimes(ReplChangeManager.getCMPath(part32, hiveConf, fileChksum32), now - 86400*1000*2, now - 86400*1000*2);
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, fileChksum11), now - 86400*1000*2, now - 86400*1000*2);
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, fileChksum21), now - 86400*1000*2, now - 86400*1000*2);
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, fileChksum31), now - 86400*1000*2, now - 86400*1000*2);
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, fileChksum32), now - 86400*1000*2, now - 86400*1000*2);
 
     ReplChangeManager.scheduleCMClearer(hiveConf);
 
@@ -317,14 +320,22 @@ public class TestReplChangeManager {
       if (end - start > 5000) {
         Assert.fail("timeout, cmroot has not been cleared");
       }
-      if (!fs.exists(ReplChangeManager.getCMPath(part11, hiveConf, fileChksum11)) &&
-          fs.exists(ReplChangeManager.getCMPath(part12, hiveConf, fileChksum12)) &&
-          !fs.exists(ReplChangeManager.getCMPath(part21, hiveConf, fileChksum21)) &&
-          fs.exists(ReplChangeManager.getCMPath(part22, hiveConf, fileChksum22)) &&
-          !fs.exists(ReplChangeManager.getCMPath(part31, hiveConf, fileChksum31)) &&
-          !fs.exists(ReplChangeManager.getCMPath(part31, hiveConf, fileChksum31))) {
+      if (!fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum11)) &&
+          fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum12)) &&
+          !fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum21)) &&
+          fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum22)) &&
+          !fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum31)) &&
+          !fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum31))) {
         cleared = true;
       }
     } while (!cleared);
+  }
+
+  @Test
+  public void shouldIdentifyCMURIs() {
+    assertTrue(ReplChangeManager
+        .isCMFileUri(new Path("hdfs://localhost:90000/somepath/adir/", "ab.jar#e239s2233"), fs));
+    assertFalse(ReplChangeManager
+        .isCMFileUri(new Path("/somepath/adir/", "ab.jar"), fs));
   }
 }
