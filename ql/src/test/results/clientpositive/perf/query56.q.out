@@ -1,4 +1,5 @@
-PREHOOK: query: explain with ss as (
+PREHOOK: query: explain
+with ss as (
  select i_item_id,sum(ss_ext_sales_price) total_sales
  from
  	store_sales,
@@ -64,7 +65,8 @@ where i_color in ('orchid','chiffon','lace'))
  order by total_sales
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain with ss as (
+POSTHOOK: query: explain
+with ss as (
  select i_item_id,sum(ss_ext_sales_price) total_sales
  from
  	store_sales,

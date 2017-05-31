@@ -1,5 +1,7 @@
+set hive.mapred.mode=nonstrict;
 -- start query 1 in stream 0 using template query60.tpl and seed 1930872976
-explain with ss as (
+explain
+with ss as (
  select
           i_item_id,sum(ss_ext_sales_price) total_sales
  from
@@ -75,3 +77,4 @@ where i_category in ('Children'))
       ,total_sales
  limit 100;
 
+-- end query 1 in stream 0 using template query60.tpl

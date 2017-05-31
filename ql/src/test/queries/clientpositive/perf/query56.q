@@ -1,4 +1,7 @@
-explain with ss as (
+set hive.mapred.mode=nonstrict;
+-- start query 1 in stream 0 using template query56.tpl and seed 1951559352
+explain
+with ss as (
  select i_item_id,sum(ss_ext_sales_price) total_sales
  from
  	store_sales,
@@ -63,3 +66,5 @@ where i_color in ('orchid','chiffon','lace'))
  group by i_item_id
  order by total_sales
  limit 100;
+
+-- end query 1 in stream 0 using template query56.tpl

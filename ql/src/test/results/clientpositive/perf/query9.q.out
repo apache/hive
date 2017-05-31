@@ -13,12 +13,13 @@ Warning: Shuffle Join MERGEJOIN[182][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_
 Warning: Shuffle Join MERGEJOIN[183][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13]] in Stage 'Reducer 14' is a cross product
 Warning: Shuffle Join MERGEJOIN[184][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14]] in Stage 'Reducer 15' is a cross product
 Warning: Shuffle Join MERGEJOIN[185][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11, $hdt$_12, $hdt$_13, $hdt$_14, $hdt$_15]] in Stage 'Reducer 16' is a cross product
-PREHOOK: query: explain select case when (select count(*)
-                  from store_sales
+PREHOOK: query: explain
+select case when (select count(*) 
+                  from store_sales 
                   where ss_quantity between 1 and 20) > 409437
-            then (select avg(ss_ext_list_price)
-                  from store_sales
-                  where ss_quantity between 1 and 20)
+            then (select avg(ss_ext_list_price) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 1 and 20) end bucket1 ,
@@ -27,7 +28,7 @@ PREHOOK: query: explain select case when (select count(*)
                   where ss_quantity between 21 and 40) > 4595804
             then (select avg(ss_ext_list_price)
                   from store_sales
-                  where ss_quantity between 21 and 40)
+                  where ss_quantity between 21 and 40) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 21 and 40) end bucket2,
@@ -61,12 +62,13 @@ PREHOOK: query: explain select case when (select count(*)
 from reason
 where r_reason_sk = 1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select case when (select count(*)
-                  from store_sales
+POSTHOOK: query: explain
+select case when (select count(*) 
+                  from store_sales 
                   where ss_quantity between 1 and 20) > 409437
-            then (select avg(ss_ext_list_price)
-                  from store_sales
-                  where ss_quantity between 1 and 20)
+            then (select avg(ss_ext_list_price) 
+                  from store_sales 
+                  where ss_quantity between 1 and 20) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 1 and 20) end bucket1 ,
@@ -75,7 +77,7 @@ POSTHOOK: query: explain select case when (select count(*)
                   where ss_quantity between 21 and 40) > 4595804
             then (select avg(ss_ext_list_price)
                   from store_sales
-                  where ss_quantity between 21 and 40)
+                  where ss_quantity between 21 and 40) 
             else (select avg(ss_net_paid_inc_tax)
                   from store_sales
                   where ss_quantity between 21 and 40) end bucket2,

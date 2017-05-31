@@ -1,5 +1,6 @@
 Warning: Shuffle Join MERGEJOIN[111][tables = [$hdt$_5, $hdt$_6]] in Stage 'Reducer 16' is a cross product
-PREHOOK: query: explain select  a.ca_state state, count(*) cnt
+PREHOOK: query: explain
+select  a.ca_state state, count(*) cnt
  from customer_address a
      ,customer c
      ,store_sales s
@@ -23,7 +24,8 @@ PREHOOK: query: explain select  a.ca_state state, count(*) cnt
  order by cnt 
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select  a.ca_state state, count(*) cnt
+POSTHOOK: query: explain
+select  a.ca_state state, count(*) cnt
  from customer_address a
      ,customer c
      ,store_sales s

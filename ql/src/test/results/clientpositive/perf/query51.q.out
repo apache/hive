@@ -1,23 +1,24 @@
-PREHOOK: query: explain WITH web_v1 as (
+PREHOOK: query: explain
+WITH web_v1 as (
 select
-  ws_item_sk item_sk, d_date, sum(ws_sales_price),
+  ws_item_sk item_sk, d_date,
   sum(sum(ws_sales_price))
       over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from web_sales
     ,date_dim
 where ws_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ws_item_sk is not NULL
 group by ws_item_sk, d_date),
 store_v1 as (
 select
-  ss_item_sk item_sk, d_date, sum(ss_sales_price),
+  ss_item_sk item_sk, d_date,
   sum(sum(ss_sales_price))
       over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from store_sales
     ,date_dim
 where ss_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ss_item_sk is not NULL
 group by ss_item_sk, d_date)
  select  *
@@ -41,26 +42,27 @@ order by item_sk
         ,d_date
 limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain WITH web_v1 as (
+POSTHOOK: query: explain
+WITH web_v1 as (
 select
-  ws_item_sk item_sk, d_date, sum(ws_sales_price),
+  ws_item_sk item_sk, d_date,
   sum(sum(ws_sales_price))
       over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from web_sales
     ,date_dim
 where ws_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ws_item_sk is not NULL
 group by ws_item_sk, d_date),
 store_v1 as (
 select
-  ss_item_sk item_sk, d_date, sum(ss_sales_price),
+  ss_item_sk item_sk, d_date,
   sum(sum(ss_sales_price))
       over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from store_sales
     ,date_dim
 where ss_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ss_item_sk is not NULL
 group by ss_item_sk, d_date)
  select  *
@@ -142,7 +144,7 @@ Stage-0
                                           Select Operator [SEL_5] (rows=8116 width=1119)
                                             Output:["_col0","_col1"]
                                             Filter Operator [FIL_60] (rows=8116 width=1119)
-                                              predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
+                                              predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
                                               TableScan [TS_3] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date","d_month_seq"]
                                       <-Map 1 [SIMPLE_EDGE]
@@ -176,7 +178,7 @@ Stage-0
                                           Select Operator [SEL_25] (rows=8116 width=1119)
                                             Output:["_col0","_col1"]
                                             Filter Operator [FIL_62] (rows=8116 width=1119)
-                                              predicate:(d_month_seq BETWEEN 1193 AND 1204 and d_date_sk is not null)
+                                              predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
                                                Please refer to the previous TableScan [TS_3]
                                       <-Map 10 [SIMPLE_EDGE]
                                         SHUFFLE [RS_26]

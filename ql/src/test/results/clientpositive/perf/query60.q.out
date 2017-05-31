@@ -1,4 +1,5 @@
-PREHOOK: query: explain with ss as (
+PREHOOK: query: explain
+with ss as (
  select
           i_item_id,sum(ss_ext_sales_price) total_sales
  from
@@ -74,7 +75,8 @@ where i_category in ('Children'))
       ,total_sales
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain with ss as (
+POSTHOOK: query: explain
+with ss as (
  select
           i_item_id,sum(ss_ext_sales_price) total_sales
  from

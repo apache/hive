@@ -1,4 +1,5 @@
-PREHOOK: query: explain with customer_total_return as
+PREHOOK: query: explain
+with customer_total_return as
  (select wr_returning_customer_sk as ctr_customer_sk
         ,ca_state as ctr_state, 
  	sum(wr_return_amt) as ctr_total_return
@@ -27,7 +28,8 @@ PREHOOK: query: explain with customer_total_return as
                   ,c_last_review_date,ctr_total_return
 limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain with customer_total_return as
+POSTHOOK: query: explain
+with customer_total_return as
  (select wr_returning_customer_sk as ctr_customer_sk
         ,ca_state as ctr_state, 
  	sum(wr_return_amt) as ctr_total_return

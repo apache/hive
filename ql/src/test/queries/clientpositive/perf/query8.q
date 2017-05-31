@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+-- start query 1 in stream 0 using template query8.tpl and seed 1766988859
 explain
 select  s_store_name
       ,sum(ss_net_profit)
@@ -105,3 +107,4 @@ select  s_store_name
  order by s_store_name
  limit 100;
 
+-- end query 1 in stream 0 using template query8.tpl

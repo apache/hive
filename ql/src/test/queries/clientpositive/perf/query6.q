@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
-
-explain select  a.ca_state state, count(*) cnt
+-- start query 1 in stream 0 using template query6.tpl and seed 1819994127
+explain
+select  a.ca_state state, count(*) cnt
  from customer_address a
      ,customer c
      ,store_sales s
@@ -23,3 +24,5 @@ explain select  a.ca_state state, count(*) cnt
  having count(*) >= 10
  order by cnt 
  limit 100;
+
+-- end query 1 in stream 0 using template query6.tpl

@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+-- start query 1 in stream 0 using template query82.tpl and seed 55585014
 explain
 select  i_item_id
        ,i_item_desc
@@ -14,3 +16,4 @@ select  i_item_id
  order by i_item_id
  limit 100;
 
+-- end query 1 in stream 0 using template query82.tpl
