@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import org.apache.hadoop.io.IOUtils;
+import org.supercsv.encoder.CsvEncoder;
+import org.supercsv.encoder.SelectiveCsvEncoder;
 import org.supercsv.io.CsvListWriter;
 import org.supercsv.prefs.CsvPreference;
 
@@ -40,8 +42,13 @@ class SeparatedValuesOutputFormat implements OutputFormat {
 
   SeparatedValuesOutputFormat(BeeLine beeLine, char separator) {
     this.beeLine = beeLine;
-    unquotedCsvPreference = new CsvPreference.Builder('\0', separator, "").build();
+    unquotedCsvPreference = getUnquotedCsvPreference(separator);
     quotedCsvPreference = new CsvPreference.Builder('"', separator, "").build();
+  }
+
+  private static CsvPreference getUnquotedCsvPreference(char delimiter) {
+    CsvEncoder noEncoder = new SelectiveCsvEncoder();
+    return new CsvPreference.Builder('\0', delimiter, "").useEncoder(noEncoder).build();
   }
 
   private void updateCsvPreference() {
@@ -54,7 +61,7 @@ class SeparatedValuesOutputFormat implements OutputFormat {
         // "" is passed as the end of line symbol in following function, as
         // beeline itself adds newline
         if (isQuotingDisabled()) {
-          unquotedCsvPreference = new CsvPreference.Builder('\0', newDel, "").build();
+          unquotedCsvPreference = getUnquotedCsvPreference(newDel);
         } else {
           quotedCsvPreference = new CsvPreference.Builder('"', newDel, "").build();
         }
