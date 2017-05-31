@@ -18,7 +18,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
+import java.sql.Connection;
 import java.util.List;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 
 /**
  * Defines the method which must be implemented to be used using schema tool to support metastore
@@ -77,6 +80,18 @@ public interface IMetaStoreSchemaInfo {
    */
   String getHiveSchemaVersion();
 
+  /**
+   * Get the schema version from the backend database. This version is used by SchemaTool to to
+   * compare the version returned by getHiveSchemaVersion and determine the upgrade order and
+   * scripts needed to upgrade the metastore schema
+   * 
+   * @param metastoreDbConnectionInfo Connection information needed to connect to the backend
+   *          database
+   * @return
+   * @throws HiveMetaException when unable to fetch the schema version
+   */
+  String getMetaStoreSchemaVersion(
+      HiveSchemaHelper.MetaStoreConnectionInfo metastoreDbConnectionInfo) throws HiveMetaException;
   /**
    * A dbVersion is compatible with hive version if it is greater or equal to the hive version. This
    * is result of the db schema upgrade design principles followed in hive project. The state where
