@@ -3542,7 +3542,7 @@ public final class Utilities {
     @Override
     public Path call() throws Exception {
       if (!this.skipDummy && isEmptyPath(this.job, this.path, this.ctx)) {
-        return createDummyFileForEmptyPartition(this.path, this.job, this.work.getPathToPartitionInfo().get(this.path),
+        return createDummyFileForEmptyPartition(this.path, this.job, this.work.getPathToPartitionInfo().get(this.path.toString()),
                 this.hiveScratchDir);
       }
       return this.path;
@@ -3610,11 +3610,11 @@ public final class Utilities {
   private static void updatePathForMapWork(Path newPath, MapWork work, Path path) {
     // update the work
     if (!newPath.equals(path)) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
-      work.getPathToAliases().put(newPath.toString(), work.getPathToAliases().get(path));
-      work.getPathToAliases().remove(path);
+      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path.toString());
+      work.getPathToAliases().put(newPath.toString(), work.getPathToAliases().get(path.toString()));
+      work.getPathToAliases().remove(path.toString());
 
-      work.getPathToPartitionInfo().remove(path);
+      work.getPathToPartitionInfo().remove(path.toString());
       work.getPathToPartitionInfo().put(newPath.toString(), partDesc);
     }
   }
