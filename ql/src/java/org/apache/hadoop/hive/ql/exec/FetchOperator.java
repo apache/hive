@@ -435,15 +435,11 @@ public class FetchOperator implements Serializable {
   }
 
   private ValidTxnList extractValidTxnList() {
-    ValidTxnList validTxnList;
-    if (org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
-      validTxnList = null; // i.e. not fetching from a table directly but from a temp location
-    } else {
+    if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidTxnList.VALID_TXNS_KEY);
-      validTxnList = txnString == null ? new ValidReadTxnList() :
-          new ValidReadTxnList(txnString);
+      return txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
     }
-    return validTxnList;
+    return null;  // not fetching from a table directly but from a temp location
   }
 
   private FetchInputFormatSplit[] splitSampling(SplitSample splitSample,
