@@ -1164,8 +1164,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     @SuppressWarnings("unchecked")
     T descClone = (T)conf.clone();
     // also clone the colExprMap by default
+    // we need a deep copy
+    ArrayList<ColumnInfo> colInfos = new ArrayList<>();
+    colInfos.addAll(getSchema().getSignature());
+    Map<String, ExprNodeDesc> map = null;
+    if (getColumnExprMap() != null) {
+      map = new HashMap<>();
+      map.putAll(getColumnExprMap());
+    }
     Operator<? extends OperatorDesc> ret = OperatorFactory.getAndMakeChild(
-            cContext, descClone, getSchema(), getColumnExprMap(), parentClones);
+            cContext, descClone, new RowSchema(colInfos), map, parentClones);
 
     return ret;
   }

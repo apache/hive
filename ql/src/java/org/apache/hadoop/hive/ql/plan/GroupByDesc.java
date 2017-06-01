@@ -367,4 +367,19 @@ public class GroupByDesc extends AbstractOperatorDesc {
     }
     return new GroupByOperatorExplainVectorization(this, vectorDesc);
   }
+
+  @Override
+  public Object clone() {
+    ArrayList<java.lang.String> outputColumnNames = new ArrayList<>();
+    outputColumnNames.addAll(this.outputColumnNames);
+    ArrayList<ExprNodeDesc> keys = new ArrayList<>();
+    keys.addAll(this.keys);
+    ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
+    aggregators.addAll(this.aggregators);
+    List<Integer> listGroupingSets = new ArrayList<>();
+    listGroupingSets.addAll(this.listGroupingSets);
+    return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
+        this.groupByMemoryUsage, this.memoryThreshold, listGroupingSets, this.groupingSetsPresent,
+        this.groupingSetPosition, this.isDistinct);
+  }
 }
