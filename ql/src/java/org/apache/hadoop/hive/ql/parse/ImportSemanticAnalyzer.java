@@ -844,6 +844,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x);
+          if (isSourceMm) { // since target table doesn't exist, it should inherit soruce table's properties
+            Map<String, String> tblproperties = table.getParameters();
+            tblproperties.put("transactional", "true");
+            tblproperties.put("transactional_properties", "insert_only");
+            table.setParameters(tblproperties);
+          }
           t.addDependentTask(loadTable(fromURI, table, false, tablePath, replicationSpec, x, txnId, stmtId, isSourceMm));
         }
       }
