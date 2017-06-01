@@ -1,0 +1,382 @@
+PREHOOK: query: drop database if exists ex1
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists ex1
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: drop database if exists ex2
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists ex2
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database ex1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ex1
+POSTHOOK: query: create database ex1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ex1
+PREHOOK: query: create database ex2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ex2
+POSTHOOK: query: create database ex2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ex2
+PREHOOK: query: CREATE TABLE ex1.exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:ex1
+PREHOOK: Output: ex1@exchange_part_test1
+POSTHOOK: query: CREATE TABLE ex1.exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:ex1
+POSTHOOK: Output: ex1@exchange_part_test1
+PREHOOK: query: CREATE TABLE ex2.exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:ex2
+PREHOOK: Output: ex2@exchange_part_test2
+POSTHOOK: query: CREATE TABLE ex2.exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:ex2
+POSTHOOK: Output: ex2@exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex1@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex1@exchange_part_test1
+PREHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex2@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex2@exchange_part_test2
+PREHOOK: query: ALTER TABLE ex2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: ex2@exchange_part_test2
+POSTHOOK: query: ALTER TABLE ex2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: ex2@exchange_part_test2
+POSTHOOK: Output: ex2@exchange_part_test2@ds=2013-04-05
+PREHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex1@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex1@exchange_part_test1
+PREHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex2@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex2@exchange_part_test2
+ds=2013-04-05
+PREHOOK: query: ALTER TABLE ex1.exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE ex2.exchange_part_test2
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: ex2@exchange_part_test2
+PREHOOK: Output: ex1@exchange_part_test1
+POSTHOOK: query: ALTER TABLE ex1.exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') WITH TABLE ex2.exchange_part_test2
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: ex2@exchange_part_test2
+POSTHOOK: Input: ex2@exchange_part_test2@ds=2013-04-05
+POSTHOOK: Output: ex1@exchange_part_test1
+POSTHOOK: Output: ex1@exchange_part_test1@ds=2013-04-05
+POSTHOOK: Output: ex2@exchange_part_test2@ds=2013-04-05
+PREHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex1@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS ex1.exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex1@exchange_part_test1
+ds=2013-04-05
+PREHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: ex2@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS ex2.exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: ex2@exchange_part_test2
+PREHOOK: query: DROP TABLE IF EXISTS t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS t6
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS t6
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (a int) PARTITIONED BY (d1 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: CREATE TABLE t2 (a int) PARTITIONED BY (d1 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: CREATE TABLE t3 (a int) PARTITIONED BY (d1 int, d2 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: CREATE TABLE t3 (a int) PARTITIONED BY (d1 int, d2 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: CREATE TABLE t4 (a int) PARTITIONED BY (d1 int, d2 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4
+POSTHOOK: query: CREATE TABLE t4 (a int) PARTITIONED BY (d1 int, d2 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4
+PREHOOK: query: CREATE TABLE t5 (a int) PARTITIONED BY (d1 int, d2 int, d3 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: CREATE TABLE t5 (a int) PARTITIONED BY (d1 int, d2 int, d3 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: CREATE TABLE t6 (a int) PARTITIONED BY (d1 int, d2 int, d3 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6
+POSTHOOK: query: CREATE TABLE t6 (a int) PARTITIONED BY (d1 int, d2 int, d3 int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6
+PREHOOK: query: INSERT INTO TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@d1=1
+POSTHOOK: query: INSERT INTO TABLE t1 PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@d1=1
+POSTHOOK: Lineage: t1 PARTITION(d1=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO TABLE t3 PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t3@d1=1/d2=1
+POSTHOOK: query: INSERT INTO TABLE t3 PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t3@d1=1/d2=1
+POSTHOOK: Lineage: t3 PARTITION(d1=1,d2=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO TABLE t5 PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: query: INSERT INTO TABLE t5 PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: Lineage: t5 PARTITION(d1=1,d2=1,d3=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: SELECT * FROM t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: SELECT * FROM t5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5
+PREHOOK: Input: default@t5@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5
+POSTHOOK: Input: default@t5@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+100	1	1	1
+PREHOOK: query: ALTER TABLE t2 EXCHANGE PARTITION (d1 = 1) WITH TABLE t1
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t2
+POSTHOOK: query: ALTER TABLE t2 EXCHANGE PARTITION (d1 = 1) WITH TABLE t1
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@d1=1
+POSTHOOK: Output: default@t1@d1=1
+POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2@d1=1
+PREHOOK: query: SELECT * FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: ALTER TABLE t4 EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t4
+POSTHOOK: query: ALTER TABLE t4 EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3@d1=1/d2=1
+POSTHOOK: Output: default@t3@d1=1/d2=1
+POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4@d1=1/d2=1
+PREHOOK: query: SELECT * FROM t3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: ALTER TABLE t6 EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t5
+PREHOOK: Output: default@t6
+POSTHOOK: query: ALTER TABLE t6 EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t5
+POSTHOOK: Input: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: Output: default@t5@d1=1/d2=1/d3=1
+POSTHOOK: Output: default@t6
+POSTHOOK: Output: default@t6@d1=1/d2=1/d3=1
+PREHOOK: query: SELECT * FROM t5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t6
+PREHOOK: Input: default@t6@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t6
+POSTHOOK: Input: default@t6@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+100	1	1	1
+PREHOOK: query: DROP DATABASE ex1 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:ex1
+PREHOOK: Output: database:ex1
+PREHOOK: Output: ex1@exchange_part_test1
+POSTHOOK: query: DROP DATABASE ex1 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:ex1
+POSTHOOK: Output: database:ex1
+POSTHOOK: Output: ex1@exchange_part_test1
+PREHOOK: query: DROP DATABASE ex2 CASCADE
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:ex2
+PREHOOK: Output: database:ex2
+PREHOOK: Output: ex2@exchange_part_test2
+POSTHOOK: query: DROP DATABASE ex2 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:ex2
+POSTHOOK: Output: database:ex2
+POSTHOOK: Output: ex2@exchange_part_test2
+PREHOOK: query: DROP TABLE t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: DROP TABLE t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2
+PREHOOK: Output: default@t2
+POSTHOOK: query: DROP TABLE t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: default@t2
+PREHOOK: query: DROP TABLE t3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t3
+PREHOOK: Output: default@t3
+POSTHOOK: query: DROP TABLE t3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: default@t3
+PREHOOK: query: DROP TABLE t4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t4
+PREHOOK: Output: default@t4
+POSTHOOK: query: DROP TABLE t4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t4
+POSTHOOK: Output: default@t4
+PREHOOK: query: DROP TABLE t5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t5
+PREHOOK: Output: default@t5
+POSTHOOK: query: DROP TABLE t5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: default@t5
+PREHOOK: query: DROP TABLE t6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t6
+PREHOOK: Output: default@t6
+POSTHOOK: query: DROP TABLE t6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t6
+POSTHOOK: Output: default@t6
