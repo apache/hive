@@ -3104,38 +3104,63 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
           Map<ASTNode, ExprNodeDesc> astToExprNDescMap = null;
           ExprNodeDesc obExprNDesc = null;
-          // first try to get it from select
-          // in case of udtf, selectOutputRR may be null.
-          if (selectOutputRR != null) {
-            try {
-              astToExprNDescMap = genAllExprNodeDesc(ref, selectOutputRR);
-              obExprNDesc = astToExprNDescMap.get(ref);
-            } catch (SemanticException ex) {
-              // we can tolerate this as this is the previous behavior
-              LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
-                  + ex.getMessage());
+          
+          boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
+          boolean isObyByPos = isBothByPos
+              || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
+          // replace each of the position alias in ORDERBY with the actual column
+          if (ref != null && ref.getToken().getType() == HiveParser.Number) {
+            if (isObyByPos) {
+              int pos = Integer.parseInt(ref.getText());
+              if (pos > 0 && pos <= selectOutputRR.getColumnInfos().size()) {
+                // fieldIndex becomes so simple
+                // Note that pos starts from 1 while fieldIndex starts from 0;
+                fieldIndex = pos - 1;
+              } else {
+                throw new SemanticException(
+                    ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg("Position alias: " + pos
+                        + " does not exist\n" + "The Select List is indexed from 1 to "
+                        + selectOutputRR.getColumnInfos().size()));
+              }
+            } else { // if not using position alias and it is a number.
+              LOG.warn("Using constant number "
+                  + ref.getText()
+                  + " in order by. If you try to use position alias when hive.orderby.position.alias is false, the position alias will be ignored.");
             }
-          }
-          // then try to get it from all
-          if (obExprNDesc == null) {
-            astToExprNDescMap = genAllExprNodeDesc(ref, inputRR);
-            obExprNDesc = astToExprNDescMap.get(ref);
-          }
-          if (obExprNDesc == null) {
-            throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
-          }
-          // 2.2 Convert ExprNode to RexNode
-          rnd = converter.convert(obExprNDesc);
-
-          // 2.3 Determine the index of ob expr in child schema
-          // NOTE: Calcite can not take compound exprs in OB without it being
-          // present in the child (& hence we add a child Project Rel)
-          if (rnd instanceof RexInputRef) {
-            fieldIndex = ((RexInputRef) rnd).getIndex();
           } else {
-            fieldIndex = srcRelRecordSz + newVCLst.size();
-            newVCLst.add(rnd);
-            vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>(ref, obExprNDesc.getTypeInfo()));
+            // first try to get it from select
+            // in case of udtf, selectOutputRR may be null.
+            if (selectOutputRR != null) {
+              try {
+                astToExprNDescMap = genAllExprNodeDesc(ref, selectOutputRR);
+                obExprNDesc = astToExprNDescMap.get(ref);
+              } catch (SemanticException ex) {
+                // we can tolerate this as this is the previous behavior
+                LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
+                    + ex.getMessage());
+              }
+            }
+            // then try to get it from all
+            if (obExprNDesc == null) {
+              astToExprNDescMap = genAllExprNodeDesc(ref, inputRR);
+              obExprNDesc = astToExprNDescMap.get(ref);
+            }
+            if (obExprNDesc == null) {
+              throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
+            }
+            // 2.2 Convert ExprNode to RexNode
+            rnd = converter.convert(obExprNDesc);
+
+            // 2.3 Determine the index of ob expr in child schema
+            // NOTE: Calcite can not take compound exprs in OB without it being
+            // present in the child (& hence we add a child Project Rel)
+            if (rnd instanceof RexInputRef) {
+              fieldIndex = ((RexInputRef) rnd).getIndex();
+            } else {
+              fieldIndex = srcRelRecordSz + newVCLst.size();
+              newVCLst.add(rnd);
+              vcASTTypePairs.add(new Pair<ASTNode, TypeInfo>(ref, obExprNDesc.getTypeInfo()));
+            }
           }
 
           // 2.4 Determine the Direction of order by

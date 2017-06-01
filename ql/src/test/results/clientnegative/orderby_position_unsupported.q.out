@@ -1,1 +1,3 @@
-FAILED: SemanticException [Error 10219]: Position in ORDER BY is not supported when using SELECT *
+FAILED: SemanticException [Error 10221]: Invalid position alias in Order By
+ Position alias: 3 does not exist
+The Select List is indexed from 1 to 2
