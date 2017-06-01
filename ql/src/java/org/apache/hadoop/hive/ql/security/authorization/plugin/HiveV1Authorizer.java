@@ -75,7 +75,7 @@ public class HiveV1Authorizer extends AbstractHiveAuthorizer {
   public void grantPrivileges(
       List<HivePrincipal> principals, List<HivePrivilege> privileges, HivePrivilegeObject privObject,
       HivePrincipal grantor, boolean grantOption)
-      throws HiveAuthzPluginException, HiveAccessControlException {
+          throws HiveAuthzPluginException, HiveAccessControlException {
     try {
       PrivilegeBag privBag = toPrivilegeBag(privileges, privObject, grantor, grantOption);
       grantOrRevokePrivs(principals, privBag, true, grantOption);

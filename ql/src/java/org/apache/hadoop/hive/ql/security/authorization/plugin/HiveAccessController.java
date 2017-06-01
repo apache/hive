@@ -31,42 +31,44 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public interface HiveAccessController {
 
   void grantPrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
+      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption,
+      HiveAuthzContext ctx)
           throws HiveAuthzPluginException, HiveAccessControlException;
 
   void revokePrivileges(List<HivePrincipal> hivePrincipals, List<HivePrivilege> hivePrivileges,
-      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption)
+      HivePrivilegeObject hivePrivObject, HivePrincipal grantorPrincipal, boolean grantOption,
+      HiveAuthzContext ctx)
           throws HiveAuthzPluginException, HiveAccessControlException;
 
-  void createRole(String roleName, HivePrincipal adminGrantor)
+  void createRole(String roleName, HivePrincipal adminGrantor, HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  void dropRole(String roleName)
+  void dropRole(String roleName, HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
   void grantRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
-      HivePrincipal grantorPrinc)
+      HivePrincipal grantorPrinc, HiveAuthzContext ctx)
           throws HiveAuthzPluginException, HiveAccessControlException;
 
   void revokeRole(List<HivePrincipal> hivePrincipals, List<String> roles, boolean grantOption,
-      HivePrincipal grantorPrinc)
+      HivePrincipal grantorPrinc, HiveAuthzContext ctx)
           throws HiveAuthzPluginException, HiveAccessControlException;
 
-  List<String> getAllRoles()
+  List<String> getAllRoles(HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj)
+  List<HivePrivilegeInfo> showPrivileges(HivePrincipal principal, HivePrivilegeObject privObj, HiveAuthzContext ctx)
       throws HiveAuthzPluginException, HiveAccessControlException;
 
-  void setCurrentRole(String roleName) throws HiveAuthzPluginException, HiveAccessControlException;
+  void setCurrentRole(String roleName, HiveAuthzContext ctx) throws HiveAuthzPluginException, HiveAccessControlException;
 
-  List<String> getCurrentRoleNames() throws HiveAuthzPluginException;
+  List<String> getCurrentRoleNames(HiveAuthzContext ctx) throws HiveAuthzPluginException;
 
-  List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName) throws HiveAuthzPluginException,
+  List<HiveRoleGrant> getPrincipalGrantInfoForRole(String roleName, HiveAuthzContext ctx) throws HiveAuthzPluginException,
       HiveAccessControlException;
 
-  List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal) throws HiveAuthzPluginException,
-      HiveAccessControlException;
+  List<HiveRoleGrant> getRoleGrantInfoForPrincipal(HivePrincipal principal, HiveAuthzContext ctx)
+      throws HiveAuthzPluginException, HiveAccessControlException;
 
   void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException;
 }
