@@ -394,7 +394,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             LlapIoImpl.ORC_LOGGER.trace("Updating indexes in stripe {} metadata for includes: {}",
                 stripeKey.stripeIx, DebugUtils.toString(globalIncludes));
           }
-          assert isFoundInCache;
+          assert isFoundInCache; // If it's not fresh from the cache, indexes should be present.
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
           ensureMetadataReader();
           updateLoadedIndexes(stripeMetadata, stripe, globalIncludes, sargColumns);
