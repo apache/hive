@@ -652,14 +652,22 @@ public class MetaStoreUtils {
     return true;
   }
 
-  static boolean columnsIncluded(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
+  /*
+   * This method is to check if the new column list includes all the old columns with same name and
+   * type. The column comment does not count.
+   */
+  static boolean columnsIncludedByNameType(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols.size() > newCols.size()) {
       return false;
     }
 
-    Set<FieldSchema> newColsSet = new HashSet<FieldSchema>(newCols);
+    Map<String, String> columnNameTypePairMap = new HashMap<String, String>(newCols.size());
+    for (FieldSchema newCol : newCols) {
+      columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
+    }
     for (final FieldSchema oldCol : oldCols) {
-      if (!newColsSet.contains(oldCol)) {
+      if (!columnNameTypePairMap.containsKey(oldCol.getName())
+          || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
         return false;
       }
     }
