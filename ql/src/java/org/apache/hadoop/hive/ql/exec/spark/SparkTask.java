@@ -138,7 +138,7 @@ public class SparkTask extends Task<SparkWork> {
         LOG.info("Failed to submit Spark job " + sparkJobID);
         killJob();
       } else if (rc == 4) {
-        LOG.info("The number of tasks reaches above the limit " + conf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS) +
+        LOG.info("The spark job or one stage of it has too many tasks" +
             ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
         killJob();
       }

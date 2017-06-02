@@ -181,6 +181,18 @@ abstract class SparkJobMonitor {
     return totalTasks;
   }
 
+  protected int getStageMaxTaskCount(Map<String, SparkStageProgress> progressMap) {
+    int stageMaxTasks = 0;
+    for (SparkStageProgress progress: progressMap.values() ) {
+      int tasks = progress.getTotalTaskCount();
+      if (tasks > stageMaxTasks) {
+        stageMaxTasks = tasks;
+      }
+    }
+
+    return stageMaxTasks;
+  }
+
   private String getReport(Map<String, SparkStageProgress> progressMap) {
     StringBuilder reportBuffer = new StringBuilder();
     SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");

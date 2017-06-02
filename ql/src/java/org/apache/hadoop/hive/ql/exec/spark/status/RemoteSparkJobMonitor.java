@@ -35,7 +35,9 @@ import org.apache.spark.JobExecutionStatus;
  */
 public class RemoteSparkJobMonitor extends SparkJobMonitor {
   private int sparkJobMaxTaskCount = -1;
+  private int sparkStageMaxTaskCount = -1;
   private int totalTaskCount = 0;
+  private int stageMaxTaskCount = 0;
   private RemoteSparkJobStatus sparkJobStatus;
   private final HiveConf hiveConf;
 
@@ -44,6 +46,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     this.sparkJobStatus = sparkJobStatus;
     this.hiveConf = hiveConf;
     sparkJobMaxTaskCount = hiveConf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS);
+    sparkStageMaxTaskCount = hiveConf.getIntVar(HiveConf.ConfVars.SPARK_STAGE_MAX_TASKS);
   }
 
   @Override
@@ -103,6 +106,17 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
                 console.logInfo(format);
               }
             } else {
+              // Get the maximum of the number of tasks in the stages of the job and cancel the job if it goes beyond the limit.
+              if (sparkStageMaxTaskCount != -1 && stageMaxTaskCount == 0) {
+                stageMaxTaskCount = getStageMaxTaskCount(progressMap);
+                if (stageMaxTaskCount > sparkStageMaxTaskCount) {
+                  rc = 4;
+                  done = true;
+                  console.printInfo("\nThe number of task in one stage of the Spark job [" + stageMaxTaskCount + "] is greater than the limit [" +
+                      sparkStageMaxTaskCount + "]. The Spark job will be cancelled.");
+                }
+              }
+
               // Count the number of tasks, and kill application if it goes beyond the limit.
               if (sparkJobMaxTaskCount != -1 && totalTaskCount == 0) {
                 totalTaskCount = getTotalTaskCount(progressMap);
