@@ -68,7 +68,7 @@ public class TezJobMonitor {
 
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final List<DAGClient> shutdownList;
-  private final Map<String, BaseWork> workMap;
+  private final List<BaseWork> topSortedWorks;
 
   transient LogHelper console;
 
@@ -101,9 +101,9 @@ public class TezJobMonitor {
   private long executionStartTime = 0;
   private final RenderStrategy.UpdateFunction updateFunction;
 
-  public TezJobMonitor(Map<String, BaseWork> workMap, final DAGClient dagClient, HiveConf conf, DAG dag,
+  public TezJobMonitor(List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf, DAG dag,
                        Context ctx) {
-    this.workMap = workMap;
+    this.topSortedWorks = topSortedWorks;
     this.dagClient = dagClient;
     this.hiveConf = conf;
     this.dag = dag;
@@ -323,7 +323,7 @@ public class TezJobMonitor {
 
   ProgressMonitor progressMonitor(DAGStatus status, Map<String, Progress> progressMap) {
     try {
-      return new TezProgressMonitor(dagClient, status, workMap, progressMap, console,
+      return new TezProgressMonitor(dagClient, status, topSortedWorks, progressMap, console,
           executionStartTime);
     } catch (IOException | TezException e) {
       console.printInfo("Getting  Progress Information: " + e.getMessage() + " stack trace: " +

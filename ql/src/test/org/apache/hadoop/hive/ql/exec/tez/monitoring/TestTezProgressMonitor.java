@@ -32,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -92,7 +93,7 @@ public class TestTezProgressMonitor {
     when(dagClient.getVertexStatus(eq(REDUCER), anySet())).thenReturn(running);
 
     TezProgressMonitor monitor =
-        new TezProgressMonitor(dagClient, dagStatus, new HashMap<String, BaseWork>(), progressMap(), console,
+        new TezProgressMonitor(dagClient, dagStatus, new ArrayList<BaseWork>(), progressMap(), console,
             Long.MAX_VALUE);
 
     verify(dagClient).getVertexStatus(eq(MAPPER), isNull(Set.class));
