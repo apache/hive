@@ -727,7 +727,7 @@ public class HiveAlterHandler implements AlterHandler {
       // Nothing to update if everything is the same
         if (newDbName.equals(dbName) &&
             newTableName.equals(tableName) &&
-            MetaStoreUtils.columnsIncluded(oldCols, newCols)) {
+            MetaStoreUtils.columnsIncludedByNameType(oldCols, newCols)) {
           updateColumnStats = false;
         }
 
@@ -802,7 +802,7 @@ public class HiveAlterHandler implements AlterHandler {
           || !oldPartName.equals(newPartName);
 
       // do not need to update column stats if alter partition is not for rename or changing existing columns
-      if (!rename && MetaStoreUtils.columnsIncluded(oldCols, newCols)) {
+      if (!rename && MetaStoreUtils.columnsIncludedByNameType(oldCols, newCols)) {
         return newPartsColStats;
       }
       List<String> oldColNames = new ArrayList<String>(oldCols.size());
