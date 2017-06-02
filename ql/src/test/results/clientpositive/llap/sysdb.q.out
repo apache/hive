@@ -3152,11 +3152,11 @@ POSTHOOK: query: select param_key, param_value from table_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@table_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"json":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","part_id":"true","partition_name":"true","table_name":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"avg_col_len":"true","big_decimal_high_value":"true","big_decimal_low_value":"true","column_name":"true","column_type":"true","cs_id":"true","db_name":"true","double_high_value":"true","double_low_value":"true","last_analyzed":"true","long_high_value":"true","long_low_value":"true","max_col_len":"true","num_distincts":"true","num_falses":"true","num_nulls":"true","num_trues":"true","table_name":"true","tbl_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"bucket_col_name":"true","integer_idx":"true","sd_id":"true"}}
 PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbls

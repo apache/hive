@@ -44,7 +44,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -93,7 +93,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -142,7 +142,7 @@ Database:           	default
 Table:              	alter_table_partition_clusterby_sortby	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   

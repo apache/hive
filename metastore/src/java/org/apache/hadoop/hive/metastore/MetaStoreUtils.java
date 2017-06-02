@@ -1969,5 +1969,13 @@ public class MetaStoreUtils {
     }
     return metaException;
   }
+  
+  public static List<String> getColumnNames(List<FieldSchema> schema) {
+    List<String> cols = new ArrayList<>();
+    for (FieldSchema fs : schema) {
+      cols.add(fs.getName());
+    }
+    return cols;
+  }
 
 }

@@ -150,7 +150,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -291,7 +291,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -432,7 +432,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -580,7 +580,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -627,7 +627,7 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -704,7 +704,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -751,7 +751,7 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -988,7 +988,7 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1035,7 +1035,7 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1082,7 +1082,7 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1233,7 +1233,7 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1281,7 +1281,7 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1329,7 +1329,7 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1476,7 +1476,7 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1522,7 +1522,7 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1721,7 +1721,7 @@ STAGE PLANS:
                     ds 01:10:10
                     hr 01
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1768,7 +1768,7 @@ STAGE PLANS:
                     ds 01:10:20
                     hr 02
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1815,7 +1815,7 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1862,7 +1862,7 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b
@@ -1909,7 +1909,7 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns a,b

@@ -240,6 +240,9 @@ public class StatsSetupConst {
     if (params == null) {
       throw new RuntimeException("params are null...cant set columnstatstate!");
     }
+    if (colNames == null) {
+      return;
+    }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
     for (String colName : colNames) {
@@ -283,13 +286,15 @@ public class StatsSetupConst {
     }
   }
 
-  public static void setBasicStatsStateForCreateTable(Map<String, String> params, String setting) {
+  public static void setStatsStateForCreateTable(Map<String, String> params,
+      List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
       for (String stat : StatsSetupConst.supportedStats) {
         params.put(stat, "0");
       }
     }
     setBasicStatsState(params, setting);
+    setColumnStatsState(params, cols);
   }
   
   private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {

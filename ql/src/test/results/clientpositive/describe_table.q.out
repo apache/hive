@@ -572,7 +572,7 @@ POSTHOOK: query: DESCRIBE name1.name2 name3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name3               	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name1.name2 name4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name1@name2
@@ -580,7 +580,7 @@ POSTHOOK: query: DESCRIBE name1.name2 name4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name4               	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: use name1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:name1
@@ -672,7 +672,7 @@ POSTHOOK: query: DESCRIBE name2 name3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name3               	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name2 name4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name1@name2
@@ -680,7 +680,7 @@ POSTHOOK: query: DESCRIBE name2 name4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name4               	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name1.name2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name1@name2
@@ -696,7 +696,7 @@ POSTHOOK: query: DESCRIBE name1.name2 name3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name3               	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name1.name2 name4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name1@name2
@@ -704,7 +704,7 @@ POSTHOOK: query: DESCRIBE name1.name2 name4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name1@name2
 name4               	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"name3\":\"true\",\"name4\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name2.table1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name2@table1
@@ -720,7 +720,7 @@ POSTHOOK: query: DESCRIBE name2.table1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col1                	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name2.table1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name2@table1
@@ -728,7 +728,7 @@ POSTHOOK: query: DESCRIBE name2.table1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col2                	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: use name2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:name2
@@ -750,7 +750,7 @@ POSTHOOK: query: DESCRIBE table1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col1                	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: DESCRIBE table1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name2@table1
@@ -758,7 +758,7 @@ POSTHOOK: query: DESCRIBE table1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col2                	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name2.table1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name2@table1
@@ -774,7 +774,7 @@ POSTHOOK: query: DESCRIBE name2.table1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col1                	int                 	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: DESCRIBE name2.table1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: name2@table1
@@ -782,7 +782,7 @@ POSTHOOK: query: DESCRIBE name2.table1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: name2@table1
 col2                	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}	 
 PREHOOK: query: DROP TABLE IF EXISTS table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: name2@table1

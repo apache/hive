@@ -40,7 +40,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"__time\":\"true\",\"added\":\"true\",\"anonymous\":\"true\",\"count\":\"true\",\"deleted\":\"true\",\"delta\":\"true\",\"language\":\"true\",\"namespace\":\"true\",\"newpage\":\"true\",\"page\":\"true\",\"robot\":\"true\",\"unpatrolled\":\"true\",\"user\":\"true\",\"variation\":\"true\"}}
 	EXTERNAL            	TRUE                
 	druid.datasource    	wikipedia           
 	numFiles            	0                   
@@ -266,7 +266,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -292,7 +292,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -434,7 +434,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -460,7 +460,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -581,7 +581,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -607,7 +607,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,
@@ -1022,7 +1022,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
             output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
               column.name.delimiter ,
@@ -1046,7 +1046,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
               output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
                 column.name.delimiter ,

@@ -986,7 +986,7 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
                     name default.srcpart_small

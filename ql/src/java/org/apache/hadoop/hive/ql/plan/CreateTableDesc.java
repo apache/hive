@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -848,11 +849,11 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
 
     if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
       if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
-            StatsSetupConst.TRUE);
+        StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
+            MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
       }
     } else {
-      StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
+      StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(), null,
           StatsSetupConst.FALSE);
     }
     return tbl;

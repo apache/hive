@@ -170,7 +170,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true","c2":"true","c3":"true","c4":"true","key":"true"}}
                     bucket_count -1
                     column.name.delimiter ,
                     columns key,c1,c2,c3,c4
@@ -201,7 +201,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"c1":"true","c2":"true","c3":"true","c4":"true","key":"true"}}
                 bucket_count -1
                 column.name.delimiter ,
                 columns key,c1,c2,c3,c4
