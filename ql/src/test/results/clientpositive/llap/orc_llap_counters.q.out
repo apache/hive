@@ -697,7 +697,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 5980
+   HDFS_BYTES_READ: 6786
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
