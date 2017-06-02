@@ -211,7 +211,7 @@ public class CDHMetaStoreSchemaInfo extends MetaStoreSchemaInfo {
     boolean isCompatible = super.isVersionCompatible(getMajorVersion(cdhHiveVersion),
                              getMajorVersion(dbVersion));
 
-    LOG.info("Upstream versions are compatible, comparing downstream");
+    LOG.debug("Upstream versions are compatible, comparing downstream");
     if (!isCompatible)
       return isCompatible;
 
