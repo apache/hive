@@ -192,6 +192,18 @@ set hive.merge.mapredfiles=false;
 -- TODO: need to include merge+union+DP, but it's broken for now
 
 
+drop table ctas0_mm;
+create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate;
+select * from ctas0_mm;
+drop table ctas0_mm;
+
+drop table ctas1_mm;
+create table ctas1_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as
+  select * from intermediate union all select * from intermediate;
+select * from ctas1_mm;
+drop table ctas1_mm;
+
+
 drop table load0_mm;
 create table load0_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only");
 load data local inpath '../../data/files/kv1.txt' into table load0_mm;
@@ -242,6 +254,91 @@ drop table multi0_2_mm;
 create table multi0_1_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 create table multi0_2_mm (key int, key2 int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
 
+--from intermediate
+--insert overwrite table multi0_1_mm select key, p
+--insert overwrite table multi0_2_mm select p, key;
+insert into table multi0_1_mm select key, p from intermediate;
+insert into table multi0_2_mm select p, key from intermediate;
+
+select * from multi0_1_mm order by key, key2;
+select * from multi0_2_mm order by key, key2;
+
+set hive.merge.mapredfiles=true;
+set hive.merge.sparkfiles=true;
+set hive.merge.tezfiles=true;
+
+--from intermediate
+--insert into table multi0_1_mm select p, key
+--insert overwrite table multi0_2_mm select key, p;
+insert into table multi0_1_mm select p, key from intermediate;
+insert into table multi0_2_mm select key, p from intermediate;
+select * from multi0_1_mm order by key, key2;
+select * from multi0_2_mm order by key, key2;
+
+set hive.merge.mapredfiles=false;
+set hive.merge.sparkfiles=false;
+set hive.merge.tezfiles=false;
+
+drop table multi0_1_mm;
+drop table multi0_2_mm;
+
+
+drop table multi1_mm;
+create table multi1_mm (key int, key2 int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
+from intermediate
+insert into table multi1_mm partition(p=1) select p, key
+insert into table multi1_mm partition(p=2) select key, p;
+select * from multi1_mm order by key, key2, p;
+--from intermediate
+--insert into table multi1_mm partition(p=2) select p, key
+--insert overwrite table multi1_mm partition(p=1) select key, p;
+insert into table multi1_mm partition(p=2) select p, key from intermediate;
+insert into table multi1_mm partition(p=1) select key, p from intermediate;
+select * from multi1_mm order by key, key2, p;
+
+from intermediate
+insert into table multi1_mm partition(p) select p, key, p
+insert into table multi1_mm partition(p=1) select key, p;
+select key, key2, p from multi1_mm order by key, key2, p;
+
+from intermediate
+insert into table multi1_mm partition(p) select p, key, 1
+insert into table multi1_mm partition(p=1) select key, p;
+select key, key2, p from multi1_mm order by key, key2, p;
+drop table multi1_mm;
+
+
+
+
+set datanucleus.cache.collections=false;
+set hive.stats.autogather=true;
+
+drop table stats_mm;
+create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only");
+--insert overwrite table stats_mm  select key from intermediate;
+insert into table stats_mm  select key from intermediate;
+desc formatted stats_mm;
+
+insert into table stats_mm  select key from intermediate;
+desc formatted stats_mm;
+drop table stats_mm;
+
+drop table stats2_mm;
+create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src;
+desc formatted stats2_mm;
+drop table stats2_mm;
+
+
+set hive.optimize.skewjoin=true;
+set hive.skewjoin.key=2;
+set hive.optimize.metadataonly=false;
+
+CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only");
+FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT into TABLE skewjoin_mm SELECT src1.key, src2.value;
+select count(distinct key) from skewjoin_mm;
+drop table skewjoin_mm;
+
+set hive.optimize.skewjoin=false;
 
 set hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
