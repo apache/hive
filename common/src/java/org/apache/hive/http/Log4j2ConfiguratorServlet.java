@@ -38,13 +38,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A servlet to configure log4j2.
- * <br/>
+ * <br>
  * HTTP GET returns all loggers and it's log level in JSON formatted response.
- * <br/>
+ * <br>
  * HTTP POST is used for configuring the loggers. POST data should be in the same format as GET's response.
  * To configure (add/update existing loggers), use HTTP POST with logger names and level in the following JSON format.
  *
- * <br/>
+ * <br>
  * <pre>
  * <code>{
  *  "loggers": [ {
@@ -57,11 +57,12 @@ import org.slf4j.LoggerFactory;
  *    "logger" : "org.apache.zookeeper.server.NIOServerCnxn",
  *    "level" : "WARN"
  *  }]
- * }<code>
+ * }</code>
  * </pre>
  *
- * <br/>
+ * <br>
  * Example usage:
+ * <ul>
  * <li>
  *    Returns all loggers with levels in JSON format:
  *    <pre>
@@ -98,14 +99,17 @@ import org.slf4j.LoggerFactory;
  *      { "logger" : "org.apache.orc", "level" : "INFO" } ] }' http://hostame:port/conflog
  *    </pre>
  * </li>
- * <br/>
+ * </ul>
+ * <br>
  * Response Status Codes:
- * <br/>
+ * <br>
+ * <ul>
  * <li>200 - OK : If the POST data is valid and if the request succeeds or if GET request succeeds.</li>
  * <li>401 - UNAUTHORIZED : If the user does not have privileges to access instrumentation servlets.
  *                      Refer <code>hadoop.security.instrumentation.requires.admin</code> config for more info.</li>
  * <li>400 - BAD_REQUEST : If the POST data is not a valid JSON.</li>
  * <li>500 - INTERNAL_SERVER_ERROR : If GET requests throws any IOException during JSON output generation.</li>
+ * </ul>
  */
 public class Log4j2ConfiguratorServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
