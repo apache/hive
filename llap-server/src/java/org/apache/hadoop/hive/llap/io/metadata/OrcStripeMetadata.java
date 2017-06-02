@@ -113,7 +113,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
 
   public void loadMissingIndexes(DataReader mr, StripeInformation stripe, boolean[] includes,
       boolean[] sargColumns) throws IOException {
-    // Do not loose the old indexes. Create a super set includes
+    // Do not lose the old indexes. Create a super set includes
     OrcProto.RowIndex[] existing = getRowIndexes();
     boolean superset[] = new boolean[Math.max(existing.length, includes.length)];
     for (int i = 0; i < includes.length; i++) {
@@ -123,7 +123,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
       superset[i] = superset[i] || (existing[i] != null);
     }
     // TODO: should we save footer to avoid a read here?
-    rowIndex = mr.readRowIndex(stripe, schema, null, true, includes,
+    rowIndex = mr.readRowIndex(stripe, schema, null, true, superset,
         rowIndex.getRowGroupIndex(),
         sargColumns, writerVersion, rowIndex.getBloomFilterKinds(),
         rowIndex.getBloomFilterIndex());
