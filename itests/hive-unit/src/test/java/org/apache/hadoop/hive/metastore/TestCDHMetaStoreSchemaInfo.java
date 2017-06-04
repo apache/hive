@@ -1,9 +1,13 @@
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.CDHMetaStoreSchemaInfo.CDHVersion;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +26,8 @@ public class TestCDHMetaStoreSchemaInfo {
 
   @Before
   public void setup() {
-    metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf);
+    metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf,
+      System.getProperty("test.tmp.dir", "target/tmp"), "derby");
     Assert.assertNotNull(metastoreSchemaInfo);
     Assert.assertTrue("Unexpected instance of IMetaStoreSchemaInfo",
       metastoreSchemaInfo instanceof CDHMetaStoreSchemaInfo);
@@ -101,5 +106,65 @@ public class TestCDHMetaStoreSchemaInfo {
     upgradeOrder = cdhSchemaInfo.getUpgradeScripts("1.1.0-cdh5.12.0");
     Assert.assertEquals("upgrade order should contain 1 scripts", 1, upgradeOrder.size());
     Assert.assertTrue(upgradeOrder.get(0).startsWith("upgrade-1.1.0-cdh5.12.0-to-1.1.0-cdh5.13.0"));
+  }
+
+  @Test
+  public void testSameVersionCompatibility() {
+    Assert.assertTrue("Same version string should be always compatible",
+      metastoreSchemaInfo.isVersionCompatible("1.1.0-cdh5.12.0", "1.1.0-cdh5.12.0"));
+  }
+
+  @Test
+  public void testVersionCompatibility() throws HiveMetaException {
+    Collection<String> dummySchemaChangeVersions = Arrays.asList(new String[] {
+      "1.1.0-cdh5.12.0",
+      "1.1.0-cdh5.12.5",
+      "1.1.0-cdh5.14.0",
+      "2.1.1-cdh6.0.0",
+      "2.1.1-cdh6.1.2"
+    });
+    CDHMetaStoreSchemaInfo cdhSchemaInfo = createMockMetaStoreSchemaInfo(dummySchemaChangeVersions);
+    //both the cdh and db versions are before the first schema change version
+    Assert.assertTrue(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.11.0", "1.1.0-cdh5.11.3"));
+    // Schema changes in metastore are backwards compatible. So cdh version less than
+    // db version should not break
+    Assert.assertTrue(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.11.0", "1.1.0-cdh5.12.3"));
+    //cdh and db versions both have schema changes from 5.12.0
+    Assert.assertTrue(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.12.1", "1.1.0-cdh5.12.3"));
+    Assert.assertTrue(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.12.0", "1.1.0-cdh5.12.4"));
+    //db version 5.12.0 does not have the schema changes required by cdh 5.12.5
+    Assert.assertFalse(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.12.5", "1.1.0-cdh5.12.0"));
+    //db version 5.12.6 does not have schema changes required by from 5.14.3
+    Assert.assertFalse(cdhSchemaInfo.isVersionCompatible("1.1.0-cdh5.14.3", "1.1.0-cdh5.12.6"));
+    //major version difference
+    Assert.assertFalse("Major version difference should not be compatible",
+      cdhSchemaInfo.isVersionCompatible("2.1.1-cdh6.0.0", "1.1.0-cdh6.0.0"));
+    Assert.assertTrue(
+      "maintainence release which does not have any schema changes should be compatible",
+      cdhSchemaInfo.isVersionCompatible("2.1.1-cdh6.0.0", "2.1.1-cdh6.0.1"));
+  }
+
+  @Test
+  public void testCDHVersionsWithSchemaChanges() throws Exception {
+    Collection<CDHVersion> cdhVersionsWithSchemaChanges =
+      ((CDHMetaStoreSchemaInfo) metastoreSchemaInfo).getCDHVersionsWithSchemaChanges();
+    Assert.assertNotNull("CDH versions with schema changes should never be null",
+      cdhVersionsWithSchemaChanges);
+    Assert.assertFalse(
+      "As of CDH 5.12.0 there is atleast one schema change so this collection should not be empty",
+      cdhVersionsWithSchemaChanges.isEmpty());
+  }
+
+  private CDHMetaStoreSchemaInfo createMockMetaStoreSchemaInfo(
+    Collection<String> dummySchemaChangeVersions) throws HiveMetaException {
+    Collection<CDHVersion> cdhVersions = new TreeSet<>(); 
+    for(String version : dummySchemaChangeVersions) {
+      cdhVersions.add(new CDHVersion(version));
+    }
+    CDHMetaStoreSchemaInfo cdhSchemaInfo = Mockito.mock(CDHMetaStoreSchemaInfo.class);
+    Mockito.when(cdhSchemaInfo.getCDHVersionsWithSchemaChanges()).thenReturn(cdhVersions);
+    Mockito.when(cdhSchemaInfo.isVersionCompatible(Mockito.anyString(), Mockito.anyString()))
+      .thenCallRealMethod();
+    return cdhSchemaInfo;
   }
 }
