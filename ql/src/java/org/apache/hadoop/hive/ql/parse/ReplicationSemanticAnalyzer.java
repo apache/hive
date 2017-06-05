@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandlerFactory;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
@@ -555,8 +556,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           analyzeDatabaseLoad(dbNameOrPattern, fs, dir);
         }
       } else {
-        // event dump, each subdir is an individual event dump.
-        Arrays.sort(dirsInLoadPath); // we need to guarantee that the directory listing we got is in order of evid.
+        // Event dump, each sub-dir is an individual event dump.
+        // We need to guarantee that the directory listing we got is in order of evid.
+        Arrays.sort(dirsInLoadPath, new EventDumpDirComparator());
 
         Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork(), conf);
         Task<? extends Serializable> taskChainTail = evTaskRoot;
@@ -572,6 +574,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 loadPath.toUri().toString());
         for (FileStatus dir : dirsInLoadPath){
           LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
+
           // event loads will behave similar to table loads, with one crucial difference
           // precursor order is strict, and each event must be processed after the previous one.
           // The way we handle this strict order is as follows:
