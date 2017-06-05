@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -134,6 +135,10 @@ public class ReplicationSpec {
     this((ASTNode)null);
   }
 
+  public ReplicationSpec(String fromId, String toId) {
+    this(true, false, fromId, toId, false, true, false);
+  }
+
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isLazy, boolean isReplace) {
@@ -189,18 +194,18 @@ public class ReplicationSpec {
     }
 
     // First try to extract a long value from the strings, and compare them.
-    // If oldReplState is less-than or equal to newReplState, allow.
+    // If oldReplState is less-than newReplState, allow.
     long currReplStateLong = Long.parseLong(currReplState.replaceAll("\\D",""));
     long replacementReplStateLong = Long.parseLong(replacementReplState.replaceAll("\\D",""));
 
     if ((currReplStateLong != 0) || (replacementReplStateLong != 0)){
-      return ((currReplStateLong - replacementReplStateLong) <= 0);
+      return ((currReplStateLong - replacementReplStateLong) < 0);
     }
 
     // If the long value of both is 0, though, fall back to lexical comparison.
 
     // Lexical comparison according to locale will suffice for now, future might add more logic
-    return (collator.compare(currReplState.toLowerCase(), replacementReplState.toLowerCase()) <= 0);
+    return (collator.compare(currReplState.toLowerCase(), replacementReplState.toLowerCase()) < 0);
   }
 
  /**
@@ -236,11 +241,28 @@ public class ReplicationSpec {
   }
 
   /**
+   * Determines if a current replication object(current state of dump) is allowed to
+   * replicate-replace-into a given database
+   */
+  public boolean allowReplacementInto(Database database) {
+    return allowReplacement(getLastReplicatedStateFromParameters(database.getParameters()),this.getCurrentReplicationState());
+  }
+
+  /**
    * Determines if a current replication event specification is allowed to
    * replicate-replace-into a given table
    */
   public boolean allowEventReplacementInto(Table table) {
     return allowReplacement(getLastReplicatedStateFromParameters(table.getParameters()),this.getReplicationState());
+  }
+
+  /**
+   * Determines if a current replication event specification is allowed to
+   * replicate-replace-into a given database.
+   * This is invoked only for alter database properties to set the repl.last.id
+   */
+  public boolean allowEventReplacementInto(Database database) {
+    return allowReplacement(getLastReplicatedStateFromParameters(database.getParameters()),this.getReplicationState());
   }
 
   /**

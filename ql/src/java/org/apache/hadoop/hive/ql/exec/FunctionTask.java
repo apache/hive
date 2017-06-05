@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -77,6 +78,16 @@ public class FunctionTask extends Task<FunctionWork> {
         return createTemporaryFunction(createFunctionDesc);
       } else {
         try {
+          if (createFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    createFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            Database database = Hive.get().getDatabase(dbName);
+            if (!createFunctionDesc.getReplicationSpec().allowEventReplacementInto(database)) {
+              // If the database is newer than the create event, then noop it.
+              return 0;
+            }
+          }
           return createPermanentFunction(Hive.get(conf), createFunctionDesc);
         } catch (Exception e) {
           setException(e);
@@ -92,6 +103,16 @@ public class FunctionTask extends Task<FunctionWork> {
         return dropTemporaryFunction(dropFunctionDesc);
       } else {
         try {
+          if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    dropFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            Database database = Hive.get().getDatabase(dbName);
+            if (!dropFunctionDesc.getReplicationSpec().allowEventReplacementInto(database)) {
+              // If the database is newer than the drop event, then noop it.
+              return 0;
+            }
+          }
           return dropPermanentFunction(Hive.get(conf), dropFunctionDesc);
         } catch (Exception e) {
           setException(e);

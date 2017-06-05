@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
@@ -127,8 +128,10 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       String fullQualifiedFunctionName = FunctionUtils.qualifyFunctionName(
           metadata.function.getFunctionName(), destinationDbName
       );
+      // For bootstrap load, the create function should be always performed.
+      ReplicationSpec replSpec = (context.dmd == null) ? null : metadata.getReplicationSpec();
       return new CreateFunctionDesc(
-          fullQualifiedFunctionName, false, metadata.function.getClassName(), transformedUris
+              fullQualifiedFunctionName, false, metadata.function.getClassName(), transformedUris, replSpec
       );
     }
   }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -41,6 +42,7 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
   String databaseName;
   Map<String, String> dbProperties;
   PrincipalDesc ownerPrincipal;
+  ReplicationSpec replicationSpec;
 
   /**
    * For serialization only.
@@ -48,10 +50,11 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
   public AlterDatabaseDesc() {
   }
 
-  public AlterDatabaseDesc(String databaseName, Map<String, String> dbProps) {
+  public AlterDatabaseDesc(String databaseName, Map<String, String> dbProps, ReplicationSpec replicationSpec) {
     super();
     this.databaseName = databaseName;
     this.dbProperties = dbProps;
+    this.replicationSpec = replicationSpec;
     this.setAlterType(ALTER_DB_TYPES.ALTER_PROPERTY);
   }
 
@@ -94,5 +97,16 @@ public class AlterDatabaseDesc extends DDLDesc implements Serializable {
 
   public void setAlterType(ALTER_DB_TYPES alterType) {
     this.alterType = alterType;
+  }
+
+  /**
+   * @return what kind of replication scope this alter is running under.
+   * This can result in a "ALTER IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() {
+    if (replicationSpec == null) {
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
   }
 }
