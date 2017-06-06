@@ -762,7 +762,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   public ResultSet getUDTs(String catalog, String schemaPattern,
       String typeNamePattern, int[] types) throws SQLException {
 
-    return new HiveMetaDataResultSet(
+    return new HiveMetaDataResultSet<Object>(
             Arrays.asList("TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "CLASS_NAME", "DATA_TYPE"
                     , "REMARKS", "BASE_TYPE")
             , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING", "INT")
