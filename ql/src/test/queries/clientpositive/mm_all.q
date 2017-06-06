@@ -356,6 +356,14 @@ drop table parquet2_mm;
 
 set hive.auto.convert.join=true;
 
+
+DROP TABLE IF EXISTS temp1;
+CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only");
+INSERT INTO temp1 SELECT key FROM intermediate;
+DESC EXTENDED temp1;
+SELECT * FROM temp1;
+
+
 drop table intermediate;
 
 

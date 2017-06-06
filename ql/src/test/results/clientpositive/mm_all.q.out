@@ -2352,6 +2352,56 @@ POSTHOOK: query: drop table parquet2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet2_mm
 POSTHOOK: Output: default@parquet2_mm
+PREHOOK: query: DROP TABLE IF EXISTS temp1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS temp1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp1
+POSTHOOK: query: CREATE TEMPORARY TABLE temp1 (a int) TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp1
+PREHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@temp1
+POSTHOOK: query: INSERT INTO temp1 SELECT key FROM intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@temp1
+POSTHOOK: Lineage: temp1.a SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: DESC EXTENDED temp1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@temp1
+POSTHOOK: query: DESC EXTENDED temp1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@temp1
+a                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM temp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM temp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp1
+#### A masked pattern was here ####
+98
+97
+0
+10
+100
+103
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
