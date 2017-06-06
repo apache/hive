@@ -44,11 +44,13 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
+  private final RelMetadataQuery mq;
 
-  protected FilterSelectivityEstimator(RelNode childRel) {
+  protected FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
+    this.mq = mq;
     this.childRel = childRel;
-    this.childCardinality = RelMetadataQuery.instance().getRowCount(childRel);
+    this.childCardinality = mq.getRowCount(childRel);
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -91,7 +93,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case IS_NOT_NULL: {
       if (childRel instanceof HiveTableScan) {
         double noOfNulls = getMaxNulls(call, (HiveTableScan) childRel);
-        double totalNoOfTuples = childRel.getRows();
+        double totalNoOfTuples = mq.getRowCount(childRel);
         if (totalNoOfTuples >= noOfNulls) {
           selectivity = (totalNoOfTuples - noOfNulls) / Math.max(totalNoOfTuples, 1);
         } else {
@@ -252,7 +254,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     double tmpNDV;
     double maxNDV = 1.0;
     InputReferencedVisitor irv;
-    RelMetadataQuery mq = RelMetadataQuery.instance();
     for (RexNode op : call.getOperands()) {
       if (op instanceof RexInputRef) {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,

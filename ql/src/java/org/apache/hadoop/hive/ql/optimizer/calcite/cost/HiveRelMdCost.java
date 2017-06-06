@@ -67,7 +67,7 @@ public class HiveRelMdCost implements MetadataHandler<BuiltInMetadata.NonCumulat
   }
 
   public RelOptCost getNonCumulativeCost(HiveTableScan ts, RelMetadataQuery mq) {
-    return hiveCostModel.getScanCost(ts);
+    return hiveCostModel.getScanCost(ts, mq);
   }
 
   // Default case

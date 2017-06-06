@@ -22,10 +22,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hive.common.util.HiveVersionInfo;
 
 import com.google.common.collect.ImmutableMap;
@@ -198,4 +204,31 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     return true;
   }
 
+  @Override
+  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo)
+      throws HiveMetaException {
+    String versionQuery;
+    boolean needsQuotedIdentifier =
+        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType()).needsQuotedIdentifier();
+    if (needsQuotedIdentifier) {
+      versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
+    } else {
+      versionQuery = "select t.SCHEMA_VERSION from VERSION t";
+    }
+    try (Connection metastoreDbConnection =
+        HiveSchemaHelper.getConnectionToMetastore(connectionInfo)) {
+      Statement stmt = metastoreDbConnection.createStatement();
+      ResultSet res = stmt.executeQuery(versionQuery);
+      if (!res.next()) {
+        throw new HiveMetaException("Could not find version info in metastore VERSION table.");
+      }
+      String currentSchemaVersion = res.getString(1);
+      if (res.next()) {
+        throw new HiveMetaException("Multiple versions were found in metastore.");
+      }
+      return currentSchemaVersion;
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
+    }
+  }
 }

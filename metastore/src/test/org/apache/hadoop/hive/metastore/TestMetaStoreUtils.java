@@ -27,15 +27,17 @@ import java.util.Arrays;
 public class TestMetaStoreUtils {
 
   @Test
-  public void testColumnsIncluded() {
+  public void testcolumnsIncludedByNameType() {
     FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
+    FieldSchema col1a = new FieldSchema("col1", "string", "col1 but with a different comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
-    Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1), Arrays.asList(col1)));
-    Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
-    Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
-    Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
-    Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
-    Assert.assertFalse(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertTrue(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
+    Assert.assertFalse(MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
   }
 }

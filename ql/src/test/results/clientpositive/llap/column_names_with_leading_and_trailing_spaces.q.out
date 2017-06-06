@@ -25,7 +25,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -51,7 +51,7 @@ POSTHOOK: Input: default@space
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
  left               	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into space values ("1", "2", "3")
 PREHOOK: type: QUERY
 PREHOOK: Output: default@space

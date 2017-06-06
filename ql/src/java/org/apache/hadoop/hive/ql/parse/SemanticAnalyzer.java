@@ -12620,41 +12620,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
-        // replace each of the position alias in ORDERBY with the actual column name
-        if (orderbyNode != null) {
-          isAllCol = false;
-          for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
-            ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
-            if (node != null && node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-              isAllCol = true;
-            }
-          }
-          for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
-            ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
-            ASTNode node = (ASTNode) colNode.getChild(0);
-            if (node != null && node.getToken().getType() == HiveParser.Number) {
-              if (isObyByPos) {
-                if (!isAllCol) {
-                  int pos = Integer.parseInt(node.getText());
-                  if (pos > 0 && pos <= selectExpCnt) {
-                    colNode.setChild(0, selectNode.getChild(pos - 1).getChild(0));
-                  } else {
-                    throw new SemanticException(
-                      ErrorMsg.INVALID_POSITION_ALIAS_IN_ORDERBY.getMsg(
-                      "Position alias: " + pos + " does not exist\n" +
-                      "The Select List is indexed from 1 to " + selectExpCnt));
-                  }
-                } else {
-                  throw new SemanticException(
-                    ErrorMsg.NO_SUPPORTED_ORDERBY_ALLCOLREF_POS.getMsg());
-                }
-              } else { //if not using position alias and it is a number.
-                warn("Using constant number " + node.getText() +
-                  " in order by. If you try to use position alias when hive.orderby.position.alias is false, the position alias will be ignored.");
-              }
-            }
-          }
-        }
+        // orderby position will be processed in genPlan
       }
 
       for (int i = next.getChildren().size() - 1; i >= 0; i--) {

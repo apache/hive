@@ -18,6 +18,7 @@
 package org.apache.hive.beeline;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

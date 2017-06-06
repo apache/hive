@@ -36,11 +36,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
-import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.PostgresCommandParser;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
-import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
 
 public class TestSchemaTool extends TestCase {
   private HiveSchemaTool schemaTool;

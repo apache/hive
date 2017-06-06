@@ -449,6 +449,8 @@ public class HiveConf extends Configuration {
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
         "Inteval for cmroot cleanup thread."),
+    REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/hive/repl/functions/",
+        "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1569,6 +1571,8 @@ public class HiveConf extends Configuration {
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 31,
              "Minimum number of OR clauses needed to transform into IN clauses"),
+    HIVECOUNTDISTINCTOPTIMIZER("hive.optimize.countdistinct", true,
+                 "Whether to transform count distinct into two stages"),
    HIVEPARTITIONCOLUMNSEPARATOR("hive.optimize.partition.columns.separate", true,
             "Extract partition columns from IN clauses"),
     // Constant propagation optimizer
@@ -3371,6 +3375,8 @@ public class HiveConf extends Configuration {
             "Turn this off when there is a memory issue."),
     SPARK_JOB_MAX_TASKS("hive.spark.job.max.tasks", -1, "The maximum number of tasks a Spark job may have.\n" +
             "If a Spark job contains more tasks than the maximum, it will be cancelled. A value of -1 means no limit."),
+    SPARK_STAGE_MAX_TASKS("hive.spark.stage.max.tasks", -1, "The maximum number of tasks a stage in a Spark job may have.\n" +
+        "If a Spark job stage contains more tasks than the maximum, the job will be cancelled. A value of -1 means no limit."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
     HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,

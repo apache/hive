@@ -288,6 +288,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludeQuery("authorization_uri_import.q");
         excludeQuery("spark_job_max_tasks.q");
+        excludeQuery("spark_stage_max_tasks.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");

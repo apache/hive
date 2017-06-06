@@ -40,8 +40,6 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.UriBuilder;
-
 import org.apache.hadoop.hive.common.LogUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +48,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
-import org.apache.hive.hcatalog.templeton.BadParam;
 
 /**
  * General utility methods.
@@ -319,17 +315,19 @@ public class TempletonUtils {
 
   public static String addUserHomeDirectoryIfApplicable(String origPathStr, String user)
     throws IOException, URISyntaxException {
-    URI uri = new URI(origPathStr);
-
-    if (uri.getPath().isEmpty()) {
-      String newPath = "/user/" + user;
-      uri = UriBuilder.fromUri(uri).replacePath(newPath).build();
-    } else if (!new Path(uri.getPath()).isAbsolute()) {
-      String newPath = "/user/" + user + "/" + uri.getPath();
-      uri = UriBuilder.fromUri(uri).replacePath(newPath).build();
-    } // no work needed for absolute paths
-
-    return uri.toString();
+    if(origPathStr == null || origPathStr.isEmpty()) {
+      return "/user/" + user;
+    }
+    Path p = new Path(origPathStr);
+    if(p.isAbsolute()) {
+      return origPathStr;
+    }
+    if(p.toUri().getPath().isEmpty()) {
+      //origPathStr="hdfs://host:99" for example
+      return new Path(p.toUri().getScheme(), p.toUri().getAuthority(), "/user/" + user).toString();
+    }
+    //can't have relative path if there is scheme/authority
+    return "/user/" + user + "/" + origPathStr;
   }
 
   public static Path hadoopFsPath(String fname, final Configuration conf, String user)

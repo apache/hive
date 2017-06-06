@@ -56,7 +56,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
 
   public Double getSelectivity(HiveTableScan t, RelMetadataQuery mq, RexNode predicate) {
     if (predicate != null) {
-      FilterSelectivityEstimator filterSelEstmator = new FilterSelectivityEstimator(t);
+      FilterSelectivityEstimator filterSelEstmator = new FilterSelectivityEstimator(t, mq);
       return filterSelEstmator.estimateSelectivity(predicate);
     }
 
@@ -85,7 +85,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
         getCombinedPredicateForJoin(j, predicate);
     if (!predInfo.getKey()) {
       return
-          new FilterSelectivityEstimator(j).
+          new FilterSelectivityEstimator(j, mq).
           estimateSelectivity(predInfo.getValue());
     }
 

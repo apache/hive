@@ -143,6 +143,16 @@ public class TestDruidSerDe {
                   new FloatWritable(3.32F), new FloatWritable(4F) }
   };
 
+  // Timeseries query results as records (types defined by metastore)
+  private static final String TIMESERIES_COLUMN_NAMES = "__time,sample_name1,sample_name2,sample_divide";
+  private static final String TIMESERIES_COLUMN_TYPES = "timestamp,smallint,double,float";
+  private static final Object[][] TIMESERIES_QUERY_RESULTS_RECORDS_2 = new Object[][] {
+    new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new ShortWritable((short) 0),
+        new DoubleWritable(1.0d), new FloatWritable(2.2222F) },
+    new Object[] { new TimestampWritable(new Timestamp(1325462400000L)), new ShortWritable((short) 2),
+        new DoubleWritable(3.32d), new FloatWritable(4F) }
+  };
+
   // TopN query
   private static final String TOPN_QUERY =
           "{  \"queryType\": \"topN\", "
@@ -259,6 +269,27 @@ public class TestDruidSerDe {
                   new FloatWritable(46.45F) }
   };
 
+  // TopN query results as records (types defined by metastore)
+  private static final String TOPN_COLUMN_NAMES = "__time,sample_dim,count,some_metric,sample_divide";
+  private static final String TOPN_COLUMN_TYPES = "timestamp,string,bigint,double,float";
+  private static final Object[][] TOPN_QUERY_RESULTS_RECORDS_2 = new Object[][] {
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val"), new LongWritable(111), new DoubleWritable(10669d),
+                  new FloatWritable(96.11711711711712F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("another_dim1_val"), new LongWritable(88), new DoubleWritable(28344d),
+                  new FloatWritable(322.09090909090907F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val3"), new LongWritable(70), new DoubleWritable(871d),
+                  new FloatWritable(12.442857142857143F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val4"), new LongWritable(62), new DoubleWritable(815d),
+                  new FloatWritable(13.14516129032258F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val5"), new LongWritable(60), new DoubleWritable(2787d),
+                  new FloatWritable(46.45F) }
+  };
+
   // GroupBy query
   private static final String GROUP_BY_QUERY =
           "{ "
@@ -337,6 +368,18 @@ public class TestDruidSerDe {
           new Object[] { new TimestampWritable(new Timestamp(1325376012000L)), new Text("Spain"),
                   new Text("pc"), new LongWritable(16), new FloatWritable(172.93494959F),
                   new FloatWritable(6.333333F) }
+  };
+
+  // GroupBy query results as records (types defined by metastore)
+  private static final String GROUP_BY_COLUMN_NAMES = "__time,country,device,total_usage,data_transfer,avg_usage";
+  private static final String GROUP_BY_COLUMN_TYPES = "timestamp,string,string,int,double,float";
+  private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS_2 = new Object[][] {
+    new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new Text("India"),
+            new Text("phone"), new IntWritable(88), new DoubleWritable(29.91233453F),
+            new FloatWritable(60.32F) },
+    new Object[] { new TimestampWritable(new Timestamp(1325376012000L)), new Text("Spain"),
+            new Text("pc"), new IntWritable(16), new DoubleWritable(172.93494959F),
+            new FloatWritable(6.333333F) }
   };
 
   // Select query
@@ -483,6 +526,38 @@ public class TestDruidSerDe {
                   new FloatWritable(68.0F), new FloatWritable(0.0F) }
   };
 
+  // Select query results as records (types defined by metastore)
+  private static final String SELECT_COLUMN_NAMES = "__time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted";
+  private static final String SELECT_COLUMN_TYPES = "timestamp,string,string,string,string,string,string,string,string,double,double,float,float,float";
+  private static final Object[][] SELECT_QUERY_RESULTS_RECORDS_2 = new Object[][] {
+          new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("1"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"),
+                  new Text("EmausBot"),
+                  new DoubleWritable(1.0d), new DoubleWritable(39.0d), new FloatWritable(39.0F),
+                  new FloatWritable(39.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
+                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new DoubleWritable(1.0d), new DoubleWritable(77.0d), new FloatWritable(77.0F),
+                  new FloatWritable(77.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new DoubleWritable(1.0d), new DoubleWritable(70.0d), new FloatWritable(70.0F),
+                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new DoubleWritable(1.0d), new DoubleWritable(68.0d), new FloatWritable(68.0F),
+                  new FloatWritable(68.0F), new FloatWritable(0.0F) }
+  };
+
   /**
    * Test the default behavior of the objects and object inspectors.
    * @throws IOException
@@ -511,11 +586,25 @@ public class TestDruidSerDe {
     deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY,
             TIMESERIES_QUERY_RESULTS, TIMESERIES_QUERY_RESULTS_RECORDS
     );
+    // Timeseries query (simulating column types from metastore)
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, TIMESERIES_COLUMN_NAMES);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, TIMESERIES_COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY,
+            TIMESERIES_QUERY_RESULTS, TIMESERIES_QUERY_RESULTS_RECORDS_2
+    );
     // TopN query
     tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY,
             TOPN_QUERY_RESULTS, TOPN_QUERY_RESULTS_RECORDS
+    );
+    // TopN query (simulating column types from metastore)
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, TOPN_COLUMN_NAMES);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, TOPN_COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY,
+            TOPN_QUERY_RESULTS, TOPN_QUERY_RESULTS_RECORDS_2
     );
     // GroupBy query
     tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GROUP_BY_QUERY);
@@ -523,11 +612,25 @@ public class TestDruidSerDe {
     deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY,
             GROUP_BY_QUERY_RESULTS, GROUP_BY_QUERY_RESULTS_RECORDS
     );
+    // GroupBy query (simulating column types from metastore)
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, GROUP_BY_COLUMN_NAMES);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, GROUP_BY_COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY,
+            GROUP_BY_QUERY_RESULTS, GROUP_BY_QUERY_RESULTS_RECORDS_2
+    );
     // Select query
     tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY,
             SELECT_QUERY_RESULTS, SELECT_QUERY_RESULTS_RECORDS
+    );
+    // Select query (simulating column types from metastore)
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, SELECT_COLUMN_NAMES);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, SELECT_COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY,
+            SELECT_QUERY_RESULTS, SELECT_QUERY_RESULTS_RECORDS_2
     );
   }
 
@@ -543,6 +646,7 @@ public class TestDruidSerDe {
     return tbl;
   }
 
+  @SuppressWarnings("unchecked")
   private static void deserializeQueryResults(DruidSerDe serDe, String queryType, String jsonQuery,
           String resultString, Object[][] records
   ) throws SerDeException, JsonParseException,
@@ -612,10 +716,11 @@ public class TestDruidSerDe {
     DruidWritable writable = new DruidWritable();
     int pos = 0;
     while (reader.next(NullWritable.get(), writable)) {
-      Object row = serDe.deserialize(writable);
+      List<Object> row = (List<Object>) serDe.deserialize(writable);
       Object[] expectedFieldsData = records[pos];
       assertEquals(expectedFieldsData.length, fieldRefs.size());
       for (int i = 0; i < fieldRefs.size(); i++) {
+        assertEquals("Field " + i + " type", expectedFieldsData[i].getClass(), row.get(i).getClass());
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         assertEquals("Field " + i, expectedFieldsData[i], fieldData);
       }
@@ -628,10 +733,11 @@ public class TestDruidSerDe {
     field2.set(reader, results);
     pos = 0;
     while (reader.nextKeyValue()) {
-      Object row = serDe.deserialize(reader.getCurrentValue());
+      List<Object> row = (List<Object>) serDe.deserialize(reader.getCurrentValue());
       Object[] expectedFieldsData = records[pos];
       assertEquals(expectedFieldsData.length, fieldRefs.size());
       for (int i = 0; i < fieldRefs.size(); i++) {
+        assertEquals("Field " + i + " type", expectedFieldsData[i].getClass(), row.get(i).getClass());
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         assertEquals("Field " + i, expectedFieldsData[i], fieldData);
       }
@@ -682,7 +788,7 @@ public class TestDruidSerDe {
    * @throws NoSuchMethodException
    */
   @Test
-  public void testDruidSerializer()
+  public void testDruidObjectSerializer()
           throws SerDeException, JsonParseException, JsonMappingException,
           NoSuchFieldException, SecurityException, IllegalArgumentException,
           IllegalAccessException, IOException, InterruptedException,
@@ -737,9 +843,62 @@ public class TestDruidSerDe {
     // Serialize
     DruidWritable writable = (DruidWritable) serDe.serialize(rowObject, inspector);
     // Check result
-    assertEquals(DRUID_WRITABLE.getValue().size(), writable.getValue().size());
-    for (Entry<String, Object> e: DRUID_WRITABLE.getValue().entrySet()) {
+    assertEquals(druidWritable.getValue().size(), writable.getValue().size());
+    for (Entry<String, Object> e: druidWritable.getValue().entrySet()) {
       assertEquals(e.getValue(), writable.getValue().get(e.getKey()));
+    }
+  }
+
+  private static final Object[] ROW_OBJECT_2 = new Object[] {
+      new TimestampWritable(new Timestamp(1377907200000L)),
+      new Text("dim1_val"),
+      new DoubleWritable(10669.3D),
+      new FloatWritable(10669.45F),
+      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
+      new LongWritable(1113939),
+      new IntWritable(1112123),
+      new ShortWritable((short) 12),
+      new ByteWritable((byte) 0)
+  };
+  private static final DruidWritable DRUID_WRITABLE_2 = new DruidWritable(
+      ImmutableMap.<String, Object>builder()
+          .put("__time", 1377907200000L)
+          .put("c0", "dim1_val")
+          .put("c1", 10669.3D)
+          .put("c2", 10669.45F)
+          .put("c3", 1064.34D)
+          .put("c4", 1113939L)
+          .put("c5", 1112123)
+          .put("c6", (short) 12)
+          .put("c7", (byte) 0)
+          .build());
+
+  @Test
+  public void testDruidObjectDeserializer()
+          throws SerDeException, JsonParseException, JsonMappingException,
+          NoSuchFieldException, SecurityException, IllegalArgumentException,
+          IllegalAccessException, IOException, InterruptedException,
+          NoSuchMethodException, InvocationTargetException {
+    // Create, initialize, and test the SerDe
+    DruidSerDe serDe = new DruidSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl;
+    // Mixed source (all types)
+    tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    deserializeObject(tbl, serDe, ROW_OBJECT_2, DRUID_WRITABLE_2);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void deserializeObject(Properties properties, DruidSerDe serDe,
+      Object[] rowObject, DruidWritable druidWritable) throws SerDeException {
+    // Deserialize
+    List<Object> object = (List<Object>) serDe.deserialize(druidWritable);
+    // Check result
+    assertEquals(rowObject.length, object.size());
+    for (int i = 0; i < rowObject.length; i++) {
+      assertEquals(rowObject[i].getClass(), object.get(i).getClass());
+      assertEquals(rowObject[i], object.get(i));
     }
   }
 }

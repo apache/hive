@@ -23,13 +23,14 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelDistribution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
 import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Cost model interface.
@@ -49,7 +50,7 @@ public abstract class HiveCostModel {
 
   public abstract RelOptCost getAggregateCost(HiveAggregate aggregate);
 
-  public abstract RelOptCost getScanCost(HiveTableScan ts);
+  public abstract RelOptCost getScanCost(HiveTableScan ts, RelMetadataQuery mq);
 
   public RelOptCost getJoinCost(HiveJoin join) {
     // Select algorithm with min cost

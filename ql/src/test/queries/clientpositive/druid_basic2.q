@@ -59,6 +59,10 @@ ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10;
 
 EXPLAIN
+SELECT substring(namespace, CAST(deleted AS INT), 4)
+FROM druid_table_1;
+
+EXPLAIN
 SELECT robot, floor_day(`__time`)
 FROM druid_table_1
 WHERE floor_day(`__time`) BETWEEN '1999-11-01 00:00:00' AND '1999-11-10 00:00:00'

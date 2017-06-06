@@ -304,6 +304,7 @@ public final class QFile {
         .addFilter(".*/tmp/.*\n", MASK_PATTERN)
         .addFilter(".*file:.*\n", MASK_PATTERN)
         .addFilter(".*file\\..*\n", MASK_PATTERN)
+        .addFilter(".*Output:.*/data/files/.*\n", MASK_PATTERN)
         .addFilter(".*CreateTime.*\n", MASK_PATTERN)
         .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
         .addFilter(".*lastUpdateTime.*\n", MASK_PATTERN)

@@ -1780,7 +1780,7 @@ public class Hive {
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
         if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-          StatsSetupConst.setBasicStatsStateForCreateTable(newTPart.getParameters(),
+          StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(), null,
               StatsSetupConst.TRUE);
         }
         MetaStoreUtils.populateQuickStats(HiveStatsUtils.getFileStatusRecurse(newPartPath, -1, newPartPath.getFileSystem(conf)), newTPart.getParameters());

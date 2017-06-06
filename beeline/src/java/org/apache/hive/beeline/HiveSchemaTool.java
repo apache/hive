@@ -38,8 +38,10 @@ import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
+import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +82,7 @@ public class HiveSchemaTool {
   private final String dbType;
   private final String metaDbType;
   private final IMetaStoreSchemaInfo metaStoreSchemaInfo;
+  private boolean needsQuotedIdentifier;
 
   static final private Logger LOG = LoggerFactory.getLogger(HiveSchemaTool.class.getName());
 
@@ -95,6 +98,7 @@ public class HiveSchemaTool {
     this.hiveConf = hiveConf;
     this.dbType = dbType;
     this.metaDbType = metaDbType;
+    this.needsQuotedIdentifier = getDbCommandParser(dbType).needsQuotedIdentifier();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
   }
 
@@ -167,42 +171,11 @@ public class HiveSchemaTool {
    * @throws MetaException
    */
   public void showInfo() throws HiveMetaException {
-    Connection metastoreConn = getConnectionToMetastore(true);
     String hiveVersion = metaStoreSchemaInfo.getHiveSchemaVersion();
-    String dbVersion = getMetaStoreSchemaVersion(metastoreConn);
+    String dbVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(true));
     System.out.println("Hive distribution version:\t " + hiveVersion);
     System.out.println("Metastore schema version:\t " + dbVersion);
     assertCompatibleVersion(hiveVersion, dbVersion);
-
-  }
-
-  private String getMetaStoreSchemaVersion(Connection metastoreConn)
-      throws HiveMetaException {
-    return getMetaStoreSchemaVersion(metastoreConn, false);
-  }
-
-  // read schema version from metastore
-  private String getMetaStoreSchemaVersion(Connection metastoreConn,
-      boolean checkDuplicatedVersion) throws HiveMetaException {
-    String versionQuery;
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
-      versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
-    } else {
-      versionQuery = "select t.SCHEMA_VERSION from VERSION t";
-    }
-    try(Statement stmt = metastoreConn.createStatement();
-        ResultSet res = stmt.executeQuery(versionQuery)) {
-      if (!res.next()) {
-        throw new HiveMetaException("Could not find version info in metastore VERSION table.");
-      }
-      String currentSchemaVersion = res.getString(1);
-      if (checkDuplicatedVersion && res.next()) {
-        throw new HiveMetaException("Multiple versions were found in metastore.");
-      }
-      return currentSchemaVersion;
-    } catch (SQLException e) {
-      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
-    }
   }
 
   boolean validateLocations(Connection conn, URI[] defaultServers) throws HiveMetaException {
@@ -226,7 +199,7 @@ public class HiveSchemaTool {
     String dbLoc;
     boolean isValid = true;
     int numOfInvalid = 0;
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       dbLoc = "select dbt.\"DB_ID\", dbt.\"NAME\", dbt.\"DB_LOCATION_URI\" from \"DBS\" dbt";
     } else {
       dbLoc = "select dbt.DB_ID, dbt.NAME, dbt.DB_LOCATION_URI from DBS dbt";
@@ -255,13 +228,13 @@ public class HiveSchemaTool {
     String tabLoc, tabIDRange;
     boolean isValid = true;
     int numOfInvalid = 0;
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       tabIDRange = "select max(\"TBL_ID\"), min(\"TBL_ID\") from \"TBLS\" ";
     } else {
       tabIDRange = "select max(TBL_ID), min(TBL_ID) from TBLS";
     }
 
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       tabLoc = "select tbl.\"TBL_ID\", tbl.\"TBL_NAME\", sd.\"LOCATION\", dbt.\"DB_ID\", dbt.\"NAME\" from \"TBLS\" tbl inner join " +
     "\"SDS\" sd on tbl.\"SD_ID\" = sd.\"SD_ID\" and tbl.\"TBL_TYPE\" != '" + TableType.VIRTUAL_VIEW +
     "' and tbl.\"TBL_ID\" >= ? and tbl.\"TBL_ID\"<= ? " + "inner join \"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" ";
@@ -315,13 +288,13 @@ public class HiveSchemaTool {
     String partLoc, partIDRange;
     boolean isValid = true;
     int numOfInvalid = 0;
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       partIDRange = "select max(\"PART_ID\"), min(\"PART_ID\") from \"PARTITIONS\" ";
     } else {
       partIDRange = "select max(PART_ID), min(PART_ID) from PARTITIONS";
     }
 
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       partLoc = "select pt.\"PART_ID\", pt.\"PART_NAME\", sd.\"LOCATION\", tbl.\"TBL_ID\", tbl.\"TBL_NAME\",dbt.\"DB_ID\", dbt.\"NAME\" from \"PARTITIONS\" pt "
            + "inner join \"SDS\" sd on pt.\"SD_ID\" = sd.\"SD_ID\" and pt.\"PART_ID\" >= ? and pt.\"PART_ID\"<= ? "
            + " inner join \"TBLS\" tbl on pt.\"TBL_ID\" = tbl.\"TBL_ID\" inner join "
@@ -376,13 +349,13 @@ public class HiveSchemaTool {
     String skewedColLoc, skewedColIDRange;
     boolean isValid = true;
     int numOfInvalid = 0;
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       skewedColIDRange = "select max(\"STRING_LIST_ID_KID\"), min(\"STRING_LIST_ID_KID\") from \"SKEWED_COL_VALUE_LOC_MAP\" ";
     } else {
       skewedColIDRange = "select max(STRING_LIST_ID_KID), min(STRING_LIST_ID_KID) from SKEWED_COL_VALUE_LOC_MAP";
     }
 
-    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+    if (needsQuotedIdentifier) {
       skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\", db.\"NAME\", db.\"DB_ID\" from \"TBLS\" t, \"SDS\" s, \"DBS\" db, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
            + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and t.\"DB_ID\" = db.\"DB_ID\" and sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? ";
     } else {
@@ -497,11 +470,9 @@ public class HiveSchemaTool {
     if (dryRun) {
       return;
     }
-    String newSchemaVersion = getMetaStoreSchemaVersion(
-        getConnectionToMetastore(false));
+    String newSchemaVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
     // verify that the new version is added to schema
     assertCompatibleVersion(metaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
-
   }
 
   private void assertCompatibleVersion(String hiveSchemaVersion, String dbSchemaVersion)
@@ -517,8 +488,8 @@ public class HiveSchemaTool {
    * @throws MetaException
    */
   public void doUpgrade() throws HiveMetaException {
-    String fromVersion = getMetaStoreSchemaVersion(
-        getConnectionToMetastore(false));
+    String fromVersion =
+      metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
     if (fromVersion == null || fromVersion.isEmpty()) {
       throw new HiveMetaException("Schema version not stored in the metastore. " +
           "Metastore schema is too old or corrupt. Try specifying the version manually");
@@ -526,6 +497,10 @@ public class HiveSchemaTool {
     doUpgrade(fromVersion);
   }
 
+  private MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
+    return new MetaStoreConnectionInfo(userName, passWord, url, driver, printInfo, hiveConf,
+        dbType);
+  }
   /**
    * Perform metastore schema upgrade
    *
@@ -682,10 +657,10 @@ public class HiveSchemaTool {
       for (String seqName : seqNameToTable.keySet()) {
         String tableName = seqNameToTable.get(seqName).getLeft();
         String tableKey = seqNameToTable.get(seqName).getRight();
-        String seqQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+        String seqQuery = needsQuotedIdentifier ?
             ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"='org.apache.hadoop.hive.metastore.model." + seqName + "'")
             : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME='org.apache.hadoop.hive.metastore.model." + seqName + "'");
-        String maxIdQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+        String maxIdQuery = needsQuotedIdentifier ?
             ("select max(\"" + tableKey + "\") from \"" + tableName + "\"")
             : ("select max(" + tableKey + ") from " + tableName);
 
@@ -715,7 +690,7 @@ public class HiveSchemaTool {
   boolean validateSchemaVersions(Connection conn) throws HiveMetaException {
     System.out.println("Validating schema version");
     try {
-      String newSchemaVersion = getMetaStoreSchemaVersion(conn, true);
+      String newSchemaVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
       assertCompatibleVersion(metaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
     } catch (HiveMetaException hme) {
       if (hme.getMessage().contains("Metastore schema version is not compatible")
@@ -743,7 +718,7 @@ public class HiveSchemaTool {
 
     System.out.println("Validating metastore schema tables");
     try {
-      version = getMetaStoreSchemaVersion(hmsConn);
+      version = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
     } catch (HiveMetaException he) {
       System.err.println("Failed to determine schema version from Hive Metastore DB. " + he.getMessage());
       System.out.println("Failed in schema version validation.");
@@ -781,8 +756,8 @@ public class HiveSchemaTool {
     // parse the schema file to determine the tables that are expected to exist
     // we are using oracle schema because it is simpler to parse, no quotes or backticks etc
     String baseDir    = new File(metaStoreSchemaInfo.getMetaStoreScriptDir()).getParent();
-    String schemaFile = baseDir  + "/" + dbType + "/hive-schema-" + version + "." + dbType + ".sql";
-
+    String schemaFile = new File(metaStoreSchemaInfo.getMetaStoreScriptDir(),
+        metaStoreSchemaInfo.generateInitFileName(version)).getPath();
     try {
       LOG.debug("Parsing schema script " + schemaFile);
       subScripts.addAll(findCreateTable(schemaFile, schemaTables));
@@ -896,7 +871,7 @@ public class HiveSchemaTool {
     boolean isValid = true;
     try {
       Statement stmt = conn.createStatement();
-      String tblQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+      String tblQuery = needsQuotedIdentifier ?
           ("select t.* from \"TBLS\" t WHERE t.\"SD_ID\" IS NULL and (t.\"TBL_TYPE\"='" + TableType.EXTERNAL_TABLE + "' or t.\"TBL_TYPE\"='" + TableType.MANAGED_TABLE + "')")
           : ("select t.* from TBLS t WHERE t.SD_ID IS NULL and (t.TBL_TYPE='" + TableType.EXTERNAL_TABLE + "' or t.TBL_TYPE='" + TableType.MANAGED_TABLE + "')");
 

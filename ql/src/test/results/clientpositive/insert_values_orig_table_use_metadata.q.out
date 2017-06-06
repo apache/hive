@@ -58,7 +58,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -632,7 +632,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

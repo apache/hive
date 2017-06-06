@@ -72,4 +72,4 @@ POSTHOOK: Input: default@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	0                   	0.0                 	0                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"data\":\"true\",\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 

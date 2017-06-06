@@ -72,7 +72,8 @@ public class HiveRelMdRowCount extends RelMdRowCount {
       }
       return pkfk.fkInfo.rowCount * selectivity;
     }
-    return join.getRows();
+    // Do not call mq.getRowCount(join), will trigger CyclicMetadataException
+    return join.estimateRowCount(mq);
   }
 
   @Override

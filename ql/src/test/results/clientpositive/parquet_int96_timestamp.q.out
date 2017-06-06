@@ -639,7 +639,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ts\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	parquet.mr.int96.write.zone	GMT+10              
@@ -674,7 +674,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ts\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	parquet.mr.int96.write.zone	GMT+10              

@@ -88,24 +88,49 @@ public class TestTezSessionPool {
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
       poolManager.startPool();
+      // this is now a LIFO operation
+
+      // draw 1 and replace
       TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
       assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
       sessionState = poolManager.getSession(null, conf, true, false);
-      assertEquals("b", sessionState.getQueueName());
+      assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
-      sessionState = poolManager.getSession(null, conf, true, false);
-      assertEquals("c", sessionState.getQueueName());
-      poolManager.returnSession(sessionState, false);
+      // [a,b,c,a,b,c]
 
-      sessionState = poolManager.getSession(null, conf, true, false);
-      if (sessionState.getQueueName().compareTo("a") != 0) {
-        fail();
-      }
+      // draw 2 and return in order - further run should return last returned
+      TezSessionState first = poolManager.getSession(null, conf, true, false);
+      TezSessionState second = poolManager.getSession(null, conf, true, false);
+      assertEquals("a", first.getQueueName());
+      assertEquals("b", second.getQueueName());
+      poolManager.returnSession(first, false);
+      poolManager.returnSession(second, false);
+      TezSessionState third = poolManager.getSession(null, conf, true, false);
+      assertEquals("b", third.getQueueName());
+      poolManager.returnSession(third, false);
 
-      poolManager.returnSession(sessionState, false);
+      // [b,a,c,a,b,c]
+
+      first = poolManager.getSession(null, conf, true, false);
+      second = poolManager.getSession(null, conf, true, false);
+      third = poolManager.getSession(null, conf, true, false);
+
+      assertEquals("b", first.getQueueName());
+      assertEquals("a", second.getQueueName());
+      assertEquals("c", third.getQueueName());
+
+      poolManager.returnSession(first, false);
+      poolManager.returnSession(second, false);
+      poolManager.returnSession(third, false);
+
+      // [c,a,b,a,b,c]
+
+      first = poolManager.getSession(null, conf, true, false);
+      assertEquals("c", third.getQueueName());
+      poolManager.returnSession(first, false);
 
     } catch (Exception e) {
       e.printStackTrace();

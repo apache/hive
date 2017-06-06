@@ -1,0 +1,158 @@
+PREHOOK: query: drop table p
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table p
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@p
+POSTHOOK: query: CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@p
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\",\"insert_num\":\"true\"}}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into p values (1,22,333)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@p
+POSTHOOK: query: insert into p values (1,22,333)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@p
+POSTHOOK: Lineage: p.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: p.c2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: p.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	tinyint             	                    
+c2                  	smallint            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	8                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@p
+PREHOOK: Output: default@p
+POSTHOOK: query: alter table p replace columns (insert_num int, c1 STRING, c2 STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@p
+POSTHOOK: Output: default@p
+PREHOOK: query: desc formatted p
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	comment             
+	 	 
+insert_num          	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	8                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted p c1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c1                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
+PREHOOK: query: desc formatted p c2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@p
+POSTHOOK: query: desc formatted p c2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@p
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c2                  	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 

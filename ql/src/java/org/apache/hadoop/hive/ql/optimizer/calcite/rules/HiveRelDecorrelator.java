@@ -1232,7 +1232,8 @@ public class HiveRelDecorrelator implements ReflectiveVisitor {
 
       // Replace the filter expression to reference output of the join
       // Map filter to the new filter over join
-      relBuilder.push(frame.r).filter(decorrelateExpr(rel.getCondition()));
+      relBuilder.push(frame.r).filter(
+          simplifyComparison(decorrelateExpr(rel.getCondition())));
 
       // Filter does not change the input ordering.
       // Filter rel does not permute the input.
@@ -1243,11 +1244,44 @@ public class HiveRelDecorrelator implements ReflectiveVisitor {
     }
   }
 
-  /**
-   * Rewrite LogicalFilter.
-   *
-   * @param rel the filter rel to rewrite
-   */
+  private RexNode simplifyComparison(RexNode op) {
+    switch(op.getKind()) {
+    case EQUALS:
+    case GREATER_THAN:
+    case GREATER_THAN_OR_EQUAL:
+    case LESS_THAN:
+    case LESS_THAN_OR_EQUAL:
+    case NOT_EQUALS:
+      RexCall e = (RexCall) op;
+      final List<RexNode> operands = new ArrayList<>(e.operands);
+
+      // Simplify "x <op> x"
+      final RexNode o0 = operands.get(0);
+      final RexNode o1 = operands.get(1);
+      // this should only be called when we are creating filter (decorrelate filter)
+      // since in that case null/unknown is treated as false we don't care about
+      // nullability of operands and will always rewrite op=op to op is not null
+      if (RexUtil.eq(o0, o1) )
+        switch (e.getKind()) {
+        case EQUALS:
+        case GREATER_THAN_OR_EQUAL:
+        case LESS_THAN_OR_EQUAL:
+          // "x = x" simplifies to "x is not null" (similarly <= and >=)
+          return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, o0);
+        default:
+          // "x != x" simplifies to "false" (similarly < and >)
+          return rexBuilder.makeLiteral(false);
+        }
+    }
+    return op;
+  }
+
+
+    /**
+     * Rewrite LogicalFilter.
+     *
+     * @param rel the filter rel to rewrite
+     */
   public Frame decorrelateRel(LogicalFilter rel) {
     //
     // Rewrite logic:
