@@ -361,12 +361,12 @@ STAGE PLANS:
             alias: lineitem
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((l_shipmode = 'AIR') and (l_linenumber = l_linenumber)) (type: boolean)
-              Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((l_shipmode = 'AIR') and l_linenumber is not null) (type: boolean)
+              Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_orderkey (type: int), l_linenumber (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   Group By Vectorization:
                       groupByMode: HASH
@@ -377,7 +377,7 @@ STAGE PLANS:
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                   HashTable Sink Operator
                     keys:
                       0 _col1 (type: int), _col4 (type: int)

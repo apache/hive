@@ -2300,19 +2300,19 @@ STAGE PLANS:
                   alias: p
                   Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((p_size = p_size) and (p_partkey = p_partkey)) (type: boolean)
-                    Statistics: Num rows: 6 Data size: 774 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (p_size is not null and p_partkey is not null) (type: boolean)
+                    Statistics: Num rows: 26 Data size: 3354 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(p_name)
                       keys: p_partkey (type: int), p_size (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                        Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
@@ -2349,16 +2349,16 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col2 (type: bigint), true (type: boolean), _col0 (type: int), _col1 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: int), _col3 (type: int)
                     sort order: ++
                     Map-reduce partition columns: _col2 (type: int), _col3 (type: int)
-                    Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint), _col1 (type: boolean)
 
   Stage: Stage-0
@@ -3861,12 +3861,12 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_shipmode = 'AIR') and (l_linenumber = l_linenumber)) (type: boolean)
-                    Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((l_shipmode = 'AIR') and l_linenumber is not null) (type: boolean)
+                    Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_linenumber (type: int)
                       outputColumnNames: l_orderkey, l_linenumber
-                      Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(l_orderkey)
                         keys: l_linenumber (type: int)
@@ -4072,12 +4072,12 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 9600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_shipmode = 'AIR') and (l_linenumber = l_linenumber)) (type: boolean)
-                    Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((l_shipmode = 'AIR') and l_linenumber is not null) (type: boolean)
+                    Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_linenumber (type: int)
                       outputColumnNames: l_orderkey, l_linenumber
-                      Statistics: Num rows: 7 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 14 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(l_orderkey)
                         keys: l_linenumber (type: int)

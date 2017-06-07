@@ -22,8 +22,10 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Union;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 
 public class HiveUnion extends Union implements HiveRelNode {
 
@@ -38,6 +40,13 @@ public class HiveUnion extends Union implements HiveRelNode {
 
   @Override
   public void implement(Implementor implementor) {
+  }
+  //required for HiveRelDecorrelator
+  public RelNode accept(RelShuttle shuttle) {
+    if (shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
+    }
+    return shuttle.visit(this);
   }
 
 }
