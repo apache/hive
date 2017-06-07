@@ -315,7 +315,6 @@ PREHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@simple_to_mm
 PREHOOK: Output: default@simple_to_mm
-FAILED: Error in acquiring locks: Transaction already opened. txnid:30
 POSTHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@simple_to_mm
@@ -758,7 +757,6 @@ PREHOOK: query: alter table part_to_mm set tblproperties("transactional"="true",
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@part_to_mm
 PREHOOK: Output: default@part_to_mm
-FAILED: Error in acquiring locks: Transaction already opened. txnid:63
 POSTHOOK: query: alter table part_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@part_to_mm

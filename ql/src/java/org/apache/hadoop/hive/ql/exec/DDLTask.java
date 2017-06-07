@@ -4147,8 +4147,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     long mmWriteId = 0;
     try {
       HiveTxnManager txnManager = SessionState.get().getTxnMgr();
-      mmWriteId = txnManager.openTxn(new Context(conf), conf.getUser());
-      txnManager.commitTxn();
+      if (txnManager.isTxnOpen()) {
+        mmWriteId = txnManager.getCurrentTxnId();
+      } else {
+        mmWriteId = txnManager.openTxn(new Context(conf), conf.getUser());
+        txnManager.commitTxn();
+      }
     } catch (Exception e) {
       String errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       console.printError(errorMessage, "\n"
