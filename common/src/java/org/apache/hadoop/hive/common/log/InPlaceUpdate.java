@@ -187,7 +187,16 @@ public class InPlaceUpdate {
 
 
   public static boolean canRenderInPlace(HiveConf conf) {
-    boolean inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
+    String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    boolean inPlaceUpdates = false;
+
+    if (engine.equals("tez")) {
+      inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
+    }
+
+    if (engine.equals("spark")) {
+      inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPARK_EXEC_INPLACE_PROGRESS);
+    }
 
     // we need at least 80 chars wide terminal to display in-place updates properly
     return inPlaceUpdates && isUnixTerminal() && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
