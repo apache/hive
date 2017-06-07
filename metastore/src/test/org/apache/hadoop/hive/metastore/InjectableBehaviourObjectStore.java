@@ -58,7 +58,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   private static com.google.common.base.Function<NotificationEventResponse, NotificationEventResponse>
           getNextNotificationModifier = com.google.common.base.Functions.identity();
 
-  // Methods to set/get/reset getTable modifier
+  // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table,Table> modifier){
     getTableModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
   }
@@ -67,11 +67,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     setGetTableBehaviour(null);
   }
 
-  public static com.google.common.base.Function<Table,Table> getGetTableBehaviour() {
-    return getTableModifier;
-  }
-
-  // Methods to set/get/reset listPartitionNames modifier
+  // Methods to set/reset listPartitionNames modifier
   public static void setListPartitionNamesBehaviour(com.google.common.base.Function<List<String>, List<String>> modifier){
     listPartitionNamesModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
   }
@@ -80,11 +76,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     setListPartitionNamesBehaviour(null);
   }
 
-  public static com.google.common.base.Function<List<String>, List<String>> getListPartitionNamesBehaviour() {
-    return listPartitionNamesModifier;
-  }
-
-  // Methods to set/get/reset getNextNotification modifier
+  // Methods to set/reset getNextNotification modifier
   public static void setGetNextNotificationBehaviour(
           com.google.common.base.Function<NotificationEventResponse,NotificationEventResponse> modifier){
     getNextNotificationModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
@@ -92,11 +84,6 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   public static void resetGetNextNotificationBehaviour(){
     setGetNextNotificationBehaviour(null);
-  }
-
-  public static com.google.common.base.Function<NotificationEventResponse,NotificationEventResponse>
-  getGetNextNotificationBehaviour() {
-    return getNextNotificationModifier;
   }
 
   // ObjectStore methods to be overridden with injected behavior
