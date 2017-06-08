@@ -387,9 +387,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -552,9 +552,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -566,7 +566,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 5 <- Reducer 4 (BROADCAST_EDGE)
-        Map 6 <- Reducer 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
@@ -629,10 +628,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: k
-                  filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_3_i_cstring_bloom_filter)))) (type: boolean)
+                  filterExpr: str is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_3_i_cstring_min) AND DynamicValue(RS_3_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_3_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: str is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: str (type: string)
@@ -695,10 +694,6 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -706,9 +701,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -833,9 +828,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -933,13 +928,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+PREHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
+        select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
+        select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1390,9 +1385,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1553,9 +1548,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1567,7 +1562,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 5 <- Reducer 4 (BROADCAST_EDGE)
-        Map 6 <- Reducer 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
         Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
@@ -1630,10 +1624,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: k
-                  filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_9_i_cstring_bloom_filter)))) (type: boolean)
+                  filterExpr: str is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_9_i_cstring_min) AND DynamicValue(RS_9_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_9_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: str is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: str (type: string)
@@ -1694,10 +1688,6 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -1705,9 +1695,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1830,9 +1820,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1928,13 +1918,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+PREHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
+        select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, s, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
         union all
-        select /*+ semi(v, key1, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
+        select /*+ semi(v, key1, d, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2353,9 +2343,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(srcpart_date, str, v, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2504,9 +2494,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+PREHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
+POSTHOOK: query: EXPLAIN select  /*+ semi(i, cstring, v, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2517,7 +2507,6 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 6 (BROADCAST_EDGE)
         Map 4 <- Reducer 6 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
@@ -2528,10 +2517,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: k
-                  filterExpr: (str is not null and (str BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_8_i_cstring_bloom_filter)))) (type: boolean)
+                  filterExpr: str is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (str is not null and (str BETWEEN DynamicValue(RS_8_i_cstring_min) AND DynamicValue(RS_8_i_cstring_max) and in_bloom_filter(str, DynamicValue(RS_8_i_cstring_bloom_filter)))) (type: boolean)
+                    predicate: str is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: str (type: string)
@@ -2633,10 +2622,6 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -2644,9 +2629,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2761,9 +2746,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+PREHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
+POSTHOOK: query: explain select /*+ semi(k, str, v, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.value = v.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

@@ -226,6 +226,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
               if (tabAliasBuilder.length() > 0) {
                 tableAlias = tabAliasBuilder.toString();
               } else {
+                //falling back
                 Operator<?> op = ctx.generator;
 
                 while (!(op == null || op instanceof TableScanOperator)) {
@@ -361,6 +362,10 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       if (!colName.equals(sjHint.getColName())) {
         continue;
       }
+      if (!ts.getConf().getAlias().equals(sjHint.getTarget())) {
+        continue;
+      }
+
       // match!
       LOG.info("Creating runtime filter due to user hint: column = " + colName);
       if (generateSemiJoinOperatorPlan(ctx, pCtx, ts, keyBaseAlias,

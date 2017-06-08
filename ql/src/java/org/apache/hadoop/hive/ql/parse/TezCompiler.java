@@ -743,15 +743,15 @@ public class TezCompiler extends TaskCompiler {
         SemiJoinBranchInfo sjInfo = pctx.getRsToSemiJoinBranchInfo().get(rs);
         if (sjInfo != null && ts == sjInfo.getTsOp()) {
           // match!
+          if (sjInfo.getIsHint()) {
+            throw new SemanticException("Removing hinted semijoin as it is with SMB join " + rs + " : " + ts);
+          }
           if (LOG.isDebugEnabled()) {
             LOG.debug("Semijoin optimization found going to SMB join. Removing semijoin "
                     + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
           }
           GenTezUtils.removeBranch(rs);
           GenTezUtils.removeSemiJoinOperator(pctx, rs, ts);
-          if (sjInfo.getIsHint()) {
-            LOG.debug("Removing hinted semijoin as it is with SMB join " + rs + " : " + ts);
-          }
         }
       }
     }
@@ -848,15 +848,15 @@ public class TezCompiler extends TaskCompiler {
 
           if (parent == ts) {
             // We have a cycle!
+            if (sjInfo.getIsHint()) {
+              throw new SemanticException("Removing hinted semijoin as it is creating cycles with mapside joins " + rs + " : " + ts);
+            }
             if (LOG.isDebugEnabled()) {
               LOG.debug("Semijoin cycle due to mapjoin. Removing semijoin "
                   + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
             }
             GenTezUtils.removeBranch(rs);
             GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
-            if (sjInfo.getIsHint()) {
-              LOG.debug("Removing hinted semijoin as it is creating cycles with mapside joins " + rs + " : " + ts);
-            }
           }
         }
       }
@@ -895,6 +895,10 @@ public class TezCompiler extends TaskCompiler {
         long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
         if (expectedEntries == -1 || expectedEntries >
                 pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
+          if (sjInfo.getIsHint()) {
+            throw new SemanticException("Removing hinted semijoin due to lack to stats" +
+            " or exceeding max bloom filter entries");
+          }
           // Remove the semijoin optimization branch along with ALL the mappings
           // The parent GB2 has all the branches. Collect them and remove them.
           for (Operator<?> op : gbOp.getChildOperators()) {
