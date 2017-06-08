@@ -66,7 +66,7 @@
         <column name="FNAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="type" >
-        <column name="FTYPE" jdbc-type="CLOB" allows-null="false"/>
+        <column name="FTYPE" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="comment" >
         <column name="FCOMMENT" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
@@ -170,7 +170,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="viewOriginalText" default-fetch-group="false">
@@ -245,7 +245,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
     </class>
@@ -277,7 +277,7 @@
               <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
               </field>
             <field name="type">
-              <column name="TYPE_NAME" jdbc-type="CLOB"  allows-null="false"/>
+              <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
             <field name="comment">
               <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
@@ -360,7 +360,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
+           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
