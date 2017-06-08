@@ -40,8 +40,7 @@ public interface EncodedReader {
    */
   void readEncodedColumns(int stripeIx, StripeInformation stripe,
       OrcProto.RowIndex[] index, List<OrcProto.ColumnEncoding> encodings,
-      List<OrcProto.Stream> streams,
-      boolean[] included, boolean[][] colRgs,
+      List<OrcProto.Stream> streams, boolean[] included, boolean[] rgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 
   /**
