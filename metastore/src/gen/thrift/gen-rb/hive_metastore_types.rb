@@ -3080,6 +3080,41 @@ class GetTablesResult
   ::Thrift::Struct.generate_accessors self
 end
 
+class CmRecycleRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DATAPATH = 1
+  PURGE = 2
+
+  FIELDS = {
+    DATAPATH => {:type => ::Thrift::Types::STRING, :name => 'dataPath'},
+    PURGE => {:type => ::Thrift::Types::BOOL, :name => 'purge'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dataPath is unset!') unless @dataPath
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field purge is unset!') if @purge.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class CmRecycleResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class TableMeta
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1

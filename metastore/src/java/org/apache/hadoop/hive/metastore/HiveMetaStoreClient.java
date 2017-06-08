@@ -1125,6 +1125,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
+   *
+   * @param request Inputs for path of the data files to be recycled to cmroot and
+   *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
+   * @return Response which is currently void
+   */
+  @Override
+  public CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException {
+    return client.cm_recycle(request);
+  }
+
+  /**
    * @param type
    * @return true if the type is dropped
    * @throws MetaException

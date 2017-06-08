@@ -985,6 +985,16 @@ struct GetTablesResult {
   1: required list<Table> tables
 }
 
+// Request type for cm_recycle
+struct CmRecycleRequest {
+  1: required string dataPath,
+  2: required bool purge
+}
+
+// Response type for cm_recycle
+struct CmRecycleResponse {
+}
+
 struct TableMeta {
   1: required string dbName;
   2: required string tableName;
@@ -1136,11 +1146,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
   list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
-  GetTableResult get_table_req(1:GetTableRequest req)
-                       throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
-
-
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.
@@ -1541,6 +1548,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CurrentNotificationEventId get_current_notificationEventId()
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
+
+  // Repl Change Management api
+  CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)
 
   GetFileMetadataByExprResult get_file_metadata_by_expr(1:GetFileMetadataByExprRequest req)
   GetFileMetadataResult get_file_metadata(1:GetFileMetadataRequest req)

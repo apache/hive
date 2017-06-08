@@ -787,6 +787,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("flushCache\n");
   }
 
+  void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
+    // Your implementation goes here
+    printf("cm_recycle\n");
+  }
+
   void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {
     // Your implementation goes here
     printf("get_file_metadata_by_expr\n");

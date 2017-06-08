@@ -422,6 +422,10 @@ class GetTablesRequest;
 
 class GetTablesResult;
 
+class CmRecycleRequest;
+
+class CmRecycleResponse;
+
 class TableMeta;
 
 class MetaException;
@@ -8019,6 +8023,86 @@ class GetTablesResult {
 void swap(GetTablesResult &a, GetTablesResult &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetTablesResult& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class CmRecycleRequest {
+ public:
+
+  CmRecycleRequest(const CmRecycleRequest&);
+  CmRecycleRequest& operator=(const CmRecycleRequest&);
+  CmRecycleRequest() : dataPath(), purge(0) {
+  }
+
+  virtual ~CmRecycleRequest() throw();
+  std::string dataPath;
+  bool purge;
+
+  void __set_dataPath(const std::string& val);
+
+  void __set_purge(const bool val);
+
+  bool operator == (const CmRecycleRequest & rhs) const
+  {
+    if (!(dataPath == rhs.dataPath))
+      return false;
+    if (!(purge == rhs.purge))
+      return false;
+    return true;
+  }
+  bool operator != (const CmRecycleRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CmRecycleRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CmRecycleRequest &a, CmRecycleRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CmRecycleRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class CmRecycleResponse {
+ public:
+
+  CmRecycleResponse(const CmRecycleResponse&);
+  CmRecycleResponse& operator=(const CmRecycleResponse&);
+  CmRecycleResponse() {
+  }
+
+  virtual ~CmRecycleResponse() throw();
+
+  bool operator == (const CmRecycleResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const CmRecycleResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CmRecycleResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CmRecycleResponse &a, CmRecycleResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CmRecycleResponse& obj)
 {
   obj.printTo(out);
   return out;

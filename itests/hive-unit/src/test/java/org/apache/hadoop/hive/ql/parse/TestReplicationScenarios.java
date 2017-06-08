@@ -1412,6 +1412,112 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testInsertOverwriteOnUnpartitionedTableWithCM() throws IOException {
+    String testName = "insertOverwriteOnUnpartitionedTableWithCM";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    // After INSERT INTO operation, get the last Repl ID
+    String[] unptn_data = new String[] { "thirteen" };
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String insertDumpId = getResult(0, 1, false);
+
+    // Insert overwrite on unpartitioned table
+    String[] data_after_ovwrite = new String[] { "hundred" };
+    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')");
+
+    // Dump only one INSERT INTO operation on the table.
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId);
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+
+    // After Load from this dump, all target tables/partitions will have initial set of data but source will have latest data.
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+
+    // Dump the remaining INSERT OVERWRITE operations on the table.
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+
+    // After load, shall see the overwritten data.
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", data_after_ovwrite);
+  }
+
+  @Test
+  public void testInsertOverwriteOnPartitionedTableWithCM() throws IOException {
+    String testName = "insertOverwriteOnPartitionedTableWithCM";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    // INSERT INTO 2 partitions and get the last repl ID
+    String[] ptn_data_1 = new String[] { "fourteen" };
+    String[] ptn_data_2 = new String[] { "fifteen", "sixteen" };
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String insertDumpId = getResult(0, 1, false);
+
+    // Insert overwrite on one partition with multiple files
+    String[] data_after_ovwrite = new String[] { "hundred" };
+    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')");
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite);
+
+    // Dump only 2 INSERT INTO operations.
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId);
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+
+    // After Load from this dump, all target tables/partitions will have initial set of data.
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
+
+    // Dump the remaining INSERT OVERWRITE operation on the table.
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+
+    // After load, shall see the overwritten data.
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", data_after_ovwrite);
+  }
+
+  @Test
   public void testViewsReplication() throws IOException {
     String testName = "viewsReplication";
     String dbName = createDB(testName);

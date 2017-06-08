@@ -220,6 +220,11 @@ public class Warehouse {
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
+  public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
+    cm.recycle(f, ifPurge);
+    return;
+  }
+
   public boolean isEmpty(Path path) throws IOException, MetaException {
     ContentSummary contents = getFs(path).getContentSummary(path);
     if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {
