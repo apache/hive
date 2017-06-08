@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFacto
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -355,10 +356,10 @@ public class CachedStore implements RawStore, Configurable {
             }
           }
         }
-      } catch (MetaException e) {
-        LOG.error("Updating CachedStore: error getting database names", e);
       } catch (InstantiationException | IllegalAccessException e) {
         throw new RuntimeException("Cannot instantiate " + rawStoreClassName, e);
+      } catch (Exception e) {
+        LOG.error("Updating CachedStore: error happen when refresh", e);
       } finally {
         try {
           if (rawStore != null) {
@@ -460,15 +461,17 @@ public class CachedStore implements RawStore, Configurable {
         ColumnStatistics tableColStats =
             rawStore.getTableColumnStatistics(dbName, tblName, colNames);
         Deadline.stopTimer();
-        if (tableColStatsCacheLock.writeLock().tryLock()) {
-          // Skip background updates if we detect change
-          if (isTableColStatsCacheDirty.compareAndSet(true, false)) {
-            LOG.debug("Skipping table column stats cache update; the table column stats list we "
-                + "have is dirty.");
-            return;
+        if (tableColStats != null) {
+          if (tableColStatsCacheLock.writeLock().tryLock()) {
+            // Skip background updates if we detect change
+            if (isTableColStatsCacheDirty.compareAndSet(true, false)) {
+              LOG.debug("Skipping table column stats cache update; the table column stats list we "
+                  + "have is dirty.");
+              return;
+            }
+            SharedCache.refreshTableColStats(HiveStringUtils.normalizeIdentifier(dbName),
+                HiveStringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
           }
-          SharedCache.refreshTableColStats(HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
         }
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read table column stats of table: " + tblName, e);
@@ -486,15 +489,17 @@ public class CachedStore implements RawStore, Configurable {
         Map<String, List<ColumnStatisticsObj>> colStatsPerPartition =
             rawStore.getColStatsForTablePartitions(dbName, tblName);
         Deadline.stopTimer();
-        if (partitionColStatsCacheLock.writeLock().tryLock()) {
-          // Skip background updates if we detect change
-          if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
-            LOG.debug("Skipping partition column stats cache update; the partition column stats "
-                + "list we have is dirty.");
-            return;
+        if (colStatsPerPartition != null) {
+          if (partitionColStatsCacheLock.writeLock().tryLock()) {
+            // Skip background updates if we detect change
+            if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+              LOG.debug("Skipping partition column stats cache update; the partition column stats "
+                  + "list we have is dirty.");
+              return;
+            }
+            SharedCache.refreshPartitionColStats(HiveStringUtils.normalizeIdentifier(dbName),
+                HiveStringUtils.normalizeIdentifier(tblName), colStatsPerPartition);
           }
-          SharedCache.refreshPartitionColStats(HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), colStatsPerPartition);
         }
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read partitions column stats of table: "
