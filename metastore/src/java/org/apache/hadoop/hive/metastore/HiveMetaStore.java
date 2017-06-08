@@ -2066,9 +2066,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void cm_recycle(final String dataPath, final boolean isCopy, final boolean isPurge) throws MetaException {
-      wh.recycleDirToCmPath(new Path(dataPath), isCopy, isPurge);
-      return;
+    public CmRecycleResponse cm_recycle(final CmRecycleRequest request) throws MetaException {
+      wh.recycleDirToCmPath(new Path(request.getDataPath()), request.isPurge());
+      return new CmRecycleResponse();
     }
 
     @Override

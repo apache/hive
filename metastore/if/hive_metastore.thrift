@@ -985,6 +985,16 @@ struct GetTablesResult {
   1: required list<Table> tables
 }
 
+// Request type for cm_recycle
+struct CmRecycleRequest {
+  1: required string dataPath,
+  2: required bool purge
+}
+
+// Response type for cm_recycle
+struct CmRecycleResponse {
+}
+
 struct TableMeta {
   1: required string dbName;
   2: required string tableName;
@@ -1127,7 +1137,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)
-  void cm_recycle(1:string dataPath, 2:bool isCopy, 3:bool isPurge) throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)
@@ -1539,6 +1548,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CurrentNotificationEventId get_current_notificationEventId()
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
+
+  // Repl Change Management api
+  CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)
 
   GetFileMetadataByExprResult get_file_metadata_by_expr(1:GetFileMetadataByExprRequest req)
   GetFileMetadataResult get_file_metadata(1:GetFileMetadataRequest req)

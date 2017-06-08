@@ -157,11 +157,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("truncate_table\n");
   }
 
-  void cm_recycle(const std::string& dataPath, const bool isCopy, const bool isPurge) {
-    // Your implementation goes here
-    printf("cm_recycle\n");
-  }
-
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");
@@ -790,6 +785,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void flushCache() {
     // Your implementation goes here
     printf("flushCache\n");
+  }
+
+  void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
+    // Your implementation goes here
+    printf("cm_recycle\n");
   }
 
   void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) {

@@ -32,10 +32,11 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
+import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -325,13 +326,11 @@ public interface IMetaStoreClient {
   /**
    * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
    *
-   * @param dataPath Path of the data files to be recycled to cmroot
-   * @param isCopy
-   *          If this flag is true, then files will be copied recursively to cmroot else will be moved.
-   * @param isPurge
-   *          When set to true files which needs to be recycled are not moved to Trash
+   * @param request Inputs for path of the data files to be recycled to cmroot and
+   *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
+   * @return Response which is currently void
    */
-  void recycleDirToCmPath(String dataPath, boolean isCopy, boolean isPurge) throws MetaException, TException;
+  CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException;
 
   boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException;
