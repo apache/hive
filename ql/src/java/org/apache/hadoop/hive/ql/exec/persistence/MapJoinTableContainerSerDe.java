@@ -138,7 +138,7 @@ public class MapJoinTableContainerSerDe {
         InputStream is = null;
         ObjectInputStream in = null;
         try {
-          is = fs.open(filePath, 4096);
+          is = fs.open(filePath);
           in = new ObjectInputStream(is);
           String name = in.readUTF();
           Map<String, String> metaData = (Map<String, String>) in.readObject();
@@ -238,7 +238,7 @@ public class MapJoinTableContainerSerDe {
             InputStream is = null;
             ObjectInputStream in = null;
             try {
-              is = fs.open(filePath, 4096);
+              is = fs.open(filePath);
               in = new ObjectInputStream(is);
               // skip the name and metadata
               in.readUTF();
