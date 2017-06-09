@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TestObjectStore.MockPartitionExpressionProxy;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -672,5 +673,71 @@ public class TestCachedStore {
     SharedCache.removePartitionFromCache("db1", "tbl1", Arrays.asList("201702"));
     Assert.assertEquals(SharedCache.getCachedPartitionCount(), 2);
     Assert.assertEquals(SharedCache.getSdCache().size(), 2);
+  }
+
+  @Test
+  public void testAggrStatsRepeatedRead() throws Exception {
+    String dbName = "testTableColStatsOps";
+    String tblName = "tbl";
+    String colName = "col";
+
+    Database db = new Database(dbName, null, "some_location", null);
+    cachedStore.createDatabase(db);
+
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("f1", "int", null));
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("col", "int", null));
+    StorageDescriptor sd =
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<String, String>()),
+            null, null, null);
+
+    Table tbl =
+        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<String, String>(),
+            null, null, TableType.MANAGED_TABLE.toString());
+    cachedStore.createTable(tbl);
+
+    List<String> partVals1 = new ArrayList<String>();
+    partVals1.add("1");
+    List<String> partVals2 = new ArrayList<String>();
+    partVals2.add("2");
+
+    Partition ptn1 =
+        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+    cachedStore.addPartition(ptn1);
+    Partition ptn2 =
+        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+    cachedStore.addPartition(ptn2);
+
+    ColumnStatistics stats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
+    statsDesc.setPartName("col");
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
+    LongColumnStatsData longStats = new LongColumnStatsData();
+    longStats.setLowValue(0);
+    longStats.setHighValue(100);
+    longStats.setNumNulls(50);
+    longStats.setNumDVs(30);
+    data.setLongStats(longStats);
+    colStatObjs.add(colStats);
+
+    stats.setStatsDesc(statsDesc);
+    stats.setStatsObj(colStatObjs);
+
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1);
+    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
+
+    List<String> colNames = new ArrayList<String>();
+    colNames.add(colName);
+    List<String> aggrPartVals = new ArrayList<String>();
+    aggrPartVals.add("1");
+    aggrPartVals.add("2");
+    AggrStats aggrStats = cachedStore.get_aggr_stats_for(dbName, tblName, aggrPartVals, colNames);
+    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
+    aggrStats = cachedStore.get_aggr_stats_for(dbName, tblName, aggrPartVals, colNames);
+    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
   }
 }
