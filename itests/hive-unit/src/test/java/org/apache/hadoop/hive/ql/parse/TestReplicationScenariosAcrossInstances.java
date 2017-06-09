@@ -107,8 +107,8 @@ public class TestReplicationScenariosAcrossInstances {
   @Test
   public void testDropFunctionIncrementalReplication() throws Throwable {
     primary.run("CREATE FUNCTION " + primaryDbName
-        + ".testFunction as 'com.yahoo.sketches.hive.theta.DataToSketchUDAF' "
-        + "using jar  'ivy://com.yahoo.datasketches:sketches-hive:0.8.2'");
+        + ".testFunction as 'hivemall.tools.string.StopwordUDF' "
+        + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)

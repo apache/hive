@@ -219,7 +219,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         FileStatus file = files[i];
         i++;
         return ReplChangeManager.encodeFileUri(file.getPath().toString(),
-            ReplChangeManager.getChksumString(file.getPath(), fs));
+            ReplChangeManager.checksumFor(file.getPath(), fs));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -167,7 +167,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }else{
           LOG.debug("ReplCopyTask _files now tracks:" + oneSrc.getPath().toUri());
           console.printInfo("Tracking file: " + oneSrc.getPath().toUri());
-          String chksumString = ReplChangeManager.getChksumString(oneSrc.getPath(), actualSrcFs);
+          String chksumString = ReplChangeManager.checksumFor(oneSrc.getPath(), actualSrcFs);
           listBW.write(ReplChangeManager.encodeFileUri
               (oneSrc.getPath().toUri().toString(), chksumString) + "\n");
         }

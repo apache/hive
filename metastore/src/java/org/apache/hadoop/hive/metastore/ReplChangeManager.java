@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -54,9 +54,9 @@ public class ReplChangeManager {
   private String msGroup;
   private FileSystem fs;
 
-  public static final String ORIG_LOC_TAG = "user.original-loc";
-  public static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
-  public static final String URI_FRAGMENT_SEPARATOR = "#";
+  private static final String ORIG_LOC_TAG = "user.original-loc";
+  static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
+  private static final String URI_FRAGMENT_SEPARATOR = "#";
 
   public static ReplChangeManager getInstance(HiveConf hiveConf) throws MetaException {
     if (instance == null) {
@@ -65,7 +65,7 @@ public class ReplChangeManager {
     return instance;
   }
 
-  ReplChangeManager(HiveConf hiveConf) throws MetaException {
+  private ReplChangeManager(HiveConf hiveConf) throws MetaException {
     try {
       if (!inited) {
         if (hiveConf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
@@ -109,7 +109,7 @@ public class ReplChangeManager {
       if (fs.isDirectory(path)) {
         throw new IllegalArgumentException(path + " cannot be a directory");
       }
-      Path cmPath = getCMPath(hiveConf, getChksumString(path, fs));
+      Path cmPath = getCMPath(hiveConf, checksumFor(path, fs));
       boolean copySuccessful = FileUtils
           .copy(path.getFileSystem(hiveConf), path, cmPath.getFileSystem(hiveConf), cmPath, false,
               false, hiveConf);
@@ -134,10 +134,10 @@ public class ReplChangeManager {
    *   recursively move files inside directory to cmroot. Note the table must be managed table
    * @param path a single file or directory
    * @param ifPurge if the file should skip Trash when delete
-   * @return
+   * @return int
    * @throws MetaException
    */
-  public int recycle(Path path, boolean ifPurge) throws MetaException {
+  int recycle(Path path, boolean ifPurge) throws MetaException {
     if (!enabled) {
       return 0;
     }
@@ -151,7 +151,7 @@ public class ReplChangeManager {
           count += recycle(file.getPath(), ifPurge);
         }
       } else {
-        Path cmPath = getCMPath(hiveConf, getChksumString(path, fs));
+        Path cmPath = getCMPath(hiveConf, checksumFor(path, fs));
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
@@ -207,7 +207,7 @@ public class ReplChangeManager {
   }
 
   // Get checksum of a file
-  static public String getChksumString(Path path, FileSystem fs) throws IOException {
+  static public String checksumFor(Path path, FileSystem fs) throws IOException {
     // TODO: fs checksum only available on hdfs, need to
     //       find a solution for other fs (eg, local fs, s3, etc)
     String checksumString = null;
@@ -228,13 +228,10 @@ public class ReplChangeManager {
    *   to a deterministic location of cmroot. So user can retrieve the file back
    *   with the original location plus checksum.
    * @param conf
-   * @param checkSum checksum of the file, can be retrieved by {@link getCksumString}
-   * @return
-   * @throws IOException
-   * @throws MetaException
+   * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
+   * @return Path
    */
-  static Path getCMPath(Configuration conf, String checkSum)
-      throws IOException, MetaException {
+  static Path getCMPath(Configuration conf, String checkSum) throws IOException, MetaException {
     String newFileName = checkSum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
@@ -250,28 +247,27 @@ public class ReplChangeManager {
    * Get original file specified by src and chksumString. If the file exists and checksum
    * matches, return the file; otherwise, use chksumString to retrieve it from cmroot
    * @param src Original file location
-   * @param chksumString Checksum of the original file
-   * @param conf
+   * @param checksumString Checksum of the original file
+   * @param hiveConf
    * @return Corresponding FileStatus object
-   * @throws MetaException
    */
-  static public FileStatus getFileStatus(Path src, String chksumString,
-      HiveConf conf) throws MetaException {
+  static public FileStatus getFileStatus(Path src, String checksumString,
+      HiveConf hiveConf) throws MetaException {
     try {
-      FileSystem srcFs = src.getFileSystem(conf);
-      if (chksumString == null) {
+      FileSystem srcFs = src.getFileSystem(hiveConf);
+      if (checksumString == null) {
         return srcFs.getFileStatus(src);
       }
 
       if (!srcFs.exists(src)) {
-        return srcFs.getFileStatus(getCMPath(conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(hiveConf, checksumString));
       }
 
-      String currentChksumString = getChksumString(src, srcFs);
-      if (currentChksumString == null || chksumString.equals(currentChksumString)) {
+      String currentChecksumString = checksumFor(src, srcFs);
+      if (currentChecksumString == null || checksumString.equals(currentChecksumString)) {
         return srcFs.getFileStatus(src);
       } else {
-        return srcFs.getFileStatus(getCMPath(conf, chksumString));
+        return srcFs.getFileStatus(getCMPath(hiveConf, checksumString));
       }
     } catch (IOException e) {
       throw new MetaException(StringUtils.stringifyException(e));
@@ -372,7 +368,7 @@ public class ReplChangeManager {
   }
 
   // Schedule CMClearer thread. Will be invoked by metastore
-  public static void scheduleCMClearer(HiveConf hiveConf) {
+  static void scheduleCMClearer(HiveConf hiveConf) {
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()

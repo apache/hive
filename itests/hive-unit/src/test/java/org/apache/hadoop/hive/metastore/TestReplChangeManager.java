@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -156,15 +156,15 @@ public class TestReplChangeManager {
 
     Path part1Path = new Path(warehouse.getDefaultPartitionPath(db, tblName, ImmutableMap.of("dt", "20160101")), "part");
     createFile(part1Path, "p1");
-    String path1Chksum = ReplChangeManager.getChksumString(part1Path, fs);
+    String path1Chksum = ReplChangeManager.checksumFor(part1Path, fs);
 
     Path part2Path = new Path(warehouse.getDefaultPartitionPath(db, tblName, ImmutableMap.of("dt", "20160102")), "part");
     createFile(part2Path, "p2");
-    String path2Chksum = ReplChangeManager.getChksumString(part2Path, fs);
+    String path2Chksum = ReplChangeManager.checksumFor(part2Path, fs);
 
     Path part3Path = new Path(warehouse.getDefaultPartitionPath(db, tblName, ImmutableMap.of("dt", "20160103")), "part");
     createFile(part3Path, "p3");
-    String path3Chksum = ReplChangeManager.getChksumString(part3Path, fs);
+    String path3Chksum = ReplChangeManager.checksumFor(part3Path, fs);
 
     assertTrue(part1Path.getFileSystem(hiveConf).exists(part1Path));
     assertTrue(part2Path.getFileSystem(hiveConf).exists(part2Path));
@@ -226,15 +226,15 @@ public class TestReplChangeManager {
 
     Path filePath1 = new Path(warehouse.getDefaultTablePath(db, tblName), "part1");
     createFile(filePath1, "f1");
-    String fileChksum1 = ReplChangeManager.getChksumString(filePath1, fs);
+    String fileChksum1 = ReplChangeManager.checksumFor(filePath1, fs);
 
     Path filePath2 = new Path(warehouse.getDefaultTablePath(db, tblName), "part2");
     createFile(filePath2, "f2");
-    String fileChksum2 = ReplChangeManager.getChksumString(filePath2, fs);
+    String fileChksum2 = ReplChangeManager.checksumFor(filePath2, fs);
 
     Path filePath3 = new Path(warehouse.getDefaultTablePath(db, tblName), "part3");
     createFile(filePath3, "f3");
-    String fileChksum3 = ReplChangeManager.getChksumString(filePath3, fs);
+    String fileChksum3 = ReplChangeManager.checksumFor(filePath3, fs);
 
     assertTrue(filePath1.getFileSystem(hiveConf).exists(filePath1));
     assertTrue(filePath2.getFileSystem(hiveConf).exists(filePath2));
@@ -272,26 +272,26 @@ public class TestReplChangeManager {
     fs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
     createFile(part11, "testClearer11");
-    String fileChksum11 = ReplChangeManager.getChksumString(part11, fs);
+    String fileChksum11 = ReplChangeManager.checksumFor(part11, fs);
     Path part12 = new Path(dirTbl1, "part2");
     createFile(part12, "testClearer12");
-    String fileChksum12 = ReplChangeManager.getChksumString(part12, fs);
+    String fileChksum12 = ReplChangeManager.checksumFor(part12, fs);
     Path dirTbl2 = new Path(dirDb, "tbl2");
     fs.mkdirs(dirTbl2);
     Path part21 = new Path(dirTbl2, "part1");
     createFile(part21, "testClearer21");
-    String fileChksum21 = ReplChangeManager.getChksumString(part21, fs);
+    String fileChksum21 = ReplChangeManager.checksumFor(part21, fs);
     Path part22 = new Path(dirTbl2, "part2");
     createFile(part22, "testClearer22");
-    String fileChksum22 = ReplChangeManager.getChksumString(part22, fs);
+    String fileChksum22 = ReplChangeManager.checksumFor(part22, fs);
     Path dirTbl3 = new Path(dirDb, "tbl3");
     fs.mkdirs(dirTbl3);
     Path part31 = new Path(dirTbl3, "part1");
     createFile(part31, "testClearer31");
-    String fileChksum31 = ReplChangeManager.getChksumString(part31, fs);
+    String fileChksum31 = ReplChangeManager.checksumFor(part31, fs);
     Path part32 = new Path(dirTbl3, "part2");
     createFile(part32, "testClearer32");
-    String fileChksum32 = ReplChangeManager.getChksumString(part32, fs);
+    String fileChksum32 = ReplChangeManager.checksumFor(part32, fs);
 
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, false);
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, false);
