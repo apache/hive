@@ -174,7 +174,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       return false;
     }
 
-    final boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
+    boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
+    if (HiveConf.getVar(parseContext.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+      //TODO HIVE-16862: Implement a similar feature like "hive.tez.dynamic.semijoin.reduction" in hive on spark
+      semiJoin = false;
+    }
 
     for (DynamicListContext ctx : removerContext) {
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
