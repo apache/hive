@@ -21,13 +21,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -586,6 +587,113 @@ public class TestReplicationScenarios {
 
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
+  }
+
+  @Test
+  public void testIncrementalLoadWithVariableLengthEventId() throws IOException, TException {
+    String testName = "incrementalLoadWithVariableLengthEventId";
+    String dbName = createDB(testName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    // CREATE_TABLE - TRUNCATE - INSERT - The result is just one record.
+    // Creating dummy table to control the event ID of TRUNCATE not to be 10 or 100 or 1000...
+    String[] unptn_data = new String[]{ "eleven" };
+    run("CREATE TABLE " + dbName + ".dummy(a string) STORED AS TEXTFILE");
+    run("TRUNCATE TABLE " + dbName + ".unptned");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+
+    // Inject a behaviour where all events will get ID less than 100 except TRUNCATE which will get ID 100.
+    // This enesures variable length of event ID in the incremental dump
+    BehaviourInjection<NotificationEventResponse,NotificationEventResponse> eventIdModifier
+            = new BehaviourInjection<NotificationEventResponse,NotificationEventResponse>(){
+      private long nextEventId = 0; // Initialize to 0 as for increment dump, 0 won't be used.
+
+      @Nullable
+      @Override
+      public NotificationEventResponse apply(@Nullable NotificationEventResponse eventIdList) {
+        if (null != eventIdList) {
+          List<NotificationEvent> eventIds = eventIdList.getEvents();
+          List<NotificationEvent> outEventIds = new ArrayList<NotificationEvent>();
+          for (int i = 0; i < eventIds.size(); i++) {
+            NotificationEvent event = eventIds.get(i);
+
+            // Skip all the events belong to other DBs/tables.
+            if (event.getDbName().equalsIgnoreCase(dbName)) {
+              // We will encounter create_table, truncate followed by insert.
+              // For the insert, set the event ID longer such that old comparator picks insert before truncate
+              // Eg: Event IDs CREATE_TABLE - 5, TRUNCATE - 9, INSERT - 12 changed to
+              // CREATE_TABLE - 5, TRUNCATE - 9, INSERT - 100
+              // But if TRUNCATE have ID-10, then having INSERT-100 won't be sufficient to test the scenario.
+              // So, we set any event comes after CREATE_TABLE starts with 20.
+              // Eg: Event IDs CREATE_TABLE - 5, TRUNCATE - 10, INSERT - 12 changed to
+              // CREATE_TABLE - 5, TRUNCATE - 20(20 <= Id < 100), INSERT - 100
+              switch (event.getEventType()) {
+                case "CREATE_TABLE": {
+                  // The next ID is set to 20 or 200 or 2000 ... based on length of current event ID
+                  // This is done to ensure TRUNCATE doesn't get an ID 10 or 100...
+                  nextEventId = (long) Math.pow(10.0, (double) String.valueOf(event.getEventId()).length()) * 2;
+                  break;
+                }
+                case "INSERT": {
+                  // INSERT will come always after CREATE_TABLE, TRUNCATE. So, no need to validate nextEventId
+                  nextEventId = (long) Math.pow(10.0, (double) String.valueOf(nextEventId).length());
+                  LOG.info("Changed EventId #{} to #{}", event.getEventId(), nextEventId);
+                  event.setEventId(nextEventId++);
+                  break;
+                }
+                default: {
+                  // After CREATE_TABLE all the events in this DB should get an ID >= 20 or 200 ...
+                  if (nextEventId > 0) {
+                    LOG.info("Changed EventId #{} to #{}", event.getEventId(), nextEventId);
+                    event.setEventId(nextEventId++);
+                  }
+                  break;
+                }
+              }
+
+              outEventIds.add(event);
+            }
+          }
+          injectionPathCalled = true;
+          if (outEventIds.isEmpty()) {
+            return eventIdList; // If not even one event belongs to current DB, then return original one itself.
+          } else {
+            // If the new list is not empty (input list have some events from this DB), then return it
+            return new NotificationEventResponse(outEventIds);
+          }
+        } else {
+          return null;
+        }
+      }
+    };
+    InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdModifier);
+
+    // It is possible that currentNotificationEventID from metastore is less than newly set event ID by stub function.
+    // In this case, REPL DUMP will skip events beyond this upper limit.
+    // So, to avoid this failure, we will set the TO clause to ID 100 times of currentNotificationEventID
+    String cmd = "REPL DUMP " + dbName + " FROM " + replDumpId
+               + " TO " + String.valueOf(metaStoreClient.getCurrentNotificationEventId().getEventId()*100);
+
+    advanceDumpDir();
+    run(cmd);
+    eventIdModifier.assertInjectionsPerformed(true,false);
+    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
   }
 
   @Test
