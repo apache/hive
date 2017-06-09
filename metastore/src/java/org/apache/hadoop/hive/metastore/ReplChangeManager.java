@@ -231,7 +231,7 @@ public class ReplChangeManager {
    * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
    * @return Path
    */
-  static Path getCMPath(Configuration conf, String checkSum) throws IOException, MetaException {
+  static Path getCMPath(Configuration conf, String checkSum) {
     String newFileName = checkSum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
