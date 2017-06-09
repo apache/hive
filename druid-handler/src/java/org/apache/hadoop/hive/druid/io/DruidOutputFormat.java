@@ -39,10 +39,8 @@ import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.indexing.granularity.GranularitySpec;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.plumber.CustomVersioningPolicy;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -63,6 +61,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.util.Progressable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,15 +93,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
                     tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
                     HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
-    final String segmentDirectory =
-            tableProperties.getProperty(Constants.DRUID_SEGMENT_DIRECTORY) != null
-                    ? tableProperties.getProperty(Constants.DRUID_SEGMENT_DIRECTORY)
-                    : HiveConf.getVar(jc, HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
-
-    final HdfsDataSegmentPusherConfig hdfsDataSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
-    hdfsDataSegmentPusherConfig.setStorageDirectory(segmentDirectory);
-    final DataSegmentPusher hdfsDataSegmentPusher = new HdfsDataSegmentPusher(
-            hdfsDataSegmentPusherConfig, jc, DruidStorageHandlerUtils.JSON_MAPPER);
+    final String segmentDirectory = jc.get(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
 
     final GranularitySpec granularitySpec = new UniformGranularitySpec(
             Granularity.fromString(segmentGranularity),
@@ -225,7 +216,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
-    return new DruidRecordWriter(dataSchema, realtimeTuningConfig, hdfsDataSegmentPusher,
+    return new DruidRecordWriter(dataSchema, realtimeTuningConfig,
+            DruidStorageHandlerUtils.createSegmentPusherForDirectory(segmentDirectory, jc),
             maxPartitionSize, new Path(workingPath, SEGMENTS_DESCRIPTOR_DIR_NAME),
             finalOutPath.getFileSystem(jc)
     );

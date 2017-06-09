@@ -17,22 +17,6 @@
  */
 package org.apache.hadoop.hive.druid;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.metamx.common.RetryUtils;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
@@ -40,6 +24,7 @@ import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -66,13 +51,30 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.common.util.ShutdownHookManager;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.metamx.common.RetryUtils;
+import com.metamx.common.lifecycle.Lifecycle;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.HttpClientConfig;
+import com.metamx.http.client.HttpClientInit;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -80,6 +82,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+
+import javax.annotation.Nullable;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -92,7 +96,11 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   protected static final SessionState.LogHelper console = new SessionState.LogHelper(LOG);
 
   public static final String SEGMENTS_DESCRIPTOR_DIR_NAME = "segmentsDescriptorDir";
+
+  public static final String INTERMEDIATE_SEGMENT_DIR_NAME = "intermediateSegmentDir";
+
   private static final HttpClient HTTP_CLIENT;
+
   static {
     final Lifecycle lifecycle = new Lifecycle();
     try {
@@ -101,9 +109,8 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       LOG.error("Issues with lifecycle start", e);
     }
     HTTP_CLIENT = makeHttpClient(lifecycle);
-    ShutdownHookManager.addShutdownHook(()-> lifecycle.stop());
+    ShutdownHookManager.addShutdownHook(() -> lifecycle.stop());
   }
-
 
   private final SQLMetadataConnector connector;
 
@@ -232,7 +239,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
     Collection<String> existingDataSources = DruidStorageHandlerUtils
             .getAllDataSourceNames(connector, druidMetadataStorageTablesConfig);
-    LOG.debug(String.format("pre-create data source with name [%s]", dataSourceName));
+    LOG.debug("pre-create data source with name {}", dataSourceName);
     if (existingDataSources.contains(dataSourceName)) {
       throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
     }
@@ -264,36 +271,40 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void commitCreateTable(Table table) throws MetaException {
-    LOG.debug(String.format("commit create table [%s]", table.getTableName()));
+    LOG.debug("commit create table {}", table.getTableName());
     publishSegments(table, true);
   }
-
 
   public void publishSegments(Table table, boolean overwrite) throws MetaException {
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
     Lifecycle lifecycle = new Lifecycle();
-    LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
+    LOG.info("Committing table {} to the druid metastore", table.getDbName());
     final Path tableDir = getSegmentDescriptorDir();
     try {
       List<DataSegment> segmentList = DruidStorageHandlerUtils
               .getPublishedSegments(tableDir, getConf());
-      LOG.info(String.format("Found [%d] segments under path [%s]", segmentList.size(), tableDir));
+      LOG.info("Found {} segments under path {}", segmentList.size(), tableDir);
       final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-
+      final String segmentDirectory =
+              table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
+                      ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
+                      : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
       DruidStorageHandlerUtils.publishSegments(
               connector,
               druidMetadataStorageTablesConfig,
               dataSourceName,
               segmentList,
-              DruidStorageHandlerUtils.JSON_MAPPER,
-              overwrite
+              overwrite,
+              segmentDirectory,
+              getConf()
+
       );
       final String coordinatorAddress = HiveConf
               .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
       int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
-      LOG.info(String.format("checking load status from coordinator [%s]", coordinatorAddress));
+      LOG.info("checking load status from coordinator {}", coordinatorAddress);
 
       String coordinatorResponse = null;
       try {
@@ -356,7 +367,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
           public boolean apply(URL input) {
             try {
               String result = DruidStorageHandlerUtils.getURL(getHttpClient(), input);
-              LOG.debug(String.format("Checking segment [%s] response is [%s]", input, result));
+              LOG.debug("Checking segment {} response is {}", input, result);
               return Strings.isNullOrEmpty(result);
             } catch (IOException e) {
               LOG.error(String.format("Error while checking URL [%s]", input), e);
@@ -393,10 +404,8 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   @VisibleForTesting
   protected void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
-    final Path path = getPath(segment);
-    LOG.info(String.format("removing segment[%s], located at path[%s]", segment.getIdentifier(),
-            path
-    ));
+    final Path path = DruidStorageHandlerUtils.getPath(segment);
+    LOG.info("removing segment {}, located at path {}", segment.getIdentifier(), path);
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -404,10 +413,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
         final FileSystem fs = path.getFileSystem(getConf());
 
         if (!fs.exists(path)) {
-          LOG.warn(String.format(
-                  "Segment Path [%s] does not exist. It appears to have been deleted already.",
-                  path
-          ));
+          LOG.warn("Segment Path {} does not exist. It appears to have been deleted already.", path);
           return;
         }
 
@@ -435,10 +441,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     } catch (IOException e) {
       throw new SegmentLoadingException(e, "Unable to kill segment");
     }
-  }
-
-  private static Path getPath(DataSegment dataSegment) {
-    return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
   }
 
   private static boolean safeNonRecursiveDelete(FileSystem fs, Path path) {
@@ -470,46 +472,37 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
             );
 
     if (deleteData == true) {
-      LOG.info(String.format("Dropping with purge all the data for data source [%s]",
-              dataSourceName
-      ));
+      LOG.info("Dropping with purge all the data for data source {}", dataSourceName);
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
               .getDataSegmentList(connector, druidMetadataStorageTablesConfig, dataSourceName);
       if (dataSegmentList.isEmpty()) {
-        LOG.info(String.format("Nothing to delete for data source [%s]", dataSourceName));
+        LOG.info("Nothing to delete for data source {}", dataSourceName);
         return;
       }
       for (DataSegment dataSegment : dataSegmentList) {
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
-          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()),
-                  e
-          );
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()), e);
         }
       }
     }
     if (DruidStorageHandlerUtils
             .disableDataSource(connector, druidMetadataStorageTablesConfig, dataSourceName)) {
-      LOG.info(String.format("Successfully dropped druid data source [%s]", dataSourceName));
+      LOG.info("Successfully dropped druid data source {}", dataSourceName);
     }
   }
 
   @Override
   public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
-    if (overwrite) {
-      LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
-      this.publishSegments(table, overwrite);
-    } else {
-      throw new MetaException("Insert into is not supported yet");
-    }
+    LOG.debug("commit insert into table {} overwrite {}", table.getTableName(),
+            overwrite);
+    this.publishSegments(table, overwrite);
   }
 
   @Override
   public void preInsertTable(Table table, boolean overwrite) throws MetaException {
-    if (!overwrite) {
-      throw new MetaException("INSERT INTO statement is not allowed by druid storage handler");
-    }
+
   }
 
   @Override
@@ -522,6 +515,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   ) {
     jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
     jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+    // DruidOutputFormat will write segments in an intermediate directory
+    jobProperties.put(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY,
+            getIntermediateSegmentDir().toString());
   }
 
   @Override
@@ -575,6 +571,10 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private Path getSegmentDescriptorDir() {
     return new Path(getStagingWorkingDir(), SEGMENTS_DESCRIPTOR_DIR_NAME);
+  }
+
+  private Path getIntermediateSegmentDir() {
+    return new Path(getStagingWorkingDir(), INTERMEDIATE_SEGMENT_DIR_NAME);
   }
 
   private void cleanWorkingDir() {
