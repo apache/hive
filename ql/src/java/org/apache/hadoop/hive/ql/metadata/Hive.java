@@ -74,10 +74,12 @@ import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -412,6 +414,9 @@ public class Hive {
     if (metaStoreClient != null) {
       metaStoreClient.close();
       metaStoreClient = null;
+    }
+    if (syncMetaStoreClient != null) {
+      syncMetaStoreClient.close();
     }
     if (owner != null) {
       owner = null;
@@ -1972,6 +1977,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
+      final Map<Long, RawStore> rawStoreMap = new HashMap<Long, RawStore>();
       for(final Path partPath : validPartitions) {
         // generate a full partition specification
         final LinkedHashMap<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
@@ -1998,6 +2004,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       + partsToLoad + " partitions.");
                 }
               }
+              // Add embedded rawstore, so we can cleanup later to avoid memory leak
+              if (getMSC().isLocalMetaStore()) {
+                if (!rawStoreMap.containsKey(Thread.currentThread().getId())) {
+                  rawStoreMap.put(Thread.currentThread().getId(), HiveMetaStore.HMSHandler.getRawStore());
+                }
+              }
               return null;
             } catch (Exception t) {
               LOG.error("Exception when loading partition with parameters "
@@ -2018,6 +2030,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       for (Future future : futures) {
         future.get();
+      }
+
+      for (RawStore rs : rawStoreMap.values()) {
+        rs.shutdown();
       }
     } catch (InterruptedException | ExecutionException e) {
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
