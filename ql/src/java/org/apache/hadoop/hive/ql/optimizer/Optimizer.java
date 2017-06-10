@@ -143,11 +143,11 @@ public class Optimizer {
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
       transformations.add(new GroupByOptimizer());
     }
+    transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVECOUNTDISTINCTOPTIMIZER)
         && (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) || isTezExecEngine)) {
       transformations.add(new CountDistinctRewriteProc());
     }
-    transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       if (!isTezExecEngine) {
         transformations.add(new SkewJoinOptimizer());

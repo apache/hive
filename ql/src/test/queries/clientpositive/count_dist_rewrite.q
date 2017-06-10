@@ -1,3 +1,5 @@
+set hive.optimize.metadataonly=true;
+
 explain select count(distinct key) from src; 
 
 select count(distinct key) from src; 

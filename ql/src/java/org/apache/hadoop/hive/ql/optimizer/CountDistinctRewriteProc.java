@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.GenericUDAFInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -137,12 +136,12 @@ public class CountDistinctRewriteProc extends Transform {
       this.pGraphContext = pGraphContext;
     }
 
-    // Position of distinct column in aggregator list of map Gby before rewrite.
-    int indexOfDist = -1;
 
-    // Check if we can process it or not
-    protected boolean checkCountDistinct(GroupByOperator mGby, ReduceSinkOperator rs,
+    // Check if we can process it or not by the index of distinct
+    protected int checkCountDistinct(GroupByOperator mGby, ReduceSinkOperator rs,
         GroupByOperator rGby) {
+      // Position of distinct column in aggregator list of map Gby before rewrite.
+      int indexOfDist = -1;
       ArrayList<ExprNodeDesc> keys = mGby.getConf().getKeys();
       if (!(mGby.getConf().getMode() == GroupByDesc.Mode.HASH
           && !mGby.getConf().isGroupingSetsPresent() && rs.getConf().getKeyCols().size() == 1
@@ -151,7 +150,7 @@ public class CountDistinctRewriteProc extends Transform {
           && rGby.getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL && keys.size() == 1
           && rGby.getConf().getKeys().size() == 0 && mGby.getConf().getOutputColumnNames().size() == mGby
           .getConf().getAggregators().size() + 1)) {
-        return false;
+        return -1;
       }
       for (int pos = 0; pos < mGby.getConf().getAggregators().size(); pos++) {
         AggregationDesc aggr = mGby.getConf().getAggregators().get(pos);
@@ -160,24 +159,24 @@ public class CountDistinctRewriteProc extends Transform {
             // there are 2 or more distincts, or distinct is not on count
             // TODO: may be the same count(distinct key), count(distinct key)
             // TODO: deal with duplicate count distinct key
-            return false;
+            return -1;
           }
           indexOfDist = pos;
           if (!(aggr.getParameters().size() == 1
               && aggr.getParameters().get(0) instanceof ExprNodeColumnDesc && mGby.getConf()
               .getKeys().get(0) instanceof ExprNodeColumnDesc)) {
-            return false;
+            return -1;
           } else {
             ExprNodeColumnDesc agg = (ExprNodeColumnDesc) aggr.getParameters().get(0);
             ExprNodeColumnDesc key = (ExprNodeColumnDesc) mGby.getConf().getKeys().get(0);
             if (!agg.isSame(key)) {
-              return false;
+              return -1;
             }
           }
         }
       }
       if (indexOfDist == -1) {
-        return false;
+        return -1;
       }
       // check if it is potential to trigger nullscan
       if (pGraphContext.getConf().getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
@@ -185,24 +184,23 @@ public class CountDistinctRewriteProc extends Transform {
           List<Integer> colIDs = tsOp.getNeededColumnIDs();
           TableScanDesc desc = tsOp.getConf();
           boolean noColNeeded = (colIDs == null) || (colIDs.isEmpty());
-          // VC is still here and it will be pruned by column pruner
-          // boolean noVCneeded = (desc == null) || (desc.getVirtualCols() == null)
-          // || (desc.getVirtualCols().isEmpty());
+          boolean noVCneeded = (desc == null) || (desc.getVirtualCols() == null)
+              || (desc.getVirtualCols().isEmpty());
           boolean isSkipHF = desc.isNeedSkipHeaderFooters();
-          if (noColNeeded && !isSkipHF) {
+          if (noColNeeded && noVCneeded && !isSkipHF) {
             // it is possible that nullscan can fire, we skip this rule.
-            return false;
+            return -1;
           }
         }
       }
-      return true;
+      return indexOfDist;
     }
 
     /*
      * We will transform GB-RS-GBY to mGby1-rs1-mGby2-mGby3-rs2-rGby1
      */
     @SuppressWarnings("unchecked")
-    protected void processGroupBy(GroupByOperator mGby, ReduceSinkOperator rs, GroupByOperator rGby)
+    protected void processGroupBy(GroupByOperator mGby, ReduceSinkOperator rs, GroupByOperator rGby, int indexOfDist)
         throws SemanticException, CloneNotSupportedException {
       // remove count(distinct) in map-side gby
       List<Operator<? extends OperatorDesc>> parents = mGby.getParentOperators();
@@ -213,8 +211,8 @@ public class CountDistinctRewriteProc extends Transform {
 
       GroupByOperator mGby1 = genMapGroupby1(mGby, indexOfDist);
       ReduceSinkOperator rs1 = genReducesink1(mGby1, rs, indexOfDist);
-      GroupByOperator mGby2 = genMapGroupby2(rs1, mGby);
-      GroupByOperator mGby3 = genMapGroupby3(mGby2, mGby);
+      GroupByOperator mGby2 = genMapGroupby2(rs1, mGby, indexOfDist);
+      GroupByOperator mGby3 = genMapGroupby3(mGby2, mGby, indexOfDist);
       ReduceSinkOperator rs2 = genReducesink2(mGby3, rs);
       GroupByOperator rGby1 = genReduceGroupby(rs2, rGby, indexOfDist);
       for (Operator<? extends OperatorDesc> parent : parents) {
@@ -257,6 +255,8 @@ public class CountDistinctRewriteProc extends Transform {
       ArrayList<String> outputValueColumnNames = new ArrayList<String>();
       ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
       ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
+      ArrayList<ColumnInfo> rowSchema = new ArrayList<>();
+
       List<String> internalNames = new ArrayList<>();
       for (int index = 0; index < mGby1.getSchema().getSignature().size(); index++) {
         ColumnInfo paraExprInfo = mGby1.getSchema().getSignature().get(index);
@@ -272,6 +272,7 @@ public class CountDistinctRewriteProc extends Transform {
           String internalName = Utilities.ReduceField.KEY.toString() + "." + outputColName;
           colExprMap.put(internalName, exprDesc);
           internalNames.add(internalName);
+          rowSchema.add(new ColumnInfo(internalName, mGby1.getSchema().getSignature().get(index).getType(), "", false));
         } else {
           reduceValues.add(exprDesc);
           String outputColName = SemanticAnalyzer.getColumnInternalName(index - 1);
@@ -279,6 +280,7 @@ public class CountDistinctRewriteProc extends Transform {
           String internalName = Utilities.ReduceField.VALUE.toString() + "." + outputColName;
           colExprMap.put(internalName, exprDesc);
           internalNames.add(internalName);
+          rowSchema.add(new ColumnInfo(internalName, mGby1.getSchema().getSignature().get(index).getType(), "", false));
         }
       }
       List<List<Integer>> distinctColIndices = new ArrayList<>();
@@ -286,21 +288,14 @@ public class CountDistinctRewriteProc extends Transform {
           outputKeyColumnNames, outputValueColumnNames, true, -1, 1, -1,
           AcidUtils.Operation.NOT_ACID));
       rs1.setColumnExprMap(colExprMap);
-
-      rs1.getSchema().getColumnNames().remove(indexOfDist + 1);
-      rs1.getSchema().getSignature().remove(indexOfDist + 1);
-      // KEY._col0:0._col0 => KEY._col0
-
-      for (int i = 0; i < rs1.getSchema().getSignature().size(); i++) {
-        rs1.getSchema().getSignature().get(i).setInternalName(internalNames.get(i));
-        rs1.getSchema().getColumnNames().set(i, internalNames.get(i));
-      }
+      
+      rs1.setSchema(new RowSchema(rowSchema));
       return rs1;
     }
 
     // mGby2 ---already contains key, remove distinct and change all the others
     private GroupByOperator genMapGroupby2(ReduceSinkOperator rs1,
-        Operator<? extends OperatorDesc> mGby) throws CloneNotSupportedException, SemanticException {
+        Operator<? extends OperatorDesc> mGby, int indexOfDist) throws CloneNotSupportedException, SemanticException {
       GroupByOperator mGby2 = (GroupByOperator) mGby.clone();
       ArrayList<ColumnInfo> rowSchema = new ArrayList<>();
       ArrayList<ExprNodeDesc> groupByKeys = new ArrayList<ExprNodeDesc>();
@@ -361,7 +356,7 @@ public class CountDistinctRewriteProc extends Transform {
 
     // mGby3 is a follow up of mGby2. Here we start to count(key).
     private GroupByOperator genMapGroupby3(GroupByOperator mGby2,
-        Operator<? extends OperatorDesc> mGby) throws CloneNotSupportedException, SemanticException {
+        Operator<? extends OperatorDesc> mGby, int indexOfDist) throws CloneNotSupportedException, SemanticException {
       GroupByOperator mGby3 = (GroupByOperator) mGby.clone();
       ArrayList<ColumnInfo> rowSchema = new ArrayList<>();
       ArrayList<String> outputColumnNames = new ArrayList<String>();
@@ -436,6 +431,7 @@ public class CountDistinctRewriteProc extends Transform {
       ArrayList<String> outputKeyColumnNames = new ArrayList<String>();
       ArrayList<String> outputValueColumnNames = new ArrayList<String>();
       ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
+      ArrayList<ColumnInfo> rowSchema = new ArrayList<>();
       for (int index = 0; index < mGby2.getSchema().getSignature().size(); index++) {
         ColumnInfo paraExprInfo = mGby2.getSchema().getSignature().get(index);
         String paraExpression = paraExprInfo.getInternalName();
@@ -447,6 +443,7 @@ public class CountDistinctRewriteProc extends Transform {
         outputValueColumnNames.add(outputColName);
         String internalName = Utilities.ReduceField.VALUE.toString() + "." + outputColName;
         colExprMap.put(internalName, exprDesc);
+        rowSchema.add(new ColumnInfo(internalName, paraExprInfo.getType(), "", false));
       }
       List<List<Integer>> distinctColIndices = new ArrayList<>();
       ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<>();
@@ -454,7 +451,7 @@ public class CountDistinctRewriteProc extends Transform {
           outputKeyColumnNames, outputValueColumnNames, false, -1, 0, 1,
           AcidUtils.Operation.NOT_ACID));
       rs2.setColumnExprMap(colExprMap);
-      rs2.getSchema().getSignature().remove(0);
+      rs2.setSchema(new RowSchema(rowSchema));
       return rs2;
     }
 
@@ -488,10 +485,11 @@ public class CountDistinctRewriteProc extends Transform {
       GroupByOperator mGby = (GroupByOperator) stack.get(stack.size() - 3);
       ReduceSinkOperator rs = (ReduceSinkOperator) stack.get(stack.size() - 2);
       GroupByOperator rGby = (GroupByOperator) stack.get(stack.size() - 1);
-      if (checkCountDistinct(mGby, rs, rGby)) {
+      int applicableDistPos = checkCountDistinct(mGby, rs, rGby);
+      if (applicableDistPos != -1) {
         LOG.info("trigger count distinct rewrite");
         try {
-          processGroupBy(mGby, rs, rGby);
+          processGroupBy(mGby, rs, rGby, applicableDistPos);
         } catch (CloneNotSupportedException e) {
           throw new SemanticException(e.getMessage());
         }
