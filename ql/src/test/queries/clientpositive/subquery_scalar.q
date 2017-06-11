@@ -209,3 +209,8 @@ group by key, value
 having count(*) > (select count(*) from src s1 where s1.key > '9' )
 ;
 
+-- since subquery has implicit group by this should have sq_count_check (HIVE-16793)
+explain  select * from part where p_size > (select max(p_size) from part group by p_type);
+-- same as above, for correlated columns
+explain  select * from part where p_size > (select max(p_size) from part p where p.p_type = part.p_type group by p_type);
+
