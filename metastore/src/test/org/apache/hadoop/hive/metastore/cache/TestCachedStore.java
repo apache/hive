@@ -679,13 +679,13 @@ public class TestCachedStore {
   public void testAggrStatsRepeatedRead() throws Exception {
     String dbName = "testTableColStatsOps";
     String tblName = "tbl";
-    String colName = "col";
+    String colName = "f1";
 
     Database db = new Database(dbName, null, "some_location", null);
     cachedStore.createDatabase(db);
 
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("f1", "int", null));
+    cols.add(new FieldSchema(colName, "int", null));
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
