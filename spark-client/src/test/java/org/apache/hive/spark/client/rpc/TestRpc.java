@@ -20,10 +20,17 @@ package org.apache.hive.spark.client.rpc;
 import java.io.Closeable;
 import java.net.InetAddress;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,7 +60,7 @@ public class TestRpc {
   private static final Logger LOG = LoggerFactory.getLogger(TestRpc.class);
 
   private Collection<Closeable> closeables;
-  private Map<String, String> emptyConfig =
+  private static final Map<String, String> emptyConfig =
       ImmutableMap.of(HiveConf.ConfVars.SPARK_RPC_CHANNEL_LOG_LEVEL.varname, "DEBUG");
 
   @Before
@@ -242,7 +249,7 @@ public class TestRpc {
       .put(RpcConfiguration.RPC_SASL_OPT_PREFIX + "qop", Rpc.SASL_AUTH_CONF)
       .build();
     RpcServer server = autoClose(new RpcServer(eConf));
-    Rpc[] rpcs = createRpcConnection(server, eConf);
+    Rpc[] rpcs = createRpcConnection(server, eConf, null);
     Rpc client = rpcs[1];
 
     TestMessage outbound = new TestMessage("Hello World!");
@@ -278,6 +285,35 @@ public class TestRpc {
     }
   }
 
+  @Test
+  public void testRpcServerMultiThread() throws Exception {
+    final RpcServer server = autoClose(new RpcServer(emptyConfig));
+    final String msg = "Hello World!";
+    Callable<String> callable = () -> {
+      Rpc[] rpcs = createRpcConnection(server, emptyConfig, UUID.randomUUID().toString());
+      Rpc rpc;
+      if (ThreadLocalRandom.current().nextBoolean()) {
+        rpc = rpcs[0];
+      } else {
+        rpc = rpcs[1];
+      }
+      TestMessage outbound = new TestMessage("Hello World!");
+      Future<TestMessage> call = rpc.call(outbound, TestMessage.class);
+      TestMessage reply = call.get(10, TimeUnit.SECONDS);
+      return reply.message;
+    };
+    final int numThreads = ThreadLocalRandom.current().nextInt(5) + 5;
+    ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+    List<java.util.concurrent.Future<String>> futures = new ArrayList<>(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      futures.add(executor.submit(callable));
+    }
+    executor.shutdown();
+    for (java.util.concurrent.Future<String> future : futures) {
+      assertEquals(msg, future.get());
+    }
+  }
+
   private void transfer(Rpc serverRpc, Rpc clientRpc) {
     EmbeddedChannel client = (EmbeddedChannel) clientRpc.getChannel();
     EmbeddedChannel server = (EmbeddedChannel) serverRpc.getChannel();
@@ -308,20 +344,23 @@ public class TestRpc {
    * @return two-tuple (server rpc, client rpc)
    */
   private Rpc[] createRpcConnection(RpcServer server) throws Exception {
-    return createRpcConnection(server, emptyConfig);
+    return createRpcConnection(server, emptyConfig, null);
   }
 
-  private Rpc[] createRpcConnection(RpcServer server, Map<String, String> clientConf)
-      throws Exception {
+  private Rpc[] createRpcConnection(RpcServer server, Map<String, String> clientConf,
+      String clientId) throws Exception {
+    if (clientId == null) {
+      clientId = "client";
+    }
     String secret = server.createSecret();
-    Future<Rpc> serverRpcFuture = server.registerClient("client", secret, new TestDispatcher());
+    Future<Rpc> serverRpcFuture = server.registerClient(clientId, secret, new TestDispatcher());
     NioEventLoopGroup eloop = new NioEventLoopGroup();
     Future<Rpc> clientRpcFuture = Rpc.createClient(clientConf, eloop,
-        "localhost", server.getPort(), "client", secret, new TestDispatcher());
+        "localhost", server.getPort(), clientId, secret, new TestDispatcher());
 
     Rpc serverRpc = autoClose(serverRpcFuture.get(10, TimeUnit.SECONDS));
     Rpc clientRpc = autoClose(clientRpcFuture.get(10, TimeUnit.SECONDS));
-    return new Rpc[] { serverRpc, clientRpc };
+    return new Rpc[]{serverRpc, clientRpc};
   }
 
   private static class TestMessage {
