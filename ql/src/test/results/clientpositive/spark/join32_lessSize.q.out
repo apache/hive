@@ -108,7 +108,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [x]
+              /src1 [$hdt$_2:x]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -180,7 +180,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [y]
+              /src [$hdt$_0:y]
 
   Stage: Stage-1
     Spark
@@ -312,7 +312,7 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [z]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:z]
 
   Stage: Stage-0
     Move Operator
@@ -559,7 +559,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [z]
+              /src1 [$hdt$_3:z]
 
   Stage: Stage-3
     Spark
@@ -647,7 +647,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [x]
+              /src1 [$hdt$_2:x]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -719,7 +719,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [y]
+              /src [$hdt$_0:y]
 
   Stage: Stage-1
     Spark
@@ -849,7 +849,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [w]
+              /src [$hdt$_1:w]
 
   Stage: Stage-0
     Move Operator
@@ -1093,7 +1093,7 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [z]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1165,7 +1165,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [x]
+              /src1 [$hdt$_1:$hdt$_2:x]
 
   Stage: Stage-1
     Spark
@@ -1299,7 +1299,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [y]
+              /src [$hdt$_1:$hdt$_1:y]
 
   Stage: Stage-0
     Move Operator
@@ -1545,7 +1545,7 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [z]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:z]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1613,7 +1613,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [y]
+              /src [$hdt$_1:$hdt$_1:y]
 
   Stage: Stage-1
     Spark
@@ -1747,7 +1747,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [x]
+              /src1 [$hdt$_1:$hdt$_2:x]
 
   Stage: Stage-0
     Move Operator

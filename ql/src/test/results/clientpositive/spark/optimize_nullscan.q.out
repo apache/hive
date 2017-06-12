@@ -164,7 +164,7 @@ STAGE PLANS:
                         tag: 0
                         auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a:src]
             Path -> Partition:
               nullscan://null/default.src/part_ 
                 Partition
@@ -212,7 +212,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a:src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -234,10 +234,10 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [b:srcpart]
             Path -> Partition:
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ 
                 Partition
@@ -428,10 +428,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [b:srcpart]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -549,7 +549,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [null-subquery1:_u1-subquery1:src]
             Path -> Partition:
               nullscan://null/default.src/part_ 
                 Partition
@@ -597,7 +597,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [null-subquery1:_u1-subquery1:src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -816,10 +816,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [srcpart]
-              /srcpart/ds=2008-04-08/hr=12 [srcpart]
-              /srcpart/ds=2008-04-09/hr=11 [srcpart]
-              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+              /srcpart/ds=2008-04-08/hr=11 [null-subquery2:_u1-subquery2:srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [null-subquery2:_u1-subquery2:srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [null-subquery2:_u1-subquery2:srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [null-subquery2:_u1-subquery2:srcpart]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -948,7 +948,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a:src]
             Path -> Partition:
               nullscan://null/default.src/part_ 
                 Partition
@@ -996,7 +996,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a:src]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1018,10 +1018,10 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
                         auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [b:srcpart]
             Path -> Partition:
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ 
                 Partition
@@ -1212,10 +1212,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [srcpart]
-              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=11_ [b:srcpart]
+              nullscan://null/default.srcpart/part_ds=2008-04-09_hr=12_ [b:srcpart]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1395,7 +1395,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [a-subquery1:_u1-subquery1:src]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1415,7 +1415,7 @@ STAGE PLANS:
                       tag: 0
                       auto parallelism: false
             Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a-subquery2:_u1-subquery2:src]
             Path -> Partition:
               nullscan://null/default.src/part_ 
                 Partition
@@ -1463,7 +1463,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              nullscan://null/default.src/part_ [src]
+              nullscan://null/default.src/part_ [a-subquery2:_u1-subquery2:src]
         Map 4 
             Map Operator Tree:
                 TableScan

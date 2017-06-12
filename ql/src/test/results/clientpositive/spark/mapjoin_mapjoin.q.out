@@ -83,7 +83,7 @@ STAGE PLANS:
                     name: default.src1
                   name: default.src1
             Truncated Path -> Alias:
-              /src1 [src1]
+              /src1 [$hdt$_2:src1]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -155,7 +155,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [$hdt$_0:src]
 
   Stage: Stage-1
     Spark
@@ -417,10 +417,10 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [srcpart]
-              /srcpart/ds=2008-04-08/hr=12 [srcpart]
-              /srcpart/ds=2008-04-09/hr=11 [srcpart]
-              /srcpart/ds=2008-04-09/hr=12 [srcpart]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:srcpart]
+              /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:srcpart]
+              /srcpart/ds=2008-04-09/hr=11 [$hdt$_1:srcpart]
+              /srcpart/ds=2008-04-09/hr=12 [$hdt$_1:srcpart]
 
   Stage: Stage-0
     Fetch Operator

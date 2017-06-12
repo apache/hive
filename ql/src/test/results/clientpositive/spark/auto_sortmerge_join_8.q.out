@@ -676,8 +676,8 @@ STAGE PLANS:
                     name: default.bucket_small
                   name: default.bucket_small
             Truncated Path -> Alias:
-              /bucket_small/ds=2008-04-08 [b]
-              /bucket_small/ds=2008-04-09 [b]
+              /bucket_small/ds=2008-04-08 [$hdt$_1:b]
+              /bucket_small/ds=2008-04-09 [$hdt$_1:b]
 
   Stage: Stage-1
     Spark
@@ -831,8 +831,8 @@ STAGE PLANS:
                     name: default.bucket_big
                   name: default.bucket_big
             Truncated Path -> Alias:
-              /bucket_big/ds=2008-04-08 [a]
-              /bucket_big/ds=2008-04-09 [a]
+              /bucket_big/ds=2008-04-08 [$hdt$_0:a]
+              /bucket_big/ds=2008-04-09 [$hdt$_0:a]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:

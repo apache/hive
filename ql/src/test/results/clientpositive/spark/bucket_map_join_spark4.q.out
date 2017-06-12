@@ -156,7 +156,7 @@ STAGE PLANS:
                     name: default.tbl2
                   name: default.tbl2
             Truncated Path -> Alias:
-              /tbl2 [b]
+              /tbl2 [$hdt$_1:b]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -232,7 +232,7 @@ STAGE PLANS:
                     name: default.tbl3
                   name: default.tbl3
             Truncated Path -> Alias:
-              /tbl3 [c]
+              /tbl3 [$hdt$_2:c]
 
   Stage: Stage-1
     Spark
@@ -362,7 +362,7 @@ STAGE PLANS:
                     name: default.tbl1
                   name: default.tbl1
             Truncated Path -> Alias:
-              /tbl1 [a]
+              /tbl1 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator
@@ -535,7 +535,7 @@ STAGE PLANS:
                     name: default.tbl2
                   name: default.tbl2
             Truncated Path -> Alias:
-              /tbl2 [b]
+              /tbl2 [$hdt$_1:b]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -611,7 +611,7 @@ STAGE PLANS:
                     name: default.tbl3
                   name: default.tbl3
             Truncated Path -> Alias:
-              /tbl3 [c]
+              /tbl3 [$hdt$_2:c]
 
   Stage: Stage-1
     Spark
@@ -735,7 +735,7 @@ STAGE PLANS:
                     name: default.tbl1
                   name: default.tbl1
             Truncated Path -> Alias:
-              /tbl1 [a]
+              /tbl1 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator

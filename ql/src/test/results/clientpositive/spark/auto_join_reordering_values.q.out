@@ -167,7 +167,7 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [orderpayment]
+              /orderpayment_small [$hdt$_0:orderpayment]
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -240,7 +240,7 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [dim_pay_date]
+              /orderpayment_small [$hdt$_1:dim_pay_date]
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -313,7 +313,7 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [deal]
+              /orderpayment_small [$hdt$_2:deal]
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -386,7 +386,7 @@ STAGE PLANS:
                     name: default.orderpayment_small
                   name: default.orderpayment_small
             Truncated Path -> Alias:
-              /orderpayment_small [order_city]
+              /orderpayment_small [$hdt$_3:order_city]
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -459,7 +459,7 @@ STAGE PLANS:
                     name: default.user_small
                   name: default.user_small
             Truncated Path -> Alias:
-              /user_small [user]
+              /user_small [$hdt$_4:user]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

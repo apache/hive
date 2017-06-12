@@ -211,7 +211,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part_2
                   name: default.srcbucket_mapjoin_part_2
             Truncated Path -> Alias:
-              /srcbucket_mapjoin_part_2/ds=2008-04-08 [a]
+              /srcbucket_mapjoin_part_2/ds=2008-04-08 [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -287,7 +287,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part
                   name: default.srcbucket_mapjoin_part
             Truncated Path -> Alias:
-              /srcbucket_mapjoin_part/ds=2008-04-08 [b]
+              /srcbucket_mapjoin_part/ds=2008-04-08 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -572,7 +572,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part_2
                   name: default.srcbucket_mapjoin_part_2
             Truncated Path -> Alias:
-              /srcbucket_mapjoin_part_2/ds=2008-04-08 [a]
+              /srcbucket_mapjoin_part_2/ds=2008-04-08 [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -648,7 +648,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin_part
                   name: default.srcbucket_mapjoin_part
             Truncated Path -> Alias:
-              /srcbucket_mapjoin_part/ds=2008-04-08 [b]
+              /srcbucket_mapjoin_part/ds=2008-04-08 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
