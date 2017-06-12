@@ -179,13 +179,13 @@ public class HiveSchemaTool {
   }
 
   boolean validateLocations(Connection conn, URI[] defaultServers) throws HiveMetaException {
-    System.out.println("Validating database/table/partition locations");
+    System.out.println("Validating DFS locations");
     boolean rtn;
     rtn = checkMetaStoreDBLocation(conn, defaultServers);
     rtn = checkMetaStoreTableLocation(conn, defaultServers) && rtn;
     rtn = checkMetaStorePartitionLocation(conn, defaultServers) && rtn;
     rtn = checkMetaStoreSkewedColumnsLocation(conn, defaultServers) && rtn;
-    System.out.println((rtn ? "Succeeded" : "Failed") + " in database/table/partition location validation");
+    System.out.println((rtn ? "Succeeded" : "Failed") + " in DFS location validation");
     return rtn;
   }
 
@@ -200,9 +200,9 @@ public class HiveSchemaTool {
     boolean isValid = true;
     int numOfInvalid = 0;
     if (needsQuotedIdentifier) {
-      dbLoc = "select dbt.\"DB_ID\", dbt.\"NAME\", dbt.\"DB_LOCATION_URI\" from \"DBS\" dbt";
+      dbLoc = "select dbt.\"DB_ID\", dbt.\"NAME\", dbt.\"DB_LOCATION_URI\" from \"DBS\" dbt order by dbt.\"NAME\" ";
     } else {
-      dbLoc = "select dbt.DB_ID, dbt.NAME, dbt.DB_LOCATION_URI from DBS dbt";
+      dbLoc = "select dbt.DB_ID, dbt.NAME, dbt.DB_LOCATION_URI from DBS dbt order by dbt.NAME";
     }
 
     try(Statement stmt = conn.createStatement();
@@ -237,10 +237,10 @@ public class HiveSchemaTool {
     if (needsQuotedIdentifier) {
       tabLoc = "select tbl.\"TBL_ID\", tbl.\"TBL_NAME\", sd.\"LOCATION\", dbt.\"DB_ID\", dbt.\"NAME\" from \"TBLS\" tbl inner join " +
     "\"SDS\" sd on tbl.\"SD_ID\" = sd.\"SD_ID\" and tbl.\"TBL_TYPE\" != '" + TableType.VIRTUAL_VIEW +
-    "' and tbl.\"TBL_ID\" >= ? and tbl.\"TBL_ID\"<= ? " + "inner join \"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" ";
+    "' and tbl.\"TBL_ID\" >= ? and tbl.\"TBL_ID\"<= ? " + "inner join \"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" order by tbl.\"TBL_NAME\" ";
     } else {
       tabLoc = "select tbl.TBL_ID, tbl.TBL_NAME, sd.LOCATION, dbt.DB_ID, dbt.NAME from TBLS tbl join SDS sd on tbl.SD_ID = sd.SD_ID and tbl.TBL_TYPE !='"
-      + TableType.VIRTUAL_VIEW + "' and tbl.TBL_ID >= ? and tbl.TBL_ID <= ?  inner join DBS dbt on tbl.DB_ID = dbt.DB_ID";
+      + TableType.VIRTUAL_VIEW + "' and tbl.TBL_ID >= ? and tbl.TBL_ID <= ?  inner join DBS dbt on tbl.DB_ID = dbt.DB_ID order by tbl.TBL_NAME";
     }
 
     long maxID = 0, minID = 0;
@@ -298,11 +298,11 @@ public class HiveSchemaTool {
       partLoc = "select pt.\"PART_ID\", pt.\"PART_NAME\", sd.\"LOCATION\", tbl.\"TBL_ID\", tbl.\"TBL_NAME\",dbt.\"DB_ID\", dbt.\"NAME\" from \"PARTITIONS\" pt "
            + "inner join \"SDS\" sd on pt.\"SD_ID\" = sd.\"SD_ID\" and pt.\"PART_ID\" >= ? and pt.\"PART_ID\"<= ? "
            + " inner join \"TBLS\" tbl on pt.\"TBL_ID\" = tbl.\"TBL_ID\" inner join "
-           + "\"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" ";
+           + "\"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" order by tbl.\"TBL_NAME\" ";
     } else {
       partLoc = "select pt.PART_ID, pt.PART_NAME, sd.LOCATION, tbl.TBL_ID, tbl.TBL_NAME, dbt.DB_ID, dbt.NAME from PARTITIONS pt "
           + "inner join SDS sd on pt.SD_ID = sd.SD_ID and pt.PART_ID >= ? and pt.PART_ID <= ?  "
-          + "inner join TBLS tbl on tbl.TBL_ID = pt.TBL_ID inner join DBS dbt on tbl.DB_ID = dbt.DB_ID ";
+          + "inner join TBLS tbl on tbl.TBL_ID = pt.TBL_ID inner join DBS dbt on tbl.DB_ID = dbt.DB_ID order by tbl.TBL_NAME ";
     }
 
     long maxID = 0, minID = 0;
@@ -356,11 +356,13 @@ public class HiveSchemaTool {
     }
 
     if (needsQuotedIdentifier) {
-      skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\", db.\"NAME\", db.\"DB_ID\" from \"TBLS\" t, \"SDS\" s, \"DBS\" db, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
-           + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and t.\"DB_ID\" = db.\"DB_ID\" and sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? ";
+      skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\", db.\"NAME\", db.\"DB_ID\" "
+           + " from \"TBLS\" t, \"SDS\" s, \"DBS\" db, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
+           + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and t.\"DB_ID\" = db.\"DB_ID\" and "
+           + "sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? order by t.\"TBL_NAME\" ";
     } else {
       skewedColLoc = "select t.TBL_NAME, t.TBL_ID, sk.STRING_LIST_ID_KID, sk.LOCATION, db.NAME, db.DB_ID from TBLS t, SDS s, DBS db, SKEWED_COL_VALUE_LOC_MAP sk "
-           + "where sk.SD_ID = s.SD_ID and s.SD_ID = t.SD_ID and t.DB_ID = db.DB_ID and sk.STRING_LIST_ID_KID >= ? and sk.STRING_LIST_ID_KID <= ? ";
+           + "where sk.SD_ID = s.SD_ID and s.SD_ID = t.SD_ID and t.DB_ID = db.DB_ID and sk.STRING_LIST_ID_KID >= ? and sk.STRING_LIST_ID_KID <= ? order by t.TBL_NAME ";
     }
 
     long maxID = 0, minID = 0;
@@ -423,8 +425,12 @@ public class HiveSchemaTool {
       try {
         URI currentUri = new Path(entityLocation).toUri();
         String scheme = currentUri.getScheme();
+        String path   = currentUri.getPath();
         if (StringUtils.isEmpty(scheme)) {
-          System.err.println(entity + ", Location: "+ entityLocation + ", Error: missing location scheme");
+          System.err.println(entity + ", Location: "+ entityLocation + ", Error: missing location scheme.");
+          isValid = false;
+        } else if (StringUtils.isEmpty(path)) {
+          System.err.println(entity + ", Location: "+ entityLocation + ", Error: missing location path.");
           isValid = false;
         } else if (ArrayUtils.isNotEmpty(defaultServers) && currentUri.getAuthority() != null) {
           String authority = currentUri.getAuthority();
@@ -437,9 +443,14 @@ public class HiveSchemaTool {
             }
           }
           if (!matchServer) {
-            System.err.println(entity + ", Location: " + entityLocation + ", Error: mismatched server");
+            System.err.println(entity + ", Location: " + entityLocation + ", Error: mismatched server.");
             isValid = false;
           }
+        }
+
+        // if there is no path element other than "/", report it but not fail
+        if (isValid && StringUtils.containsOnly(path, "/")) {
+          System.err.println(entity + ", Location: "+ entityLocation + ", Warn: location set to root, not a recommended config.");
         }
       } catch (Exception pe) {
         System.err.println(entity + ", Error: invalid location - " + pe.getMessage());
@@ -658,8 +669,8 @@ public class HiveSchemaTool {
         String tableName = seqNameToTable.get(seqName).getLeft();
         String tableKey = seqNameToTable.get(seqName).getRight();
         String seqQuery = needsQuotedIdentifier ?
-            ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"='org.apache.hadoop.hive.metastore.model." + seqName + "'")
-            : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME='org.apache.hadoop.hive.metastore.model." + seqName + "'");
+            ("select t.\"NEXT_VAL\" from \"SEQUENCE_TABLE\" t WHERE t.\"SEQUENCE_NAME\"='org.apache.hadoop.hive.metastore.model." + seqName + "' order by t.\"SEQUENCE_NAME\" ")
+            : ("select t.NEXT_VAL from SEQUENCE_TABLE t WHERE t.SEQUENCE_NAME='org.apache.hadoop.hive.metastore.model." + seqName + "' order by t.SEQUENCE_NAME ");
         String maxIdQuery = needsQuotedIdentifier ?
             ("select max(\"" + tableKey + "\") from \"" + tableName + "\"")
             : ("select max(" + tableKey + ") from " + tableName);
@@ -721,7 +732,7 @@ public class HiveSchemaTool {
       version = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
     } catch (HiveMetaException he) {
       System.err.println("Failed to determine schema version from Hive Metastore DB. " + he.getMessage());
-      System.out.println("Failed in schema version validation.");
+      System.out.println("Failed in schema table validation.");
       LOG.debug("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
       return false;
     }
@@ -780,7 +791,7 @@ public class HiveSchemaTool {
       Collections.sort(schemaTables);
       System.err.println("Table(s) [ " + Arrays.toString(schemaTables.toArray())
           + " ] are missing from the metastore database schema.");
-      System.out.println("Schema table validation failed!!!");
+      System.out.println("Failed in schema table validation");
       return false;
     } else {
       System.out.println("Succeeded in schema table validation.");
@@ -844,6 +855,7 @@ public class HiveSchemaTool {
           subs.add(subScript);
           continue;
         }
+        line    = line.replaceAll("( )+", " "); //suppress multi-spaces
         line    = line.replaceAll("\\(", " ");
         line    = line.replaceAll("IF NOT EXISTS ", "");
         line    = line.replaceAll("`","");
@@ -872,8 +884,8 @@ public class HiveSchemaTool {
     try {
       Statement stmt = conn.createStatement();
       String tblQuery = needsQuotedIdentifier ?
-          ("select t.* from \"TBLS\" t WHERE t.\"SD_ID\" IS NULL and (t.\"TBL_TYPE\"='" + TableType.EXTERNAL_TABLE + "' or t.\"TBL_TYPE\"='" + TableType.MANAGED_TABLE + "')")
-          : ("select t.* from TBLS t WHERE t.SD_ID IS NULL and (t.TBL_TYPE='" + TableType.EXTERNAL_TABLE + "' or t.TBL_TYPE='" + TableType.MANAGED_TABLE + "')");
+          ("select t.* from \"TBLS\" t WHERE t.\"SD_ID\" IS NULL and (t.\"TBL_TYPE\"='" + TableType.EXTERNAL_TABLE + "' or t.\"TBL_TYPE\"='" + TableType.MANAGED_TABLE + "') order by t.\"TBL_NAME\" ")
+          : ("select t.* from TBLS t WHERE t.SD_ID IS NULL and (t.TBL_TYPE='" + TableType.EXTERNAL_TABLE + "' or t.TBL_TYPE='" + TableType.MANAGED_TABLE + "') order by t.TBL_NAME ");
 
       ResultSet res = stmt.executeQuery(tblQuery);
       while (res.next()) {
