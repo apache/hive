@@ -157,10 +157,20 @@ public class GenSparkUtils {
     Preconditions.checkArgument(root instanceof TableScanOperator,
       "AssertionError: expected root to be an instance of TableScanOperator, but was "
       + root.getClass().getName());
-    String alias = ((TableScanOperator) root).getConf().getAlias();
-
+    String alias_id = null;
+    if (context.parseContext != null && context.parseContext.getTopOps() != null) {
+      for (String currentAliasID : context.parseContext.getTopOps().keySet()) {
+        Operator<? extends OperatorDesc> currOp = context.parseContext.getTopOps().get(currentAliasID);
+        if (currOp == root) {
+          alias_id = currentAliasID;
+          break;
+        }
+      }
+    }
+    if (alias_id == null)
+      alias_id = ((TableScanOperator) root).getConf().getAlias();
     if (!deferSetup) {
-      setupMapWork(mapWork, context, partitions,(TableScanOperator) root, alias);
+      setupMapWork(mapWork, context, partitions,(TableScanOperator) root, alias_id);
     }
 
     // add new item to the Spark work
@@ -172,10 +182,10 @@ public class GenSparkUtils {
   // this method's main use is to help unit testing this class
   protected void setupMapWork(MapWork mapWork, GenSparkProcContext context,
       PrunedPartitionList partitions, TableScanOperator root,
-      String alias) throws SemanticException {
+      String alias_id) throws SemanticException {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
-        context.inputs, partitions, root, alias, context.conf, false);
+        context.inputs, partitions, root, alias_id, context.conf, false);
   }
 
   private void collectOperators(Operator<?> op, List<Operator<?>> opList) {

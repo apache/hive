@@ -94,7 +94,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [a]
+              /a [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -168,7 +168,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [b]
+              /a [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -242,7 +242,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [c]
+              /a [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -401,7 +401,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [a]
+              /a [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -471,7 +471,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [b]
+              /a [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -545,7 +545,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [c]
+              /a [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -704,7 +704,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [a]
+              /a [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -774,7 +774,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [b]
+              /a [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -848,7 +848,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [c]
+              /a [$hdt$_2:c]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1003,7 +1003,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [a]
+              /a [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [b]
+              /a [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1147,7 +1147,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [c]
+              /a [$hdt$_2:c]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1221,7 +1221,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [d]
+              /a [$hdt$_3:d]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1371,7 +1371,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [a]
+              /a [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1445,7 +1445,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [b]
+              /a [$hdt$_1:b]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1519,7 +1519,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [c]
+              /a [$hdt$_2:c]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1593,7 +1593,7 @@ STAGE PLANS:
                     name: default.a
                   name: default.a
             Truncated Path -> Alias:
-              /a [d]
+              /a [$hdt$_3:d]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

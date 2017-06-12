@@ -209,7 +209,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
-              /srcbucket_mapjoin [a]
+              /srcbucket_mapjoin [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -283,7 +283,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
-              /srcbucket_mapjoin [b]
+              /srcbucket_mapjoin [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -554,7 +554,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
-              /srcbucket_mapjoin [a]
+              /srcbucket_mapjoin [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -628,7 +628,7 @@ STAGE PLANS:
                     name: default.srcbucket_mapjoin
                   name: default.srcbucket_mapjoin
             Truncated Path -> Alias:
-              /srcbucket_mapjoin [b]
+              /srcbucket_mapjoin [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

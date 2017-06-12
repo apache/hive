@@ -165,8 +165,8 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [src]
-              /srcpart/ds=2008-04-08/hr=12 [src]
+              /srcpart/ds=2008-04-08/hr=11 [tmap:src]
+              /srcpart/ds=2008-04-08/hr=12 [tmap:src]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:

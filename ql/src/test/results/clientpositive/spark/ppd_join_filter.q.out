@@ -108,7 +108,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -184,7 +184,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [$hdt$_1:src]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -399,7 +399,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -475,7 +475,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [$hdt$_1:src]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -690,7 +690,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -766,7 +766,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [$hdt$_1:src]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -981,7 +981,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1057,7 +1057,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [src]
+              /src [$hdt$_1:src]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

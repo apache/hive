@@ -127,7 +127,7 @@ STAGE PLANS:
                     name: default.test_table1
                   name: default.test_table1
             Truncated Path -> Alias:
-              /test_table1 [a]
+              /test_table1 [$hdt$_0:a]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -205,7 +205,7 @@ STAGE PLANS:
                     name: default.test_table2
                   name: default.test_table2
             Truncated Path -> Alias:
-              /test_table2 [b]
+              /test_table2 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -433,7 +433,7 @@ STAGE PLANS:
                     name: default.test_table1
                   name: default.test_table1
             Truncated Path -> Alias:
-              /test_table1 [a]
+              /test_table1 [$hdt$_0:a]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -511,7 +511,7 @@ STAGE PLANS:
                     name: default.test_table2
                   name: default.test_table2
             Truncated Path -> Alias:
-              /test_table2 [b]
+              /test_table2 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -687,7 +687,7 @@ STAGE PLANS:
                     name: default.test_table1
                   name: default.test_table1
             Truncated Path -> Alias:
-              /test_table1 [a]
+              /test_table1 [$hdt$_0:a]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -765,7 +765,7 @@ STAGE PLANS:
                     name: default.test_table2
                   name: default.test_table2
             Truncated Path -> Alias:
-              /test_table2 [b]
+              /test_table2 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -941,7 +941,7 @@ STAGE PLANS:
                     name: default.test_table1
                   name: default.test_table1
             Truncated Path -> Alias:
-              /test_table1 [a]
+              /test_table1 [$hdt$_0:a]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1019,7 +1019,7 @@ STAGE PLANS:
                     name: default.test_table2
                   name: default.test_table2
             Truncated Path -> Alias:
-              /test_table2 [b]
+              /test_table2 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:

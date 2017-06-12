@@ -224,7 +224,7 @@ STAGE PLANS:
                     name: default.bucket_small
                   name: default.bucket_small
             Truncated Path -> Alias:
-              /bucket_small/ds=2008-04-08 [a]
+              /bucket_small/ds=2008-04-08 [$hdt$_0:a]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -300,7 +300,7 @@ STAGE PLANS:
                     name: default.bucket_medium
                   name: default.bucket_medium
             Truncated Path -> Alias:
-              /bucket_medium/ds=2008-04-08 [b]
+              /bucket_medium/ds=2008-04-08 [$hdt$_1:b]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -369,7 +369,7 @@ STAGE PLANS:
                     name: default.bucket_medium
                   name: default.bucket_medium
             Truncated Path -> Alias:
-              /bucket_medium/ds=2008-04-08 [d]
+              /bucket_medium/ds=2008-04-08 [$hdt$_3:d]
 
   Stage: Stage-1
     Spark
@@ -530,8 +530,8 @@ STAGE PLANS:
                     name: default.bucket_big
                   name: default.bucket_big
             Truncated Path -> Alias:
-              /bucket_big/ds=2008-04-08 [c]
-              /bucket_big/ds=2008-04-09 [c]
+              /bucket_big/ds=2008-04-08 [$hdt$_2:c]
+              /bucket_big/ds=2008-04-09 [$hdt$_2:c]
         Reducer 4 
             Needs Tagging: false
             Reduce Operator Tree:

@@ -100,7 +100,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -224,8 +224,8 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [b]
-              /srcpart/ds=2008-04-08/hr=12 [b]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:b]
+              /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -406,7 +406,7 @@ STAGE PLANS:
                     name: default.src
                   name: default.src
             Truncated Path -> Alias:
-              /src [a]
+              /src [$hdt$_0:a]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -530,8 +530,8 @@ STAGE PLANS:
                     name: default.srcpart
                   name: default.srcpart
             Truncated Path -> Alias:
-              /srcpart/ds=2008-04-08/hr=11 [b]
-              /srcpart/ds=2008-04-08/hr=12 [b]
+              /srcpart/ds=2008-04-08/hr=11 [$hdt$_1:b]
+              /srcpart/ds=2008-04-08/hr=12 [$hdt$_1:b]
         Reducer 2 
             Needs Tagging: true
             Reduce Operator Tree:
