@@ -233,7 +233,7 @@ public class TestTezTask {
 
   @Test
   public void testClose() throws HiveException {
-    task.close(work, 0);
+    task.close(work, 0, null);
     verify(op, times(4)).jobClose(any(Configuration.class), eq(true));
   }
 
