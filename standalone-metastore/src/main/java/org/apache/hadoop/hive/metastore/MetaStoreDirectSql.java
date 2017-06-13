@@ -43,6 +43,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -901,18 +902,31 @@ class MetaStoreDirectSql {
     return ((Number)obj).longValue();
   }
 
+  /**
+   * Convert a boolean value returned from the RDBMS to a Java Boolean object.
+   * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping.
+   * 
+   * @param value
+   *          column value from the database
+   * @return The Boolean value of the database column value, null if the column
+   *         value is null
+   * @throws MetaException
+   *           if the column value cannot be converted into a Boolean object
+   */
   private static Boolean extractSqlBoolean(Object value) throws MetaException {
-    // MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping. People using derby probably
-    // don't care about performance anyway, but let's cover the common case.
-    if (value == null) return null;
-    if (value instanceof Boolean) return (Boolean)value;
-    Character c = null;
-    if (value instanceof String && ((String)value).length() == 1) {
-      c = ((String)value).charAt(0);
+    if (value == null) {
+      return null;
     }
-    if (c == null) return null;
-    if (c == 'Y') return true;
-    if (c == 'N') return false;
+    if (value instanceof Boolean) {
+      return (Boolean)value;
+    }
+    if (value instanceof String) {
+      try {
+        return BooleanUtils.toBooleanObject((String) value, "Y", "N", null);
+      } catch (IllegalArgumentException iae) {
+        // NOOP
+      }
+    }
     throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
