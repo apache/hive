@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -202,20 +203,33 @@ public class SetSparkReducerParallelism implements NodeProcessor {
     }
     if (desc.getNumReducers() == 1 && desc.hasOrderBy() &&
         hiveConf.getBoolVar(HiveConf.ConfVars.HIVESAMPLINGFORORDERBY) && !desc.isDeduplicated()) {
+      Stack<Operator<? extends OperatorDesc>> descendants = new Stack<Operator<? extends OperatorDesc>>();
       List<Operator<? extends OperatorDesc>> children = reduceSink.getChildOperators();
-      while (children != null && children.size() > 0) {
-        if (children.size() != 1 || children.get(0) instanceof LimitOperator) {
+      if (children != null) {
+        for (Operator<? extends OperatorDesc> child : children) {
+          descendants.push(child);
+        }
+      }
+      while (descendants.size() != 0) {
+        Operator<? extends OperatorDesc> descendant = descendants.pop();
+        //If the decendants contains LimitOperator,return false
+        if (descendant instanceof LimitOperator) {
           return false;
         }
-        if (children.get(0) instanceof ReduceSinkOperator ||
-            children.get(0) instanceof FileSinkOperator) {
-          break;
+        boolean reachTerminalOperator = (descendant instanceof TerminalOperator);
+        if (!reachTerminalOperator) {
+          List<Operator<? extends OperatorDesc>> childrenOfDescendant = descendant.getChildOperators();
+          if (childrenOfDescendant != null) {
+            for (Operator<? extends OperatorDesc> childOfDescendant : childrenOfDescendant) {
+              descendants.push(childOfDescendant);
+            }
+          }
         }
-        children = children.get(0).getChildOperators();
       }
       return true;
     }
     return false;
+
   }
 
   private void getSparkMemoryAndCores(OptimizeSparkProcContext context) throws SemanticException {
