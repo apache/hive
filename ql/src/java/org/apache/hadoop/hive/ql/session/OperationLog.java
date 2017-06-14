@@ -51,7 +51,7 @@ public class OperationLog {
     NONE, EXECUTION, PERFORMANCE, VERBOSE, UNKNOWN
   }
 
-  public OperationLog(String name, File file, HiveConf hiveConf) throws FileNotFoundException {
+  public OperationLog(String name, File file, HiveConf hiveConf) {
     operationName = name;
     logFile = new LogFile(file);
 
@@ -133,7 +133,7 @@ public class OperationLog {
     private BufferedReader in;
     private volatile boolean isRemoved;
 
-    LogFile(File file) throws FileNotFoundException {
+    LogFile(File file) {
       this.file = file;
       isRemoved = false;
     }
@@ -157,7 +157,7 @@ public class OperationLog {
         if (in != null) {
           in.close();
         }
-        if (!isRemoved && removeLog) {
+        if (!isRemoved && removeLog && file.exists()) {
           FileUtils.forceDelete(file);
           isRemoved = true;
         }
