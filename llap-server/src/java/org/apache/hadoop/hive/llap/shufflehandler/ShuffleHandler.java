@@ -127,7 +127,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
 
   public static final String SHUFFLE_HANDLER_LOCAL_DIRS = "llap.shuffle.handler.local-dirs";
 
-  public static final String SHUFFLE_MANAGE_OS_CACHE = "lla[.shuffle.manage.os.cache";
+  public static final String SHUFFLE_MANAGE_OS_CACHE = "llap.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
 
   public static final String SHUFFLE_READAHEAD_BYTES = "llap.shuffle.readahead.bytes";
