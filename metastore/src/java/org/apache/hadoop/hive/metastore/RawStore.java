@@ -407,7 +407,6 @@ public interface RawStore extends Configurable {
    * @return Relevant column statistics for the column for the given table
    * @throws NoSuchObjectException
    * @throws MetaException
-   * @throws InvalidInputException
    *
    */
   public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
@@ -543,7 +542,6 @@ public interface RawStore extends Configurable {
    * Drop a function definition.
    * @param dbName
    * @param funcName
-   * @return
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws InvalidObjectException

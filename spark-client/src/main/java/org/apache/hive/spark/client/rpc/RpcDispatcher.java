@@ -37,14 +37,15 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 /**
  * An implementation of ChannelInboundHandler that dispatches incoming messages to an instance
  * method based on the method signature.
- * <p/>
+ * <p>
  * A handler's signature must be of the form:
- * <p/>
+ * </p>
  * <blockquote><tt>protected void handle(ChannelHandlerContext, MessageType)</tt></blockquote>
- * <p/>
+ * <p>
  * Where "MessageType" must match exactly the type of the message to handle. Polymorphism is not
  * supported. Handlers can return a value, which becomes the RPC reply; if a null is returned, then
  * a reply is still sent, with an empty payload.
+ * </p>
  */
 @InterfaceAudience.Private
 public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> {

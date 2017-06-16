@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
  * Utility function that constructs a notification filter to match a given db name and/or table name.
  * If dbName == null, fetches all warehouse events.
  * If dnName != null, but tableName == null, fetches all events for the db
- * If dbName != null && tableName != null, fetches all events for the specified table
+ * If dbName != null &amp;&amp; tableName != null, fetches all events for the specified table
  */
 public class DatabaseAndTableFilter extends BasicFilter {
   private final String databaseName, tableName;

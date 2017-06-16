@@ -576,7 +576,6 @@ public class MetaStoreUtils {
    * @param conf
    *          hive configuration
    * @return true or false depending on conformance
-   * @exception MetaException
    *              if it doesn't match the pattern.
    */
   static public boolean validateName(String name, Configuration conf) {
@@ -700,7 +699,7 @@ public class MetaStoreUtils {
    * validate column type
    *
    * if it is predefined, yes. otherwise no
-   * @param name
+   * @param type
    * @return
    */
   static public String validateColumnType(String type) {
@@ -858,7 +857,7 @@ public class MetaStoreUtils {
    * @return String containing "Thrift
    *         DDL#comma-separated-column-names#colon-separated-columntypes
    *         Example:
-   *         "struct result { a string, map<int,string> b}#a,b#string:map<int,string>"
+   *         "struct result { a string, map&lt;int,string&gt; b}#a,b#string:map&lt;int,string&gt;"
    */
   public static String getFullDDLFromFieldSchema(String structName,
       List<FieldSchema> fieldSchemas) {

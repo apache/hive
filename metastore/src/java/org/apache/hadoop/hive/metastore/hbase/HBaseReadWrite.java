@@ -2297,7 +2297,6 @@ public class HBaseReadWrite implements MetadataStore {
 
   /**
    * @param fileIds file ID list.
-   * @return Serialized file metadata.
    */
   @Override
   public void getFileMetadata(List<Long> fileIds, ByteBuffer[] result) throws IOException {

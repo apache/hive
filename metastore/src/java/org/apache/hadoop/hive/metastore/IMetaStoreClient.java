@@ -211,7 +211,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of table names that match a filter.
-   * The filter operators are LIKE, <, <=, >, >=, =, <>
+   * The filter operators are LIKE, &lt;, &lt;=, &gt;, &gt;=, =, &lt;&gt;
    *
    * In the filter statement, values interpreted as strings must be enclosed in quotes,
    * while values interpreted as integers should not be.  Strings and integers are the only
@@ -223,12 +223,12 @@ public interface IMetaStoreClient {
    * Constants.HIVE_FILTER_FIELD_LAST_ACCESS, which filters on the last access times
    *   and supports all filter operators except LIKE
    * Constants.HIVE_FILTER_FIELD_PARAMS, which filters on the tables' parameter keys and values
-   *   and only supports the filter operators = and <>.
+   *   and only supports the filter operators = and &lt;&gt;.
    *   Append the parameter key name to HIVE_FILTER_FIELD_PARAMS in the filter statement.
    *   For example, to filter on parameter keys called "retention", the key name in the filter
    *   statement should be Constants.HIVE_FILTER_FIELD_PARAMS + "retention"
-   *   Also, = and <> only work for keys that exist in the tables.
-   *   E.g., filtering on tables where key1 <> value will only
+   *   Also, = and &lt;&gt; only work for keys that exist in the tables.
+   *   E.g., filtering on tables where key1 &lt;&gt; value will only
    *   return tables that have a value for the parameter key1.
    * Some example filter statements include:
    * filter = Constants.HIVE_FILTER_FIELD_OWNER + " like \".*test.*\" and " +
@@ -589,7 +589,7 @@ public interface IMetaStoreClient {
    * @param dbName the database name
    * @param tableName the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @return number of partitions
    * @throws MetaException
@@ -605,7 +605,7 @@ public interface IMetaStoreClient {
    * @param db_name the database name
    * @param tbl_name the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @param max_parts the maximum number of partitions to return,
    *    all partitions are returned if -1 is passed
@@ -1563,7 +1563,7 @@ public interface IMetaStoreClient {
    * Get the next set of notifications from the database.
    * @param lastEventId The last event id that was consumed by this reader.  The returned
    *                    notifications will start at the next eventId available after this eventId.
-   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   * @param maxEvents Maximum number of events to return.  If &lt; 1, then all available events will
    *                  be returned.
    * @param filter User provided filter to remove unwanted events.  If null, all events will be
    *               returned.

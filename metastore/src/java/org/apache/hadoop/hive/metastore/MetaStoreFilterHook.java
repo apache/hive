@@ -58,7 +58,7 @@ public interface MetaStoreFilterHook {
    * Filter given list of tables
    * @param dbName
    * @param tableList
-   * @returnList of filtered table names
+   * @return List of filtered table names
    */
   public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException;
 
@@ -72,9 +72,8 @@ public interface MetaStoreFilterHook {
 
   /**
    * Filter given list of tables
-   * @param dbName
    * @param tableList
-   * @returnList of filtered table names
+   * @return List of filtered table names
    */
   public List<Table> filterTables(List<Table> tableList) throws MetaException;
 

@@ -196,7 +196,6 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
 
   /**
    * Submit the work for actual execution.
-   * @throws InvalidProtocolBufferException 
    */
   public void submitWork(SubmitWorkRequestProto request, String llapHost, int llapPort) {
     // Register the pending events to be sent for this spec.
