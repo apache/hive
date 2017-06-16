@@ -73,7 +73,7 @@ public final class RpcConfiguration {
 
   long getConnectTimeoutMs() {
     String value = config.get(HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname);
-    return value != null ? Integer.parseInt(value) : DEFAULT_CONF.getTimeVar(
+    return value != null ? Long.parseLong(value) : DEFAULT_CONF.getTimeVar(
       HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 
