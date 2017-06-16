@@ -113,7 +113,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       destinationDbName = context.isDbNameEmpty() ? metadata.function.getDbName() : context.dbName;
     }
 
-    private CreateFunctionDesc build() {
+    private CreateFunctionDesc build() throws SemanticException {
       replCopyTasks.clear();
       PrimaryToReplicaResourceFunction conversionFunction =
           new PrimaryToReplicaResourceFunction(context, metadata, destinationDbName);
@@ -129,9 +129,11 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           metadata.function.getFunctionName(), destinationDbName
       );
       // For bootstrap load, the create function should be always performed.
-      ReplicationSpec replSpec = (context.dmd == null) ? null : metadata.getReplicationSpec();
+      // Only for incremental load, need to validate if event is newer than the database.
+      ReplicationSpec replSpec = (context.dmd == null) ? null : context.eventOnlyReplicationSpec();
       return new CreateFunctionDesc(
-              fullQualifiedFunctionName, false, metadata.function.getClassName(), transformedUris, replSpec
+              fullQualifiedFunctionName, false, metadata.function.getClassName(),
+              transformedUris, replSpec
       );
     }
   }

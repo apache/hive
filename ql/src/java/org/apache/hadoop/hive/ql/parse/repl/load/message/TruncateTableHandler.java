@@ -35,8 +35,9 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
 
-    TruncateTableDesc truncateTableDesc = new TruncateTableDesc(actualDbName + "." + actualTblName,
-            null, eventOnlyReplicationSpec(context));
+    TruncateTableDesc truncateTableDesc = new TruncateTableDesc(
+            actualDbName + "." + actualTblName,
+            null, context.eventOnlyReplicationSpec());
     Task<DDLWork> truncateTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc),
         context.hiveConf);

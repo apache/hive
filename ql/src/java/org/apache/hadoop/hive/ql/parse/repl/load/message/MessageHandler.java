@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 
@@ -86,6 +87,11 @@ public interface MessageHandler {
 
     boolean isDbNameEmpty() {
       return StringUtils.isEmpty(dbName);
+    }
+
+    ReplicationSpec eventOnlyReplicationSpec() throws SemanticException {
+      String eventId = dmd.getEventTo().toString();
+      return new ReplicationSpec(eventId, eventId);
     }
   }
 }

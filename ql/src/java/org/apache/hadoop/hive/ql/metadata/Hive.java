@@ -2192,7 +2192,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           try {
             org.apache.hadoop.hive.metastore.api.Partition ptn =
                 getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
-            if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn)){
+            if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn.getParameters())){
               partsToAlter.add(p);
             } // else ptn already exists, but we do nothing with it.
           } catch (NoSuchObjectException nsoe){

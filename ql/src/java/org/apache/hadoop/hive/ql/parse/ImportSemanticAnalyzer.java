@@ -805,13 +805,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (table != null) {
-      if (!replicationSpec.allowReplacementInto(table)) {
+      if (!replicationSpec.allowReplacementInto(table.getParameters())) {
         // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
         return;
       }
     } else {
       // If table doesn't exist, allow creating a new one only if the database state is older than the update.
-      if ((parentDb != null) && (!replicationSpec.allowReplacementInto(parentDb))) {
+      if ((parentDb != null) && (!replicationSpec.allowReplacementInto(parentDb.getParameters()))) {
         // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
         return;
       }
@@ -887,7 +887,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
-            if (replicationSpec.allowReplacementInto(ptn)){
+            if (replicationSpec.allowReplacementInto(ptn.getParameters())){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(
                     fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x));
@@ -913,7 +913,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         x.getLOG().debug("table non-partitioned");
-        if (!replicationSpec.allowReplacementInto(table)){
+        if (!replicationSpec.allowReplacementInto(table.getParameters())){
           return; // silently return, table is newer than our replacement.
         }
         if (!replicationSpec.isMetadataOnly()) {

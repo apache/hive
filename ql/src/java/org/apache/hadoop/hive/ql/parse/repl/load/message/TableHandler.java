@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class TableHandler extends AbstractMessageHandler {

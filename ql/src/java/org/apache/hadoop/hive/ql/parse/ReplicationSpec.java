@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
@@ -198,71 +196,24 @@ public class ReplicationSpec {
     long currReplStateLong = Long.parseLong(currReplState.replaceAll("\\D",""));
     long replacementReplStateLong = Long.parseLong(replacementReplState.replaceAll("\\D",""));
 
-    if ((currReplStateLong != 0) || (replacementReplStateLong != 0)){
-      return ((currReplStateLong - replacementReplStateLong) < 0);
-    }
-
-    // If the long value of both is 0, though, fall back to lexical comparison.
-
-    // Lexical comparison according to locale will suffice for now, future might add more logic
-    return (collator.compare(currReplState.toLowerCase(), replacementReplState.toLowerCase()) < 0);
+    return ((currReplStateLong - replacementReplStateLong) < 0);
   }
 
  /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given partition
+   * Determines if a current replication object (current state of dump) is allowed to
+   * replicate-replace-into a given metastore object (based on state_id stored in their parameters)
    */
-  public boolean allowReplacementInto(Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getCurrentReplicationState());
+  public boolean allowReplacementInto(Map<String, String> params){
+    return allowReplacement(getLastReplicatedStateFromParameters(params),
+                            getCurrentReplicationState());
   }
 
   /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given partition
+   * Determines if a current replication event (based on event id) is allowed to
+   * replicate-replace-into a given metastore object (based on state_id stored in their parameters)
    */
-  public boolean allowReplacementInto(org.apache.hadoop.hive.metastore.api.Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getCurrentReplicationState());
-  }
-
-  /**
-   * Determines if a current replication event specification is allowed to
-   * replicate-replace-into a given partition
-   */
-  public boolean allowEventReplacementInto(Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getReplicationState());
-  }
-
-  /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given table
-   */
-  public boolean allowReplacementInto(Table table) {
-    return allowReplacement(getLastReplicatedStateFromParameters(table.getParameters()),this.getCurrentReplicationState());
-  }
-
-  /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given database
-   */
-  public boolean allowReplacementInto(Database database) {
-    return allowReplacement(getLastReplicatedStateFromParameters(database.getParameters()),this.getCurrentReplicationState());
-  }
-
-  /**
-   * Determines if a current replication event specification is allowed to
-   * replicate-replace-into a given table
-   */
-  public boolean allowEventReplacementInto(Table table) {
-    return allowReplacement(getLastReplicatedStateFromParameters(table.getParameters()),this.getReplicationState());
-  }
-
-  /**
-   * Determines if a current replication event specification is allowed to
-   * replicate-replace-into a given database.
-   * This is invoked only for alter database properties to set the repl.last.id
-   */
-  public boolean allowEventReplacementInto(Database database) {
-    return allowReplacement(getLastReplicatedStateFromParameters(database.getParameters()),this.getReplicationState());
+  public boolean allowEventReplacementInto(Map<String, String> params){
+    return allowReplacement(getLastReplicatedStateFromParameters(params), getReplicationState());
   }
 
   /**
@@ -276,7 +227,7 @@ public class ReplicationSpec {
         if (partition == null){
           return false;
         }
-        return (allowEventReplacementInto(partition));
+        return (allowEventReplacementInto(partition.getParameters()));
       }
     };
   }
@@ -371,7 +322,6 @@ public class ReplicationSpec {
   public void setLazy(boolean isLazy){
     this.isLazy = isLazy;
   }
-
 
   public String get(KEY key) {
     switch (key){

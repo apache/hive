@@ -935,7 +935,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Map<String, String> newParams = alterDbDesc.getDatabaseProperties();
       Map<String, String> params = database.getParameters();
 
-      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(database)) {
+      if (!alterDbDesc.getReplicationSpec().allowEventReplacementInto(params)) {
+        LOG.debug("DDLTask: Alter Database {} is skipped as database is newer than update", dbName);
         return 0; // no replacement, the existing database state is newer than our update.
       }
 
@@ -1128,6 +1129,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!allowOperationInReplicationScope(db, tableName, oldPartSpec, renamePartitionDesc.getReplicationSpec())) {
       // no rename, the table is missing either due to drop/rename which follows the current rename.
       // or the existing table is newer than our update.
+      LOG.debug("DDLTask: Rename Partition is skipped as table {} / partition {} is newer than update",
+              tableName,
+              FileUtils.makePartName(new ArrayList(oldPartSpec.keySet()), new ArrayList(oldPartSpec.values())));
       return 0;
     }
 
@@ -3572,6 +3576,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!allowOperationInReplicationScope(db, alterTbl.getOldName(), null, alterTbl.getReplicationSpec())) {
       // no alter, the table is missing either due to drop/rename which follows the alter.
       // or the existing table is newer than our update.
+      LOG.debug("DDLTask: Alter Table is skipped as table {} is newer than update", alterTbl.getOldName());
       return 0;
     }
 
@@ -4218,19 +4223,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
        * drop the partitions inside it that are older than this event. To wit, DROP TABLE FOR REPL
        * acts like a recursive DROP TABLE IF OLDER.
        */
-      if (!replicationSpec.allowEventReplacementInto(tbl)){
+      if (!replicationSpec.allowEventReplacementInto(tbl.getParameters())){
         // Drop occured as part of replicating a drop, but the destination
         // table was newer than the event being replicated. Ignore, but drop
         // any partitions inside that are older.
         if (tbl.isPartitioned()){
 
-          PartitionIterable partitions = new PartitionIterable(db,tbl,null,conf.getIntVar(
-              HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          PartitionIterable partitions = new PartitionIterable(db,tbl,null,
+                  conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
 
           for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())){
             db.dropPartition(tbl.getDbName(),tbl.getTableName(),p.getValues(),true);
           }
         }
+        LOG.debug("DDLTask: Drop Table is skipped as table {} is newer than update", dropTbl.getTableName());
         return; // table is newer, leave it be.
       }
     }
@@ -4397,10 +4403,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // trigger replace-mode semantics.
       Table existingTable = db.getTable(tbl.getDbName(), tbl.getTableName(), false);
       if (existingTable != null){
-        if (!crtTbl.getReplicationSpec().allowEventReplacementInto(existingTable)){
-          return 0; // no replacement, the existing table state is newer than our update.
-        } else {
+        if (crtTbl.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())){
           crtTbl.setReplaceMode(true); // we replace existing table.
+        } else {
+          LOG.debug("DDLTask: Create Table is skipped as table {} is newer than update",
+                  crtTbl.getTableName());
+          return 0; // no replacement, the existing table state is newer than our update.
         }
       }
     }
@@ -4733,6 +4741,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!allowOperationInReplicationScope(db, tableName, partSpec, truncateTableDesc.getReplicationSpec())) {
       // no truncate, the table is missing either due to drop/rename which follows the truncate.
       // or the existing table is newer than our update.
+      LOG.debug("DDLTask: Truncate Table/Partition is skipped as table {} / partition {} is newer than update",
+              tableName,
+              (partSpec == null) ? "null" : FileUtils.makePartName(new ArrayList(partSpec.keySet()), new ArrayList(partSpec.values())));
       return 0;
     }
 
@@ -4873,28 +4884,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return boolean true if allow the operation
    * @throws HiveException
    */
-  private boolean allowOperationInReplicationScope(Hive db, String tableName, Map<String, String> partSpec,
-                                                     ReplicationSpec replicationSpec) throws HiveException {
-    if ((null != replicationSpec) && (replicationSpec.isInReplicationScope())) {
-      // If the table/partition exist and is older than the truncate operation, then just apply the truncate else noop.
-      Table existingTable = db.getTable(tableName, false);
-      if ((existingTable == null) || (!replicationSpec.allowEventReplacementInto(existingTable))) {
-        // the table is missing either due to drop/rename which follows the truncate.
-        // or the existing table is newer than our update. So, don't allow the update.
-        return false;
-      }
-
-      // Table exists and is older than the update. Now, need to ensure if update allowed on the partition.
+  private boolean allowOperationInReplicationScope(Hive db, String tableName,
+              Map<String, String> partSpec, ReplicationSpec replicationSpec) throws HiveException {
+    if ((null == replicationSpec) || (!replicationSpec.isInReplicationScope())) {
+      // Always allow the operation if it is not in replication scope.
+      return true;
+    }
+    // If the table/partition exist and is older than the event, then just apply
+    // the event else noop.
+    Table existingTable = db.getTable(tableName, false);
+    if ((existingTable != null)
+            && replicationSpec.allowEventReplacementInto(existingTable.getParameters())) {
+      // Table exists and is older than the update. Now, need to ensure if update allowed on the
+      // partition.
       if (partSpec != null) {
         Partition existingPtn = db.getPartition(existingTable, partSpec, false);
-        if ((existingPtn == null) || (!replicationSpec.allowEventReplacementInto(existingPtn))) {
-          // no operation allowed,
-          // either the partition is missing or the existing partition state is newer than our update.
-          return false;
-        }
+        return ((existingPtn != null)
+                && replicationSpec.allowEventReplacementInto(existingPtn.getParameters()));
       }
+
+      // Replacement is allowed as the existing table is older than event
+      return true;
     }
-    return true;
+
+    // The table is missing either due to drop/rename which follows the operation.
+    // Or the existing table is newer than our update. So, don't allow the update.
+    return false;
   }
 
   public static boolean doesTableNeedLocation(Table tbl) {
