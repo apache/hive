@@ -37,6 +37,7 @@ public class QueryFragmentInfo {
   private final int attemptNumber;
   private final SignableVertexSpec vertexSpec;
   private final String fragmentIdString;
+  private boolean canFinishForPriority;
 
   public QueryFragmentInfo(QueryInfo queryInfo, String vertexName, int fragmentNumber,
       int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
@@ -49,6 +50,7 @@ public class QueryFragmentInfo {
     this.attemptNumber = attemptNumber;
     this.vertexSpec = vertexSpec;
     this.fragmentIdString = fragmentIdString;
+    this.canFinishForPriority = false; // Updated when we add this to the queue.
   }
 
   // Only meant for use by the QueryTracker
@@ -77,6 +79,21 @@ public class QueryFragmentInfo {
   }
 
   /**
+   * Unlike canFinish, this CANNOT be derived dynamically; a change without a reinsert will
+   * cause the queue order to become incorrect.
+   */
+  public boolean canFinishForPriority() {
+    return canFinishForPriority;
+  }
+
+  /**
+   * This MUST be called when the fragment is NOT in wait queue.
+   */
+  public void setCanFinishForPriority(boolean value) {
+    canFinishForPriority = value;
+  }
+
+  /**
    * Check whether a task can run to completion or may end up blocking on it's sources.
    * This currently happens via looking up source state.
    * TODO: Eventually, this should lookup the Hive Processor to figure out whether
@@ -85,7 +102,12 @@ public class QueryFragmentInfo {
    *
    * @return true if the task can finish, false otherwise
    */
-  public boolean canFinish() {
+  public static boolean canFinish(QueryFragmentInfo fragment) {
+    return fragment.canFinish();
+  }
+
+  // Hide this so it doesn't look like a simple property.
+  private boolean canFinish() {
     List<IOSpecProto> inputSpecList = vertexSpec.getInputSpecsList();
     boolean canFinish = true;
     if (inputSpecList != null && !inputSpecList.isEmpty()) {

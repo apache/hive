@@ -219,11 +219,12 @@ public class QueryInfo {
           sourceToEntity.put(source, entityInfo);
         }
 
-        if (lastFinishableState == fragmentInfo.canFinish()) {
+        boolean canFinish = QueryFragmentInfo.canFinish(fragmentInfo);
+        if (lastFinishableState == canFinish) {
           // State has not changed.
           return true;
         } else {
-          entityInfo.setLastFinishableState(fragmentInfo.canFinish());
+          entityInfo.setLastFinishableState(canFinish);
           return false;
         }
       } finally {
@@ -259,7 +260,7 @@ public class QueryInfo {
       }
       if (interestedEntityInfos != null) {
         for (EntityInfo entityInfo : interestedEntityInfos) {
-          boolean newFinishState = entityInfo.getFragmentInfo().canFinish();
+          boolean newFinishState = QueryFragmentInfo.canFinish(entityInfo.getFragmentInfo());
           if (newFinishState != entityInfo.getLastFinishableState()) {
             // State changed. Callback
             entityInfo.setLastFinishableState(newFinishState);
