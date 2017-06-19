@@ -190,7 +190,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
       if (partDesc != null) {
         LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
-        if (partSpec != null && partSpec.isEmpty()) {
+        if (partSpec != null && !partSpec.isEmpty()) {
           partitionColumnCount = partSpec.size();
         }
       }
