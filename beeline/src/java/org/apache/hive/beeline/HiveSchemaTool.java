@@ -744,7 +744,7 @@ public class HiveSchemaTool {
     try {
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
-      rs             = metadata.getTables(null, null, "%", types);
+      rs             = metadata.getTables(null, hmsConn.getSchema(), "%", types);
       String table   = null;
 
       while (rs.next()) {
