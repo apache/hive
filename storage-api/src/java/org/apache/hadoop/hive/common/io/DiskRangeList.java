@@ -36,6 +36,7 @@ public class DiskRangeList extends DiskRange {
    * @return the new element
    */
   public DiskRangeList replaceSelfWith(DiskRangeList other) {
+    checkArg(other);
     other.prev = this.prev;
     other.next = this.next;
     if (this.prev != null) {
@@ -48,12 +49,24 @@ public class DiskRangeList extends DiskRange {
     return other;
   }
 
+  private void checkArg(DiskRangeList other) throws AssertionError {
+    if (other == this) {
+      // The only case where duplicate elements matter... the others are handled by the below.
+      throw new AssertionError("Inserting self into the list [" + other + "]");
+    }
+    if (other.prev != null || other.next != null) {
+      throw new AssertionError("[" + other + "] is part of another list; prev ["
+          + other.prev + "], next [" + other.next + "]");
+    }
+  }
+
   /**
    * Inserts an intersecting range before current in the list and adjusts offset accordingly.
    * @param other the element to insert
    * @return the new element.
    */
   public DiskRangeList insertPartBefore(DiskRangeList other) {
+    checkArg(other);
     assert other.end >= this.offset;
     this.offset = other.end;
     other.prev = this.prev;
@@ -71,6 +84,7 @@ public class DiskRangeList extends DiskRange {
    * @return the new element.
    * */
   public DiskRangeList insertAfter(DiskRangeList other) {
+    checkArg(other);
     other.next = this.next;
     other.prev = this;
     if (this.next != null) {
@@ -94,6 +108,9 @@ public class DiskRangeList extends DiskRange {
   /** Removes an element after current from the list. */
   public void removeAfter() {
     DiskRangeList other = this.next;
+    if (this == other) {
+      throw new AssertionError("Invalid duplicate [" + other + "]");
+    }
     this.next = other.next;
     if (this.next != null) {
       this.next.prev = this;
@@ -103,6 +120,9 @@ public class DiskRangeList extends DiskRange {
 
   /** Removes the current element from the list. */
   public void removeSelf() {
+    if (this.prev == this || this.next == this) {
+      throw new AssertionError("Invalid duplicate [" + this + "]");
+    }
     if (this.prev != null) {
       this.prev.next = this.next;
     }
