@@ -1191,24 +1191,100 @@ class EncodedReaderImpl implements EncodedReader {
      This may be necessary for obscure combinations of compression and encoding boundaries. */
   private static DiskRangeList findExactPosition(DiskRangeList ranges, long offset) {
     if (offset < 0) return ranges;
-    return findIntersectingPosition(ranges, offset, offset);
+    ranges = findUpperBound(ranges, offset);
+    ranges = findLowerBound(ranges, offset);
+    if (offset < ranges.getOffset() || offset >= ranges.getEnd()) {
+      throwRangesError(ranges, offset, offset);
+    }
+    return ranges;
   }
 
-  private static DiskRangeList findIntersectingPosition(DiskRangeList ranges, long offset, long end) {
+  private static DiskRangeList findIntersectingPosition(
+      DiskRangeList ranges, long offset, long end) {
     if (offset < 0) return ranges;
-    // We expect the offset to be valid TODO: rather, validate
-    while (ranges.getEnd() <= offset) {
-      ranges = ranges.next;
-    }
-    while (ranges.getOffset() > end) {
-      ranges = ranges.prev;
-    }
+    ranges = findUpperBound(ranges, offset);
+    ranges = findLowerBound(ranges, end);
     // We are now on some intersecting buffer, find the first intersecting buffer.
     while (ranges.prev != null && ranges.prev.getEnd() > offset) {
+      if (ranges.prev.getEnd() > ranges.getOffset()) {
+        throwRangesError(ranges, offset, end);
+      }
       ranges = ranges.prev;
     }
     return ranges;
   }
+
+
+  public static DiskRangeList findLowerBound(DiskRangeList ranges, long end) {
+    while (ranges.getOffset() > end) {
+      if (ranges.prev.getEnd() > ranges.getOffset()) {
+        throwRangesError(ranges, end, end);
+      }
+      ranges = ranges.prev;
+    }
+    return ranges;
+  }
+
+
+  public static DiskRangeList findUpperBound(DiskRangeList ranges, long offset) {
+    while (ranges.getEnd() <= offset) {
+      if (ranges.next.getOffset() < ranges.getEnd()) {
+        throwRangesError(ranges, offset, offset);
+      }
+      ranges = ranges.next;
+    }
+    return ranges;
+  }
+
+  private static void throwRangesError(DiskRangeList ranges, long offset, long end) {
+    // We are going to fail, so it is ok to do expensive stuff. Ranges are broken, play it safe.
+    IdentityHashMap<DiskRangeList, Boolean> seen = new IdentityHashMap<>();
+    seen.put(ranges, true);
+    StringBuilder errors = new StringBuilder();
+    while (ranges.prev != null) {
+      if (ranges.prev.next != ranges) {
+        errors.append("inconsistent list going back: [").append(ranges).append("].prev = [")
+          .append(ranges.prev).append("]; prev.next = [").append(ranges.prev.next).append("]; ");
+        // Stop, as we won't be able to go forward.
+        break;
+      }
+      if (seen.containsKey(ranges.prev)) {
+        errors.append("loop: [").append(ranges).append(
+            "].prev = [").append(ranges.prev).append("]; ");
+        break;
+      }
+      ranges = ranges.prev;
+      seen.put(ranges, true);
+    }
+    seen.clear();
+    seen.put(ranges, true);
+    StringBuilder sb = new StringBuilder("Incorrect ranges detected while looking for ");
+    if (offset == end) {
+      sb.append(offset);
+    } else {
+      sb.append("[").append(offset).append(", ").append(end).append(")");
+    }
+    sb.append(": [").append(ranges).append("], ");
+    while (ranges.next != null) {
+      if (ranges.next.prev != ranges) {
+        errors.append("inconsistent list going forward: [").append(ranges).append(
+            "].next.prev = [").append(ranges.next.prev).append("]; ");
+      }
+      if (seen.containsKey(ranges.next)) {
+        errors.append("loop: [").append(ranges).append(
+            "].next = [").append(ranges.next).append("]; ");
+        break;
+      }
+      ranges = ranges.next;
+      sb.append("[").append(ranges).append("], ");
+      seen.put(ranges, true);
+    }
+    sb.append("; ").append(errors);
+    String error = sb.toString();
+    LOG.error(error);
+    throw new RuntimeException(error);
+  }
+
 
   /**
    * Reads one compression block from the source; handles compression blocks read from
