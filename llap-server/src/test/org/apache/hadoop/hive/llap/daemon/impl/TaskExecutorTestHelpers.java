@@ -54,7 +54,7 @@ public class TaskExecutorTestHelpers {
     long currentAttemptStartTime, boolean canFinish, long workTime) {
     SubmitWorkRequestProto
         request = createSubmitWorkRequestProto(fragmentNum, parallelism, firstAttemptStartTime, currentAttemptStartTime);
-    return createMockRequest(canFinish, workTime, request);
+    return createMockRequest(canFinish, canFinish, workTime, request);
   }
 
   public static MockRequest createMockRequest(int fragmentNum, int parallelism,
@@ -66,20 +66,25 @@ public class TaskExecutorTestHelpers {
     SubmitWorkRequestProto
         request = createSubmitWorkRequestProto(fragmentNum, parallelism, 0,
         firstAttemptStartTime, currentAttemptStartTime, withinDagPriority);
-    return createMockRequest(canFinish, workTime, request);
+    return createMockRequest(canFinish, canFinish, workTime, request);
   }
 
-  private static MockRequest createMockRequest(boolean canFinish,
+  private static MockRequest createMockRequest(boolean canFinish, boolean canFinishQueue,
       long workTime, SubmitWorkRequestProto request) {
     QueryFragmentInfo queryFragmentInfo = createQueryFragmentInfo(
         request.getWorkSpec().getVertex(), request.getFragmentNumber());
-    return new MockRequest(request, queryFragmentInfo, canFinish, workTime, null);
+    return new MockRequest(request, queryFragmentInfo, canFinish, canFinishQueue, workTime, null);
   }
 
   public static TaskExecutorService.TaskWrapper createTaskWrapper(
-      SubmitWorkRequestProto request, boolean canFinish, int workTime) {
+      SubmitWorkRequestProto request, boolean canFinish, boolean canFinishQueue, int workTime) {
     return new TaskExecutorService.TaskWrapper(
-        createMockRequest(canFinish, workTime, request), null);
+        createMockRequest(canFinish, canFinishQueue, workTime, request), null);
+  }
+  
+  public static TaskExecutorService.TaskWrapper createTaskWrapper(
+      SubmitWorkRequestProto request, boolean canFinish, int workTime) {
+    return createTaskWrapper(request, canFinish, canFinish, workTime);
   }
 
   public static QueryFragmentInfo createQueryFragmentInfo(
@@ -166,7 +171,7 @@ public class TaskExecutorTestHelpers {
 
   public static class MockRequest extends TaskRunnerCallable {
     private final long workTime;
-    private final boolean canFinish;
+    private final boolean canFinish, canFinishQueue;
 
     private final AtomicBoolean isStarted = new AtomicBoolean(false);
     private final AtomicBoolean isFinished = new AtomicBoolean(false);
@@ -182,7 +187,8 @@ public class TaskExecutorTestHelpers {
     private boolean isOkToFinish = true;
 
     public MockRequest(SubmitWorkRequestProto requestProto, QueryFragmentInfo fragmentInfo,
-                       boolean canFinish, long workTime, TezEvent initialEvent) {
+                       boolean canFinish, boolean canFinishQueue, long workTime,
+                       TezEvent initialEvent) {
       super(requestProto, fragmentInfo, new Configuration(),
           new ExecutionContextImpl("localhost"), null, new Credentials(), 0, mock(AMReporter.class), null, mock(
               LlapDaemonExecutorMetrics.class),
@@ -192,6 +198,7 @@ public class TaskExecutorTestHelpers {
               SchedulerFragmentCompletingListener.class), mock(SocketFactory.class));
       this.workTime = workTime;
       this.canFinish = canFinish;
+      this.canFinishQueue = canFinishQueue;
     }
 
     @Override
@@ -322,6 +329,11 @@ public class TaskExecutorTestHelpers {
     @Override
     public boolean canFinish() {
       return canFinish;
+    }
+
+    @Override
+    public boolean canFinishForPriority() {
+      return canFinishQueue;
     }
 
     public void setSleepAfterKill() {

@@ -32,8 +32,8 @@ public class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
   public int compare(TaskWrapper t1, TaskWrapper t2) {
     TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
     TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-    boolean o1CanFinish = o1.canFinish();
-    boolean o2CanFinish = o2.canFinish();
+    boolean o1CanFinish = o1.canFinishForPriority();
+    boolean o2CanFinish = o2.canFinishForPriority();
     if (o1CanFinish == true && o2CanFinish == false) {
       return -1;
     } else if (o1CanFinish == false && o2CanFinish == true) {
