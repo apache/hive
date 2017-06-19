@@ -55,7 +55,7 @@ public class TestShortestJobFirstComparator {
     r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300, 400, "q3"), true, 1000000);
     r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400, 500, "q4"), true, 1000000);
     r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500, 600, "q5"), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
+    queue = new EvictingPriorityBlockingQueue<TaskWrapper>(
         new ShortestJobFirstComparator(), 4);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -77,7 +77,7 @@ public class TestShortestJobFirstComparator {
     r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 300, 800, "q3"), true, 1000000);
     r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 1, 400, 700, "q4"), false, 1000000);
     r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500, 600, "q5"), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
+    queue = new EvictingPriorityBlockingQueue<TaskWrapper>(
         new ShortestJobFirstComparator(), 4);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -99,7 +99,7 @@ public class TestShortestJobFirstComparator {
     r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300, 400, "q3"), true, 1000000);
     r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400, 500, "q4"), false, 1000000);
     r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500, 600, "q5"), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
+    queue = new EvictingPriorityBlockingQueue<TaskWrapper>(
         new ShortestJobFirstComparator(), 4);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -121,7 +121,7 @@ public class TestShortestJobFirstComparator {
     r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300, 400, "q3"), false, 1000000);
     r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400, 500, "q4"), false, 1000000);
     r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500, 600, "q5"), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
+    queue = new EvictingPriorityBlockingQueue<TaskWrapper>(
         new ShortestJobFirstComparator(), 4);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -143,7 +143,7 @@ public class TestShortestJobFirstComparator {
     r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300, 400, "q3"), true, 1000000);
     r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400, 500, "q4"), true, 1000000);
     r5 = createTaskWrapper(createSubmitWorkRequestProto(5, 10, 500, 600, "q5"), true, 1000000);
-    queue = new EvictingPriorityBlockingQueue(
+    queue = new EvictingPriorityBlockingQueue<TaskWrapper>(
         new ShortestJobFirstComparator(), 4);
     assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
@@ -166,6 +166,25 @@ public class TestShortestJobFirstComparator {
     TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 10, 100, 10), false, 100000);
     TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 10, 100, 1), false, 100000);
     TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 10, 100, 5), false, 100000);
+
+    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
+        new ShortestJobFirstComparator(), 4);
+
+    assertNull(queue.offer(r1, 0));
+    assertNull(queue.offer(r2, 0));
+    assertNull(queue.offer(r3, 0));
+
+    assertEquals(r2, queue.take());
+    assertEquals(r3, queue.take());
+    assertEquals(r1, queue.take());
+  }
+
+  @Test(timeout = 60000)
+  public void testWaitQueueComparatorCanFinish() throws InterruptedException {
+    // Test that only the fixed property (...ForQueue) is used in order determination, not the dynamic call.
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 1, 0, 10, 100, 2), true, false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 1, 0, 10, 100, 1), false, true, 100000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 1, 0, 10, 100, 5), true, true, 100000);
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new ShortestJobFirstComparator(), 4);

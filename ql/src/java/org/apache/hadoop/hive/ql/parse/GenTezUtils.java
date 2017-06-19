@@ -105,7 +105,6 @@ public class GenTezUtils {
       final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       // estimated number of reducers
       final int nReducers = reduceSink.getConf().getNumReducers();
-      // TODO# HERE
 
       // min we allow tez to pick
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));

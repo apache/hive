@@ -22,6 +22,8 @@ import java.util.Comparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
+
 /**
  * Bounded priority queue that evicts the last element based on priority order specified
  * through comparator. Elements that are added to the queue are sorted based on the specified
@@ -44,6 +46,18 @@ public class EvictingPriorityBlockingQueue<E> {
     this.deque = new PriorityBlockingDeque<>(comparator);
     this.waitQueueSize = maxSize;
     this.comparator = comparator;
+  }
+
+  public synchronized void apply(Function<E, Boolean> fn) {
+    for (E item : deque) {
+      boolean isOk = fn.apply(item);
+      if (!isOk) return;
+    }
+  }
+
+  public synchronized void forceOffer(E e) {
+    offerToDequeueInternal(e);
+    currentSize++;
   }
 
   public synchronized E offer(E e, int additionalElementsAllowed) {
@@ -89,21 +103,6 @@ public class EvictingPriorityBlockingQueue<E> {
       currentSize--;
     }
     return removed;
-  }
-
-  /**
-   * Re-insert an element if it exists (mainly to force a re-order)
-   * @param e
-   * @return false if the element was not found. true otherwise.
-   */
-  public synchronized boolean reinsertIfExists(E e) {
-    if (remove(e)) {
-      offerToDequeueInternal(e);
-      currentSize++;
-      return true;
-    } else {
-      return false;
-    }
   }
 
   private void offerToDequeueInternal(E e) {

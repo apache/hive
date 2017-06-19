@@ -395,7 +395,15 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public boolean canFinish() {
-    return fragmentInfo.canFinish();
+    return QueryFragmentInfo.canFinish(fragmentInfo);
+  }
+
+  public boolean canFinishForPriority() {
+    return fragmentInfo.canFinishForPriority();
+  }
+
+  public void updateCanFinishForPriority(boolean value) {
+    fragmentInfo.setCanFinishForPriority(value);
   }
 
   private static Multimap<String, String> createStartedInputMap(SignableVertexSpec vertex) {
