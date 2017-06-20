@@ -1890,7 +1890,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     if (desc.getResidualFilterExprs() != null && !desc.getResidualFilterExprs().isEmpty()) {
-      LOG.info("Cannot vectorize outer join with complex ON clause");
+      LOG.info("Cannot vectorize join with complex ON clause");
       return false;
     }
     return true;

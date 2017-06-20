@@ -285,6 +285,11 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.join.inner.residual</name>
+  <value>true</value>
+</property>
+
 <!-- llap properties -->
 
 <property>

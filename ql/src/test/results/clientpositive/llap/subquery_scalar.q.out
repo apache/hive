@@ -75,7 +75,7 @@ POSTHOOK: Lineage: part_null.p_partkey EXPRESSION [(values__tmp__table__2)values
 POSTHOOK: Lineage: part_null.p_retailprice EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
 POSTHOOK: Lineage: part_null.p_size EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_null.p_type SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
@@ -138,21 +138,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 26 Data size: 18096 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (UDFToDouble(_col5) > _col9) (type: boolean)
+                residual filter predicates: {(UDFToDouble(_col5) > _col9)}
+                Statistics: Num rows: 8 Data size: 5568 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                   Statistics: Num rows: 8 Data size: 5568 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 8 Data size: 5568 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 8 Data size: 5568 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -172,7 +170,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where p_size > (select avg(p_size) from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -194,7 +192,7 @@ POSTHOOK: Input: default@part_null
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
-Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where p_size > (select * from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -205,7 +203,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tempty
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_size > (select * from tempty)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_size > (select * from tempty)
@@ -283,21 +281,19 @@ STAGE PLANS:
                   1 
                   2 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
-                Statistics: Num rows: 26 Data size: 16328 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (UDFToDouble(_col5) > UDFToDouble(_col10)) (type: boolean)
+                residual filter predicates: {(UDFToDouble(_col5) > UDFToDouble(_col10))}
+                Statistics: Num rows: 8 Data size: 5024 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                   Statistics: Num rows: 8 Data size: 5024 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 8 Data size: 5024 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 8 Data size: 5024 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -941,7 +937,7 @@ POSTHOOK: Input: default@part
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_mfgr, p_name, p_size from part 
 where part.p_size > 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) as fv from part order by fv limit 1)
@@ -1011,21 +1007,19 @@ STAGE PLANS:
                   1 
                   2 
                 outputColumnNames: _col0, _col1, _col2, _col4
-                Statistics: Num rows: 26 Data size: 5902 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col2 > _col4) (type: boolean)
-                  Statistics: Num rows: 8 Data size: 1816 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
-                    outputColumnNames: _col0, _col1, _col2
+                residual filter predicates: {(_col2 > _col4)}
+                Statistics: Num rows: 8 Data size: 1816 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: string), _col0 (type: string), _col2 (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 8 Data size: 1784 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 8 Data size: 1784 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 8 Data size: 1784 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1151,7 +1145,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select p_mfgr, p_name, p_size from part 
 where part.p_size > 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) as fv from part order by fv limit 1)
@@ -1189,7 +1183,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
@@ -1252,21 +1246,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                residual filter predicates: {((_col0 * _col5) <> _col9)}
                 Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: ((_col0 * _col5) <> _col9) (type: boolean)
-                  Statistics: Num rows: 26 Data size: 16198 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1286,7 +1278,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -1896,7 +1888,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
@@ -2007,21 +1999,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col12
-                Statistics: Num rows: 9 Data size: 5771 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (_col7 <= _col12) (type: boolean)
+                residual filter predicates: {(_col7 <= _col12)}
+                Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                   Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 3 Data size: 1923 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2060,7 +2050,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -2097,7 +2087,7 @@ POSTHOOK: Input: default@part_null
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
@@ -2185,16 +2175,14 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                residual filter predicates: {(_col3 <> _col9)}
                 Statistics: Num rows: 26 Data size: 20878 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col3 <> _col9) (type: boolean)
+                Reduce Output Operator
+                  key expressions: _col4 (type: string), _col5 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col4 (type: string), _col5 (type: int)
                   Statistics: Num rows: 26 Data size: 20878 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: _col4 (type: string), _col5 (type: int)
-                    sort order: ++
-                    Map-reduce partition columns: _col4 (type: string), _col5 (type: int)
-                    Statistics: Num rows: 26 Data size: 20878 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: double), _col8 (type: string)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2249,7 +2237,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -2419,8 +2407,8 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
@@ -2544,26 +2532,24 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2
+                residual filter predicates: {(_col1 <> _col2)}
                 Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col1 <> _col2) (type: boolean)
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: count()
-                      keys: _col0 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
+                  Group By Operator
+                    aggregations: count()
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: bigint)
+                      value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2589,21 +2575,19 @@ STAGE PLANS:
                   1 
                   2 
                 outputColumnNames: _col0, _col1, _col3
-                Statistics: Num rows: 205 Data size: 21115 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col1 > _col3) (type: boolean)
-                  Statistics: Num rows: 68 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint)
-                    outputColumnNames: _col0, _col1
+                residual filter predicates: {(_col1 > _col3)}
+                Statistics: Num rows: 68 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2658,8 +2642,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[50][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[47][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[48][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -2678,7 +2662,7 @@ POSTHOOK: Input: default@src
 468	4
 469	5
 489	4
-Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select sum(p_retailprice) from part group by p_type having sum(p_retailprice) > (select max(pp.p_retailprice) from part pp)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(p_retailprice) from part group by p_type having sum(p_retailprice) > (select max(pp.p_retailprice) from part pp)
@@ -2767,21 +2751,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col1, _col2
-                Statistics: Num rows: 13 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col1 > _col2) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col1 (type: double)
-                    outputColumnNames: _col0
+                residual filter predicates: {(_col1 > _col2)}
+                Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2801,7 +2783,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select sum(p_retailprice) from part group by p_type having sum(p_retailprice) > (select max(pp.p_retailprice) from part pp)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -2812,7 +2794,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 2346.3
 3461.37
-Warning: Shuffle Join MERGEJOIN[77][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[76][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
@@ -3056,21 +3038,19 @@ STAGE PLANS:
                   1 
                   2 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
-                Statistics: Num rows: 26 Data size: 16302 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (UDFToLong(_col5) > _col10) (type: boolean)
-                  Statistics: Num rows: 8 Data size: 5016 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                residual filter predicates: {(UDFToLong(_col5) > _col10)}
+                Statistics: Num rows: 8 Data size: 5016 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 8 Data size: 4952 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 8 Data size: 4952 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 8 Data size: 4952 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3186,7 +3166,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[77][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[76][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -4355,23 +4335,21 @@ STAGE PLANS:
                   1 _col0 (type: int)
                   2 _col1 (type: int)
                 outputColumnNames: _col1, _col2, _col4
-                Statistics: Num rows: 6 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col1 > _col4) (type: boolean)
+                residual filter predicates: {(_col1 > _col4)}
+                Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col2 (type: double)
+                  outputColumnNames: _col2
                   Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col2 (type: double)
-                    outputColumnNames: _col2
-                    Statistics: Num rows: 2 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: sum(_col2)
-                      mode: hash
-                      outputColumnNames: _col0
+                  Group By Operator
+                    aggregations: sum(_col2)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      sort order: 
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: double)
+                      value expressions: _col0 (type: double)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5150,7 +5128,7 @@ POSTHOOK: Input: default@emps
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
@@ -5261,21 +5239,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col13
-                Statistics: Num rows: 5 Data size: 306 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: (UDFToLong(_col0) > _col13) (type: boolean)
+                residual filter predicates: {(UDFToLong(_col0) > _col13)}
+                Statistics: Num rows: 1 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                   Statistics: Num rows: 1 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 1 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 61 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5314,7 +5290,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@depts
@@ -5346,7 +5322,7 @@ POSTHOOK: query: drop table EMPS
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: default@emps
-Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
  select key, count(*)
 from src
@@ -5433,21 +5409,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 205 Data size: 21115 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col1 > _col2) (type: boolean)
-                  Statistics: Num rows: 68 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: bigint)
-                    outputColumnNames: _col0, _col1
+                residual filter predicates: {(_col1 > _col2)}
+                Statistics: Num rows: 68 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 68 Data size: 6460 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5467,7 +5441,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[20][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select key, count(*)
 from src
 group by key
@@ -5492,7 +5466,7 @@ POSTHOOK: Input: default@src
 468	4
 469	5
 489	4
-Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain
 select key, value, count(*)
 from src b
@@ -5623,21 +5597,19 @@ STAGE PLANS:
                   0 
                   1 
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 83 Data size: 16102 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col2 > _col3) (type: boolean)
-                  Statistics: Num rows: 27 Data size: 5238 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                    outputColumnNames: _col0, _col1, _col2
+                residual filter predicates: {(_col2 > _col3)}
+                Statistics: Num rows: 27 Data size: 5238 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 27 Data size: 5022 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 27 Data size: 5022 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 27 Data size: 5022 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5670,7 +5642,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select key, value, count(*)
 from src b
 where b.key in (select key from src where src.key > '8')
@@ -5687,7 +5659,7 @@ having count(*) > (select count(*) from src s1 where s1.key > '9' )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain  select * from part where p_size > (select max(p_size) from part group by p_type)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain  select * from part where p_size > (select max(p_size) from part group by p_type)
@@ -5778,21 +5750,19 @@ STAGE PLANS:
                   1 
                   2 
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col10
-                Statistics: Num rows: 338 Data size: 210574 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: (_col5 > _col10) (type: boolean)
-                  Statistics: Num rows: 112 Data size: 69776 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                residual filter predicates: {(_col5 > _col10)}
+                Statistics: Num rows: 112 Data size: 69776 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 112 Data size: 69328 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 112 Data size: 69328 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 112 Data size: 69328 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:

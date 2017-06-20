@@ -8143,11 +8143,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         join.getNoOuterJoin(), joinCondns, filterMap, joinKeys, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
-    // For outer joins, add filters that apply to more than one input
-    if (!join.getNoOuterJoin() && join.getPostJoinFilters().size() != 0) {
+    // Add filters that apply to more than one input
+    if (join.getPostJoinFilters().size() != 0 &&
+            (!join.getNoOuterJoin() ||
+                    HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER))) {
+      LOG.debug("Generate JOIN with post-filtering conditions");
       List<ExprNodeDesc> residualFilterExprs = new ArrayList<ExprNodeDesc>();
       for (ASTNode cond : join.getPostJoinFilters()) {
-        residualFilterExprs.add(genExprNodeDesc(cond, outputRR));
+        residualFilterExprs.add(genExprNodeDesc(cond, outputRR, false, isCBOExecuted()));
       }
       desc.setResidualFilterExprs(residualFilterExprs);
       // Clean post-conditions
@@ -8356,14 +8359,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinContext.put(joinOp, joinTree);
 
     if (joinTree.getPostJoinFilters().size() != 0) {
-      // Safety check for postconditions
       assert joinTree.getNoOuterJoin();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER)) {
+        // Safety check for postconditions
+        throw new SemanticException("Post-filtering conditions should have been added to the JOIN operator");
+      }
       Operator op = joinOp;
       for(ASTNode condn : joinTree.getPostJoinFilters()) {
         op = genFilterPlan(qb, condn, op, false);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated " + op + " with post-filtering conditions after JOIN operator");
-        }
       }
       return op;
     }

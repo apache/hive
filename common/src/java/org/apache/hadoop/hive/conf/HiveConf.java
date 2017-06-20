@@ -1089,6 +1089,11 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
+    HIVE_PUSH_RESIDUAL_INNER("hive.join.inner.residual", false,
+        "Whether to push non-equi filter predicates within inner joins. This can improve efficiency in "
+        + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
+        + "a Filter operator straight away. However, currently vectorization does not support them, thus "
+        + "enabling it is only recommended when vectorization is disabled."),
 
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
