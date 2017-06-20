@@ -159,7 +159,7 @@ public class LlapDecider implements PhysicalPlanResolver {
           graceMapJoinOp.getConf().setHybridHashJoin(false);
         }
         adjustAutoParallelism(work);
-        
+
         convertWork(tezWork, work);
       }
       mapJoinOpList.clear();
@@ -187,13 +187,13 @@ public class LlapDecider implements PhysicalPlanResolver {
             Math.max(reduceWork.getMinReduceTasks(), targetCount));
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
-          reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
+          reduceWork.getEdgePropRef().setAutoReduce(conf, true, reduceWork.isSlowStart(), newMin,
               reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER));
         } else {
           reduceWork.setAutoReduceParallelism(false);
           reduceWork.setNumReduceTasks(newMin);
           // TODO: is this correct? based on the same logic as HIVE-14200
-          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0);
+          reduceWork.getEdgePropRef().setAutoReduce(null, false, reduceWork.isSlowStart(), 0, 0, 0);
         }
       } else {
         // UNIFORM || AUTOPARALLEL (maxed out)
