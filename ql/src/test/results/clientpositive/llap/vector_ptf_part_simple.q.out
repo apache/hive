@@ -2773,8 +2773,8 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: [0, 4]
-                        keyExpressions: VectorUDFAdaptor(CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean) -> 4:timestamp
+                        keyColumns: [0, 5]
+                        keyExpressions: IfExprColumnNull(col 3, col 4, null)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 4:timestamp) -> 5:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: [1, 2]
@@ -2788,14 +2788,14 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
                     includeColumns: [0, 1, 2]
                     dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: bigint, timestamp
+                    scratchColumnTypeNames: bigint, timestamp, timestamp
         Reducer 2 
             Execution mode: llap
             Reduce Vectorization:
@@ -2941,11 +2941,11 @@ STAGE PLANS:
                     Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END (type: timestamp)
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkObjectHashOperator
-                        keyColumns: [0, 4, 1]
-                        keyExpressions: VectorUDFAdaptor(CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (null) END)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean) -> 4:timestamp
+                        keyColumns: [0, 5, 1]
+                        keyExpressions: IfExprColumnNull(col 3, col 4, null)(children: StringGroupColEqualStringScalar(col 0, val Manufacturer#2) -> 3:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 4:timestamp) -> 5:timestamp
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        partitionColumns: [0, 5]
+                        partitionColumns: [0, 8]
                         valueColumns: [2]
                     Statistics: Num rows: 40 Data size: 9048 Basic stats: COMPLETE Column stats: NONE
                     value expressions: p_retailprice (type: double)
@@ -2957,14 +2957,14 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: true
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
                     includeColumns: [0, 1, 2]
                     dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: bigint, timestamp, timestamp
+                    scratchColumnTypeNames: bigint, timestamp, timestamp, bigint, timestamp, timestamp
         Reducer 2 
             Execution mode: llap
             Reduce Vectorization:

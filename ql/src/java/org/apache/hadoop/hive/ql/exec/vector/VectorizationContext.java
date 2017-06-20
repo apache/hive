@@ -94,7 +94,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -102,7 +101,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -126,8 +124,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -2322,13 +2318,10 @@ public class VectorizationContext {
     return createVectorExpression(cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
   }
 
-  private boolean isColumnOrNonNullConst(ExprNodeDesc exprNodeDesc) {
-    if (exprNodeDesc instanceof ExprNodeColumnDesc) {
-      return true;
-    }
+  private boolean isNullConst(ExprNodeDesc exprNodeDesc) {
     if (exprNodeDesc instanceof ExprNodeConstantDesc) {
       String typeString = exprNodeDesc.getTypeString();
-      if (!typeString.equalsIgnoreCase("void")) {
+      if (typeString.equalsIgnoreCase("void")) {
         return true;
       }
     }
@@ -2341,33 +2334,47 @@ public class VectorizationContext {
     if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
       return null;
     }
-    if (childExpr.size() != 3) {
-      // For now, we only optimize the 2 value case.
-      return null;
+    final int size = childExpr.size();
+
+    final ExprNodeDesc whenDesc = childExpr.get(0);
+    final ExprNodeDesc thenDesc = childExpr.get(1);
+    final ExprNodeDesc elseDesc;
+
+    if (size == 2) {
+      elseDesc = new ExprNodeConstantDesc(returnType, null);
+    } else if (size == 3) {
+      elseDesc = childExpr.get(2);
+    } else {
+      final GenericUDFWhen udfWhen = new GenericUDFWhen();
+      elseDesc = new ExprNodeGenericFuncDesc(returnType, udfWhen, udfWhen.getUdfName(),
+          childExpr.subList(2, childExpr.size()));
     }
 
-    /*
-     * When we have 2 simple values:
-     *                          CASE WHEN boolExpr THEN column | const ELSE column | const END
-     * then we can convert to:        IF (boolExpr THEN column | const ELSE column | const)
-     */
-    // CONSIDER: Adding a version of IfExpr* than can handle a non-column/const expression in the
-    //           THEN or ELSE.
-    ExprNodeDesc exprNodeDesc1 = childExpr.get(1);
-    ExprNodeDesc exprNodeDesc2 = childExpr.get(2);
-    if (isColumnOrNonNullConst(exprNodeDesc1) &&
-        isColumnOrNonNullConst(exprNodeDesc2)) {
-      // Yes.
-      GenericUDFIf genericUDFIf = new GenericUDFIf();
-      return
-          getVectorExpressionForUdf(
-            genericUDFIf,
-            GenericUDFIf.class,
-            childExpr,
-            mode,
-            returnType);
+    if (isNullConst(thenDesc)) {
+      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
+      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+      final VectorExpression resultExpr = new IfExprNullColumn(
+          whenExpr.getOutputColumn(), elseExpr.getOutputColumn(),
+          ocm.allocateOutputColumn(returnType));
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, elseExpr});
+      resultExpr.setOutputType(returnType.getTypeName());
+      return resultExpr;
     }
-    return null;   // Not handled by vector classes yet.
+    if (isNullConst(elseDesc)) {
+      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
+      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
+      final VectorExpression resultExpr = new IfExprColumnNull(
+          whenExpr.getOutputColumn(), thenExpr.getOutputColumn(),
+          ocm.allocateOutputColumn(returnType));
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, thenExpr});
+      resultExpr.setOutputType(returnType.getTypeName());
+      return resultExpr;
+    }
+    final GenericUDFIf genericUDFIf = new GenericUDFIf();
+    final List<ExprNodeDesc> ifChildExpr = Arrays.<ExprNodeDesc>asList(whenDesc, thenDesc, elseDesc);
+    final ExprNodeGenericFuncDesc exprNodeDesc =
+        new ExprNodeGenericFuncDesc(returnType, genericUDFIf, "if", ifChildExpr);
+    return getVectorExpression(exprNodeDesc, mode);
   }
 
   /*

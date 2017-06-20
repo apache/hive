@@ -68,8 +68,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1, 14, 15]
-                          selectExpressions: VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:string, VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 15:string
+                          projectedOutputColumns: [1, 15, 16]
+                          selectExpressions: IfExprStringScalarStringGroupColumn(col 12, val a, col 14)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprStringScalarStringScalar(col 13, val b, val c)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:String) -> 15:String, IfExprStringScalarStringGroupColumn(col 12, val a, col 14)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprStringScalarStringScalar(col 13, val b, val c)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:String) -> 16:String
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -88,7 +88,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 
   Stage: Stage-0
@@ -209,8 +209,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumns: [1, 14, 15]
-                          selectExpressions: VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE (null) END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:string, VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN (null) ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 15:string
+                          projectedOutputColumns: [1, 16, 19]
+                          selectExpressions: IfExprStringScalarStringGroupColumn(col 12, val a, col 15)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprColumnNull(col 13, col 14, null)(children: LongColEqualLongScalar(col 1, val 12205) -> 13:long, ConstantVectorExpression(val b) -> 14:string) -> 15:string) -> 16:String, IfExprStringScalarStringGroupColumn(col 12, val a, col 18)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, IfExprNullColumn(col 17, null, col 15)(children: LongColEqualLongScalar(col 1, val 12205) -> 17:long, ConstantVectorExpression(val c) -> 15:string) -> 18:string) -> 19:String
                       Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -229,7 +229,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 
   Stage: Stage-0
