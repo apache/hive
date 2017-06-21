@@ -168,8 +168,8 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
   }
 
   @Override
-  protected boolean invalidate() {
-    return true;
+  protected int invalidate() {
+    return INVALIDATE_OK;
   }
 
   @Override

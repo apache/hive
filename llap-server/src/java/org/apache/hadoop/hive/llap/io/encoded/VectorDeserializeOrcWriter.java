@@ -228,6 +228,9 @@ class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       WriteOperation op = null;
       int fallbackMs = 8;
       while (true) {
+        // The reason we poll here is that a blocking queue causes the query thread to spend
+        // non-trivial amount of time signaling when an element is added; we'd rather that the
+        // time was wasted on this background thread.
         op = queue.poll();
         if (op != null) break;
         if (fallbackMs > 262144) { // Arbitrary... we don't expect caller to hang out for 7+ mins.

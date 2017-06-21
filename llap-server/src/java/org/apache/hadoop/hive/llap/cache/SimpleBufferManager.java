@@ -38,14 +38,14 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
     this.metrics = metrics;
   }
 
-  private boolean lockBuffer(LlapDataBuffer buffer) {
+  private boolean lockBuffer(LlapAllocatorBuffer buffer) {
     int rc = buffer.incRef();
     if (rc <= 0) return false;
     metrics.incrCacheNumLockedBuffers();
     return true;
   }
 
-  private void unlockBuffer(LlapDataBuffer buffer) {
+  private void unlockBuffer(LlapAllocatorBuffer buffer) {
     if (buffer.decRef() == 0) {
       if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
         LlapIoImpl.CACHE_LOGGER.trace("Deallocating {} that was not cached", buffer);
@@ -57,19 +57,19 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
 
   @Override
   public void decRefBuffer(MemoryBuffer buffer) {
-    unlockBuffer((LlapDataBuffer)buffer);
+    unlockBuffer((LlapAllocatorBuffer)buffer);
   }
 
   @Override
   public void decRefBuffers(List<MemoryBuffer> cacheBuffers) {
     for (MemoryBuffer b : cacheBuffers) {
-      unlockBuffer((LlapDataBuffer)b);
+      unlockBuffer((LlapAllocatorBuffer)b);
     }
   }
 
   @Override
   public boolean incRefBuffer(MemoryBuffer buffer) {
-    return lockBuffer((LlapDataBuffer)buffer);
+    return lockBuffer((LlapAllocatorBuffer)buffer);
   }
 
   @Override
@@ -88,7 +88,7 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
       MemoryBuffer[] chunks, long baseOffset, Priority priority,
       LowLevelCacheCounters qfCounters) {
     for (int i = 0; i < chunks.length; ++i) {
-      LlapDataBuffer buffer = (LlapDataBuffer)chunks[i];
+      LlapAllocatorBuffer buffer = (LlapAllocatorBuffer)chunks[i];
       if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
         LlapIoImpl.LOCKING_LOGGER.trace("Locking {} at put time (no cache)", buffer);
       }

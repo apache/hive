@@ -682,8 +682,8 @@ class EncodedReaderImpl implements EncodedReader {
       assert originalCbIndex >= 0;
       // Had the put succeeded for our new buffer, it would have refcount of 2 - 1 from put,
       // and 1 from notifyReused call above. "Old" buffer now has the 1 from put; new buffer
-      // is not in cache.
-      cacheWrapper.getAllocator().deallocate(getBuffer());
+      // is not in cache. releaseBuffer will decref the buffer, and also deallocate.
+      cacheWrapper.releaseBuffer(this.buffer);
       cacheWrapper.reuseBuffer(replacementBuffer);
       // Replace the buffer in our big range list, as well as in current results.
       this.buffer = replacementBuffer;

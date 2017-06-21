@@ -131,8 +131,8 @@ public final class OrcFileMetadata extends LlapCacheableBuffer
   }
 
   @Override
-  protected boolean invalidate() {
-    return true; // relies on GC, so it can always be evicted now.
+  protected int invalidate() {
+    return INVALIDATE_OK; // relies on GC, so it can always be evicted now.
   }
 
   @Override

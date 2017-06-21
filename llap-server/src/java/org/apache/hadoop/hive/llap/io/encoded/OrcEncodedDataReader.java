@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
+import org.apache.hadoop.hive.common.io.Allocator.BufferObjectFactory;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
+import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -814,7 +816,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     stripeRgs = new boolean[stripeIxTo - stripeIxFrom][];
   }
 
-  private class DataWrapperForOrc implements DataReader, DataCache {
+  private class DataWrapperForOrc implements DataReader, DataCache, BufferObjectFactory {
     private final DataReader orcDataReader;
 
     private DataWrapperForOrc(DataWrapperForOrc other) {
@@ -931,6 +933,16 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     @Override
     public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
       return orcDataReader.readStripeFooter(stripe);
+    }
+
+    @Override
+    public BufferObjectFactory getDataBufferFactory() {
+      return this;
+    }
+
+    @Override
+    public MemoryBuffer create() {
+      return new LlapDataBuffer();
     }
   }
 
