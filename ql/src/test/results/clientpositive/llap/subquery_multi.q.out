@@ -1710,14 +1710,6 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 13 Data size: 2548 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: p_type (type: string), p_brand (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 13 Data size: 2548 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
@@ -1763,13 +1755,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: string)
-                  Filter Operator
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: p_brand (type: string), p_type (type: string), p_container (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
                         sort order: ++
@@ -2248,14 +2233,6 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 13 Data size: 2548 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 5096 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: p_type (type: string), p_brand (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 13 Data size: 2548 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
@@ -2301,13 +2278,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string), _col0 (type: string)
                         Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: string)
-                  Filter Operator
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: p_brand (type: string), p_type (type: string), p_container (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 26 Data size: 7488 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string), _col0 (type: string)
                         sort order: ++
@@ -2631,9 +2601,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 13 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint), _col2 (type: bigint)
-                  Filter Operator
-                    predicate: p_size is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: p_type (type: string), p_size (type: int)
                       mode: hash
@@ -3080,15 +3047,6 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<count:bigint,sum:double,input:double>)
-                  Select Operator
-                    expressions: l_quantity (type: double)
-                    outputColumnNames: l_quantity
-                    Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: avg(l_quantity)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE

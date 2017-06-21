@@ -177,9 +177,9 @@ Stage-0
                               <-Map 9 [SIMPLE_EDGE]
                                 SHUFFLE [RS_39]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_37] (rows=73049 width=1119)
+                                  Select Operator [SEL_10] (rows=73049 width=1119)
                                     Output:["_col0","_col1","_col2"]
-                                    Filter Operator [FIL_89] (rows=73049 width=1119)
+                                    Filter Operator [FIL_85] (rows=73049 width=1119)
                                       predicate:(d_date_sk is not null and d_week_seq is not null)
                                       TableScan [TS_8] (rows=73049 width=1119)
                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_week_seq","d_day_name"]
@@ -232,11 +232,7 @@ Stage-0
                               <-Map 9 [SIMPLE_EDGE]
                                 SHUFFLE [RS_12]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_10] (rows=73049 width=1119)
-                                    Output:["_col0","_col1","_col2"]
-                                    Filter Operator [FIL_85] (rows=73049 width=1119)
-                                      predicate:(d_date_sk is not null and d_week_seq is not null)
-                                       Please refer to the previous TableScan [TS_8]
+                                   Please refer to the previous Select Operator [SEL_10]
                               <-Union 2 [SIMPLE_EDGE]
                                 <-Map 1 [CONTAINS]
                                   Reduce Output Operator [RS_11]

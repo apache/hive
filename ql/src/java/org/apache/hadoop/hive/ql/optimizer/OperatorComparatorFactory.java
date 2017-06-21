@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CollectOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
@@ -56,6 +57,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorLimitOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
+import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
+import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -93,13 +97,14 @@ public class OperatorComparatorFactory {
         new SparkHashTableSinkOperatorComparator());
     comparatorMapping.put(LateralViewJoinOperator.class, new LateralViewJoinOperatorComparator());
     comparatorMapping.put(VectorGroupByOperator.class, new VectorGroupByOperatorComparator());
-    comparatorMapping.put(CommonMergeJoinOperator.class, new MapJoinOperatorComparator());
+    comparatorMapping.put(CommonMergeJoinOperator.class, new CommonMergeJoinOperatorComparator());
     comparatorMapping.put(VectorFilterOperator.class, new FilterOperatorComparator());
     comparatorMapping.put(UDTFOperator.class, new UDTFOperatorComparator());
     comparatorMapping.put(VectorSelectOperator.class, new VectorSelectOperatorComparator());
     comparatorMapping.put(VectorLimitOperator.class, new LimitOperatorComparator());
     comparatorMapping.put(ScriptOperator.class, new ScriptOperatorComparator());
     comparatorMapping.put(TemporaryHashSinkOperator.class, new HashTableSinkOperatorComparator());
+    comparatorMapping.put(AppMasterEventOperator.class, new AppMasterEventOperatorComparator());
     // these operators does not have state, so they always equal with the same kind.
     comparatorMapping.put(UnionOperator.class, new AlwaysTrueOperatorComparator());
     comparatorMapping.put(ForwardOperator.class, new AlwaysTrueOperatorComparator());
@@ -364,7 +369,33 @@ public class OperatorComparatorFactory {
         compareObject(desc1.getKeysString(), desc2.getKeysString()) &&
         desc1.getPosBigTable() == desc2.getPosBigTable() &&
         desc1.isBucketMapJoin() == desc2.isBucketMapJoin() &&
+        compareObject(desc1.getFiltersStringMap(), desc2.getFiltersStringMap()) &&
+        compareObject(desc1.getOutputColumnNames(), desc2.getOutputColumnNames()) &&
+        compareObject(desc1.getCondsList(), desc2.getCondsList()) &&
+        desc1.getHandleSkewJoin() == desc2.getHandleSkewJoin() &&
+        compareString(desc1.getNullSafeString(), desc2.getNullSafeString())) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  static class CommonMergeJoinOperatorComparator implements OperatorComparator<CommonMergeJoinOperator> {
+
+    @Override
+    public boolean equals(CommonMergeJoinOperator op1, CommonMergeJoinOperator op2) {
+      Preconditions.checkNotNull(op1);
+      Preconditions.checkNotNull(op2);
+      CommonMergeJoinDesc desc1 = op1.getConf();
+      CommonMergeJoinDesc desc2 = op2.getConf();
+
+      if (compareObject(desc1.getParentToInput(), desc2.getParentToInput()) &&
+        compareString(desc1.getKeyCountsExplainDesc(), desc2.getKeyCountsExplainDesc()) &&
         compareObject(desc1.getKeysString(), desc2.getKeysString()) &&
+        desc1.getPosBigTable() == desc2.getPosBigTable() &&
+        desc1.isBucketMapJoin() == desc2.isBucketMapJoin() &&
+        desc1.getNumBuckets() == desc2.getNumBuckets() &&
         compareObject(desc1.getFiltersStringMap(), desc2.getFiltersStringMap()) &&
         compareObject(desc1.getOutputColumnNames(), desc2.getOutputColumnNames()) &&
         compareObject(desc1.getCondsList(), desc2.getCondsList()) &&
@@ -509,6 +540,37 @@ public class OperatorComparatorFactory {
 
       if (compareString(desc1.getUDTFName(), desc2.getUDTFName()) &&
         compareString(desc1.isOuterLateralView(), desc2.isOuterLateralView())) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  static class AppMasterEventOperatorComparator implements OperatorComparator<AppMasterEventOperator> {
+
+    @Override
+    public boolean equals(AppMasterEventOperator op1, AppMasterEventOperator op2) {
+      Preconditions.checkNotNull(op1);
+      Preconditions.checkNotNull(op2);
+      AppMasterEventDesc op1Conf = op1.getConf();
+      AppMasterEventDesc op2Conf = op2.getConf();
+
+      if (compareString(op1Conf.getInputName(), op2Conf.getInputName()) &&
+        compareString(op1Conf.getVertexName(), op2Conf.getVertexName()) &&
+        compareObject(op1Conf.getTable(), op2Conf.getTable())) {
+        if (op1Conf instanceof DynamicPruningEventDesc && op2Conf instanceof DynamicPruningEventDesc) {
+          DynamicPruningEventDesc op1DPPConf = (DynamicPruningEventDesc) op1Conf;
+          DynamicPruningEventDesc op2DPPConf = (DynamicPruningEventDesc) op2Conf;
+          if (compareString(op1DPPConf.getTargetColumnName(), op2DPPConf.getTargetColumnName()) &&
+            compareString(op1DPPConf.getTargetColumnType(), op2DPPConf.getTargetColumnType()) &&
+            compareString(op1DPPConf.getPartKeyString(), op2DPPConf.getPartKeyString())) {
+            return true;
+          }
+          return false;
+        } else if (op1Conf instanceof DynamicPruningEventDesc || op2Conf instanceof DynamicPruningEventDesc) {
+          return false;
+        }
         return true;
       } else {
         return false;

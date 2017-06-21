@@ -151,9 +151,9 @@ Stage-0
                                 <-Map 20 [SIMPLE_EDGE]
                                   SHUFFLE [RS_74]
                                     PartitionCols:_col1, upper(_col2)
-                                    Select Operator [SEL_60] (rows=40000000 width=1014)
+                                    Select Operator [SEL_17] (rows=40000000 width=1014)
                                       Output:["_col0","_col1","_col2"]
-                                      Filter Operator [FIL_143] (rows=40000000 width=1014)
+                                      Filter Operator [FIL_137] (rows=40000000 width=1014)
                                         predicate:(ca_zip is not null and ca_country is not null)
                                         TableScan [TS_15] (rows=40000000 width=1014)
                                           default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_state","ca_zip","ca_country"]
@@ -179,9 +179,9 @@ Stage-0
                                         <-Map 19 [SIMPLE_EDGE]
                                           SHUFFLE [RS_68]
                                             PartitionCols:_col0
-                                            Select Operator [SEL_54] (rows=80000000 width=860)
+                                            Select Operator [SEL_14] (rows=80000000 width=860)
                                               Output:["_col0","_col1","_col2","_col3"]
-                                              Filter Operator [FIL_141] (rows=80000000 width=860)
+                                              Filter Operator [FIL_136] (rows=80000000 width=860)
                                                 predicate:(c_customer_sk is not null and c_birth_country is not null)
                                                 TableScan [TS_12] (rows=80000000 width=860)
                                                   default@customer,customer,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk","c_first_name","c_last_name","c_birth_country"]
@@ -193,9 +193,9 @@ Stage-0
                                             <-Map 18 [SIMPLE_EDGE]
                                               SHUFFLE [RS_65]
                                                 PartitionCols:_col0
-                                                Select Operator [SEL_51] (rows=852 width=1910)
+                                                Select Operator [SEL_11] (rows=852 width=1910)
                                                   Output:["_col0","_col1","_col3","_col4"]
-                                                  Filter Operator [FIL_140] (rows=852 width=1910)
+                                                  Filter Operator [FIL_135] (rows=852 width=1910)
                                                     predicate:((s_market_id = 7) and s_store_sk is not null and s_zip is not null)
                                                     TableScan [TS_9] (rows=1704 width=1910)
                                                       default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_store_name","s_market_id","s_state","s_zip"]
@@ -207,18 +207,18 @@ Stage-0
                                                 <-Map 1 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_61]
                                                     PartitionCols:_col0, _col3
-                                                    Select Operator [SEL_45] (rows=575995635 width=88)
+                                                    Select Operator [SEL_2] (rows=575995635 width=88)
                                                       Output:["_col0","_col1","_col2","_col3","_col4"]
-                                                      Filter Operator [FIL_138] (rows=575995635 width=88)
+                                                      Filter Operator [FIL_132] (rows=575995635 width=88)
                                                         predicate:(ss_item_sk is not null and ss_ticket_number is not null and ss_store_sk is not null and ss_customer_sk is not null)
                                                         TableScan [TS_0] (rows=575995635 width=88)
                                                           default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_item_sk","ss_customer_sk","ss_store_sk","ss_ticket_number","ss_sales_price"]
                                                 <-Map 16 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_62]
                                                     PartitionCols:_col0, _col1
-                                                    Select Operator [SEL_48] (rows=57591150 width=77)
+                                                    Select Operator [SEL_5] (rows=57591150 width=77)
                                                       Output:["_col0","_col1"]
-                                                      Filter Operator [FIL_139] (rows=57591150 width=77)
+                                                      Filter Operator [FIL_133] (rows=57591150 width=77)
                                                         predicate:(sr_item_sk is not null and sr_ticket_number is not null)
                                                         TableScan [TS_3] (rows=57591150 width=77)
                                                           default@store_returns,store_returns,Tbl:COMPLETE,Col:NONE,Output:["sr_item_sk","sr_ticket_number"]
@@ -242,11 +242,7 @@ Stage-0
                             <-Map 20 [SIMPLE_EDGE]
                               SHUFFLE [RS_31]
                                 PartitionCols:_col1, upper(_col2)
-                                Select Operator [SEL_17] (rows=40000000 width=1014)
-                                  Output:["_col0","_col1","_col2"]
-                                  Filter Operator [FIL_137] (rows=40000000 width=1014)
-                                    predicate:(ca_zip is not null and ca_country is not null)
-                                     Please refer to the previous TableScan [TS_15]
+                                 Please refer to the previous Select Operator [SEL_17]
                             <-Reducer 5 [SIMPLE_EDGE]
                               SHUFFLE [RS_30]
                                 PartitionCols:_col17, _col21
@@ -255,11 +251,7 @@ Stage-0
                                 <-Map 19 [SIMPLE_EDGE]
                                   SHUFFLE [RS_28]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_14] (rows=80000000 width=860)
-                                      Output:["_col0","_col1","_col2","_col3"]
-                                      Filter Operator [FIL_136] (rows=80000000 width=860)
-                                        predicate:(c_customer_sk is not null and c_birth_country is not null)
-                                         Please refer to the previous TableScan [TS_12]
+                                     Please refer to the previous Select Operator [SEL_14]
                                 <-Reducer 4 [SIMPLE_EDGE]
                                   SHUFFLE [RS_27]
                                     PartitionCols:_col1
@@ -268,11 +260,7 @@ Stage-0
                                     <-Map 18 [SIMPLE_EDGE]
                                       SHUFFLE [RS_25]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_11] (rows=852 width=1910)
-                                          Output:["_col0","_col1","_col3","_col4"]
-                                          Filter Operator [FIL_135] (rows=852 width=1910)
-                                            predicate:((s_market_id = 7) and s_store_sk is not null and s_zip is not null)
-                                             Please refer to the previous TableScan [TS_9]
+                                         Please refer to the previous Select Operator [SEL_11]
                                     <-Reducer 3 [SIMPLE_EDGE]
                                       SHUFFLE [RS_24]
                                         PartitionCols:_col2
@@ -294,17 +282,9 @@ Stage-0
                                             <-Map 1 [SIMPLE_EDGE]
                                               SHUFFLE [RS_18]
                                                 PartitionCols:_col0, _col3
-                                                Select Operator [SEL_2] (rows=575995635 width=88)
-                                                  Output:["_col0","_col1","_col2","_col3","_col4"]
-                                                  Filter Operator [FIL_132] (rows=575995635 width=88)
-                                                    predicate:(ss_item_sk is not null and ss_ticket_number is not null and ss_store_sk is not null and ss_customer_sk is not null)
-                                                     Please refer to the previous TableScan [TS_0]
+                                                 Please refer to the previous Select Operator [SEL_2]
                                             <-Map 16 [SIMPLE_EDGE]
                                               SHUFFLE [RS_19]
                                                 PartitionCols:_col0, _col1
-                                                Select Operator [SEL_5] (rows=57591150 width=77)
-                                                  Output:["_col0","_col1"]
-                                                  Filter Operator [FIL_133] (rows=57591150 width=77)
-                                                    predicate:(sr_item_sk is not null and sr_ticket_number is not null)
-                                                     Please refer to the previous TableScan [TS_3]
+                                                 Please refer to the previous Select Operator [SEL_5]
 

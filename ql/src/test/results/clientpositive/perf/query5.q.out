@@ -323,9 +323,9 @@ Stage-0
                                     <-Map 10 [SIMPLE_EDGE]
                                       SHUFFLE [RS_40]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_35] (rows=8116 width=1119)
+                                        Select Operator [SEL_10] (rows=8116 width=1119)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_124] (rows=8116 width=1119)
+                                          Filter Operator [FIL_120] (rows=8116 width=1119)
                                             predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-08-18 00:00:00.0 and d_date_sk is not null)
                                             TableScan [TS_8] (rows=73049 width=1119)
                                               default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
@@ -381,11 +381,7 @@ Stage-0
                                     <-Map 10 [SIMPLE_EDGE]
                                       SHUFFLE [RS_73]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_68] (rows=8116 width=1119)
-                                          Output:["_col0"]
-                                          Filter Operator [FIL_129] (rows=8116 width=1119)
-                                            predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-08-18 00:00:00.0 and d_date_sk is not null)
-                                             Please refer to the previous TableScan [TS_8]
+                                         Please refer to the previous Select Operator [SEL_10]
                                     <-Union 23 [SIMPLE_EDGE]
                                       <-Map 22 [CONTAINS]
                                         Reduce Output Operator [RS_72]
@@ -454,11 +450,7 @@ Stage-0
                                     <-Map 10 [SIMPLE_EDGE]
                                       SHUFFLE [RS_15]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_10] (rows=8116 width=1119)
-                                          Output:["_col0"]
-                                          Filter Operator [FIL_120] (rows=8116 width=1119)
-                                            predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-08-18 00:00:00.0 and d_date_sk is not null)
-                                             Please refer to the previous TableScan [TS_8]
+                                         Please refer to the previous Select Operator [SEL_10]
                                     <-Union 2 [SIMPLE_EDGE]
                                       <-Map 1 [CONTAINS]
                                         Reduce Output Operator [RS_14]

@@ -150,9 +150,9 @@ Stage-0
                                       <-Map 13 [SIMPLE_EDGE]
                                         SHUFFLE [RS_57]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_55] (rows=4058 width=1119)
+                                          Select Operator [SEL_14] (rows=4058 width=1119)
                                             Output:["_col0"]
-                                            Filter Operator [FIL_107] (rows=4058 width=1119)
+                                            Filter Operator [FIL_103] (rows=4058 width=1119)
                                               predicate:((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null)
                                               TableScan [TS_12] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
@@ -193,11 +193,7 @@ Stage-0
                                                 <-Map 13 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_16]
                                                     PartitionCols:_col0
-                                                    Select Operator [SEL_14] (rows=4058 width=1119)
-                                                      Output:["_col0"]
-                                                      Filter Operator [FIL_103] (rows=4058 width=1119)
-                                                        predicate:((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null)
-                                                         Please refer to the previous TableScan [TS_12]
+                                                     Please refer to the previous Select Operator [SEL_14]
                                                 <-Map 10 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_15]
                                                     PartitionCols:_col0
@@ -222,11 +218,7 @@ Stage-0
                                               <-Map 13 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_30]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_28] (rows=4058 width=1119)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_105] (rows=4058 width=1119)
-                                                      predicate:((d_year = 1999) and d_moy BETWEEN 1 AND 3 and d_date_sk is not null)
-                                                       Please refer to the previous TableScan [TS_12]
+                                                   Please refer to the previous Select Operator [SEL_14]
                                               <-Map 18 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_29]
                                                   PartitionCols:_col0

@@ -2432,11 +2432,7 @@ Stage-0
                         Output:["_col0"],aggregations:["avg(VALUE._col0)"]
                       <-Map 5 [CUSTOM_SIMPLE_EDGE] llap
                         PARTITION_ONLY_SHUFFLE [RS_18]
-                          Group By Operator [GBY_17] (rows=1 width=76)
-                            Output:["_col0"],aggregations:["avg(p_size)"]
-                            Filter Operator [FIL_35] (rows=8 width=4)
-                              predicate:(p_size < 10)
-                               Please refer to the previous TableScan [TS_2]
+                           Please refer to the previous Group By Operator [GBY_5]
 
 PREHOOK: query: explain select b.p_mfgr, min(p_retailprice) 
 from part b 
@@ -2525,9 +2521,7 @@ Stage-0
                                       PartitionCols:_col0
                                       Group By Operator [GBY_8] (rows=5 width=114)
                                         Output:["_col0","_col1","_col2"],aggregations:["min(p_retailprice)","max(p_retailprice)"],keys:p_mfgr
-                                        Select Operator [SEL_7] (rows=26 width=106)
-                                          Output:["p_mfgr","p_retailprice"]
-                                           Please refer to the previous TableScan [TS_0]
+                                         Please refer to the previous Select Operator [SEL_1]
                 <-Reducer 8 [SIMPLE_EDGE] llap
                   SHUFFLE [RS_31]
                     PartitionCols:_col0, _col1

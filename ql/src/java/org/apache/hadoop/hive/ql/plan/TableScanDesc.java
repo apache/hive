@@ -176,6 +176,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {
+    if (filterExpr == null) {
+      return null;
+    }
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 

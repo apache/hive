@@ -161,18 +161,18 @@ Stage-0
                                       <-Map 1 [SIMPLE_EDGE]
                                         SHUFFLE [RS_34]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_30] (rows=575995635 width=88)
+                                          Select Operator [SEL_2] (rows=575995635 width=88)
                                             Output:["_col0","_col1","_col2"]
-                                            Filter Operator [FIL_94] (rows=575995635 width=88)
+                                            Filter Operator [FIL_90] (rows=575995635 width=88)
                                               predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
                                               TableScan [TS_0] (rows=575995635 width=88)
                                                 default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_store_sk","ss_sales_price"]
                                       <-Map 12 [SIMPLE_EDGE]
                                         SHUFFLE [RS_35]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_33] (rows=73049 width=1119)
+                                          Select Operator [SEL_5] (rows=73049 width=1119)
                                             Output:["_col0","_col1","_col2"]
-                                            Filter Operator [FIL_95] (rows=73049 width=1119)
+                                            Filter Operator [FIL_91] (rows=73049 width=1119)
                                               predicate:(d_date_sk is not null and d_week_seq is not null)
                                               TableScan [TS_3] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_week_seq","d_day_name"]
@@ -222,17 +222,9 @@ Stage-0
                                       <-Map 1 [SIMPLE_EDGE]
                                         SHUFFLE [RS_6]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_2] (rows=575995635 width=88)
-                                            Output:["_col0","_col1","_col2"]
-                                            Filter Operator [FIL_90] (rows=575995635 width=88)
-                                              predicate:(ss_sold_date_sk is not null and ss_store_sk is not null)
-                                               Please refer to the previous TableScan [TS_0]
+                                           Please refer to the previous Select Operator [SEL_2]
                                       <-Map 12 [SIMPLE_EDGE]
                                         SHUFFLE [RS_7]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_5] (rows=73049 width=1119)
-                                            Output:["_col0","_col1","_col2"]
-                                            Filter Operator [FIL_91] (rows=73049 width=1119)
-                                              predicate:(d_date_sk is not null and d_week_seq is not null)
-                                               Please refer to the previous TableScan [TS_3]
+                                           Please refer to the previous Select Operator [SEL_5]
 

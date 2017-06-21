@@ -1780,9 +1780,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(value)
                       keys: key (type: string)
@@ -1964,9 +1961,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(value)
                       keys: key (type: string)

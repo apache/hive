@@ -86,9 +86,9 @@ Stage-0
                     <-Map 9 [SIMPLE_EDGE]
                       SHUFFLE [RS_44]
                         PartitionCols:_col1
-                        Select Operator [SEL_39] (rows=25/25 width=175)
+                        Select Operator [SEL_14] (rows=25/25 width=175)
                           Output:["_col0","_col1"]
-                          Filter Operator [FIL_77] (rows=25/25 width=175)
+                          Filter Operator [FIL_73] (rows=25/25 width=175)
                             predicate:(key is not null and value is not null)
                             TableScan [TS_12] (rows=25/25 width=175)
                               default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -142,11 +142,7 @@ Stage-0
                     <-Map 9 [SIMPLE_EDGE]
                       SHUFFLE [RS_19]
                         PartitionCols:_col1
-                        Select Operator [SEL_14] (rows=25/25 width=175)
-                          Output:["_col0","_col1"]
-                          Filter Operator [FIL_73] (rows=25/25 width=175)
-                            predicate:(key is not null and value is not null)
-                             Please refer to the previous TableScan [TS_12]
+                         Please refer to the previous Select Operator [SEL_14]
                     <-Reducer 3 [SIMPLE_EDGE]
                       SHUFFLE [RS_18]
                         PartitionCols:_col1
@@ -276,9 +272,9 @@ Stage-0
                 <-Map 16 [SIMPLE_EDGE]
                   SHUFFLE [RS_105]
                     PartitionCols:_col0
-                    Select Operator [SEL_100] (rows=500/500 width=178)
+                    Select Operator [SEL_17] (rows=500/500 width=178)
                       Output:["_col0","_col1"]
-                      Filter Operator [FIL_156] (rows=500/500 width=178)
+                      Filter Operator [FIL_145] (rows=500/500 width=178)
                         predicate:key is not null
                         TableScan [TS_15] (rows=500/500 width=178)
                           default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -290,9 +286,9 @@ Stage-0
                     <-Map 11 [SIMPLE_EDGE]
                       SHUFFLE [RS_102]
                         PartitionCols:_col1
-                        Select Operator [SEL_97] (rows=25/25 width=175)
+                        Select Operator [SEL_14] (rows=25/25 width=175)
                           Output:["_col0","_col1"]
-                          Filter Operator [FIL_155] (rows=25/25 width=175)
+                          Filter Operator [FIL_144] (rows=25/25 width=175)
                             predicate:(key is not null and value is not null)
                             TableScan [TS_12] (rows=25/25 width=175)
                               default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -386,11 +382,7 @@ Stage-0
                           <-Map 11 [SIMPLE_EDGE]
                             SHUFFLE [RS_53]
                               PartitionCols:_col1
-                              Select Operator [SEL_48] (rows=25/25 width=175)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_149] (rows=25/25 width=175)
-                                  predicate:(key is not null and value is not null)
-                                   Please refer to the previous TableScan [TS_12]
+                               Please refer to the previous Select Operator [SEL_14]
                           <-Reducer 21 [SIMPLE_EDGE]
                             SHUFFLE [RS_52]
                               PartitionCols:_col1
@@ -444,11 +436,7 @@ Stage-0
                       <-Map 16 [SIMPLE_EDGE]
                         SHUFFLE [RS_22]
                           PartitionCols:_col0
-                          Select Operator [SEL_17] (rows=500/500 width=178)
-                            Output:["_col0","_col1"]
-                            Filter Operator [FIL_145] (rows=500/500 width=178)
-                              predicate:key is not null
-                               Please refer to the previous TableScan [TS_15]
+                           Please refer to the previous Select Operator [SEL_17]
                       <-Reducer 4 [SIMPLE_EDGE]
                         SHUFFLE [RS_21]
                           PartitionCols:_col2
@@ -457,11 +445,7 @@ Stage-0
                           <-Map 11 [SIMPLE_EDGE]
                             SHUFFLE [RS_19]
                               PartitionCols:_col1
-                              Select Operator [SEL_14] (rows=25/25 width=175)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_144] (rows=25/25 width=175)
-                                  predicate:(key is not null and value is not null)
-                                   Please refer to the previous TableScan [TS_12]
+                               Please refer to the previous Select Operator [SEL_14]
                           <-Reducer 3 [SIMPLE_EDGE]
                             SHUFFLE [RS_18]
                               PartitionCols:_col1
@@ -1280,11 +1264,7 @@ Stage-5
                         <-Map 7 [SIMPLE_EDGE]
                           SHUFFLE [RS_66]
                             PartitionCols:_col0
-                            Select Operator [SEL_48] (rows=25/25 width=175)
-                              Output:["_col0","_col1"]
-                              Filter Operator [FIL_113] (rows=25/25 width=175)
-                                predicate:(key is not null and value is not null)
-                                 Please refer to the previous TableScan [TS_8]
+                             Please refer to the previous Select Operator [SEL_10]
                         <-Map 18 [SIMPLE_EDGE]
                           SHUFFLE [RS_67]
                             PartitionCols:_col0
@@ -1478,9 +1458,9 @@ Stage-5
                             <-Map 11 [SIMPLE_EDGE]
                               SHUFFLE [RS_101]
                                 PartitionCols:_col0
-                                Select Operator [SEL_67] (rows=25/25 width=175)
+                                Select Operator [SEL_14] (rows=25/25 width=175)
                                   Output:["_col0","_col1"]
-                                  Filter Operator [FIL_153] (rows=25/25 width=175)
+                                  Filter Operator [FIL_146] (rows=25/25 width=175)
                                     predicate:(key is not null and value is not null)
                                     TableScan [TS_12] (rows=25/25 width=175)
                                       default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
@@ -1655,11 +1635,7 @@ Stage-5
                                   <-Map 11 [SIMPLE_EDGE]
                                     SHUFFLE [RS_19]
                                       PartitionCols:_col1
-                                      Select Operator [SEL_14] (rows=25/25 width=175)
-                                        Output:["_col0","_col1"]
-                                        Filter Operator [FIL_146] (rows=25/25 width=175)
-                                          predicate:(key is not null and value is not null)
-                                           Please refer to the previous TableScan [TS_12]
+                                       Please refer to the previous Select Operator [SEL_14]
                                   <-Reducer 3 [SIMPLE_EDGE]
                                     SHUFFLE [RS_18]
                                       PartitionCols:_col1

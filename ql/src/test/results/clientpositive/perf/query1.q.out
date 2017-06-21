@@ -165,9 +165,5 @@ Stage-0
                                   <-Map 10 [SIMPLE_EDGE]
                                     SHUFFLE [RS_27]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_25] (rows=36524 width=1119)
-                                        Output:["_col0"]
-                                        Filter Operator [FIL_73] (rows=36524 width=1119)
-                                          predicate:((d_year = 2000) and d_date_sk is not null)
-                                           Please refer to the previous TableScan [TS_3]
+                                       Please refer to the previous Select Operator [SEL_5]
 

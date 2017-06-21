@@ -2913,10 +2913,6 @@ STAGE PLANS:
                       key expressions: _col0 (type: int)
                       sort order: +
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: p_size (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
@@ -3118,15 +3114,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
-                  Filter Operator
-                    predicate: p_type is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: max(p_size)
-                      keys: p_type (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
@@ -3153,15 +3140,6 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-                  Select Operator
-                    expressions: p_name (type: string)
-                    outputColumnNames: p_name
-                    Statistics: Num rows: 26 Data size: 3146 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: min(p_name)
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3590,8 +3568,6 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4447,10 +4423,6 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
-                  Select Operator
-                    expressions: p_size (type: int)
-                    outputColumnNames: p_size
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: min(p_size)
                       mode: hash
@@ -4460,10 +4432,6 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int)
-                  Select Operator
-                    expressions: p_size (type: int)
-                    outputColumnNames: p_size
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: avg(p_size)
                       mode: hash
@@ -4473,10 +4441,6 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: struct<count:bigint,sum:double,input:int>)
-                  Select Operator
-                    expressions: p_size (type: int)
-                    outputColumnNames: p_size
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(p_size)
                       mode: hash
@@ -5241,9 +5205,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       keys: p_partkey (type: int)
@@ -5256,9 +5217,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 13 Data size: 156 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
-                  Filter Operator
-                    predicate: p_partkey is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: p_partkey (type: int)
                       mode: hash

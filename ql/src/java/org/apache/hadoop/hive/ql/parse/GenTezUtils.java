@@ -275,7 +275,7 @@ public class GenTezUtils {
             SemiJoinBranchInfo sjInfo = rsToSemiJoinBranchInfo.get(rs);
             if (sjInfo.getTsOp() == orig) {
               SemiJoinBranchInfo newSJInfo = new SemiJoinBranchInfo(
-                      (TableScanOperator)newRoot, sjInfo.getIsHint());
+                      (TableScanOperator) newRoot, sjInfo.getIsHint());
               rsToSemiJoinBranchInfo.put(rs, newSJInfo);
             }
           }
@@ -580,46 +580,135 @@ public class GenTezUtils {
     LOG.debug("Removing ReduceSink " + rs + " and TableScan " + ts);
     ExprNodeDesc constNode = new ExprNodeConstantDesc(
             TypeInfoFactory.booleanTypeInfo, Boolean.TRUE);
+    // TS operator
     DynamicValuePredicateContext filterDynamicValuePredicatesCollection =
             new DynamicValuePredicateContext();
-    FilterDesc filterDesc = ((FilterOperator)(ts.getChildOperators().get(0))).getConf();
-    collectDynamicValuePredicates(filterDesc.getPredicate(),
-            filterDynamicValuePredicatesCollection);
-    for (ExprNodeDesc nodeToRemove : filterDynamicValuePredicatesCollection
-            .childParentMapping.keySet()) {
-      // Find out if this synthetic predicate belongs to the current cycle
-      boolean skip = true;
-      for (ExprNodeDesc expr : nodeToRemove.getChildren()) {
-        if (expr instanceof ExprNodeDynamicValueDesc ) {
-          String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr)
-                  .getDynamicValue().getId();
-          List<String> dynamicValueIdsFromMap = context.
-                  getRsToRuntimeValuesInfoMap().get(rs).getDynamicValueIDs();
-          for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
-            if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
-              // Intended predicate to be removed
-              skip = false;
-              break;
-            }
+    if (ts.getConf().getFilterExpr() != null) {
+      collectDynamicValuePredicates(ts.getConf().getFilterExpr(),
+              filterDynamicValuePredicatesCollection);
+      for (ExprNodeDesc nodeToRemove : filterDynamicValuePredicatesCollection
+              .childParentMapping.keySet()) {
+        // Find out if this synthetic predicate belongs to the current cycle
+        if (removeSemiJoinPredicate(context, rs, nodeToRemove)) {
+          ExprNodeDesc nodeParent = filterDynamicValuePredicatesCollection
+                  .childParentMapping.get(nodeToRemove);
+          if (nodeParent == null) {
+            // This was the only predicate, set filter expression to null
+            ts.getConf().setFilterExpr(null);
+          } else {
+            int i = nodeParent.getChildren().indexOf(nodeToRemove);
+            nodeParent.getChildren().remove(i);
+            nodeParent.getChildren().add(i, constNode);
           }
         }
       }
-      if (!skip) {
-        ExprNodeDesc nodeParent = filterDynamicValuePredicatesCollection
-                .childParentMapping.get(nodeToRemove);
-        if (nodeParent == null) {
-          // This was the only predicate, set filter expression to const
-          filterDesc.setPredicate(constNode);
-        } else {
-          int i = nodeParent.getChildren().indexOf(nodeToRemove);
-          nodeParent.getChildren().remove(i);
-          nodeParent.getChildren().add(i, constNode);
+    }
+    // Filter operator
+    filterDynamicValuePredicatesCollection = new DynamicValuePredicateContext();
+    for (Operator<?> op : ts.getChildOperators()) {
+      if (!(op instanceof FilterOperator)) {
+        continue;
+      }
+      FilterDesc filterDesc = ((FilterOperator) op).getConf();
+      collectDynamicValuePredicates(filterDesc.getPredicate(),
+              filterDynamicValuePredicatesCollection);
+      for (ExprNodeDesc nodeToRemove : filterDynamicValuePredicatesCollection
+              .childParentMapping.keySet()) {
+        // Find out if this synthetic predicate belongs to the current cycle
+        if (removeSemiJoinPredicate(context, rs, nodeToRemove)) {
+          ExprNodeDesc nodeParent = filterDynamicValuePredicatesCollection
+                  .childParentMapping.get(nodeToRemove);
+          if (nodeParent == null) {
+            // This was the only predicate, set filter expression to const
+            filterDesc.setPredicate(constNode);
+          } else {
+            int i = nodeParent.getChildren().indexOf(nodeToRemove);
+            nodeParent.getChildren().remove(i);
+            nodeParent.getChildren().add(i, constNode);
+          }
         }
-        // skip the rest of the predicates
-        skip = true;
       }
     }
     context.getRsToSemiJoinBranchInfo().remove(rs);
+  }
+
+  /** Find out if this predicate constains the synthetic predicate to be removed */
+  private static boolean removeSemiJoinPredicate(ParseContext context,
+          ReduceSinkOperator rs, ExprNodeDesc nodeToRemove) {
+    boolean remove = false;
+    for (ExprNodeDesc expr : nodeToRemove.getChildren()) {
+      if (expr instanceof ExprNodeDynamicValueDesc ) {
+        String dynamicValueIdFromExpr = ((ExprNodeDynamicValueDesc) expr)
+                .getDynamicValue().getId();
+        List<String> dynamicValueIdsFromMap = context.
+                getRsToRuntimeValuesInfoMap().get(rs).getDynamicValueIDs();
+        for (String dynamicValueIdFromMap : dynamicValueIdsFromMap) {
+          if (dynamicValueIdFromExpr.equals(dynamicValueIdFromMap)) {
+            // Intended predicate to be removed
+            remove = true;
+            break;
+          }
+        }
+      }
+    }
+    return remove;
+  }
+
+  // Functionality to remove semi-join optimization
+  public static void removeSemiJoinOperator(ParseContext context,
+          AppMasterEventOperator eventOp, TableScanOperator ts) throws SemanticException{
+    // Cleanup the synthetic predicate in the tablescan operator and filter by
+    // replacing it with "true"
+    LOG.debug("Removing AppMasterEventOperator " + eventOp + " and TableScan " + ts);
+    ExprNodeDesc constNode = new ExprNodeConstantDesc(
+            TypeInfoFactory.booleanTypeInfo, Boolean.TRUE);
+    // Retrieve generator
+    DynamicPruningEventDesc dped = (DynamicPruningEventDesc) eventOp.getConf();
+    // TS operator
+    DynamicPartitionPrunerContext filterDynamicListPredicatesCollection =
+            new DynamicPartitionPrunerContext();
+    if (ts.getConf().getFilterExpr() != null) {
+      collectDynamicPruningConditions(
+              ts.getConf().getFilterExpr(), filterDynamicListPredicatesCollection);
+      for (DynamicListContext ctx : filterDynamicListPredicatesCollection) {
+        if (ctx.generator != dped.getGenerator()) {
+          continue;
+        }
+        // remove the condition by replacing it with "true"
+        if (ctx.grandParent == null) {
+          // This was the only predicate, set filter expression to const
+          ts.getConf().setFilterExpr(null);
+        } else {
+          int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
+          ctx.grandParent.getChildren().remove(i);
+          ctx.grandParent.getChildren().add(i, constNode);
+        }
+      }
+    }
+    // Filter operator
+    filterDynamicListPredicatesCollection.dynLists.clear();
+    for (Operator<?> op : ts.getChildOperators()) {
+      if (!(op instanceof FilterOperator)) {
+        continue;
+      }
+      FilterDesc filterDesc = ((FilterOperator) op).getConf();
+      collectDynamicPruningConditions(
+              filterDesc.getPredicate(), filterDynamicListPredicatesCollection);
+      for (DynamicListContext ctx : filterDynamicListPredicatesCollection) {
+        if (ctx.generator != dped.getGenerator()) {
+          continue;
+        }
+        // remove the condition by replacing it with "true"
+        if (ctx.grandParent == null) {
+          // This was the only predicate, set filter expression to const
+          filterDesc.setPredicate(constNode);
+        } else {
+          int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
+          ctx.grandParent.getChildren().remove(i);
+          ctx.grandParent.getChildren().add(i, constNode);
+        }
+      }
+    }
   }
 
   private static class DynamicValuePredicateContext implements NodeProcessorCtx {
@@ -647,7 +736,8 @@ public class GenTezUtils {
     }
   }
 
-  private static void collectDynamicValuePredicates(ExprNodeDesc pred, NodeProcessorCtx ctx) throws SemanticException {
+  private static void collectDynamicValuePredicates(ExprNodeDesc pred, NodeProcessorCtx ctx)
+          throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
@@ -659,5 +749,81 @@ public class GenTezUtils {
     startNodes.add(pred);
 
     egw.startWalking(startNodes, null);
+  }
+
+  public static class DynamicListContext {
+    public ExprNodeDynamicListDesc desc;
+    public ExprNodeDesc parent;
+    public ExprNodeDesc grandParent;
+    public ReduceSinkOperator generator;
+
+    public DynamicListContext(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
+        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
+      this.desc = desc;
+      this.parent = parent;
+      this.grandParent = grandParent;
+      this.generator = generator;
+    }
+  }
+
+  public static class DynamicPartitionPrunerContext implements NodeProcessorCtx,
+      Iterable<DynamicListContext> {
+    public List<DynamicListContext> dynLists = new ArrayList<DynamicListContext>();
+
+    public void addDynamicList(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
+        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
+      dynLists.add(new DynamicListContext(desc, parent, grandParent, generator));
+    }
+
+    @Override
+    public Iterator<DynamicListContext> iterator() {
+      return dynLists.iterator();
+    }
+  }
+
+  public static class DynamicPartitionPrunerProc implements NodeProcessor {
+
+    /**
+     * process simply remembers all the dynamic partition pruning expressions
+     * found
+     */
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      ExprNodeDynamicListDesc desc = (ExprNodeDynamicListDesc) nd;
+      DynamicPartitionPrunerContext context = (DynamicPartitionPrunerContext) procCtx;
+
+      // Rule is searching for dynamic pruning expr. There's at least an IN
+      // expression wrapping it.
+      ExprNodeDesc parent = (ExprNodeDesc) stack.get(stack.size() - 2);
+      ExprNodeDesc grandParent = stack.size() >= 3 ? (ExprNodeDesc) stack.get(stack.size() - 3) : null;
+
+      context.addDynamicList(desc, parent, grandParent, (ReduceSinkOperator) desc.getSource());
+
+      return context;
+    }
+  }
+
+  public static Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)
+      throws SemanticException {
+
+    // create a walker which walks the tree in a DFS manner while maintaining
+    // the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+    exprRules.put(new RuleRegExp("R1", ExprNodeDynamicListDesc.class.getName() + "%"),
+        new DynamicPartitionPrunerProc());
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
+    GraphWalker egw = new DefaultGraphWalker(disp);
+
+    List<Node> startNodes = new ArrayList<Node>();
+    startNodes.add(pred);
+
+    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
+    egw.startWalking(startNodes, outputMap);
+    return outputMap;
   }
 }

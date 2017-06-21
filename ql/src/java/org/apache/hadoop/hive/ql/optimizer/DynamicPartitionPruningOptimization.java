@@ -21,42 +21,66 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
-import org.apache.hadoop.hive.ql.lib.Dispatcher;
-import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
-import org.apache.hadoop.hive.ql.parse.*;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicListContext;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicPartitionPrunerContext;
+import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
+import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -68,59 +92,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
   static final private Logger LOG = LoggerFactory.getLogger(DynamicPartitionPruningOptimization.class
       .getName());
-
-  private static class DynamicPartitionPrunerProc implements NodeProcessor {
-
-    /**
-     * process simply remembers all the dynamic partition pruning expressions
-     * found
-     */
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      ExprNodeDynamicListDesc desc = (ExprNodeDynamicListDesc) nd;
-      DynamicPartitionPrunerContext context = (DynamicPartitionPrunerContext) procCtx;
-
-      // Rule is searching for dynamic pruning expr. There's at least an IN
-      // expression wrapping it.
-      ExprNodeDesc parent = (ExprNodeDesc) stack.get(stack.size() - 2);
-      ExprNodeDesc grandParent = stack.size() >= 3 ? (ExprNodeDesc) stack.get(stack.size() - 3) : null;
-
-      context.addDynamicList(desc, parent, grandParent, (ReduceSinkOperator) desc.getSource());
-
-      return context;
-    }
-  }
-
-  private static class DynamicListContext {
-    public ExprNodeDynamicListDesc desc;
-    public ExprNodeDesc parent;
-    public ExprNodeDesc grandParent;
-    public ReduceSinkOperator generator;
-
-    public DynamicListContext(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
-        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
-      this.desc = desc;
-      this.parent = parent;
-      this.grandParent = grandParent;
-      this.generator = generator;
-    }
-  }
-
-  private static class DynamicPartitionPrunerContext implements NodeProcessorCtx,
-      Iterable<DynamicListContext> {
-    public List<DynamicListContext> dynLists = new ArrayList<DynamicListContext>();
-
-    public void addDynamicList(ExprNodeDynamicListDesc desc, ExprNodeDesc parent,
-        ExprNodeDesc grandParent, ReduceSinkOperator generator) {
-      dynLists.add(new DynamicListContext(desc, parent, grandParent, generator));
-    }
-
-    @Override
-    public Iterator<DynamicListContext> iterator() {
-      return dynLists.iterator();
-    }
-  }
 
   @Override
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
@@ -162,7 +133,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    collectDynamicPruningConditions(desc.getPredicate(), removerContext);
+    GenTezUtils.collectDynamicPruningConditions(desc.getPredicate(), removerContext);
 
     if (ts == null) {
       // Replace the synthetic predicate with true and bail out
@@ -402,7 +373,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
-    collectDynamicPruningConditions(ts.getConf().getFilterExpr(), removerContext);
+    GenTezUtils.collectDynamicPruningConditions(ts.getConf().getFilterExpr(), removerContext);
 
     for (DynamicListContext ctx : removerContext) {
       // remove the condition by replacing it with "true"
@@ -476,6 +447,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       DynamicPruningEventDesc eventDesc = new DynamicPruningEventDesc();
       eventDesc.setTableScan(ts);
+      eventDesc.setGenerator(ctx.generator);
       eventDesc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
           .getFieldSchemasFromColumnList(keyExprs, "key")));
       eventDesc.setTargetColumnName(column);
@@ -782,29 +754,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     runtimeValuesInfo.setTsColExpr(colExpr);
     parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
     parseContext.getColExprToGBMap().put(key, gb);
-  }
-
-  private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)
-      throws SemanticException {
-
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack. The dispatcher
-    // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(new RuleRegExp("R1", ExprNodeDynamicListDesc.class.getName() + "%"),
-        new DynamicPartitionPrunerProc());
-
-    // The dispatcher fires the processor corresponding to the closest matching
-    // rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(null, exprRules, ctx);
-    GraphWalker egw = new DefaultGraphWalker(disp);
-
-    List<Node> startNodes = new ArrayList<Node>();
-    startNodes.add(pred);
-
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
-    egw.startWalking(startNodes, outputMap);
-    return outputMap;
   }
 
 }

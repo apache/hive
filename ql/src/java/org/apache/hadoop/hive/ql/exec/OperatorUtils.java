@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 public class OperatorUtils {
@@ -379,6 +380,27 @@ public class OperatorUtils {
     }
 
     curr.removeChild(child);
+  }
+
+  /**
+   * Remove operator from the tree, disconnecting it from its
+   * parents and children.
+   */
+  public static void removeOperator(Operator<?> op) {
+    if (op.getNumParent() != 0) {
+      List<Operator<? extends OperatorDesc>> allParent =
+              Lists.newArrayList(op.getParentOperators());
+      for (Operator<?> parentOp : allParent) {
+        parentOp.removeChild(op);
+      }
+    }
+    if (op.getNumChild() != 0) {
+      List<Operator<? extends OperatorDesc>> allChildren =
+              Lists.newArrayList(op.getChildOperators());
+      for (Operator<?> childOp : allChildren) {
+        childOp.removeParent(op);
+      }
+    }
   }
 
   public static String getOpNamePretty(Operator<?> op) {

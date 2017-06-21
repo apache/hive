@@ -264,9 +264,9 @@ Stage-0
                                       <-Map 24 [SIMPLE_EDGE]
                                         SHUFFLE [RS_67]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_53] (rows=1150 width=1179)
+                                          Select Operator [SEL_14] (rows=1150 width=1179)
                                             Output:["_col0"]
-                                            Filter Operator [FIL_195] (rows=1150 width=1179)
+                                            Filter Operator [FIL_189] (rows=1150 width=1179)
                                               predicate:((p_channel_tv = 'N') and p_promo_sk is not null)
                                               TableScan [TS_12] (rows=2300 width=1179)
                                                 default@promotion,promotion,Tbl:COMPLETE,Col:NONE,Output:["p_promo_sk","p_channel_tv"]
@@ -278,9 +278,9 @@ Stage-0
                                           <-Map 23 [SIMPLE_EDGE]
                                             SHUFFLE [RS_64]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_50] (rows=154000 width=1436)
+                                              Select Operator [SEL_11] (rows=154000 width=1436)
                                                 Output:["_col0"]
-                                                Filter Operator [FIL_194] (rows=154000 width=1436)
+                                                Filter Operator [FIL_188] (rows=154000 width=1436)
                                                   predicate:((i_current_price > 50) and i_item_sk is not null)
                                                   TableScan [TS_9] (rows=462000 width=1436)
                                                     default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_current_price"]
@@ -292,9 +292,9 @@ Stage-0
                                               <-Map 12 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_61]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_47] (rows=8116 width=1119)
+                                                  Select Operator [SEL_8] (rows=8116 width=1119)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_193] (rows=8116 width=1119)
+                                                    Filter Operator [FIL_187] (rows=8116 width=1119)
                                                       predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
                                                       TableScan [TS_6] (rows=73049 width=1119)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
@@ -356,11 +356,7 @@ Stage-0
                                       <-Map 24 [SIMPLE_EDGE]
                                         SHUFFLE [RS_107]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_93] (rows=1150 width=1179)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_201] (rows=1150 width=1179)
-                                              predicate:((p_channel_tv = 'N') and p_promo_sk is not null)
-                                               Please refer to the previous TableScan [TS_12]
+                                           Please refer to the previous Select Operator [SEL_14]
                                       <-Reducer 19 [SIMPLE_EDGE]
                                         SHUFFLE [RS_106]
                                           PartitionCols:_col3
@@ -369,11 +365,7 @@ Stage-0
                                           <-Map 23 [SIMPLE_EDGE]
                                             SHUFFLE [RS_104]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_90] (rows=154000 width=1436)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_200] (rows=154000 width=1436)
-                                                  predicate:((i_current_price > 50) and i_item_sk is not null)
-                                                   Please refer to the previous TableScan [TS_9]
+                                               Please refer to the previous Select Operator [SEL_11]
                                           <-Reducer 18 [SIMPLE_EDGE]
                                             SHUFFLE [RS_103]
                                               PartitionCols:_col1
@@ -382,11 +374,7 @@ Stage-0
                                               <-Map 12 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_101]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_87] (rows=8116 width=1119)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_199] (rows=8116 width=1119)
-                                                      predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
-                                                       Please refer to the previous TableScan [TS_6]
+                                                   Please refer to the previous Select Operator [SEL_8]
                                               <-Reducer 31 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_100]
                                                   PartitionCols:_col0
@@ -445,11 +433,7 @@ Stage-0
                                       <-Map 24 [SIMPLE_EDGE]
                                         SHUFFLE [RS_28]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_14] (rows=1150 width=1179)
-                                            Output:["_col0"]
-                                            Filter Operator [FIL_189] (rows=1150 width=1179)
-                                              predicate:((p_channel_tv = 'N') and p_promo_sk is not null)
-                                               Please refer to the previous TableScan [TS_12]
+                                           Please refer to the previous Select Operator [SEL_14]
                                       <-Reducer 4 [SIMPLE_EDGE]
                                         SHUFFLE [RS_27]
                                           PartitionCols:_col3
@@ -458,11 +442,7 @@ Stage-0
                                           <-Map 23 [SIMPLE_EDGE]
                                             SHUFFLE [RS_25]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_11] (rows=154000 width=1436)
-                                                Output:["_col0"]
-                                                Filter Operator [FIL_188] (rows=154000 width=1436)
-                                                  predicate:((i_current_price > 50) and i_item_sk is not null)
-                                                   Please refer to the previous TableScan [TS_9]
+                                               Please refer to the previous Select Operator [SEL_11]
                                           <-Reducer 3 [SIMPLE_EDGE]
                                             SHUFFLE [RS_24]
                                               PartitionCols:_col1
@@ -471,11 +451,7 @@ Stage-0
                                               <-Map 12 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_22]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_8] (rows=8116 width=1119)
-                                                    Output:["_col0"]
-                                                    Filter Operator [FIL_187] (rows=8116 width=1119)
-                                                      predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 1998-08-04 00:00:00.0 AND 1998-09-03 00:00:00.0 and d_date_sk is not null)
-                                                       Please refer to the previous TableScan [TS_6]
+                                                   Please refer to the previous Select Operator [SEL_8]
                                               <-Reducer 2 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_21]
                                                   PartitionCols:_col0

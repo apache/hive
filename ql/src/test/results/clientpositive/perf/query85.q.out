@@ -203,9 +203,9 @@ Stage-0
                       <-Map 16 [SIMPLE_EDGE]
                         SHUFFLE [RS_45]
                           PartitionCols:_col0, _col1, _col2
-                          Select Operator [SEL_23] (rows=1861800 width=385)
+                          Select Operator [SEL_20] (rows=1861800 width=385)
                             Output:["_col0","_col1","_col2"]
-                            Filter Operator [FIL_99] (rows=1861800 width=385)
+                            Filter Operator [FIL_98] (rows=1861800 width=385)
                               predicate:(((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null)
                               TableScan [TS_18] (rows=1861800 width=385)
                                 default@customer_demographics,cd1,Tbl:COMPLETE,Col:NONE,Output:["cd_demo_sk","cd_marital_status","cd_education_status"]
@@ -219,11 +219,7 @@ Stage-0
                             <-Map 16 [SIMPLE_EDGE]
                               SHUFFLE [RS_41]
                                 PartitionCols:_col0
-                                Select Operator [SEL_20] (rows=1861800 width=385)
-                                  Output:["_col0","_col1","_col2"]
-                                  Filter Operator [FIL_98] (rows=1861800 width=385)
-                                    predicate:(((cd_education_status = '4 yr Degree') or (cd_education_status = 'Primary') or (cd_education_status = 'Advanced Degree')) and ((cd_marital_status = 'M') or (cd_marital_status = 'D') or (cd_marital_status = 'U')) and cd_demo_sk is not null and cd_marital_status is not null and cd_education_status is not null)
-                                     Please refer to the previous TableScan [TS_18]
+                                 Please refer to the previous Select Operator [SEL_20]
                             <-Reducer 6 [SIMPLE_EDGE]
                               SHUFFLE [RS_40]
                                 PartitionCols:_col11

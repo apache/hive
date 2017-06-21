@@ -151,9 +151,9 @@ Stage-0
                       <-Map 23 [SIMPLE_EDGE]
                         SHUFFLE [RS_53]
                           PartitionCols:_col0
-                          Select Operator [SEL_48] (rows=40000000 width=1014)
+                          Select Operator [SEL_8] (rows=40000000 width=1014)
                             Output:["_col0","_col1"]
-                            Filter Operator [FIL_244] (rows=40000000 width=1014)
+                            Filter Operator [FIL_238] (rows=40000000 width=1014)
                               predicate:(ca_address_sk is not null and ca_county is not null)
                               TableScan [TS_6] (rows=40000000 width=1014)
                                 default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_county"]
@@ -174,9 +174,9 @@ Stage-0
                           <-Map 1 [SIMPLE_EDGE]
                             SHUFFLE [RS_49]
                               PartitionCols:_col0
-                              Select Operator [SEL_42] (rows=575995635 width=88)
+                              Select Operator [SEL_2] (rows=575995635 width=88)
                                 Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_242] (rows=575995635 width=88)
+                                Filter Operator [FIL_236] (rows=575995635 width=88)
                                   predicate:(ss_sold_date_sk is not null and ss_addr_sk is not null)
                                   TableScan [TS_0] (rows=575995635 width=88)
                                     default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_addr_sk","ss_ext_sales_price"]
@@ -200,11 +200,7 @@ Stage-0
                           <-Map 23 [SIMPLE_EDGE]
                             SHUFFLE [RS_73]
                               PartitionCols:_col0
-                              Select Operator [SEL_68] (rows=40000000 width=1014)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_247] (rows=40000000 width=1014)
-                                  predicate:(ca_address_sk is not null and ca_county is not null)
-                                   Please refer to the previous TableScan [TS_6]
+                               Please refer to the previous Select Operator [SEL_8]
                           <-Reducer 13 [SIMPLE_EDGE]
                             SHUFFLE [RS_72]
                               PartitionCols:_col1
@@ -242,11 +238,7 @@ Stage-0
                           <-Map 23 [SIMPLE_EDGE]
                             SHUFFLE [RS_93]
                               PartitionCols:_col0
-                              Select Operator [SEL_88] (rows=40000000 width=1014)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_250] (rows=40000000 width=1014)
-                                  predicate:(ca_address_sk is not null and ca_county is not null)
-                                   Please refer to the previous TableScan [TS_6]
+                               Please refer to the previous Select Operator [SEL_8]
                           <-Reducer 17 [SIMPLE_EDGE]
                             SHUFFLE [RS_92]
                               PartitionCols:_col1
@@ -263,11 +255,7 @@ Stage-0
                               <-Map 24 [SIMPLE_EDGE]
                                 SHUFFLE [RS_89]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_82] (rows=144002668 width=135)
-                                    Output:["_col0","_col1","_col2"]
-                                    Filter Operator [FIL_248] (rows=144002668 width=135)
-                                      predicate:(ws_sold_date_sk is not null and ws_bill_addr_sk is not null)
-                                       Please refer to the previous TableScan [TS_60]
+                                   Please refer to the previous Select Operator [SEL_62]
                 <-Reducer 22 [SIMPLE_EDGE]
                   SHUFFLE [RS_122]
                     PartitionCols:_col0
@@ -283,11 +271,7 @@ Stage-0
                           <-Map 23 [SIMPLE_EDGE]
                             SHUFFLE [RS_113]
                               PartitionCols:_col0
-                              Select Operator [SEL_108] (rows=40000000 width=1014)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_253] (rows=40000000 width=1014)
-                                  predicate:(ca_address_sk is not null and ca_county is not null)
-                                   Please refer to the previous TableScan [TS_6]
+                               Please refer to the previous Select Operator [SEL_8]
                           <-Reducer 20 [SIMPLE_EDGE]
                             SHUFFLE [RS_112]
                               PartitionCols:_col1
@@ -304,11 +288,7 @@ Stage-0
                               <-Map 24 [SIMPLE_EDGE]
                                 SHUFFLE [RS_109]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_102] (rows=144002668 width=135)
-                                    Output:["_col0","_col1","_col2"]
-                                    Filter Operator [FIL_251] (rows=144002668 width=135)
-                                      predicate:(ws_sold_date_sk is not null and ws_bill_addr_sk is not null)
-                                       Please refer to the previous TableScan [TS_60]
+                                   Please refer to the previous Select Operator [SEL_62]
             <-Reducer 4 [SIMPLE_EDGE]
               SHUFFLE [RS_125]
                 PartitionCols:_col0
@@ -324,11 +304,7 @@ Stage-0
                       <-Map 23 [SIMPLE_EDGE]
                         SHUFFLE [RS_13]
                           PartitionCols:_col0
-                          Select Operator [SEL_8] (rows=40000000 width=1014)
-                            Output:["_col0","_col1"]
-                            Filter Operator [FIL_238] (rows=40000000 width=1014)
-                              predicate:(ca_address_sk is not null and ca_county is not null)
-                               Please refer to the previous TableScan [TS_6]
+                           Please refer to the previous Select Operator [SEL_8]
                       <-Reducer 2 [SIMPLE_EDGE]
                         SHUFFLE [RS_12]
                           PartitionCols:_col1
@@ -345,11 +321,7 @@ Stage-0
                           <-Map 1 [SIMPLE_EDGE]
                             SHUFFLE [RS_9]
                               PartitionCols:_col0
-                              Select Operator [SEL_2] (rows=575995635 width=88)
-                                Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_236] (rows=575995635 width=88)
-                                  predicate:(ss_sold_date_sk is not null and ss_addr_sk is not null)
-                                   Please refer to the previous TableScan [TS_0]
+                               Please refer to the previous Select Operator [SEL_2]
             <-Reducer 8 [SIMPLE_EDGE]
               SHUFFLE [RS_126]
                 PartitionCols:_col0
@@ -365,11 +337,7 @@ Stage-0
                       <-Map 23 [SIMPLE_EDGE]
                         SHUFFLE [RS_33]
                           PartitionCols:_col0
-                          Select Operator [SEL_28] (rows=40000000 width=1014)
-                            Output:["_col0","_col1"]
-                            Filter Operator [FIL_241] (rows=40000000 width=1014)
-                              predicate:(ca_address_sk is not null and ca_county is not null)
-                               Please refer to the previous TableScan [TS_6]
+                           Please refer to the previous Select Operator [SEL_8]
                       <-Reducer 6 [SIMPLE_EDGE]
                         SHUFFLE [RS_32]
                           PartitionCols:_col1
@@ -386,9 +354,5 @@ Stage-0
                           <-Map 1 [SIMPLE_EDGE]
                             SHUFFLE [RS_29]
                               PartitionCols:_col0
-                              Select Operator [SEL_22] (rows=575995635 width=88)
-                                Output:["_col0","_col1","_col2"]
-                                Filter Operator [FIL_239] (rows=575995635 width=88)
-                                  predicate:(ss_sold_date_sk is not null and ss_addr_sk is not null)
-                                   Please refer to the previous TableScan [TS_0]
+                               Please refer to the previous Select Operator [SEL_2]
 
