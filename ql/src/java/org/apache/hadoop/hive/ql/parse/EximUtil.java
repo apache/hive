@@ -144,10 +144,11 @@ public class EximUtil {
     try {
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
       URI uri = new Path(dcPath).toUri();
-      String scheme = uri.getScheme();
+      FileSystem fs = FileSystem.get(uri, conf);
+      // Get scheme from FileSystem
+      String scheme = fs.getScheme();
       String authority = uri.getAuthority();
       String path = uri.getPath();
-      FileSystem fs = FileSystem.get(uri, conf);
 
       LOG.info("Path before norm :" + path);
       // generate absolute path relative to home directory
@@ -161,8 +162,6 @@ public class EximUtil {
         }
       }
 
-      // Get scheme from FileSystem
-      scheme = fs.getScheme();
 
       // if scheme is specified but not authority then use the default authority
       if (StringUtils.isEmpty(authority)) {
