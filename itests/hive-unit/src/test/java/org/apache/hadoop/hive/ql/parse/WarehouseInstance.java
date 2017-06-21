@@ -94,10 +94,9 @@ class WarehouseInstance implements Closeable {
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPLCMDIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
-    String schemaName = "APP" + uniqueIdentifier;
-    System.setProperty("datanucleus.mapping.Schema", schemaName);
+    System.setProperty("datanucleus.mapping.Schema", "APP");
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
-        "jdbc:derby:memory:${test.tmp.dir}/" + schemaName + ";create=true");
+        "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPLDIR,
             hiveWarehouseLocation + "/hrepl" + uniqueIdentifier + "/");
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

@@ -1,19 +1,19 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
+import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandler;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandlerFactory;
@@ -77,7 +78,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FROM;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_LIMIT;
@@ -192,12 +192,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         for (String dbName : matchesDb(dbNameOrPattern)) {
           REPL_STATE_LOG.info("Repl Dump: Started analyzing Repl Dump for DB: {}, Dump Type: BOOTSTRAP", dbName);
           LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
+
           Path dbRoot = dumpDbMetadata(dbName, dumpRoot);
           dumpFunctionMetadata(dbName, dumpRoot);
           for (String tblName : matchesTbl(dbName, tblNameOrPattern)) {
-            LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping table: " + tblName
-                + " to db root " + dbRoot.toUri());
-            dumpTbl(ast, dbName, tblName, dbRoot);
+            LOG.debug(
+                "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
+            dumpTable(ast, dbName, tblName, dbRoot);
           }
           REPL_STATE_LOG.info("Repl Dump: Completed analyzing Repl Dump for DB: {} and created {} COPY tasks to dump " +
                               "metadata and data",
@@ -347,6 +348,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       FileSystem fs = dbRoot.getFileSystem(conf);
       Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
       HiveWrapper.Tuple<Database> database = new HiveWrapper(db, dbName).database();
+      inputs.add(new ReadEntity(database.object));
       EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
       REPL_STATE_LOG.info("Repl Dump: Dumped DB metadata");
     } catch (Exception e) {
@@ -359,7 +361,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void dumpFunctionMetadata(String dbName, Path dumpRoot) throws SemanticException {
     Path functionsRoot = new Path(new Path(dumpRoot, dbName), FUNCTIONS_ROOT_DIR_NAME);
     try {
-      // TODO : This should ideally return the Function Objects and not Strings(function names) that should be done by the caller, Look at this separately.
       List<String> functionNames = db.getFunctions(dbName, "*");
       for (String functionName : functionNames) {
         HiveWrapper.Tuple<Function> tuple;
@@ -393,35 +394,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  /**
-   *
-   * @param ast
-   * @param dbName
-   * @param tblName
-   * @param dbRoot
-   * @return tbl dumped path
-   * @throws SemanticException
-   */
-  private Path dumpTbl(ASTNode ast, String dbName, String tblName, Path dbRoot) throws SemanticException {
-    Path tableRoot = new Path(dbRoot, tblName);
+  private void dumpTable(ASTNode ast, String dbName, String tblName, Path dbRoot)
+      throws SemanticException {
     try {
-      URI toURI = EximUtil.getValidatedURI(conf, tableRoot.toUri().toString());
       TableSpec ts = new TableSpec(db, conf, dbName + "." + tblName, null);
-
-      ExportSemanticAnalyzer.prepareExport(ast, toURI, ts, getNewReplicationSpec(), db, conf, ctx,
-          rootTasks, inputs, outputs, LOG);
+      TableExport.Paths exportPaths = new TableExport.Paths(ast, dbRoot, tblName, conf);
+      new TableExport(exportPaths, ts, getNewReplicationSpec(), db, conf, LOG).run();
       REPL_STATE_LOG.info("Repl Dump: Analyzed dump for table/view: {}.{} and created copy tasks to dump metadata " +
-                          "and data to path {}", dbName, tblName, toURI.toString());
+          "and data to path {}", dbName, tblName, exportPaths.exportRootDir.toString());
     } catch (InvalidTableException te) {
       // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
       // Just log a debug message and skip it.
       LOG.debug(te.getMessage());
-      return null;
     } catch (HiveException e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e);
     }
-    return tableRoot;
   }
 
   // REPL LOAD

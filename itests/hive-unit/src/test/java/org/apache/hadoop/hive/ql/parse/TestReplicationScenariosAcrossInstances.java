@@ -58,21 +58,21 @@ public class TestReplicationScenariosAcrossInstances {
 
   private static WarehouseInstance primary, replica;
 
-    @BeforeClass
-    public static void classLevelSetup() throws Exception {
-      Configuration conf = new Configuration();
-      conf.set("dfs.client.use.datanode.hostname", "true");
-      MiniDFSCluster miniDFSCluster =
-          new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-      primary = new WarehouseInstance(LOG, miniDFSCluster);
-      replica = new WarehouseInstance(LOG, miniDFSCluster);
-    }
+  @BeforeClass
+  public static void classLevelSetup() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set("dfs.client.use.datanode.hostname", "true");
+    MiniDFSCluster miniDFSCluster =
+        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    primary = new WarehouseInstance(LOG, miniDFSCluster);
+    replica = new WarehouseInstance(LOG, miniDFSCluster);
+  }
 
-    @AfterClass
-    public static void classLevelTearDown() throws IOException {
-      primary.close();
-      replica.close();
-    }
+  @AfterClass
+  public static void classLevelTearDown() throws IOException {
+    primary.close();
+    replica.close();
+  }
 
   private String primaryDbName, replicatedDbName;
 
