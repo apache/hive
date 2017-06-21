@@ -140,7 +140,7 @@ PREHOOK: query: select key, count(1) a from dest1 group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"3901b5e3a164064736b3234355046340","queryText":"select key, count(1) a from dest1 group by key","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"count(1)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"key"},{"id":1,"vertexType":"COLUMN","vertexId":"a"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.key"},{"id":3,"vertexType":"TABLE","vertexId":"default.dest1"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"3901b5e3a164064736b3234355046340","queryText":"select key, count(1) a from dest1 group by key","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"count(*)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"key"},{"id":1,"vertexType":"COLUMN","vertexId":"a"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.key"},{"id":3,"vertexType":"TABLE","vertexId":"default.dest1"}]}
 128	2
 213	2
 278	2

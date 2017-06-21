@@ -24,11 +24,11 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -66,7 +66,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -124,7 +124,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, ]
+POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from dest_j1
 PREHOOK: type: QUERY

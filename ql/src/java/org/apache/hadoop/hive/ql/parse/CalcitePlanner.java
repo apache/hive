@@ -171,6 +171,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidProjectFilterTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggregatesRule;
@@ -1523,7 +1524,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // run this rule at later stages, since many calcite rules cant deal with semijoin
       if (conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null, HiveSemiJoinRule.INSTANCE);
+        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+                HiveSemiJoinRule.INSTANCE_PROJECT, HiveSemiJoinRule.INSTANCE_AGGREGATE);
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Semijoin conversion");
       }
 
@@ -1682,6 +1684,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveReduceExpressionsRule.PROJECT_INSTANCE);
       rules.add(HiveReduceExpressionsRule.FILTER_INSTANCE);
       rules.add(HiveReduceExpressionsRule.JOIN_INSTANCE);
+      rules.add(HiveAggregateReduceRule.INSTANCE);
       if (conf.getBoolVar(HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER)) {
         rules.add(new HivePointLookupOptimizerRule.FilterCondition(minNumORClauses));
         rules.add(new HivePointLookupOptimizerRule.JoinCondition(minNumORClauses));

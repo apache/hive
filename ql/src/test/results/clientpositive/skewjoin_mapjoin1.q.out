@@ -325,14 +325,14 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -386,7 +386,7 @@ STAGE PLANS:
                   Union
                     Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -414,7 +414,7 @@ STAGE PLANS:
                   Union
                     Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -470,14 +470,14 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           Fetch Operator
             limit: -1
         subquery1:a 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:a 
+        $hdt$_0:a 
           TableScan
             alias: a
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -531,7 +531,7 @@ STAGE PLANS:
                   Union
                     Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -559,7 +559,7 @@ STAGE PLANS:
                   Union
                     Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

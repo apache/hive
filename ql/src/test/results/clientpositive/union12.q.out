@@ -45,7 +45,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -180,7 +180,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -214,7 +214,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -262,7 +262,7 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
-POSTHOOK: Lineage: tmptable.value EXPRESSION []
+POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable

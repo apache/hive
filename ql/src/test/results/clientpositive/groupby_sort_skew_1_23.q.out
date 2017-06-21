@@ -62,11 +62,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -160,7 +160,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -440,11 +440,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -511,7 +511,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -712,11 +712,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -810,7 +810,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -1086,11 +1086,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1184,7 +1184,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -1468,11 +1468,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col1
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col1 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1566,7 +1566,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -1847,11 +1847,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col2
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col2 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -1918,7 +1918,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1 [t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -2119,7 +2119,7 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string), _col1 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
@@ -2387,11 +2387,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2468,7 +2468,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:$hdt$_0:t1]
+        /t1 [$hdt$_0:t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -2679,11 +2679,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2731,11 +2731,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -2831,7 +2831,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [null-subquery1:$hdt$_0-subquery1:$hdt$_0:t1, null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1]
+        /t1 [null-subquery1:$hdt$_0-subquery1:t1, null-subquery2:$hdt$_0-subquery2:t1]
 
   Stage: Stage-7
     Conditional Operator
@@ -3133,7 +3133,7 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -3310,11 +3310,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -3472,7 +3472,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [null-subquery1:$hdt$_0-subquery1:$hdt$_0:t1]
+        /t1 [null-subquery1:$hdt$_0-subquery1:t1]
 #### A masked pattern was here ####
 
   Stage: Stage-8
@@ -3767,25 +3767,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: final
-                  outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    tag: 0
-                    value expressions: _col1 (type: bigint)
-                    auto parallelism: false
+                  tag: 0
+                  value expressions: _col1 (type: bigint)
+                  auto parallelism: false
           TableScan
             alias: t1
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -3794,25 +3790,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: final
-                  outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    tag: 1
-                    value expressions: _col1 (type: bigint)
-                    auto parallelism: false
+                  tag: 1
+                  value expressions: _col1 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3867,7 +3859,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:$hdt$_0:t1, $hdt$_1:$hdt$_1:t1]
+        /t1 [$hdt$_0:t1, $hdt$_1:t1]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -4012,25 +4004,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), val (type: string)
-                outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string), val (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  null sort order: aa
+                  sort order: ++
+                  Map-reduce partition columns: rand() (type: double)
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: string)
-                    null sort order: aa
-                    sort order: ++
-                    Map-reduce partition columns: rand() (type: double)
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col2 (type: bigint)
-                    auto parallelism: false
+                  tag: -1
+                  value expressions: _col2 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4085,7 +4073,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_1:$hdt$_1:t1]
+        /t1 [$hdt$_1:t1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -4192,25 +4180,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: key is not null (type: boolean)
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: final
-                  outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    tag: 0
-                    value expressions: _col1 (type: bigint)
-                    auto parallelism: false
+                  tag: 0
+                  value expressions: _col1 (type: bigint)
+                  auto parallelism: false
           TableScan
             GatherStats: false
             Reduce Output Operator
@@ -4298,7 +4282,7 @@ STAGE PLANS:
               name: default.t1
             name: default.t1
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:$hdt$_0:t1]
+        /t1 [$hdt$_0:t1]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -4383,12 +4367,12 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 bucketGroup: true
-                keys: _col0 (type: string)
+                keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -4455,7 +4439,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [$hdt$_0:t2]
+        /t2 [t2]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -4654,11 +4638,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col2
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col2 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -4752,7 +4736,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [$hdt$_0:t2]
+        /t2 [t2]
 
   Stage: Stage-7
     Conditional Operator
@@ -5039,11 +5023,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col2
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col2 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -5137,7 +5121,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [$hdt$_0:t2]
+        /t2 [t2]
 
   Stage: Stage-7
     Conditional Operator
@@ -5423,11 +5407,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -5521,7 +5505,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [$hdt$_0:t2]
+        /t2 [t2]
 
   Stage: Stage-7
     Conditional Operator
@@ -5814,11 +5798,11 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: string), val (type: string)
-              outputColumnNames: _col0, _col1
+              outputColumnNames: key, val
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string), _col1 (type: string)
+                aggregations: count()
+                keys: key (type: string), val (type: string)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -5912,7 +5896,7 @@ STAGE PLANS:
               name: default.t2
             name: default.t2
       Truncated Path -> Alias:
-        /t2 [$hdt$_0:t2]
+        /t2 [t2]
 
   Stage: Stage-7
     Conditional Operator

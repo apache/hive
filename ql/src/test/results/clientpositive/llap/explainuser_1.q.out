@@ -164,13 +164,13 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_8]
-        Group By Operator [GBY_6] (rows=1 width=8)
+      File Output Operator [FS_7]
+        Group By Operator [GBY_5] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_5]
-            Group By Operator [GBY_4] (rows=1 width=8)
-              Output:["_col0"],aggregations:["count(1)"]
+          PARTITION_ONLY_SHUFFLE [RS_4]
+            Group By Operator [GBY_3] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
               Select Operator [SEL_2] (rows=500 width=102)
                 TableScan [TS_0] (rows=500 width=102)
                   default@src_orc_merge_test_part,src_orc_merge_test_part,Tbl:COMPLETE,Col:COMPLETE
@@ -862,7 +862,7 @@ Stage-0
                 Reduce Output Operator [RS_25]
                   PartitionCols:_col0
                   Group By Operator [GBY_24] (rows=1 width=95)
-                    Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
+                    Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
                     Select Operator [SEL_5] (rows=1 width=87)
                       Output:["_col0"]
                       Group By Operator [GBY_4] (rows=1 width=8)
@@ -879,7 +879,7 @@ Stage-0
                 Reduce Output Operator [RS_25]
                   PartitionCols:_col0
                   Group By Operator [GBY_24] (rows=1 width=95)
-                    Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
+                    Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
                     Select Operator [SEL_12] (rows=1 width=87)
                       Output:["_col0"]
                       Group By Operator [GBY_11] (rows=1 width=8)
@@ -896,7 +896,7 @@ Stage-0
                 Reduce Output Operator [RS_25]
                   PartitionCols:_col0
                   Group By Operator [GBY_24] (rows=1 width=95)
-                    Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
+                    Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
                     Select Operator [SEL_20] (rows=1 width=87)
                       Output:["_col0"]
                       Group By Operator [GBY_19] (rows=1 width=8)
@@ -2061,76 +2061,72 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
 Reducer 6 <- Map 5 (SIMPLE_EDGE)
-Reducer 7 <- Map 5 (SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Reducer 4 llap
-      File Output Operator [FS_33]
-        Merge Join Operator [MERGEJOIN_46] (rows=34 width=186)
-          Conds:RS_29._col2=RS_30._col0(Left Semi),Output:["_col0","_col1","_col2"]
+      File Output Operator [FS_31]
+        Merge Join Operator [MERGEJOIN_44] (rows=34 width=186)
+          Conds:RS_27._col2=RS_28._col0(Left Semi),Output:["_col0","_col1","_col2"]
         <-Reducer 3 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_29]
+          SHUFFLE [RS_27]
             PartitionCols:_col2
-            Filter Operator [FIL_39] (rows=83 width=186)
+            Filter Operator [FIL_37] (rows=83 width=186)
               predicate:_col2 is not null
-              Group By Operator [GBY_16] (rows=83 width=186)
+              Group By Operator [GBY_14] (rows=83 width=186)
                 Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1
               <-Reducer 2 [SIMPLE_EDGE] llap
-                SHUFFLE [RS_15]
+                SHUFFLE [RS_13]
                   PartitionCols:_col0, _col1
-                  Group By Operator [GBY_14] (rows=83 width=186)
+                  Group By Operator [GBY_12] (rows=83 width=186)
                     Output:["_col0","_col1","_col2"],aggregations:["count()"],keys:_col0, _col1
-                    Merge Join Operator [MERGEJOIN_45] (rows=166 width=178)
-                      Conds:RS_10._col0=RS_11._col0(Inner),Output:["_col0","_col1"]
+                    Merge Join Operator [MERGEJOIN_43] (rows=166 width=178)
+                      Conds:RS_8._col0=RS_9._col0(Left Semi),Output:["_col0","_col1"]
+                    <-Map 5 [SIMPLE_EDGE] llap
+                      SHUFFLE [RS_9]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_7] (rows=69 width=87)
+                          Output:["_col0"],keys:_col0
+                          Select Operator [SEL_5] (rows=166 width=87)
+                            Output:["_col0"]
+                            Filter Operator [FIL_39] (rows=166 width=87)
+                              predicate:(key > '8')
+                              TableScan [TS_3] (rows=500 width=87)
+                                default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                     <-Map 1 [SIMPLE_EDGE] llap
-                      SHUFFLE [RS_10]
+                      SHUFFLE [RS_8]
                         PartitionCols:_col0
                         Select Operator [SEL_2] (rows=166 width=178)
                           Output:["_col0","_col1"]
-                          Filter Operator [FIL_40] (rows=166 width=178)
+                          Filter Operator [FIL_38] (rows=166 width=178)
                             predicate:(key > '8')
                             TableScan [TS_0] (rows=500 width=178)
                               default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                    <-Reducer 6 [SIMPLE_EDGE] llap
-                      SHUFFLE [RS_11]
-                        PartitionCols:_col0
-                        Group By Operator [GBY_8] (rows=69 width=87)
-                          Output:["_col0"],keys:KEY._col0
-                        <-Map 5 [SIMPLE_EDGE] llap
-                          SHUFFLE [RS_7]
-                            PartitionCols:_col0
-                            Group By Operator [GBY_6] (rows=69 width=87)
-                              Output:["_col0"],keys:key
-                              Filter Operator [FIL_41] (rows=166 width=87)
-                                predicate:(key > '8')
-                                TableScan [TS_3] (rows=500 width=87)
-                                  default@src_cbo,src_cbo,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
-        <-Reducer 7 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_30]
+        <-Reducer 6 [SIMPLE_EDGE] llap
+          SHUFFLE [RS_28]
             PartitionCols:_col0
-            Group By Operator [GBY_28] (rows=34 width=8)
+            Group By Operator [GBY_26] (rows=34 width=8)
               Output:["_col0"],keys:_col0
-              Select Operator [SEL_26] (rows=69 width=8)
+              Select Operator [SEL_24] (rows=69 width=8)
                 Output:["_col0"]
-                Filter Operator [FIL_42] (rows=69 width=8)
+                Filter Operator [FIL_40] (rows=69 width=8)
                   predicate:_col1 is not null
-                  Select Operator [SEL_44] (rows=69 width=8)
+                  Select Operator [SEL_42] (rows=69 width=8)
                     Output:["_col1"]
-                    Group By Operator [GBY_24] (rows=69 width=95)
+                    Group By Operator [GBY_22] (rows=69 width=95)
                       Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                     <-Map 5 [SIMPLE_EDGE] llap
-                      SHUFFLE [RS_23]
+                      SHUFFLE [RS_21]
                         PartitionCols:_col0
-                        Group By Operator [GBY_22] (rows=69 width=95)
+                        Group By Operator [GBY_20] (rows=69 width=95)
                           Output:["_col0","_col1"],aggregations:["count()"],keys:key
-                          Filter Operator [FIL_43] (rows=166 width=87)
+                          Filter Operator [FIL_41] (rows=166 width=87)
                             predicate:(key > '9')
                              Please refer to the previous TableScan [TS_3]
 
@@ -2674,30 +2670,30 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4 llap
-      File Output Operator [FS_20]
-        Group By Operator [GBY_18] (rows=1 width=16)
+      File Output Operator [FS_19]
+        Group By Operator [GBY_17] (rows=1 width=16)
           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
         <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_17]
-            Group By Operator [GBY_16] (rows=1 width=16)
+          PARTITION_ONLY_SHUFFLE [RS_16]
+            Group By Operator [GBY_15] (rows=1 width=16)
               Output:["_col0","_col1"],aggregations:["sum(_col0)","sum(_col1)"]
-              Select Operator [SEL_14] (rows=14 width=94)
+              Select Operator [SEL_13] (rows=14 width=94)
                 Output:["_col0","_col1"]
-                Group By Operator [GBY_13] (rows=14 width=94)
+                Group By Operator [GBY_12] (rows=14 width=94)
                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                 <-Reducer 2 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_12]
+                  SHUFFLE [RS_11]
                     PartitionCols:_col0
-                    Group By Operator [GBY_11] (rows=14 width=94)
-                      Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
-                      Merge Join Operator [MERGEJOIN_25] (rows=60 width=86)
+                    Group By Operator [GBY_10] (rows=14 width=94)
+                      Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                      Merge Join Operator [MERGEJOIN_24] (rows=60 width=86)
                         Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0"]
                       <-Map 1 [SIMPLE_EDGE] llap
                         SHUFFLE [RS_6]
                           PartitionCols:_col0
                           Select Operator [SEL_2] (rows=25 width=86)
                             Output:["_col0"]
-                            Filter Operator [FIL_23] (rows=25 width=86)
+                            Filter Operator [FIL_22] (rows=25 width=86)
                               predicate:key is not null
                               TableScan [TS_0] (rows=25 width=86)
                                 default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2706,7 +2702,7 @@ Stage-0
                           PartitionCols:_col0
                           Select Operator [SEL_5] (rows=500 width=87)
                             Output:["_col0"]
-                            Filter Operator [FIL_24] (rows=500 width=87)
+                            Filter Operator [FIL_23] (rows=500 width=87)
                               predicate:key is not null
                               TableScan [TS_3] (rows=500 width=87)
                                 default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2735,30 +2731,30 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4 llap
-      File Output Operator [FS_20]
-        Group By Operator [GBY_18] (rows=1 width=16)
+      File Output Operator [FS_19]
+        Group By Operator [GBY_17] (rows=1 width=16)
           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
         <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_17]
-            Group By Operator [GBY_16] (rows=1 width=16)
+          PARTITION_ONLY_SHUFFLE [RS_16]
+            Group By Operator [GBY_15] (rows=1 width=16)
               Output:["_col0","_col1"],aggregations:["sum(_col0)","sum(_col1)"]
-              Select Operator [SEL_14] (rows=14 width=94)
+              Select Operator [SEL_13] (rows=14 width=94)
                 Output:["_col0","_col1"]
-                Group By Operator [GBY_13] (rows=14 width=94)
+                Group By Operator [GBY_12] (rows=14 width=94)
                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                 <-Reducer 2 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_12]
+                  SHUFFLE [RS_11]
                     PartitionCols:_col0
-                    Group By Operator [GBY_11] (rows=14 width=94)
-                      Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
-                      Merge Join Operator [MERGEJOIN_25] (rows=60 width=86)
+                    Group By Operator [GBY_10] (rows=14 width=94)
+                      Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                      Merge Join Operator [MERGEJOIN_24] (rows=60 width=86)
                         Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0"]
                       <-Map 1 [SIMPLE_EDGE] llap
                         SHUFFLE [RS_6]
                           PartitionCols:_col0
                           Select Operator [SEL_2] (rows=25 width=86)
                             Output:["_col0"]
-                            Filter Operator [FIL_23] (rows=25 width=86)
+                            Filter Operator [FIL_22] (rows=25 width=86)
                               predicate:key is not null
                               TableScan [TS_0] (rows=25 width=86)
                                 default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2767,7 +2763,7 @@ Stage-0
                           PartitionCols:_col0
                           Select Operator [SEL_5] (rows=500 width=87)
                             Output:["_col0"]
-                            Filter Operator [FIL_24] (rows=500 width=87)
+                            Filter Operator [FIL_23] (rows=500 width=87)
                               predicate:key is not null
                               TableScan [TS_3] (rows=500 width=87)
                                 default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2796,36 +2792,36 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4 llap
-      File Output Operator [FS_20]
-        Group By Operator [GBY_18] (rows=1 width=16)
+      File Output Operator [FS_19]
+        Group By Operator [GBY_17] (rows=1 width=16)
           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
         <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_17]
-            Group By Operator [GBY_16] (rows=1 width=16)
+          PARTITION_ONLY_SHUFFLE [RS_16]
+            Group By Operator [GBY_15] (rows=1 width=16)
               Output:["_col0","_col1"],aggregations:["sum(_col0)","sum(_col1)"]
-              Select Operator [SEL_14] (rows=14 width=94)
+              Select Operator [SEL_13] (rows=14 width=94)
                 Output:["_col0","_col1"]
-                Group By Operator [GBY_13] (rows=14 width=94)
+                Group By Operator [GBY_12] (rows=14 width=94)
                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                 <-Map 2 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_12]
+                  SHUFFLE [RS_11]
                     PartitionCols:_col0
-                    Group By Operator [GBY_11] (rows=14 width=94)
-                      Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
-                      Map Join Operator [MAPJOIN_25] (rows=60 width=86)
+                    Group By Operator [GBY_10] (rows=14 width=94)
+                      Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                      Map Join Operator [MAPJOIN_24] (rows=60 width=86)
                         Conds:RS_6._col0=SEL_5._col0(Inner),Output:["_col0"]
                       <-Map 1 [BROADCAST_EDGE] llap
                         BROADCAST [RS_6]
                           PartitionCols:_col0
                           Select Operator [SEL_2] (rows=25 width=86)
                             Output:["_col0"]
-                            Filter Operator [FIL_23] (rows=25 width=86)
+                            Filter Operator [FIL_22] (rows=25 width=86)
                               predicate:key is not null
                               TableScan [TS_0] (rows=25 width=86)
                                 default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                       <-Select Operator [SEL_5] (rows=500 width=87)
                           Output:["_col0"]
-                          Filter Operator [FIL_24] (rows=500 width=87)
+                          Filter Operator [FIL_23] (rows=500 width=87)
                             predicate:key is not null
                             TableScan [TS_3] (rows=500 width=87)
                               default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2854,30 +2850,30 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 4 llap
-      File Output Operator [FS_22]
-        Group By Operator [GBY_20] (rows=1 width=16)
+      File Output Operator [FS_21]
+        Group By Operator [GBY_19] (rows=1 width=16)
           Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"]
         <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_19]
-            Group By Operator [GBY_18] (rows=1 width=16)
+          PARTITION_ONLY_SHUFFLE [RS_18]
+            Group By Operator [GBY_17] (rows=1 width=16)
               Output:["_col0","_col1"],aggregations:["sum(_col0)","sum(_col1)"]
-              Select Operator [SEL_16] (rows=12 width=94)
+              Select Operator [SEL_15] (rows=12 width=94)
                 Output:["_col0","_col1"]
-                Group By Operator [GBY_15] (rows=12 width=94)
+                Group By Operator [GBY_14] (rows=12 width=94)
                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                 <-Reducer 2 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_14]
+                  SHUFFLE [RS_13]
                     PartitionCols:_col0
-                    Group By Operator [GBY_13] (rows=12 width=94)
-                      Output:["_col0","_col1"],aggregations:["count(1)"],keys:_col0
-                      Merge Join Operator [MERGEJOIN_27] (rows=25 width=86)
+                    Group By Operator [GBY_12] (rows=12 width=94)
+                      Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                      Merge Join Operator [MERGEJOIN_26] (rows=25 width=86)
                         Conds:RS_8._col0=RS_9._col0(Left Semi),Output:["_col0"]
                       <-Map 1 [SIMPLE_EDGE] llap
                         SHUFFLE [RS_8]
                           PartitionCols:_col0
                           Select Operator [SEL_2] (rows=25 width=86)
                             Output:["_col0"]
-                            Filter Operator [FIL_25] (rows=25 width=86)
+                            Filter Operator [FIL_24] (rows=25 width=86)
                               predicate:key is not null
                               TableScan [TS_0] (rows=25 width=86)
                                 default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -2888,7 +2884,7 @@ Stage-0
                             Output:["_col0"],keys:_col0
                             Select Operator [SEL_5] (rows=500 width=87)
                               Output:["_col0"]
-                              Filter Operator [FIL_26] (rows=500 width=87)
+                              Filter Operator [FIL_25] (rows=500 width=87)
                                 predicate:key is not null
                                 TableScan [TS_3] (rows=500 width=87)
                                   default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -3050,11 +3046,11 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=1 width=8)
-          Output:["_col0"],aggregations:["count(1)"]
+      File Output Operator [FS_5]
+        Group By Operator [GBY_3] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count()"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_3]
+          PARTITION_ONLY_SHUFFLE [RS_2]
             Select Operator [SEL_1] (rows=5 width=6)
               TableScan [TS_0] (rows=5 width=6)
                 default@tgt_rc_merge_test,tgt_rc_merge_test,Tbl:COMPLETE,Col:COMPLETE
@@ -3122,11 +3118,11 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 llap
-      File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=1 width=8)
-          Output:["_col0"],aggregations:["count(1)"]
+      File Output Operator [FS_5]
+        Group By Operator [GBY_3] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count()"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_3]
+          PARTITION_ONLY_SHUFFLE [RS_2]
             Select Operator [SEL_1] (rows=5 width=6)
               TableScan [TS_0] (rows=5 width=6)
                 default@tgt_rc_merge_test,tgt_rc_merge_test,Tbl:COMPLETE,Col:COMPLETE
@@ -5670,30 +5666,30 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 llap
-      File Output Operator [FS_16]
-        Group By Operator [GBY_14] (rows=1 width=8)
+      File Output Operator [FS_15]
+        Group By Operator [GBY_13] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
-          PARTITION_ONLY_SHUFFLE [RS_13]
-            Group By Operator [GBY_12] (rows=1 width=8)
-              Output:["_col0"],aggregations:["count(1)"]
+          PARTITION_ONLY_SHUFFLE [RS_12]
+            Group By Operator [GBY_11] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-              PARTITION_ONLY_SHUFFLE [RS_11]
+              PARTITION_ONLY_SHUFFLE [RS_10]
                 PartitionCols:rand()
-                Map Join Operator [MAPJOIN_21] (rows=1 width=33)
+                Map Join Operator [MAPJOIN_20] (rows=1 width=33)
                   Conds:SEL_2._col0=RS_7._col0(Inner)
                 <-Map 4 [BROADCAST_EDGE] llap
                   BROADCAST [RS_7]
                     PartitionCols:_col0
                     Select Operator [SEL_5] (rows=1 width=30)
                       Output:["_col0"]
-                      Filter Operator [FIL_20] (rows=1 width=30)
+                      Filter Operator [FIL_19] (rows=1 width=30)
                         predicate:key is not null
                         TableScan [TS_3] (rows=1 width=30)
                           default@t1,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
                 <-Select Operator [SEL_2] (rows=1 width=30)
                     Output:["_col0"]
-                    Filter Operator [FIL_19] (rows=1 width=30)
+                    Filter Operator [FIL_18] (rows=1 width=30)
                       predicate:key is not null
                       TableScan [TS_0] (rows=1 width=30)
                         default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]

@@ -44,7 +44,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -131,7 +131,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -226,7 +226,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 1 Data size: 5812 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -321,7 +321,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

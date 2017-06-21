@@ -32,22 +32,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -129,22 +125,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -232,44 +224,36 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
           TableScan
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -444,22 +428,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -536,11 +516,11 @@ STAGE PLANS:
               Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: value
                 Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
+                  aggregations: count()
+                  keys: value (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
@@ -657,22 +637,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -681,11 +657,11 @@ STAGE PLANS:
               Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: value
                 Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
+                  aggregations: count()
+                  keys: value (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
@@ -874,22 +850,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -971,22 +943,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), value (type: string)
-                outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string), value (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
+                  value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1046,22 +1014,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1140,22 +1104,18 @@ STAGE PLANS:
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

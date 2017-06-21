@@ -110,7 +110,7 @@ STAGE PLANS:
             1 _col0 (type: string)
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: count(1)
+            aggregations: count()
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

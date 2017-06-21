@@ -52,22 +52,18 @@ STAGE PLANS:
             Filter Operator
               predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -129,22 +125,18 @@ STAGE PLANS:
             Filter Operator
               predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c2 (type: int)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: c2 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -222,44 +214,36 @@ STAGE PLANS:
             Filter Operator
               predicate: ((c1 < 120) and (c1 > 100)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
           TableScan
             alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((c2 > 100) and (c2 < 120)) (type: boolean)
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c2 (type: int)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: c2 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: int)
-                    Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: bigint)
+                  value expressions: _col1 (type: bigint)
       Reduce Operator Tree:
         Demux Operator
           Statistics: Num rows: 228 Data size: 5092 Basic stats: COMPLETE Column stats: NONE
@@ -383,22 +367,18 @@ STAGE PLANS:
             Filter Operator
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int), c3 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                   Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
+                  value expressions: _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -462,11 +442,11 @@ STAGE PLANS:
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: c1, c3
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
+                  aggregations: count()
+                  keys: c1 (type: int), c3 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
@@ -553,22 +533,18 @@ STAGE PLANS:
             Filter Operator
               predicate: ((c1 < 120) and c3 is not null) (type: boolean)
               Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations: count()
+                keys: c1 (type: int), c3 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: string)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                   Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: int), _col1 (type: string)
-                    sort order: ++
-                    Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
-                    Statistics: Num rows: 342 Data size: 7639 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col2 (type: bigint)
+                  value expressions: _col2 (type: bigint)
           TableScan
             alias: x1
             Statistics: Num rows: 1028 Data size: 22964 Basic stats: COMPLETE Column stats: NONE
@@ -577,11 +553,11 @@ STAGE PLANS:
               Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c1 (type: int), c3 (type: string)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: c1, c3
                 Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: int), _col1 (type: string)
+                  aggregations: count()
+                  keys: c1 (type: int), c3 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 114 Data size: 2546 Basic stats: COMPLETE Column stats: NONE

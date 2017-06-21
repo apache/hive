@@ -27,7 +27,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -75,7 +75,7 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT count(1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION []
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.null, ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

@@ -375,11 +375,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
-                    outputColumnNames: _col1
+                    outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
@@ -577,11 +577,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
-                    outputColumnNames: _col1
+                    outputColumnNames: key
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1), stddev(_col1)
-                      keys: _col1 (type: string)
+                      aggregations: count(), stddev(key)
+                      keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col3
                       Statistics: Num rows: 205 Data size: 35875 Basic stats: COMPLETE Column stats: COMPLETE

@@ -418,7 +418,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -553,7 +553,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -587,7 +587,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -662,7 +662,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -770,7 +770,7 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

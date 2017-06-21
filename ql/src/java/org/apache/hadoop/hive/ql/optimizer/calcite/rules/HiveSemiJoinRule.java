@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -49,34 +52,29 @@ import java.util.List;
  * TODO Remove this rule and use Calcite's SemiJoinRule. Not possible currently
  * since Calcite doesnt use RelBuilder for this rule and we want to generate HiveSemiJoin rel here.
  */
-public class HiveSemiJoinRule extends RelOptRule {
+public abstract class HiveSemiJoinRule extends RelOptRule {
 
-  public static final HiveSemiJoinRule INSTANCE = new HiveSemiJoinRule(HiveRelFactories.HIVE_BUILDER);
   protected static final Logger LOG = LoggerFactory.getLogger(HiveSemiJoinRule.class);
 
-  private HiveSemiJoinRule(RelBuilderFactory relBuilder) {
-    super(
-        operand(Project.class,
-            some(
-                operand(Join.class,
-                    some(operand(RelNode.class, any()),
-                        operand(Aggregate.class, any()))))), relBuilder, null);
+  public static final HiveProjectToSemiJoinRule INSTANCE_PROJECT =
+          new HiveProjectToSemiJoinRule(HiveRelFactories.HIVE_BUILDER);
+
+  public static final HiveAggregateToSemiJoinRule INSTANCE_AGGREGATE =
+          new HiveAggregateToSemiJoinRule(HiveRelFactories.HIVE_BUILDER);
+
+  private HiveSemiJoinRule(RelOptRuleOperand operand, RelBuilderFactory relBuilder) {
+    super(operand, relBuilder, null);
   }
 
-  @Override public void onMatch(RelOptRuleCall call) {
+  protected void perform(RelOptRuleCall call, ImmutableBitSet topRefs,
+          RelNode topOperator, Join join, RelNode left, Aggregate aggregate) {
     LOG.debug("Matched HiveSemiJoinRule");
-    final Project project = call.rel(0);
-    final Join join = call.rel(1);
-    final RelNode left = call.rel(2);
-    final Aggregate aggregate = call.rel(3);
     final RelOptCluster cluster = join.getCluster();
     final RexBuilder rexBuilder = cluster.getRexBuilder();
-    final ImmutableBitSet bits =
-        RelOptUtil.InputFinder.bits(project.getProjects(), null);
     final ImmutableBitSet rightBits =
         ImmutableBitSet.range(left.getRowType().getFieldCount(),
             join.getRowType().getFieldCount());
-    if (bits.intersects(rightBits)) {
+    if (topRefs.intersects(rightBits)) {
       return;
     }
     final JoinInfo joinInfo = join.analyzeCondition();
@@ -88,7 +86,7 @@ public class HiveSemiJoinRule extends RelOptRule {
     }
     if(join.getJoinType() == JoinRelType.LEFT) {
       // since for LEFT join we are only interested in rows from LEFT we can get rid of right side
-      call.transformTo(call.builder().push(left).project(project.getProjects(), project.getRowType().getFieldNames()).build());
+      call.transformTo(topOperator.copy(topOperator.getTraitSet(), ImmutableList.of(left)));
       return;
     }
     if (join.getJoinType() != JoinRelType.INNER) {
@@ -126,8 +124,68 @@ public class HiveSemiJoinRule extends RelOptRule {
     else {
       semi = call.builder().push(left).push(aggregate.getInput()).semiJoin(newCondition).build();
     }
-    call.transformTo(call.builder().push(semi).project(project.getProjects(), project.getRowType().getFieldNames()).build());
+    call.transformTo(topOperator.copy(topOperator.getTraitSet(), ImmutableList.of(semi)));
   }
+
+  /** SemiJoinRule that matches a Project on top of a Join with an Aggregate
+   * as its right child. */
+  public static class HiveProjectToSemiJoinRule extends HiveSemiJoinRule {
+
+    /** Creates a HiveProjectToSemiJoinRule. */
+    public HiveProjectToSemiJoinRule(RelBuilderFactory relBuilder) {
+      super(
+          operand(Project.class,
+                  some(operand(Join.class,
+                      some(
+                          operand(RelNode.class, any()),
+                          operand(Aggregate.class, any()))))),
+              relBuilder);
+    }
+
+    @Override public void onMatch(RelOptRuleCall call) {
+      final Project project = call.rel(0);
+      final Join join = call.rel(1);
+      final RelNode left = call.rel(2);
+      final Aggregate aggregate = call.rel(3);
+      final ImmutableBitSet topRefs =
+              RelOptUtil.InputFinder.bits(project.getChildExps(), null);
+      perform(call, topRefs, project, join, left, aggregate);
+    }
+  }
+
+  /** SemiJoinRule that matches a Aggregate on top of a Join with an Aggregate
+   * as its right child. */
+  public static class HiveAggregateToSemiJoinRule extends HiveSemiJoinRule {
+
+    /** Creates a HiveAggregateToSemiJoinRule. */
+    public HiveAggregateToSemiJoinRule(RelBuilderFactory relBuilder) {
+      super(
+          operand(Aggregate.class,
+              some(operand(Join.class,
+                  some(
+                      operand(RelNode.class, any()),
+                      operand(Aggregate.class, any()))))),
+          relBuilder);
+    }
+
+    @Override public void onMatch(RelOptRuleCall call) {
+      final Aggregate topAggregate = call.rel(0);
+      final Join join = call.rel(1);
+      final RelNode left = call.rel(2);
+      final Aggregate aggregate = call.rel(3);
+      // Gather columns used by aggregate operator
+      final ImmutableBitSet.Builder topRefs = ImmutableBitSet.builder();
+      topRefs.addAll(topAggregate.getGroupSet());
+      for (AggregateCall aggCall : topAggregate.getAggCallList()) {
+        topRefs.addAll(aggCall.getArgList());
+        if (aggCall.filterArg != -1) {
+          topRefs.set(aggCall.filterArg);
+        }
+      }
+      perform(call, topRefs.build(), topAggregate, join, left, aggregate);
+    }
+  }
+
 }
 
 // End SemiJoinRule.java

@@ -416,7 +416,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -445,7 +445,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -565,7 +565,7 @@ STAGE PLANS:
                      Right Outer Join 0 to 1
                 Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -594,7 +594,7 @@ STAGE PLANS:
                      Right Outer Join 0 to 1
                 Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

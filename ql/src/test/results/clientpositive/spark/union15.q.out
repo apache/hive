@@ -52,7 +52,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -73,7 +73,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -96,7 +96,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1

@@ -156,11 +156,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -179,11 +179,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -613,11 +613,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -636,11 +636,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -659,11 +659,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -682,11 +682,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string)
+                      aggregations: count()
+                      keys: key (type: string), value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1200,7 +1200,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   keys: _col0 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1
@@ -1249,7 +1249,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   keys: _col0 (type: int)
                   mode: complete
                   outputColumnNames: _col0, _col1

@@ -316,11 +316,11 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: y (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: y
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
+                  aggregations: count()
+                  keys: y (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
@@ -382,7 +382,7 @@ STAGE PLANS:
               name: default.fact_daily
             name: default.fact_daily
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [fact_daily]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -454,7 +454,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   keys: 484 (type: int)
                   mode: hash
                   outputColumnNames: _col0, _col1

@@ -1279,8 +1279,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view14
 POSTHOOK: Lineage: view14.k1 EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: view14.k2 EXPRESSION [(src)s4.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: view14.v1 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: view14.v2 EXPRESSION [(src)s4.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: view14.v1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: view14.v2 EXPRESSION [(src)s3.null, (src)s4.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view14
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view14
