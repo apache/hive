@@ -48,11 +48,12 @@ public class TestHadoop23Shims {
     Hadoop23Shims shims = new Hadoop23Shims();
     List<String> paramsDefault = shims.constructDistCpParams(copySrc, copyDst, conf);
 
-    assertEquals(4, paramsDefault.size());
+    assertEquals(5, paramsDefault.size());
     assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
     assertTrue("Distcp -skipcrccheck set by default", paramsDefault.contains("-skipcrccheck"));
-    assertEquals(copySrc.toString(), paramsDefault.get(2));
-    assertEquals(copyDst.toString(), paramsDefault.get(3));
+    assertTrue("Distcp -pb set by default", paramsDefault.contains("-pb"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
 
     conf.set("distcp.options.foo", "bar"); // should set "-foo bar"
     conf.set("distcp.options.blah", ""); // should set "-blah"
@@ -67,6 +68,8 @@ public class TestHadoop23Shims {
         !paramsWithCustomParamInjection.contains("-update"));
     assertTrue("Distcp -skipcrccheck not set if not requested",
         !paramsWithCustomParamInjection.contains("-skipcrccheck"));
+    assertTrue("Distcp -pb not set if not requested",
+        !paramsWithCustomParamInjection.contains("-pb"));
 
     // the "-foo bar" and "-blah" params order is not guaranteed
     String firstParam = paramsWithCustomParamInjection.get(0);
