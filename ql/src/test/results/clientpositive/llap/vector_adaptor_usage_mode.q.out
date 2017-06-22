@@ -982,9 +982,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(col 5) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: string)
                       mode: hash
@@ -1025,9 +1027,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
@@ -1107,9 +1111,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(col 5) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: string)
                       mode: hash
@@ -1150,9 +1156,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: string)
                 mode: mergepartial

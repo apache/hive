@@ -65,9 +65,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFMinDecimal(col 2) -> decimal(20,10)
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0, col 1, col 2, col 3
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: cint (type: int), cdouble (type: double), cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14))
                       mode: hash
@@ -109,9 +111,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinDecimal(col 4) -> decimal(20,10)
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0, col 1, col 2, col 3
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: int), KEY._col1 (type: double), KEY._col2 (type: decimal(20,10)), KEY._col3 (type: decimal(23,14))
                 mode: mergepartial

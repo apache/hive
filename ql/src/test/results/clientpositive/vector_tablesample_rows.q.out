@@ -1,7 +1,7 @@
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
 Explain
@@ -52,6 +52,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: []
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: string, string
 
   Stage: Stage-0
     Fetch Operator
@@ -77,11 +83,11 @@ POSTHOOK: query: create table decimal_2 (t decimal(18,9)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -140,6 +146,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: []
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: decimal(18,9)
 
   Stage: Stage-7
     Conditional Operator
@@ -213,10 +225,10 @@ POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_2
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 POSTHOOK: type: QUERY
 Explain
@@ -256,8 +268,10 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(1)
             Group By Vectorization:
+                groupByMode: HASH
                 vectorOutput: false
                 native: false
+                vectorProcessingMode: NONE
                 projectedOutputColumns: null
             mode: hash
             outputColumnNames: _col0
@@ -294,6 +308,11 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: [0]
+              dataColumns: _col0:bigint
+              partitionColumnCount: 0
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -302,8 +321,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
@@ -332,10 +353,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 1
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Explain

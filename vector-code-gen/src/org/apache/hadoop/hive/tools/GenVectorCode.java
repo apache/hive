@@ -24,6 +24,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -1004,51 +1009,144 @@ public class GenVectorCode extends Task {
       {"VectorUDAFMinMaxIntervalDayTime", "VectorUDAFMinIntervalDayTime", ">", "min",
           "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: interval_day_time)"},
 
-        //template, <ClassName>, <ValueType>
-        {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
-        {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
-        {"VectorUDAFAvg", "VectorUDAFAvgLong", "long"},
-        {"VectorUDAFAvg", "VectorUDAFAvgDouble", "double"},
+      // Template, <ClassName>, <ValueType>
+      {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
+      {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
+
+      // Template, <ClassName>, <ValueType>, <IfDefined>
+      {"VectorUDAFAvg", "VectorUDAFAvgLong", "long", "PARTIAL1"},
+      {"VectorUDAFAvg", "VectorUDAFAvgLongComplete", "long", "COMPLETE"},
+
+      {"VectorUDAFAvg", "VectorUDAFAvgDouble", "double", "PARTIAL1"},
+      {"VectorUDAFAvg", "VectorUDAFAvgDoubleComplete", "double", "COMPLETE"},
+
+      {"VectorUDAFAvgDecimal", "VectorUDAFAvgDecimal", "PARTIAL1"},
+      {"VectorUDAFAvgDecimal", "VectorUDAFAvgDecimalComplete", "COMPLETE"},
+
+      {"VectorUDAFAvgTimestamp", "VectorUDAFAvgTimestamp", "PARTIAL1"},
+      {"VectorUDAFAvgTimestamp", "VectorUDAFAvgTimestampComplete", "COMPLETE"},
+
+      //template, <ClassName>, <ValueType>, <IfDefined>
+      {"VectorUDAFAvgMerge", "VectorUDAFAvgPartial2", "PARTIAL2"},
+      {"VectorUDAFAvgMerge", "VectorUDAFAvgFinal", "FINAL"},
+
+      {"VectorUDAFAvgDecimalMerge", "VectorUDAFAvgDecimalPartial2", "PARTIAL2"},
+      {"VectorUDAFAvgDecimalMerge", "VectorUDAFAvgDecimalFinal", "FINAL"},
+
+      // (since Timestamps are averaged with double, we don't need a PARTIAL2 class)
+      // (and, since Timestamps are output as double for AVG, we don't need a FINAL class, either)
+      // {"VectorUDAFAvgMerge", "VectorUDAFAvgTimestampPartial2", "PARTIAL2"},
+      // {"VectorUDAFAvgMerge", "VectorUDAFAvgTimestampFinal", "FINAL"},
 
       // template, <ClassName>, <ValueType>, <VarianceFormula>, <DescriptionName>,
       // <DescriptionValue>
-      {"VectorUDAFVar", "VectorUDAFVarPopLong", "long", "myagg.variance / myagg.count",
+      {"VectorUDAFVar", "VectorUDAFVarPopLong", "long", "PARTIAL1", "myagg.variance / myagg.count",
           "variance, var_pop",
           "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarPopDouble", "double", "myagg.variance / myagg.count",
+      {"VectorUDAFVar", "VectorUDAFVarPopLongComplete", "long", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
+        "variance, var_pop",
+        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarPopDouble", "double", "PARTIAL1", "myagg.variance / myagg.count",
           "variance, var_pop",
           "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarPopDecimal", "myagg.variance / myagg.count",
+      {"VectorUDAFVar", "VectorUDAFVarPopDoubleComplete", "double", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
+        "variance, var_pop",
+        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVarDecimal", "VectorUDAFVarPopDecimal", "PARTIAL1", "myagg.variance / myagg.count",
           "variance, var_pop",
           "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVar", "VectorUDAFVarSampLong", "long", "myagg.variance / (myagg.count-1.0)",
+      {"VectorUDAFVarDecimal", "VectorUDAFVarPopDecimalComplete", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
+        "variance, var_pop",
+        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, timestamp)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarPopTimestamp", "PARTIAL1", "myagg.variance / myagg.count",
+        "variance, var_pop",
+        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, timestamp)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarPopTimestampComplete", "COMPLETE,VARIANCE", "myagg.variance / myagg.count",
+        "variance, var_pop",
+        "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, decimal)"},
+
+      {"VectorUDAFVar", "VectorUDAFVarSampLong", "long", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
           "var_samp",
           "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFVarSampDouble", "double", "myagg.variance / (myagg.count-1.0)",
+      {"VectorUDAFVar", "VectorUDAFVarSampLongComplete", "long", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
+        "var_samp",
+        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarSampDouble", "double", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
           "var_samp",
           "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFVarSampDecimal", "myagg.variance / (myagg.count-1.0)",
+      {"VectorUDAFVar", "VectorUDAFVarSampDoubleComplete", "double", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
+        "var_samp",
+        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVarDecimal", "VectorUDAFVarSampDecimal", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
           "var_samp",
           "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVar", "VectorUDAFStdPopLong", "long",
+      {"VectorUDAFVarDecimal", "VectorUDAFVarSampDecimalComplete", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
+        "var_samp",
+        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, decimal)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarSampTimestamp", "PARTIAL1", "myagg.variance / (myagg.count-1.0)",
+        "var_samp",
+        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, timestamp)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFVarSampTimestampComplete", "COMPLETE,VARIANCE_SAMPLE", "myagg.variance / (myagg.count-1.0)",
+        "var_samp",
+        "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, timestamp)"},
+
+      {"VectorUDAFVar", "VectorUDAFStdPopLong", "long", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
           "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdPopDouble", "double",
+      {"VectorUDAFVar", "VectorUDAFStdPopLongComplete", "long", "COMPLETE,STD",
+        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFStdPopDouble", "double", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
           "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdPopDecimal",
+      {"VectorUDAFVar", "VectorUDAFStdPopDoubleComplete", "double", "COMPLETE,STD",
+        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVarDecimal", "VectorUDAFStdPopDecimal", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
           "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, decimal)"},
-      {"VectorUDAFVar", "VectorUDAFStdSampLong", "long",
+      {"VectorUDAFVarDecimal", "VectorUDAFStdPopDecimalComplete", "COMPLETE,STD",
+        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, decimal)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFStdPopTimestamp", "PARTIAL1",
+        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, timestamp)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFStdPopTimestampComplete", "COMPLETE,STD",
+        "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+        "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, timestamp)"},
+
+      {"VectorUDAFVar", "VectorUDAFStdSampLong", "long", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
           "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
-      {"VectorUDAFVar", "VectorUDAFStdSampDouble", "double",
+      {"VectorUDAFVar", "VectorUDAFStdSampLongComplete", "long", "COMPLETE,STD_SAMPLE",
+        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFStdSampDouble", "double", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
           "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
-      {"VectorUDAFVarDecimal", "VectorUDAFStdSampDecimal",
+      {"VectorUDAFVar", "VectorUDAFStdSampDoubleComplete", "double", "COMPLETE,STD_SAMPLE",
+        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVarDecimal", "VectorUDAFStdSampDecimal", "PARTIAL1",
           "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
           "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, decimal)"},
+      {"VectorUDAFVarDecimal", "VectorUDAFStdSampDecimalComplete", "COMPLETE,STD_SAMPLE",
+        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, decimal)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFStdSampTimestamp", "PARTIAL1",
+        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, timestamp)"},
+      {"VectorUDAFVarTimestamp", "VectorUDAFStdSampTimestampComplete", "COMPLETE,STD_SAMPLE",
+        "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+        "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, timestamp)"},
 
+      //template, <ClassName>, <ValueType>, <IfDefined>
+      {"VectorUDAFVarMerge", "VectorUDAFVarPartial2", "PARTIAL2"},
+
+      {"VectorUDAFVarMerge", "VectorUDAFVarPopFinal", "FINAL,VARIANCE"},
+      {"VectorUDAFVarMerge", "VectorUDAFVarSampFinal", "FINAL,VARIANCE_SAMPLE"},
+      {"VectorUDAFVarMerge", "VectorUDAFStdPopFinal", "FINAL,STD"},
+      {"VectorUDAFVarMerge", "VectorUDAFStdSampFinal", "FINAL,STD_SAMPLE"},
     };
 
 
@@ -1204,10 +1302,22 @@ public class GenVectorCode extends Task {
         generateVectorUDAFSum(tdesc);
       } else if (tdesc[0].equals("VectorUDAFAvg")) {
         generateVectorUDAFAvg(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFAvgMerge")) {
+        generateVectorUDAFAvgMerge(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFAvgDecimal")) {
+        generateVectorUDAFAvgObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFAvgTimestamp")) {
+        generateVectorUDAFAvgObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
+        generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
-        generateVectorUDAFVarDecimal(tdesc);
+        generateVectorUDAFVarObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFVarTimestamp")) {
+        generateVectorUDAFVarObject(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFVarMerge")) {
+        generateVectorUDAFVarMerge(tdesc);
       } else if (tdesc[0].equals("FilterStringGroupColumnCompareStringGroupScalarBase")) {
         generateFilterStringGroupColumnCompareStringGroupScalarBase(tdesc);
       } else if (tdesc[0].equals("FilterStringGroupColumnCompareStringScalar")) {
@@ -1565,14 +1675,50 @@ public class GenVectorCode extends Task {
   private void generateVectorUDAFAvg(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String valueType = tdesc[2];
+    String camelValueCaseType = getCamelCaseType(valueType);
     String columnType = getColumnVectorType(valueType);
+    String ifDefined = tdesc[3];
 
     File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<ValueType>", valueType);
+    templateString = templateString.replaceAll("<CamelCaseValueType>", camelValueCaseType);
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
+
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFAvgMerge(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String groupByMode = tdesc[2];
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+
+    templateString = evaluateIfDefined(templateString, groupByMode);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFAvgObject(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String ifDefined = tdesc[2];
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
         className, templateString);
   }
@@ -1580,9 +1726,10 @@ public class GenVectorCode extends Task {
   private void generateVectorUDAFVar(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String valueType = tdesc[2];
-    String varianceFormula = tdesc[3];
-    String descriptionName = tdesc[4];
-    String descriptionValue = tdesc[5];
+    String ifDefined = tdesc[3];
+    String varianceFormula = tdesc[4];
+    String descriptionName = tdesc[5];
+    String descriptionValue = tdesc[6];
     String columnType = getColumnVectorType(valueType);
 
     File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
@@ -1594,26 +1741,48 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
     templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
     templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
+
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
     writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
         className, templateString);
   }
 
-  private void generateVectorUDAFVarDecimal(String[] tdesc) throws Exception {
-      String className = tdesc[1];
-      String varianceFormula = tdesc[2];
-      String descriptionName = tdesc[3];
-      String descriptionValue = tdesc[4];
+  private void generateVectorUDAFVarObject(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String ifDefined = tdesc[2];
+    String varianceFormula = tdesc[3];
+    String descriptionName = tdesc[4];
+    String descriptionValue = tdesc[5];
 
-      File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
-      String templateString = readFile(templateFile);
-      templateString = templateString.replaceAll("<ClassName>", className);
-      templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
-      templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
-      templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
-      writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
-          className, templateString);
-    }
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
+    templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
+    templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
+
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFVarMerge(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String groupByMode = tdesc[2];
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+
+    templateString = evaluateIfDefined(templateString, groupByMode);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
 
   private void generateFilterStringGroupScalarCompareStringGroupColumnBase(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
@@ -3124,6 +3293,102 @@ public class GenVectorCode extends Task {
   private static boolean isTimestampIntervalType(String type) {
     return (type.equals("timestamp")
         || type.equals("interval_day_time"));
+  }
+
+  private boolean containsDefinedStrings(Set<String> defineSet, String commaDefinedString) {
+    String[] definedStrings = commaDefinedString.split(",");
+    boolean result = false;
+    for (String definedString : definedStrings) {
+      if (defineSet.contains(definedString)) {
+        result = true;
+        break;
+      }
+    }
+    return result;
+  }
+
+  private int doIfDefinedStatement(String[] lines, int index, Set<String> definedSet,
+      boolean outerInclude, StringBuilder sb) {
+    String ifLine = lines[index];
+    final int ifLineNumber = index + 1;
+    String commaDefinedString = ifLine.substring("#IF ".length());
+    boolean includeBody = containsDefinedStrings(definedSet, commaDefinedString);
+    index++;
+    final int end = lines.length;
+    while (true) {
+      if (index >= end) {
+        throw new RuntimeException("Unmatched #IF at line " + index + " for " + commaDefinedString);
+      }
+      String line = lines[index];
+      if (line.length() == 0 || line.charAt(0) != '#') {
+        if (outerInclude && includeBody) {
+          sb.append(line);
+          sb.append("\n");
+        }
+        index++;
+        continue;
+      }
+
+      // A pound # statement (IF/ELSE/ENDIF).
+      if (line.startsWith("#IF ")) {
+        // Recurse.
+        index = doIfDefinedStatement(lines, index, definedSet, outerInclude && includeBody, sb);
+      } else if (line.equals("#ELSE")) {
+        // Flip inclusion.
+        includeBody = !includeBody;
+        index++;
+      } else if (line.equals("#ENDIF")) {
+        throw new RuntimeException("Missing defined strings with #ENDIF on line " + (index + 1));
+      } else if (line.startsWith("#ENDIF ")) {
+        String endCommaDefinedString = line.substring("#ENDIF ".length());
+        if (!commaDefinedString.equals(endCommaDefinedString)) {
+          throw new RuntimeException(
+              "#ENDIF defined names \"" + endCommaDefinedString + "\" (line " + ifLineNumber +
+              " do not match \"" + commaDefinedString + "\" (line " + (index + 1) + ")");
+        }
+        return ++index;
+      } else {
+        throw new RuntimeException("Problem with #IF/#ELSE/#ENDIF on line " + (index + 1) + ": " + line);
+      }
+    }
+  }
+
+  private void doEvaluateIfDefined(String[] lines, int index, Set<String> definedSet,
+      boolean outerInclude, StringBuilder sb) {
+      final int end = lines.length;
+      while (true) {
+        if (index >= end) {
+          break;
+        }
+        String line = lines[index];
+        if (line.length() == 0 || line.charAt(0) != '#') {
+          if (outerInclude) {
+            sb.append(line);
+            sb.append("\n");
+          }
+          index++;
+          continue;
+        }
+
+        // A pound # statement (IF/ELSE/ENDIF).
+        if (line.startsWith("#IF ")) {
+          index = doIfDefinedStatement(lines, index, definedSet, outerInclude, sb);
+        } else {
+          throw new RuntimeException("Problem with #IF/#ELSE/#ENDIF on line " + (index + 1) + ": " + line);
+        }
+      }
+  }
+
+  private String evaluateIfDefined(String linesString, List<String> definedList) {
+    String[] lines = linesString.split("\n");
+    Set<String> definedSet = new HashSet<String>(definedList);
+    StringBuilder sb = new StringBuilder();
+    doEvaluateIfDefined(lines, 0, definedSet, true, sb);
+    return sb.toString();
+  }
+
+  private String evaluateIfDefined(String linesString, String definedString) {
+    return evaluateIfDefined(linesString, Arrays.asList(definedString.split(",")));
   }
 
   static void writeFile(long templateTime, String outputDir, String classesDir,

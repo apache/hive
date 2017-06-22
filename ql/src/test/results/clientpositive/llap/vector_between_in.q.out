@@ -154,8 +154,10 @@ STAGE PLANS:
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
@@ -193,8 +195,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -358,8 +362,10 @@ STAGE PLANS:
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
@@ -397,8 +403,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -754,8 +762,10 @@ STAGE PLANS:
                         Group By Vectorization:
                             aggregators: VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
@@ -793,8 +803,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1104,9 +1116,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 4
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
@@ -1147,9 +1161,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
@@ -1242,9 +1258,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 4
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
@@ -1285,9 +1303,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
@@ -1380,9 +1400,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 4
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
@@ -1423,9 +1445,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
@@ -1518,9 +1542,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 4
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: boolean)
                       mode: hash
@@ -1561,9 +1587,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial

@@ -41,9 +41,11 @@ STAGE PLANS:
                 Group By Operator
                   Group By Vectorization:
                       className: VectorGroupByOperator
+                      groupByMode: HASH
                       vectorOutput: true
                       keyExpressions: col 2
                       native: false
+                      vectorProcessingMode: HASH
                       projectedOutputColumns: []
                   keys: cint (type: int)
                   mode: hash
@@ -75,8 +77,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL2
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: partial2
@@ -85,8 +89,10 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(_col0)
             Group By Vectorization:
+                groupByMode: PARTIAL2
                 vectorOutput: false
                 native: false
+                vectorProcessingMode: NONE
                 projectedOutputColumns: null
             mode: partial2
             outputColumnNames: _col0
@@ -131,8 +137,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
@@ -195,9 +203,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 2
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: cint (type: int)
                 mode: hash
@@ -229,8 +239,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL2
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: partial2
@@ -239,8 +251,10 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(_col0)
             Group By Vectorization:
+                groupByMode: PARTIAL2
                 vectorOutput: false
                 native: false
+                vectorProcessingMode: NONE
                 projectedOutputColumns: null
             mode: partial2
             outputColumnNames: _col0
@@ -285,8 +299,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
@@ -357,9 +373,11 @@ STAGE PLANS:
                 Group By Operator
                   Group By Vectorization:
                       className: VectorGroupByOperator
+                      groupByMode: HASH
                       vectorOutput: true
                       keyExpressions: col 2
                       native: false
+                      vectorProcessingMode: HASH
                       projectedOutputColumns: []
                   keys: cint (type: int)
                   mode: hash
@@ -391,8 +409,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL2
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: partial2
@@ -401,8 +421,10 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(_col0)
             Group By Vectorization:
+                groupByMode: PARTIAL2
                 vectorOutput: false
                 native: false
+                vectorProcessingMode: NONE
                 projectedOutputColumns: null
             mode: partial2
             outputColumnNames: _col0
@@ -447,8 +469,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
@@ -519,9 +543,11 @@ STAGE PLANS:
                 Group By Operator
                   Group By Vectorization:
                       className: VectorGroupByOperator
+                      groupByMode: HASH
                       vectorOutput: true
                       keyExpressions: col 2
                       native: false
+                      vectorProcessingMode: HASH
                       projectedOutputColumns: []
                   keys: cint (type: int)
                   mode: hash
@@ -553,8 +579,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL2
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: partial2
@@ -563,8 +591,10 @@ STAGE PLANS:
           Group By Operator
             aggregations: count(_col0)
             Group By Vectorization:
+                groupByMode: PARTIAL2
                 vectorOutput: false
                 native: false
+                vectorProcessingMode: NONE
                 projectedOutputColumns: null
             mode: partial2
             outputColumnNames: _col0
@@ -609,8 +639,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0

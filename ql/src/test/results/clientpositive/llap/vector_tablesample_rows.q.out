@@ -1,7 +1,7 @@
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
 Explain
@@ -56,6 +56,12 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: []
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: string, string
 
   Stage: Stage-0
     Fetch Operator
@@ -81,11 +87,11 @@ POSTHOOK: query: create table decimal_2 (t decimal(18,9)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -144,6 +150,12 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: []
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: decimal(18,9)
 
   Stage: Stage-2
     Dependency Collection
@@ -191,10 +203,10 @@ POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_2
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 POSTHOOK: type: QUERY
 Explain
@@ -237,10 +249,17 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: bigint
             Reduce Operator Tree:
               Select Operator
                 Select Vectorization:
@@ -253,8 +272,10 @@ STAGE PLANS:
                   Group By Vectorization:
                       aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 1:long) -> bigint
                       className: VectorGroupByOperator
+                      groupByMode: HASH
                       vectorOutput: true
                       native: false
+                      vectorProcessingMode: HASH
                       projectedOutputColumns: [0]
                   mode: hash
                   outputColumnNames: _col0
@@ -263,8 +284,10 @@ STAGE PLANS:
                     sort order: 
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkEmptyKeyOperator
+                        keyColumns: []
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumns: [0]
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 3 
@@ -272,18 +295,26 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -315,10 +346,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 1
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Explain

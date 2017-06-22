@@ -84,9 +84,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 2) -> bigint, VectorUDAFSumLong(col 3) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0, col 1, col 2
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0, 1, 2]
                       keys: a (type: int), b (type: int), c (type: int)
                       mode: hash
@@ -194,9 +196,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 4:long) -> bigint, VectorUDAFCountStar(*) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 2) -> bigint, VectorUDAFCount(col 3) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 2) -> bigint, VectorUDAFCount(col 3) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 2) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 1) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 0) -> bigint, VectorUDAFCount(col 0) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0, col 1, col 2, col 3
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
                       keys: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int)
                       mode: hash

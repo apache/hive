@@ -2157,7 +2157,7 @@ public class TestVectorGroupByOperator {
       } else {
         assertEquals (true, arr[0] instanceof Object[]);
         Object[] vals = (Object[]) arr[0];
-        assertEquals (2, vals.length);
+        assertEquals (3, vals.length);
 
         assertEquals (true, vals[0] instanceof LongWritable);
         LongWritable lw = (LongWritable) vals[0];

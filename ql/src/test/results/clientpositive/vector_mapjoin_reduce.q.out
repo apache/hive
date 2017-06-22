@@ -40,9 +40,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: l_partkey (type: int)
                 mode: hash
@@ -74,8 +76,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
@@ -126,8 +130,10 @@ STAGE PLANS:
                 Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   keys: _col0 (type: int)
                   mode: hash
@@ -273,9 +279,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: l_partkey (type: int)
                 mode: hash
@@ -307,8 +315,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: int)
           mode: mergepartial
@@ -359,8 +369,10 @@ STAGE PLANS:
                 Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   keys: _col0 (type: int), _col1 (type: int)
                   mode: hash

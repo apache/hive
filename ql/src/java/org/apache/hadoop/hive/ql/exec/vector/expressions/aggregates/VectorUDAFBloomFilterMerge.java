@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -39,16 +40,9 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private VectorExpression inputExpression;
-
-  @Override
-  public VectorExpression inputExpression() {
-    return inputExpression;
-  }
-
   private long expectedEntries = -1;
-  transient private int aggBufferSize = -1;
-  transient private BytesWritable bw = new BytesWritable();
+  transient private int aggBufferSize;
+  transient private BytesWritable bw;
 
   /**
    * class for storing the current aggregate value.
@@ -81,13 +75,14 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
     }
   }
 
-  public VectorUDAFBloomFilterMerge(VectorExpression inputExpression) {
-    this();
-    this.inputExpression = inputExpression;
+  public VectorUDAFBloomFilterMerge(VectorExpression inputExpression,
+      GenericUDAFEvaluator.Mode mode) {
+    super(inputExpression, mode);
   }
 
-  public VectorUDAFBloomFilterMerge() {
-    super();
+  private void init() {
+    aggBufferSize = -1;
+    bw = new BytesWritable();
   }
 
   @Override
@@ -355,6 +350,8 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
+    init();
+
     GenericUDAFBloomFilterEvaluator udafBloomFilter =
         (GenericUDAFBloomFilterEvaluator) desc.getGenericUDAFEvaluator();
     expectedEntries = udafBloomFilter.getExpectedEntries();

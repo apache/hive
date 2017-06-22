@@ -1239,8 +1239,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> date, VectorUDAFMaxLong(col 0) -> date, VectorUDAFCount(col 0) -> bigint, VectorUDAFCountStar(*) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0, 1, 2, 3]
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
@@ -1271,8 +1273,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3

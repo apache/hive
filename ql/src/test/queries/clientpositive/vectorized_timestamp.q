@@ -1,38 +1,41 @@
 set hive.fetch.task.conversion=none;
-set hive.explain.user=true;
+set hive.explain.user=false;
+set hive.vectorized.execution.reduce.enabled=true;
 
 DROP TABLE IF EXISTS test;
 CREATE TABLE test(ts TIMESTAMP) STORED AS ORC;
 INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999');
 
 SET hive.vectorized.execution.enabled = false;
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test;
 
 SELECT ts FROM test;
 
-EXPLAIN VECTORIZATION EXPRESSION
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test;
-
-SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test;
-
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000');
 
 SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000');
 
 SET hive.vectorized.execution.enabled = true;
-EXPLAIN VECTORIZATION EXPRESSION
-SELECT ts FROM test;
 
 SELECT ts FROM test;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test;
 
 SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000');
 
 SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000');
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test;
+
+SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test;
+
+SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test;

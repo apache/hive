@@ -108,9 +108,6 @@ public class ReduceRecordSource implements RecordSource {
   private StructObjectInspector keyStructInspector;
   private StructObjectInspector valueStructInspectors;
 
-  /* this is only used in the error code path */
-  private List<VectorExpressionWriter> valueStringWriters;
-
   private KeyValuesAdapter reader;
 
   private boolean handleGroupKey;
@@ -171,13 +168,6 @@ public class ReduceRecordSource implements RecordSource {
 
         final int totalColumns = firstValueColumnOffset +
             valueStructInspectors.getAllStructFieldRefs().size();
-        valueStringWriters = new ArrayList<VectorExpressionWriter>(totalColumns);
-        valueStringWriters.addAll(Arrays
-            .asList(VectorExpressionWriterFactory
-                .genVectorStructExpressionWritables(keyStructInspector)));
-        valueStringWriters.addAll(Arrays
-            .asList(VectorExpressionWriterFactory
-                .genVectorStructExpressionWritables(valueStructInspectors)));
 
         rowObjectInspector = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
             valueStructInspectors);
@@ -448,9 +438,6 @@ public class ReduceRecordSource implements RecordSource {
           byte[] valueBytes = valueWritable.getBytes();
           int valueLength = valueWritable.getLength();
           batchBytes += valueLength;
-
-          // l4j.info("ReduceRecordSource processVectorGroup valueBytes " + valueLength + " " +
-          //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
 
           valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
           valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);

@@ -263,6 +263,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean useVectorDeserialize;
   private boolean useRowDeserialize;
   private boolean isReduceVectorizationEnabled;
+  private boolean isVectorizationComplexTypesEnabled;
+  private boolean isVectorizationGroupByComplexTypesEnabled;
 
   private boolean isSchemaEvolution;
 
@@ -1379,6 +1381,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         try {
           ret = validateMapWorkOperator(op, mapWork, isTezOrSpark);
         } catch (Exception e) {
+          String oneLineStackTrace = VectorizationContext.getStackTraceAsSingleLine(e);
+          LOG.info(oneLineStackTrace);
           throw new SemanticException(e);
         }
         if (!ret) {
@@ -1699,6 +1703,13 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED);
 
+    isVectorizationComplexTypesEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED);
+    isVectorizationGroupByComplexTypesEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED);
+
     isSchemaEvolution =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
@@ -1872,7 +1883,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateMapJoinDesc(MapJoinDesc desc) {
     byte posBigTable = (byte) desc.getPosBigTable();
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
-    if (!validateExprNodeDesc(filterExprs, "Filter", VectorExpressionDescriptor.Mode.FILTER)) {
+    if (!validateExprNodeDesc(
+        filterExprs, "Filter", VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true)) {
       return false;
     }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
@@ -1903,7 +1915,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(tag);
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(tag);
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(tag);
-    return validateExprNodeDesc(filterExprs, "Filter", VectorExpressionDescriptor.Mode.FILTER) &&
+    return validateExprNodeDesc(
+        filterExprs, "Filter", VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true) &&
         validateExprNodeDesc(keyExprs, "Key") && validateExprNodeDesc(valueExprs, "Value");
   }
 
@@ -1928,7 +1941,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateFilterOperator(FilterOperator op) {
     ExprNodeDesc desc = op.getConf().getPredicate();
-    return validateExprNodeDesc(desc, "Predicate", VectorExpressionDescriptor.Mode.FILTER);
+    return validateExprNodeDesc(
+        desc, "Predicate", VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true);
   }
 
   private boolean validateGroupByOperator(GroupByOperator op, boolean isReduce, boolean isTezOrSpark) {
@@ -1938,7 +1952,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       setOperatorIssue("DISTINCT not supported");
       return false;
     }
-    boolean ret = validateExprNodeDesc(desc.getKeys(), "Key");
+    boolean ret = validateExprNodeDescNoComplex(desc.getKeys(), "Key");
     if (!ret) {
       return false;
     }
@@ -2045,12 +2059,12 @@ public class Vectorizer implements PhysicalPlanResolver {
         VectorGroupByDesc.groupByDescModeToVectorProcessingMode(desc.getMode(), hasKeys);
     if (desc.isGroupingSetsPresent() &&
         (processingMode != ProcessingMode.HASH && processingMode != ProcessingMode.STREAMING)) {
-      LOG.info("Vectorized GROUPING SETS only expected for HASH and STREAMING processing modes");
+      setOperatorIssue("Vectorized GROUPING SETS only expected for HASH and STREAMING processing modes");
       return false;
     }
 
     Pair<Boolean,Boolean> retPair =
-        validateAggregationDescs(desc.getAggregators(), processingMode, hasKeys);
+        validateAggregationDescs(desc.getAggregators(), desc.getMode(), hasKeys);
     if (!retPair.left) {
       return false;
     }
@@ -2064,6 +2078,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     vectorDesc.setProcessingMode(processingMode);
 
+    vectorDesc.setIsVectorizationComplexTypesEnabled(isVectorizationComplexTypesEnabled);
+    vectorDesc.setIsVectorizationGroupByComplexTypesEnabled(isVectorizationGroupByComplexTypesEnabled);
+
     LOG.info("Vector GROUP BY operator will use processing mode " + processingMode.name() +
         ", isVectorOutput " + vectorDesc.isVectorOutput());
 
@@ -2075,14 +2092,21 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs, String expressionTitle) {
-    return validateExprNodeDesc(descs, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION);
+    return validateExprNodeDesc(
+        descs, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION, /* allowComplex */ true);
+  }
+
+  private boolean validateExprNodeDescNoComplex(List<ExprNodeDesc> descs, String expressionTitle) {
+    return validateExprNodeDesc(
+        descs, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION, /* allowComplex */ false);
   }
 
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs,
           String expressionTitle,
-          VectorExpressionDescriptor.Mode mode) {
+          VectorExpressionDescriptor.Mode mode,
+          boolean allowComplex) {
     for (ExprNodeDesc d : descs) {
-      boolean ret = validateExprNodeDesc(d, expressionTitle, mode);
+      boolean ret = validateExprNodeDesc(d, expressionTitle, mode, allowComplex);
       if (!ret) {
         return false;
       }
@@ -2091,10 +2115,10 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private Pair<Boolean,Boolean> validateAggregationDescs(List<AggregationDesc> descs,
-      ProcessingMode processingMode, boolean hasKeys) {
+      GroupByDesc.Mode groupByMode, boolean hasKeys) {
     boolean outputIsPrimitive = true;
     for (AggregationDesc d : descs) {
-      Pair<Boolean,Boolean>  retPair = validateAggregationDesc(d, processingMode, hasKeys);
+      Pair<Boolean,Boolean>  retPair = validateAggregationDesc(d, groupByMode, hasKeys);
       if (!retPair.left) {
         return retPair;
       }
@@ -2106,7 +2130,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc, String expressionTitle,
-      VectorExpressionDescriptor.Mode mode) {
+      VectorExpressionDescriptor.Mode mode, boolean allowComplex) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
       // Currently, we do not support vectorized virtual columns (see HIVE-5570).
@@ -2116,9 +2140,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
-    boolean ret = validateDataType(typeName, mode);
+    boolean ret = validateDataType(typeName, mode, allowComplex && isVectorizationComplexTypesEnabled);
     if (!ret) {
-      setExpressionIssue(expressionTitle, "Data type " + typeName + " of " + desc.toString() + " not supported");
+      setExpressionIssue(expressionTitle,
+          getValidateDataTypeErrorMsg(
+              typeName, mode, allowComplex, isVectorizationComplexTypesEnabled));
       return false;
     }
     boolean isInExpression = false;
@@ -2144,7 +2170,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (ExprNodeDesc d : desc.getChildren()) {
           // Don't restrict child expressions for projection.
           // Always use loose FILTER mode.
-          if (!validateExprNodeDescRecursive(d, expressionTitle, VectorExpressionDescriptor.Mode.FILTER)) {
+          if (!validateExprNodeDescRecursive(
+              d, expressionTitle, VectorExpressionDescriptor.Mode.FILTER, /* allowComplex */ true)) {
             return false;
           }
         }
@@ -2195,12 +2222,13 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDesc(ExprNodeDesc desc, String expressionTitle) {
-    return validateExprNodeDesc(desc, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION);
+    return validateExprNodeDesc(
+        desc, expressionTitle, VectorExpressionDescriptor.Mode.PROJECTION, /* allowComplex */ true);
   }
 
   boolean validateExprNodeDesc(ExprNodeDesc desc, String expressionTitle,
-      VectorExpressionDescriptor.Mode mode) {
-    if (!validateExprNodeDescRecursive(desc, expressionTitle, mode)) {
+      VectorExpressionDescriptor.Mode mode, boolean allowComplex) {
+    if (!validateExprNodeDescRecursive(desc, expressionTitle, mode, allowComplex)) {
       return false;
     }
     try {
@@ -2239,12 +2267,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  public static ObjectInspector.Category aggregationOutputCategory(VectorAggregateExpression vectorAggrExpr) {
+  public static Category aggregationOutputCategory(VectorAggregateExpression vectorAggrExpr) {
     ObjectInspector outputObjInspector = vectorAggrExpr.getOutputObjectInspector();
     return outputObjInspector.getCategory();
   }
 
-  private Pair<Boolean,Boolean> validateAggregationDesc(AggregationDesc aggDesc, ProcessingMode processingMode,
+  private Pair<Boolean,Boolean> validateAggregationDesc(AggregationDesc aggDesc, GroupByDesc.Mode groupByMode,
       boolean hasKeys) {
 
     String udfName = aggDesc.getGenericUDAFName().toLowerCase();
@@ -2253,12 +2281,16 @@ public class Vectorizer implements PhysicalPlanResolver {
       return new Pair<Boolean,Boolean>(false, false);
     }
     /*
+    // The planner seems to pull this one out.
     if (aggDesc.getDistinct()) {
       setExpressionIssue("Aggregation Function", "DISTINCT not supported");
       return new Pair<Boolean,Boolean>(false, false);
     }
     */
-    if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters(), "Aggregation Function UDF " + udfName + " parameter")) {
+
+    ArrayList<ExprNodeDesc> parameters = aggDesc.getParameters();
+
+    if (parameters != null && !validateExprNodeDesc(parameters, "Aggregation Function UDF " + udfName + " parameter")) {
       return new Pair<Boolean,Boolean>(false, false);
     }
 
@@ -2280,25 +2312,88 @@ public class Vectorizer implements PhysicalPlanResolver {
           " vector expression " + vectorAggrExpr.toString());
     }
 
-    ObjectInspector.Category outputCategory = aggregationOutputCategory(vectorAggrExpr);
-    boolean outputIsPrimitive = (outputCategory == ObjectInspector.Category.PRIMITIVE);
-    if (processingMode == ProcessingMode.MERGE_PARTIAL &&
-        hasKeys &&
-        !outputIsPrimitive) {
-      setOperatorIssue("Vectorized Reduce MergePartial GROUP BY keys can only handle aggregate outputs that are primitive types");
-      return new Pair<Boolean,Boolean>(false, false);
+    boolean canVectorizeComplexType =
+        (isVectorizationComplexTypesEnabled && isVectorizationGroupByComplexTypesEnabled);
+
+    boolean isVectorOutput;
+    if (canVectorizeComplexType) {
+      isVectorOutput = true;
+    } else {
+
+      // Do complex input type checking...
+      boolean inputIsPrimitive;
+      if (parameters == null || parameters.size() == 0) {
+        inputIsPrimitive = true;   // Pretend for COUNT(*)
+      } else {
+
+        // Multi-input should have been eliminated earlier.
+        // Preconditions.checkState(parameters.size() == 1);
+
+        final Category inputCategory = parameters.get(0).getTypeInfo().getCategory();
+        inputIsPrimitive = (inputCategory == Category.PRIMITIVE);
+      }
+
+      if (!inputIsPrimitive) {
+        setOperatorIssue("Cannot vectorize GROUP BY with aggregation complex type inputs in " +
+            aggDesc.getExprString() + " since " +
+            GroupByDesc.getComplexTypeWithGroupByEnabledCondition(
+                isVectorizationComplexTypesEnabled, isVectorizationGroupByComplexTypesEnabled));
+        return new Pair<Boolean,Boolean>(false, false);
+      }
+
+      // Now, look a the output.  If the output is complex, we switch to row-mode for all child
+      // operators...
+      isVectorOutput = (aggregationOutputCategory(vectorAggrExpr) == Category.PRIMITIVE);
     }
 
-    return new Pair<Boolean,Boolean>(true, outputIsPrimitive);
+    return new Pair<Boolean,Boolean>(true, isVectorOutput);
   }
 
-  public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode) {
+  public static boolean validateDataType(String type, VectorExpressionDescriptor.Mode mode,
+      boolean allowComplex) {
+
     type = type.toLowerCase();
     boolean result = supportedDataTypesPattern.matcher(type).matches();
     if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
       return false;
     }
+
+    if (!result) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
+      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+        if (allowComplex) {
+          return true;
+        }
+      }
+    }
     return result;
+  }
+
+  public static String getValidateDataTypeErrorMsg(String type, VectorExpressionDescriptor.Mode mode,
+      boolean allowComplex, boolean isVectorizationComplexTypesEnabled) {
+
+    type = type.toLowerCase();
+    boolean result = supportedDataTypesPattern.matcher(type).matches();
+    if (result && mode == VectorExpressionDescriptor.Mode.PROJECTION && type.equals("void")) {
+      return "Vectorizing data type void not supported when mode = PROJECTION";
+    }
+
+    if (!result) {
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
+      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+        if (allowComplex && isVectorizationComplexTypesEnabled) {
+          return null;
+        } else if (!allowComplex) {
+          return "Vectorizing complex type " + typeInfo.getCategory() + " not supported";
+        } else {
+          return "Vectorizing complex type " + typeInfo.getCategory() + " not enabled (" +
+              type +  ") since " +
+              GroupByDesc.getComplexTypeEnabledCondition(
+                  isVectorizationComplexTypesEnabled);
+        }
+      }
+    }
+    return (result ? null : "Vectorizing data type " + type + " not supported");
   }
 
   private VectorizationContext getVectorizationContext(String contextName,
@@ -3482,7 +3577,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             }
             VectorAggregateExpression[] vecAggregators = vectorGroupByDesc.getAggregators();
             for (VectorAggregateExpression vecAggr : vecAggregators) {
-              if (usesVectorUDFAdaptor(vecAggr.inputExpression())) {
+              if (usesVectorUDFAdaptor(vecAggr.getInputExpression())) {
                 vectorTaskColumnInfo.setUsesVectorUDFAdaptor(true);
               }
             }

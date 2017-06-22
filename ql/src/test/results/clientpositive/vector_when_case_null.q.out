@@ -52,9 +52,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCount(col 5) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0]
                 keys: _col0 (type: string)
                 mode: hash
@@ -88,8 +90,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: mergepartial

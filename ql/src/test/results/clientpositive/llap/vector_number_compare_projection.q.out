@@ -181,8 +181,10 @@ STAGE PLANS:
                   Group By Vectorization:
                       aggregators: VectorUDAFSumLong(col 6) -> bigint
                       className: VectorGroupByOperator
+                      groupByMode: COMPLETE
                       vectorOutput: true
                       native: false
+                      vectorProcessingMode: GLOBAL
                       projectedOutputColumns: [0]
                   mode: complete
                   outputColumnNames: _col0
@@ -305,8 +307,10 @@ STAGE PLANS:
                   Group By Vectorization:
                       aggregators: VectorUDAFSumLong(col 8) -> bigint
                       className: VectorGroupByOperator
+                      groupByMode: COMPLETE
                       vectorOutput: true
                       native: false
+                      vectorProcessingMode: GLOBAL
                       projectedOutputColumns: [0]
                   mode: complete
                   outputColumnNames: _col0

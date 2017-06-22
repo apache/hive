@@ -2832,6 +2832,15 @@ public class HiveConf extends Configuration {
         "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were choosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
+    HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED("hive.vectorized.complex.types.enabled", true,
+        "This flag should be set to true to enable vectorization\n" +
+        "of expressions with complex types.\n" +
+        "The default value is true."),
+    HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED("hive.vectorized.groupby.complex.types.enabled", true,
+        "This flag should be set to true to enable group by vectorization\n" +
+        "of aggregations that use complex types.\n",
+        "For example, AVG uses a complex type (STRUCT) for partial aggregation results" +
+        "The default value is true."),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "

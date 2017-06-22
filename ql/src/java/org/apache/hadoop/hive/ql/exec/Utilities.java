@@ -3784,59 +3784,6 @@ public final class Utilities {
     return rowObjectInspector;
   }
 
-  /**
-   * Check if LLAP IO supports the column type that is being read
-   * @param conf - configuration
-   * @return false for types not supported by vectorization, true otherwise
-   */
-  public static boolean checkVectorizerSupportedTypes(final Configuration conf) {
-    final String[] readColumnNames = ColumnProjectionUtils.getReadColumnNames(conf);
-    final String columnNames = conf.get(serdeConstants.LIST_COLUMNS);
-    final String columnTypes = conf.get(serdeConstants.LIST_COLUMN_TYPES);
-    if (columnNames == null || columnTypes == null || columnNames.isEmpty() ||
-        columnTypes.isEmpty()) {
-      LOG.warn("Column names ({}) or types ({}) is null. Skipping type checking for LLAP IO.",
-          columnNames, columnTypes);
-      return true;
-    }
-    final List<String> allColumnNames = Lists.newArrayList(columnNames.split(","));
-    final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
-    final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
-    return checkVectorizerSupportedTypes(Lists.newArrayList(readColumnNames), allColumnNames,
-        allColumnTypes);
-  }
-
-  /**
-   * Check if LLAP IO supports the column type that is being read
-   * @param readColumnNames - columns that will be read from the table/partition
-   * @param allColumnNames - all columns
-   * @param allColumnTypes - all column types
-   * @return false for types not supported by vectorization, true otherwise
-   */
-  public static boolean checkVectorizerSupportedTypes(final List<String> readColumnNames,
-      final List<String> allColumnNames, final List<String> allColumnTypes) {
-    final String[] readColumnTypes = getReadColumnTypes(readColumnNames, allColumnNames,
-        allColumnTypes);
-
-    if (readColumnTypes != null) {
-      for (String readColumnType : readColumnTypes) {
-        if (readColumnType != null) {
-          if (!Vectorizer.validateDataType(readColumnType,
-              VectorExpressionDescriptor.Mode.PROJECTION)) {
-            LOG.warn("Unsupported column type encountered ({}). Disabling LLAP IO.",
-                readColumnType);
-            return false;
-          }
-        }
-      }
-    } else {
-      LOG.warn("readColumnTypes is null. Skipping type checking for LLAP IO. " +
-          "readColumnNames: {} allColumnNames: {} allColumnTypes: {} readColumnTypes: {}",
-          readColumnNames, allColumnNames, allColumnTypes, readColumnTypes);
-    }
-    return true;
-  }
-
   private static String[] getReadColumnTypes(final List<String> readColumnNames,
       final List<String> allColumnNames, final List<String> allColumnTypes) {
     if (readColumnNames == null || allColumnNames == null || allColumnTypes == null ||

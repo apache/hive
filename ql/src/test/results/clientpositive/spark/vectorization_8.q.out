@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -23,7 +23,7 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -92,8 +92,10 @@ STAGE PLANS:
                         sort order: ++++++++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
+                            keyColumns: [8, 5, 10, 6, 4, 12, 13, 14, 16, 18, 15, 17, 19, 21]
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: []
                         Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized
@@ -105,15 +107,27 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: double, double, double, double, double, double, double, double, double, double, double
         Reducer 2 
             Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                reduceColumnNullOrder: aaaaaaaaaaaaaa
+                reduceColumnSortOrder: ++++++++++++++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 14
+                    dataColumns: KEY.reducesinkkey0:timestamp, KEY.reducesinkkey1:double, KEY.reducesinkkey2:boolean, KEY.reducesinkkey3:string, KEY.reducesinkkey4:float, KEY.reducesinkkey5:double, KEY.reducesinkkey6:double, KEY.reducesinkkey7:double, KEY.reducesinkkey8:float, KEY.reducesinkkey9:double, KEY.reducesinkkey10:double, KEY.reducesinkkey11:float, KEY.reducesinkkey12:float, KEY.reducesinkkey13:double
+                    partitionColumnCount: 0
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: boolean), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: float), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey6 (type: double), KEY.reducesinkkey7 (type: double), KEY.reducesinkkey8 (type: float), KEY.reducesinkkey9 (type: double), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: float), KEY.reducesinkkey13 (type: double)

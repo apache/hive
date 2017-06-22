@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,19 +29,23 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+import com.google.common.base.Preconditions;
+
 /**
-* VectorUDAFStdSampTimestamp. Vectorized implementation for VARIANCE aggregates.
+* VectorUDAFVarPopTimestamp. Vectorized implementation for VARIANCE aggregates.
 */
-@Description(name = "stddev_samp",
-    value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)")
-public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
+@Description(name = "variance, var_pop",
+    value = "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, timestamp)")
+public class <ClassName> extends VectorAggregateExpression {
 
     private static final long serialVersionUID = 1L;
 
@@ -68,6 +72,22 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
         variance = 0;
       }
 
+      public void varianceValue(double value) {
+        if (isNull) {
+          sum = value;
+          count = 1;
+          variance = 0;
+          isNull = false;
+        } else {
+          sum += value;
+          count++;
+          if (count > 1) {
+            double t = count * value - sum;
+            variance += (t * t) / ((double) count * (count - 1));
+          }
+        }
+      }
+
       @Override
       public int getVariableSize() {
         throw new UnsupportedOperationException();
@@ -82,28 +102,34 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
       }
     }
 
-    private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
+#IF PARTIAL1
     transient private LongWritable resultCount;
     transient private DoubleWritable resultSum;
     transient private DoubleWritable resultVariance;
     transient private Object[] partialResult;
 
     transient private ObjectInspector soi;
+#ENDIF PARTIAL1
+#IF COMPLETE
+    transient private DoubleWritable fullResult;
+
+    transient private ObjectInspector oi;
+#ENDIF COMPLETE
 
 
-    public VectorUDAFStdSampTimestamp(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+    public <ClassName>(VectorExpression inputExpression,
+        GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
+#IF PARTIAL1
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
+#ENDIF PARTIAL1
+#IF COMPLETE
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
+#ENDIF COMPLETE
     }
 
-    public VectorUDAFStdSampTimestamp() {
-      super();
+    private void init() {
+#IF PARTIAL1
       partialResult = new Object[3];
       resultCount = new LongWritable();
       resultSum = new DoubleWritable();
@@ -112,8 +138,14 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
       partialResult[1] = resultSum;
       partialResult[2] = resultVariance;
       initPartialResultInspector();
+#ENDIF PARTIAL1
+#IF COMPLETE
+      fullResult = new DoubleWritable();
+      initFullResultInspector();
+#ENDIF COMPLETE
     }
 
+#IF PARTIAL1
   private void initPartialResultInspector() {
         List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
@@ -127,6 +159,12 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
 
         soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
     }
+#ENDIF PARTIAL1
+#IF COMPLETE
+    private void initFullResultInspector() {
+      oi = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+    }
+#ENDIF COMPLETE
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
@@ -192,15 +230,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        myagg.varianceValue(value);
       }
     }
 
@@ -219,16 +249,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          double value = inputColVector.getDouble(i);
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-          if(myagg.count > 1) {
-            double t = myagg.count*value - myagg.sum;
-            myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-          }
+          myagg.varianceValue(inputColVector.getDouble(i));
         }
       }
     }
@@ -245,16 +266,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        double value = inputColVector.getDouble(selected[i]);
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        myagg.varianceValue(inputColVector.getDouble(selected[i]));
       }
     }
 
@@ -271,16 +283,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
           i);
-          double value = inputColVector.getDouble(i);
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          myagg.varianceValue(inputColVector.getDouble(i));
         }
       }
     }
@@ -296,16 +299,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        if (myagg.isNull) {
-          myagg.init ();
-        }
-        double value = inputColVector.getDouble(i);
-        myagg.sum += value;
-        myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+        myagg.varianceValue(inputColVector.getDouble(i));
       }
     }
 
@@ -350,26 +344,8 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
         double value,
         int batchSize) {
 
-      if (myagg.isNull) {
-        myagg.init ();
-      }
-
-      // TODO: conjure a formula w/o iterating
-      //
-
-      myagg.sum += value;
-      myagg.count += 1;
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
-
-      // We pulled out i=0 so we can remove the count > 1 check in the loop
-      for (int i=1; i<batchSize; ++i) {
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+      for (int i=0; i<batchSize; ++i) {
+        myagg.varianceValue(value);
       }
     }
 
@@ -383,16 +359,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          double value = inputColVector.getDouble(i);
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          myagg.varianceValue(inputColVector.getDouble(i));
         }
       }
     }
@@ -403,26 +370,8 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      if (myagg.isNull) {
-        myagg.init ();
-      }
-
-      double value = inputColVector.getDouble(selected[0]);
-      myagg.sum += value;
-      myagg.count += 1;
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
-
-      // i=0 was pulled out to remove the count > 1 check in the loop
-      //
-      for (int i=1; i< batchSize; ++i) {
-        value = inputColVector.getDouble(selected[i]);
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+      for (int i=0; i< batchSize; ++i) {
+        myagg.varianceValue(inputColVector.getDouble(selected[i]));
       }
     }
 
@@ -434,16 +383,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          double value = inputColVector.getDouble(i);
-          if (myagg.isNull) {
-            myagg.init ();
-          }
-          myagg.sum += value;
-          myagg.count += 1;
-        if(myagg.count > 1) {
-          double t = myagg.count*value - myagg.sum;
-          myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-        }
+          myagg.varianceValue(inputColVector.getDouble(i));
         }
       }
     }
@@ -453,26 +393,8 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
         TimestampColumnVector inputColVector,
         int batchSize) {
 
-      if (myagg.isNull) {
-        myagg.init ();
-      }
-
-      double value = inputColVector.getDouble(0);
-      myagg.sum += value;
-      myagg.count += 1;
-
-      if(myagg.count > 1) {
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
-      }
-
-      // i=0 was pulled out to remove count > 1 check
-      for (int i=1; i<batchSize; ++i) {
-        value = inputColVector.getDouble(i);
-        myagg.sum += value;
-        myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+      for (int i=0; i<batchSize; ++i) {
+        myagg.varianceValue(inputColVector.getDouble(i));
       }
     }
 
@@ -493,19 +415,49 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
         return null;
-      }
-      else {
-        assert(0 < myagg.count);
+      } else {
+#IF PARTIAL1
         resultCount.set (myagg.count);
         resultSum.set (myagg.sum);
         resultVariance.set (myagg.variance);
         return partialResult;
+#ENDIF PARTIAL1
+#IF COMPLETE
+       if (myagg.count == 0) {
+          return null;   // SQL standard - return null for zero elements
+        } else if (myagg.count > 1) {
+#IF VARIANCE
+          fullResult.set(myagg.variance / (myagg.count));
+#ENDIF VARIANCE
+#IF VARIANCE_SAMPLE
+          fullResult.set(myagg.variance / (myagg.count - 1));
+#ENDIF VARIANCE_SAMPLE
+#IF STD
+          fullResult.set(Math.sqrt(myagg.variance / (myagg.count)));
+#ENDIF STD
+#IF STD_SAMPLE
+          fullResult.set(Math.sqrt(myagg.variance / (myagg.count - 1)));
+#ENDIF STD_SAMPLE
+        } else {
+
+          // For one element the variance is always 0.
+          fullResult.set(0);
+        }
+
+        return fullResult;
+#ENDIF COMPLETE
       }
     }
+
   @Override
-    public ObjectInspector getOutputObjectInspector() {
-      return soi;
-    }
+  public ObjectInspector getOutputObjectInspector() {
+#IF PARTIAL1
+    return soi;
+#ENDIF PARTIAL1
+#IF COMPLETE
+    return oi;
+#ENDIF COMPLETE
+  }
 
   @Override
   public long getAggregationBufferFixedSize() {
@@ -519,15 +471,7 @@ public class VectorUDAFStdSampTimestamp extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
-    // No-op
-  }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
+    init();
   }
 }
 

@@ -136,9 +136,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 0, col 8
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: t (type: tinyint), s (type: string)
                 mode: hash
@@ -170,8 +172,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: tinyint), KEY._col1 (type: string)
           mode: mergepartial

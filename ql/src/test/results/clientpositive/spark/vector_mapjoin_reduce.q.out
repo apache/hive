@@ -91,9 +91,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -142,9 +144,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 1
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: l_partkey (type: int)
                       mode: hash
@@ -183,9 +187,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
@@ -362,9 +368,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 3
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: int)
                         mode: hash
@@ -413,9 +421,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 1
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: l_partkey (type: int)
                       mode: hash
@@ -454,9 +464,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: int)
                 mode: mergepartial

@@ -136,8 +136,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinLong(col 1) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilter(col 1) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -173,8 +175,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -198,8 +202,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -229,8 +235,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -373,8 +381,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 0) -> string, VectorUDAFBloomFilter(col 0) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -410,8 +420,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -435,8 +447,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -466,8 +480,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 1) -> string, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -610,8 +626,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 0) -> string, VectorUDAFBloomFilter(col 0) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -647,8 +665,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -672,8 +692,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -703,8 +725,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 1) -> string, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -848,8 +872,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinLong(col 1) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilter(col 1) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -918,8 +944,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinLong(col 1) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilter(col 1) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -957,8 +985,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -982,8 +1012,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1013,8 +1045,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -1042,8 +1076,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -1187,8 +1223,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 0) -> string, VectorUDAFBloomFilter(col 0) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -1214,8 +1252,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinLong(col 1) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilter(col 1) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -1251,8 +1291,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -1276,8 +1318,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1307,8 +1351,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0) -> string, VectorUDAFMaxString(col 1) -> string, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -1336,8 +1382,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
@@ -1480,8 +1528,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFMinLong(col 1) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilter(col 1) -> binary
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1, 2]
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
@@ -1517,8 +1567,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -1542,8 +1594,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1573,8 +1627,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0) -> int, VectorUDAFMaxLong(col 1) -> int, VectorUDAFBloomFilterMerge(col 2) -> binary
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: [0, 1, 2]
                 mode: final
                 outputColumnNames: _col0, _col1, _col2

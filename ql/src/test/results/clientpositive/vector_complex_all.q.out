@@ -75,7 +75,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
 orc_create_complex.str	orc_create_complex.mp	orc_create_complex.lst	orc_create_complex.strct	orc_create_complex.val
-line1	{"key13":"value13","key11":"value11","key12":"value12"}	["a","b","c"]	{"a":"one","b":"two"}	0
+line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"a":"one","b":"two"}	0
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}	0
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}	0
 PREHOOK: query: SELECT str FROM orc_create_complex
@@ -99,7 +99,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
 strct	mp	lst
-{"a":"one","b":"two"}	{"key13":"value13","key11":"value11","key12":"value12"}	["a","b","c"]
+{"a":"one","b":"two"}	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]
 {"a":"three","b":"four"}	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]
 {"a":"five","b":"six"}	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]
 PREHOOK: query: SELECT lst, str FROM orc_create_complex
@@ -123,7 +123,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
 mp	str
-{"key13":"value13","key11":"value11","key12":"value12"}	line1
+{"key11":"value11","key12":"value12","key13":"value13"}	line1
 {"key21":"value21","key22":"value22","key23":"value23"}	line2
 {"key31":"value31","key32":"value32","key33":"value33"}	line3
 PREHOOK: query: SELECT strct, str FROM orc_create_complex

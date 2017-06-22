@@ -64,7 +64,7 @@ STAGE PLANS:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Data type void of Const void null not supported
+          notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
           vectorized: false
 
   Stage: Stage-0
@@ -111,8 +111,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     Group By Vectorization:
+                        groupByMode: HASH
                         vectorOutput: false
                         native: false
+                        vectorProcessingMode: NONE
                         projectedOutputColumns: null
                     keys: null (type: void)
                     mode: hash
@@ -134,8 +136,10 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     Group By Vectorization:
+                        groupByMode: HASH
                         vectorOutput: false
                         native: false
+                        vectorProcessingMode: NONE
                         projectedOutputColumns: null
                     keys: null (type: void)
                     mode: hash
@@ -156,8 +160,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: void)
           mode: mergepartial

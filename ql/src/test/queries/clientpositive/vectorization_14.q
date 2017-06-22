@@ -5,7 +5,7 @@ set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN VECTORIZATION 
+EXPLAIN VECTORIZATION DETAIL
 SELECT   ctimestamp1,
          cfloat,
          cstring1,

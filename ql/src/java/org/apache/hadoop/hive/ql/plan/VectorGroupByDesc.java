@@ -65,6 +65,8 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
   private VectorExpression[] keyExpressions;
   private VectorAggregateExpression[] aggregators;
   private int[] projectedOutputColumns;
+  private boolean isVectorizationComplexTypesEnabled;
+  private boolean isVectorizationGroupByComplexTypesEnabled;
 
   public VectorGroupByDesc() {
     this.processingMode = ProcessingMode.NONE;
@@ -108,6 +110,22 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   public int[] getProjectedOutputColumns() {
     return projectedOutputColumns;
+  }
+
+  public void setIsVectorizationComplexTypesEnabled(boolean isVectorizationComplexTypesEnabled) {
+    this.isVectorizationComplexTypesEnabled = isVectorizationComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationComplexTypesEnabled() {
+    return isVectorizationComplexTypesEnabled;
+  }
+
+  public void setIsVectorizationGroupByComplexTypesEnabled(boolean isVectorizationGroupByComplexTypesEnabled) {
+    this.isVectorizationGroupByComplexTypesEnabled = isVectorizationGroupByComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationGroupByComplexTypesEnabled() {
+    return isVectorizationGroupByComplexTypesEnabled;
   }
 
   /**

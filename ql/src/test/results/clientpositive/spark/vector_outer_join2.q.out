@@ -398,8 +398,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFCountStar(*) -> bigint, VectorUDAFSumLong(col 3) -> bigint
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0, 1]
                           mode: hash
                           outputColumnNames: _col0, _col1
@@ -451,8 +453,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint, VectorUDAFSumLong(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0, 1]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1

@@ -31,12 +31,16 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
 * <ClassName>. Vectorized implementation for VARIANCE aggregates.
@@ -68,9 +72,29 @@ public class <ClassName> extends VectorAggregateExpression {
 
       public void init() {
         isNull = false;
-        sum = 0f;
+        sum = 0.0;
         count = 0;
-        variance = 0f;
+        variance = 0.0;
+      }
+
+     public void varianceValue(double value) {
+        if (isNull) {
+          sum = value;
+          count = 1;
+          variance = 0;
+          isNull = false;
+        } else {
+          sum += value;
+          count++;
+          if (count > 1) {
+            double t = count * value - sum;
+            variance += (t * t) / ((double) count * (count - 1));
+          }
+        }
+      }
+
+      public void varianceValue(HiveDecimalWritable value) {
+        varianceValue(value.doubleValue());
       }
 
       @Override
@@ -81,56 +105,39 @@ public class <ClassName> extends VectorAggregateExpression {
       @Override
       public void reset () {
         isNull = true;
-        sum = 0f;
+        sum = 0.0;
         count = 0;
-        variance = 0f;
-      }
-
-      public void updateValueWithCheckAndInit(HiveDecimalWritable value, short scale) {
-        if (this.isNull) {
-          this.init();
-        }
-
-        double dval = value.getHiveDecimal().doubleValue();
-        this.sum += dval;
-        this.count += 1;
-        if(this.count > 1) {
-           double t = this.count*dval - this.sum;
-           this.variance += (t*t) / ((double)this.count*(this.count-1));
-        }
-      }
-
-      public void updateValueNoCheck(HiveDecimalWritable value, short scale) {
-        double dval = value.getHiveDecimal().doubleValue();
-        this.sum += dval;
-        this.count += 1;
-        double t = this.count*dval - this.sum;
-        this.variance += (t*t) / ((double)this.count*(this.count-1));
+        variance = 0.0;
       }
 
     }
 
-    private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
+#IF PARTIAL1
     transient private LongWritable resultCount;
     transient private DoubleWritable resultSum;
     transient private DoubleWritable resultVariance;
     transient private Object[] partialResult;
 
     transient private ObjectInspector soi;
+#ENDIF PARTIAL1
+#IF COMPLETE
+      transient private DoubleWritable fullResult;
 
-    public <ClassName>(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+      transient private ObjectInspector oi;
+#ENDIF COMPLETE
+
+    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
+#IF PARTIAL1
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
+#ENDIF PARTIAL1
+#IF COMPLETE
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
+#ENDIF COMPLETE
     }
 
-    public <ClassName>() {
-      super();
+    private void init() {
+#IF PARTIAL1
       partialResult = new Object[3];
       resultCount = new LongWritable();
       resultSum = new DoubleWritable();
@@ -139,8 +146,14 @@ public class <ClassName> extends VectorAggregateExpression {
       partialResult[1] = resultSum;
       partialResult[2] = resultVariance;
       initPartialResultInspector();
+#ENDIF PARTIAL1
+#IF COMPLETE
+      fullResult = new DoubleWritable();
+      initFullResultInspector();
+#ENDIF COMPLETE
     }
 
+#IF PARTIAL1
   private void initPartialResultInspector() {
         List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
@@ -154,6 +167,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
         soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
     }
+#ENDIF PARTIAL1
+#IF COMPLETE
+    private void initFullResultInspector() {
+      oi = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+    }
+#ENDIF COMPLETE
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
@@ -196,12 +215,12 @@ public class <ClassName> extends VectorAggregateExpression {
       }
       else if (!batch.selectedInUse) {
         iterateNoSelectionHasNullsWithAggregationSelection(
-            aggregationBufferSets, aggregateIndex, vector, inputVector.scale, 
+            aggregationBufferSets, aggregateIndex, vector, inputVector.scale,
             batchSize, inputVector.isNull);
       }
       else if (inputVector.noNulls){
         iterateSelectionNoNullsWithAggregationSelection(
-            aggregationBufferSets, aggregateIndex, vector, inputVector.scale, 
+            aggregationBufferSets, aggregateIndex, vector, inputVector.scale,
             batchSize, batch.selected);
       }
       else {
@@ -224,7 +243,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        myagg.updateValueWithCheckAndInit(value, scale);
+        myagg.varianceValue(value);
       }
     }
 
@@ -244,8 +263,7 @@ public class <ClassName> extends VectorAggregateExpression {
           j);
         int i = selected[j];
         if (!isNull[i]) {
-          HiveDecimalWritable value = vector[i];
-          myagg.updateValueWithCheckAndInit(value, scale);
+          myagg.varianceValue(vector[i]);
         }
       }
     }
@@ -263,8 +281,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        HiveDecimalWritable value = vector[selected[i]];
-        myagg.updateValueWithCheckAndInit(value, scale);
+        myagg.varianceValue(vector[selected[i]]);
       }
     }
 
@@ -282,8 +299,7 @@ public class <ClassName> extends VectorAggregateExpression {
             aggregationBufferSets,
             aggregateIndex,
           i);
-          HiveDecimalWritable value = vector[i];
-          myagg.updateValueWithCheckAndInit(value, scale);
+          myagg.varianceValue(vector[i]);
         }
       }
     }
@@ -300,8 +316,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregateIndex,
           i);
-        HiveDecimalWritable value = vector[i];
-        myagg.updateValueWithCheckAndInit(value, scale);
+         myagg.varianceValue(vector[i]);
       }
     }
 
@@ -339,7 +354,7 @@ public class <ClassName> extends VectorAggregateExpression {
         iterateSelectionNoNulls(myagg, vector, inputVector.scale, batchSize, batch.selected);
       }
       else {
-        iterateSelectionHasNulls(myagg, vector, inputVector.scale, 
+        iterateSelectionHasNulls(myagg, vector, inputVector.scale,
           batchSize, inputVector.isNull, batch.selected);
       }
     }
@@ -350,14 +365,9 @@ public class <ClassName> extends VectorAggregateExpression {
         short scale,
         int batchSize) {
 
-      // TODO: conjure a formula w/o iterating
-      //
-
-      myagg.updateValueWithCheckAndInit(value, scale);
-
-      // We pulled out i=0 so we can remove the count > 1 check in the loop
-      for (int i=1; i<batchSize; ++i) {
-        myagg.updateValueNoCheck(value, scale);
+      double doubleValue = value.doubleValue();
+      for (int i=0; i<batchSize; ++i) {
+        myagg.varianceValue(doubleValue);
       }
     }
 
@@ -372,8 +382,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          HiveDecimalWritable value = vector[i];
-          myagg.updateValueWithCheckAndInit(value, scale);
+          myagg.varianceValue(vector[i]);
         }
       }
     }
@@ -385,18 +394,8 @@ public class <ClassName> extends VectorAggregateExpression {
         int batchSize,
         int[] selected) {
 
-      if (myagg.isNull) {
-        myagg.init ();
-      }
-
-      HiveDecimalWritable value = vector[selected[0]];
-      myagg.updateValueWithCheckAndInit(value, scale);
-
-      // i=0 was pulled out to remove the count > 1 check in the loop
-      //
-      for (int i=1; i< batchSize; ++i) {
-        value = vector[selected[i]];
-        myagg.updateValueNoCheck(value, scale);
+      for (int i=0; i< batchSize; ++i) {
+        myagg.varianceValue(vector[selected[i]]);
       }
     }
 
@@ -409,8 +408,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          HiveDecimalWritable value = vector[i];
-          myagg.updateValueWithCheckAndInit(value, scale);
+          myagg.varianceValue(vector[i]);
         }
       }
     }
@@ -421,17 +419,8 @@ public class <ClassName> extends VectorAggregateExpression {
         short scale,
         int batchSize) {
 
-      if (myagg.isNull) {
-        myagg.init ();
-      }
-
-      HiveDecimalWritable value = vector[0];
-      myagg.updateValueWithCheckAndInit(value, scale);
-
-      // i=0 was pulled out to remove count > 1 check
-      for (int i=1; i<batchSize; ++i) {
-        value = vector[i];
-        myagg.updateValueNoCheck(value, scale);
+      for (int i=0; i<batchSize; ++i) {
+        myagg.varianceValue(vector[i]);
       }
     }
 
@@ -452,19 +441,49 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) agg;
       if (myagg.isNull) {
         return null;
-      }
-      else {
-        assert(0 < myagg.count);
-        resultCount.set(myagg.count);
-        resultSum.set(myagg.sum);
-        resultVariance.set(myagg.variance);
+      } else {
+#IF PARTIAL1
+        resultCount.set (myagg.count);
+        resultSum.set (myagg.sum);
+        resultVariance.set (myagg.variance);
         return partialResult;
+#ENDIF PARTIAL1
+#IF COMPLETE
+        if (myagg.count == 0) {
+          return null;   // SQL standard - return null for zero elements
+        } else if (myagg.count > 1) {
+#IF VARIANCE
+          fullResult.set(myagg.variance / (myagg.count));
+#ENDIF VARIANCE
+#IF VARIANCE_SAMPLE
+          fullResult.set(myagg.variance / (myagg.count - 1));
+#ENDIF VARIANCE_SAMPLE
+#IF STD
+          fullResult.set(Math.sqrt(myagg.variance / (myagg.count)));
+#ENDIF STD
+#IF STD_SAMPLE
+          fullResult.set(Math.sqrt(myagg.variance / (myagg.count - 1)));
+#ENDIF STD_SAMPLE
+        } else {
+
+          // For one element the variance is always 0.
+          fullResult.set(0);
+        }
+
+        return fullResult;
+#ENDIF COMPLETE
       }
     }
+
   @Override
-    public ObjectInspector getOutputObjectInspector() {
-      return soi;
-    }
+  public ObjectInspector getOutputObjectInspector() {
+#IF PARTIAL1
+    return soi;
+#ENDIF PARTIAL1
+#IF COMPLETE
+    return oi;
+#ENDIF COMPLETE
+  }
 
   @Override
   public long getAggregationBufferFixedSize() {
@@ -478,14 +497,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
-    // No-op
-  }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
+    init();
   }
 }

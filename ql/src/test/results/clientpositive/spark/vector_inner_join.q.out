@@ -238,9 +238,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash

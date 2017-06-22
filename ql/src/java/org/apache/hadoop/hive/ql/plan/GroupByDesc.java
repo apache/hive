@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -305,6 +306,21 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.isDistinct = isDistinct;
   }
 
+  @Override
+  public Object clone() {
+    ArrayList<java.lang.String> outputColumnNames = new ArrayList<>();
+    outputColumnNames.addAll(this.outputColumnNames);
+    ArrayList<ExprNodeDesc> keys = new ArrayList<>();
+    keys.addAll(this.keys);
+    ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
+    aggregators.addAll(this.aggregators);
+    List<Integer> listGroupingSets = new ArrayList<>();
+    listGroupingSets.addAll(this.listGroupingSets);
+    return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
+        this.groupByMemoryUsage, this.memoryThreshold, listGroupingSets, this.groupingSetsPresent,
+        this.groupingSetPosition, this.isDistinct);
+  }
+
   public class GroupByOperatorExplainVectorization extends OperatorExplainVectorization {
 
     private final GroupByDesc groupByDesc;
@@ -337,20 +353,42 @@ public class GroupByDesc extends AbstractOperatorDesc {
       return vectorGroupByDesc.isVectorOutput();
     }
 
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorProcessingMode", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProcessingMode() {
+      return vectorGroupByDesc.getProcessingMode().name();
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "groupByMode", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getGroupByMode() {
+      return groupByDesc.getMode().name();
+    }
+
     @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorOutputConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getVectorOutputConditionsNotMet() {
       List<String> results = new ArrayList<String>();
+
+      boolean isVectorizationComplexTypesEnabled = vectorGroupByDesc.getIsVectorizationComplexTypesEnabled();
+      boolean isVectorizationGroupByComplexTypesEnabled = vectorGroupByDesc.getIsVectorizationGroupByComplexTypesEnabled();
+
+      if (isVectorizationComplexTypesEnabled && isVectorizationGroupByComplexTypesEnabled) {
+        return null;
+      }
+
       VectorAggregateExpression[] vecAggregators = vectorGroupByDesc.getAggregators();
       for (VectorAggregateExpression vecAggr : vecAggregators) {
         Category category = Vectorizer.aggregationOutputCategory(vecAggr);
         if (category != ObjectInspector.Category.PRIMITIVE) {
           results.add(
-              "Vector output of " + vecAggr.toString() + " output type " + category + " requires PRIMITIVE IS false");
+              "Vector output of " + vecAggr.toString() + " output type " + category + " requires PRIMITIVE type IS false");
         }
       }
       if (results.size() == 0) {
         return null;
       }
+
+      results.add(
+          getComplexTypeWithGroupByEnabledCondition(
+              isVectorizationComplexTypesEnabled, isVectorizationGroupByComplexTypesEnabled));
       return results;
     }
 
@@ -368,18 +406,21 @@ public class GroupByDesc extends AbstractOperatorDesc {
     return new GroupByOperatorExplainVectorization(this, vectorDesc);
   }
 
-  @Override
-  public Object clone() {
-    ArrayList<java.lang.String> outputColumnNames = new ArrayList<>();
-    outputColumnNames.addAll(this.outputColumnNames);
-    ArrayList<ExprNodeDesc> keys = new ArrayList<>();
-    keys.addAll(this.keys);
-    ArrayList<org.apache.hadoop.hive.ql.plan.AggregationDesc> aggregators = new ArrayList<>();
-    aggregators.addAll(this.aggregators);
-    List<Integer> listGroupingSets = new ArrayList<>();
-    listGroupingSets.addAll(this.listGroupingSets);
-    return new GroupByDesc(this.mode, outputColumnNames, keys, aggregators,
-        this.groupByMemoryUsage, this.memoryThreshold, listGroupingSets, this.groupingSetsPresent,
-        this.groupingSetPosition, this.isDistinct);
+  public static String getComplexTypeEnabledCondition(
+      boolean isVectorizationComplexTypesEnabled) {
+    return
+        HiveConf.ConfVars.HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED.varname +
+        " IS " + isVectorizationComplexTypesEnabled;
+  }
+
+  public static String getComplexTypeWithGroupByEnabledCondition(
+      boolean isVectorizationComplexTypesEnabled,
+      boolean isVectorizationGroupByComplexTypesEnabled) {
+    final boolean enabled = (isVectorizationComplexTypesEnabled && isVectorizationGroupByComplexTypesEnabled);
+    return "(" +
+        HiveConf.ConfVars.HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED.varname + " " + isVectorizationComplexTypesEnabled +
+        " AND " +
+        HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED.varname + " " + isVectorizationGroupByComplexTypesEnabled +
+        ") IS " + enabled;
   }
 }

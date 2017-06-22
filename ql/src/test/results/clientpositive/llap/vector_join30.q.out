@@ -164,8 +164,10 @@ STAGE PLANS:
                     Group By Vectorization:
                         aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(_col2,_col3)) -> 2:int) -> bigint
                         className: VectorGroupByOperator
+                        groupByMode: HASH
                         vectorOutput: true
                         native: false
+                        vectorProcessingMode: HASH
                         projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
@@ -193,8 +195,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -403,8 +407,10 @@ STAGE PLANS:
                     Group By Vectorization:
                         aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(_col2,_col3)) -> 3:int) -> bigint
                         className: VectorGroupByOperator
+                        groupByMode: HASH
                         vectorOutput: true
                         native: false
+                        vectorProcessingMode: HASH
                         projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
@@ -432,8 +438,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -669,8 +677,10 @@ STAGE PLANS:
                     Group By Vectorization:
                         aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(_col2,_col3)) -> 2:int) -> bigint
                         className: VectorGroupByOperator
+                        groupByMode: HASH
                         vectorOutput: true
                         native: false
+                        vectorProcessingMode: HASH
                         projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
@@ -698,8 +708,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -914,8 +926,10 @@ STAGE PLANS:
                     Group By Vectorization:
                         aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(_col2,_col3)) -> 2:int) -> bigint
                         className: VectorGroupByOperator
+                        groupByMode: HASH
                         vectorOutput: true
                         native: false
+                        vectorProcessingMode: HASH
                         projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
@@ -943,8 +957,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1209,8 +1225,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -1234,8 +1252,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1500,8 +1520,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -1525,8 +1547,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -1799,8 +1823,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -1824,8 +1850,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -2090,8 +2118,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   Group By Vectorization:
+                      groupByMode: HASH
                       vectorOutput: false
                       native: false
+                      vectorProcessingMode: NONE
                       projectedOutputColumns: null
                   mode: hash
                   outputColumnNames: _col0
@@ -2115,8 +2145,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0

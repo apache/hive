@@ -92,9 +92,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 2) -> bigint, VectorUDAFCountStar(*) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0, 1]
                 keys: _col0 (type: char(20))
                 mode: hash
@@ -129,8 +131,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0), count(VALUE._col1)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: char(20))
           mode: mergepartial
@@ -283,9 +287,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 2) -> bigint, VectorUDAFCountStar(*) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0, 1]
                 keys: _col0 (type: char(20))
                 mode: hash
@@ -320,8 +326,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0), count(VALUE._col1)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: char(20))
           mode: mergepartial

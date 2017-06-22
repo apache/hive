@@ -3365,9 +3365,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0, col 1, col 2
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
                 mode: mergepartial
@@ -3504,9 +3506,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFSumDouble(col 7) -> double
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 2, col 3
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: p_mfgr (type: string), p_brand (type: string)
                       mode: hash

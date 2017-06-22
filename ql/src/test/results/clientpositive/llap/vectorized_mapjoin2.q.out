@@ -92,8 +92,10 @@ STAGE PLANS:
                           Group By Vectorization:
                               aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 1:long) -> bigint
                               className: VectorGroupByOperator
+                              groupByMode: HASH
                               vectorOutput: true
                               native: false
+                              vectorProcessingMode: HASH
                               projectedOutputColumns: [0]
                           mode: hash
                           outputColumnNames: _col0
@@ -173,8 +175,10 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 0) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     native: false
+                    vectorProcessingMode: GLOBAL
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0

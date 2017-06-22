@@ -32,6 +32,9 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
@@ -45,6 +48,9 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
+import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -55,6 +61,8 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Clone from ExecReducer, it is the bridge between the spark framework and
@@ -85,20 +93,29 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private ObjectInspector[] rowObjectInspector;
   private boolean vectorized = false;
 
+  private VectorDeserializeRow<BinarySortableDeserializeRead> keyBinarySortableDeserializeToRow;
+
+  private VectorDeserializeRow<LazyBinaryDeserializeRead> valueLazyBinaryDeserializeToRow;
+
+  private VectorizedRowBatch batch;
+  private long batchBytes = 0;
+  private boolean handleGroupKey = true;  // For now.
+
+  private DataOutputBuffer buffer;
+
+  // number of columns pertaining to keys in a vectorized row batch
+  private int firstValueColumnOffset;
+
+  private static final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
+  private static final int BATCH_BYTES = VectorizedRowBatch.DEFAULT_BYTES;
+
   // runtime objects
   private transient Object keyObject;
   private transient BytesWritable groupKey;
 
-  private DataOutputBuffer buffer;
-  private VectorizedRowBatch[] batches;
-  // number of columns pertaining to keys in a vectorized row batch
-  private int keysColumnOffset;
-  private static final int BATCH_SIZE = VectorizedRowBatch.DEFAULT_SIZE;
-  private static final int BATCH_BYTES = VectorizedRowBatch.DEFAULT_BYTES;
   private StructObjectInspector keyStructInspector;
-  private StructObjectInspector[] valueStructInspectors;
+  private StructObjectInspector valueStructInspector;
   /* this is only used in the error code path */
-  private List<VectorExpressionWriter>[] valueStringWriters;
   private MapredLocalWork localWork = null;
 
   @Override
@@ -128,11 +145,14 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
       if (vectorized) {
         final int maxTags = gWork.getTagToValueDesc().size();
+
+        // CONSIDER: Cleaning up this code and eliminating the arrays.  Vectorization only handles
+        // one operator tree.
+        Preconditions.checkState(maxTags == 1);
+
         keyStructInspector = (StructObjectInspector) keyObjectInspector;
-        batches = new VectorizedRowBatch[maxTags];
-        valueStructInspectors = new StructObjectInspector[maxTags];
-        valueStringWriters = new List[maxTags];
-        keysColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
+        firstValueColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
+
         buffer = new DataOutputBuffer();
       }
 
@@ -149,20 +169,48 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
         if (vectorized) {
           /* vectorization only works with struct object inspectors */
-          valueStructInspectors[tag] = (StructObjectInspector) valueObjectInspector[tag];
+          valueStructInspector = (StructObjectInspector) valueObjectInspector[tag];
 
-          final int totalColumns = keysColumnOffset
-              + valueStructInspectors[tag].getAllStructFieldRefs().size();
-          valueStringWriters[tag] = new ArrayList<VectorExpressionWriter>(totalColumns);
-          valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
-              .genVectorStructExpressionWritables(keyStructInspector)));
-          valueStringWriters[tag].addAll(Arrays.asList(VectorExpressionWriterFactory
-              .genVectorStructExpressionWritables(valueStructInspectors[tag])));
+          final int totalColumns = firstValueColumnOffset
+              + valueStructInspector.getAllStructFieldRefs().size();
 
           rowObjectInspector[tag] = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
-              valueStructInspectors[tag]);
-          batches[tag] = gWork.getVectorizedRowBatchCtx().createVectorizedRowBatch();
+              valueStructInspector);
+          batch = gWork.getVectorizedRowBatchCtx().createVectorizedRowBatch();
 
+          // Setup vectorized deserialization for the key and value.
+          BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
+
+          keyBinarySortableDeserializeToRow =
+                    new VectorDeserializeRow<BinarySortableDeserializeRead>(
+                          new BinarySortableDeserializeRead(
+                                    VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                                        keyStructInspector),
+                                    /* useExternalBuffer */ true,
+                                    binarySortableSerDe.getSortOrders(),
+                                    binarySortableSerDe.getNullMarkers(),
+                                    binarySortableSerDe.getNotNullMarkers()));
+          keyBinarySortableDeserializeToRow.init(0);
+
+          final int valuesSize = valueStructInspector.getAllStructFieldRefs().size();
+          if (valuesSize > 0) {
+            valueLazyBinaryDeserializeToRow =
+                    new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+                          new LazyBinaryDeserializeRead(
+                              VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                                         valueStructInspector),
+                              /* useExternalBuffer */ true));
+            valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
+
+            // Create data buffers for value bytes column vectors.
+            for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
+              ColumnVector colVector = batch.cols[i];
+              if (colVector instanceof BytesColumnVector) {
+                BytesColumnVector bytesColumnVector = (BytesColumnVector) colVector;
+                bytesColumnVector.initBuffer();
+              }
+            }
+          }
 
         } else {
           ois.add(keyObjectInspector);
@@ -243,16 +291,27 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private DummyIterator dummyIterator = new DummyIterator();
 
   /**
-   * Process one row using a dummy iterator.
+   * Process one row using a dummy iterator.  Or, add row to vector batch.
    */
   @Override
   public void processRow(Object key, final Object value) throws IOException {
-    dummyIterator.setValue(value);
-    processRow(key, dummyIterator);
+    if (vectorized) {
+      processVectorRow(key, value);
+    } else {
+      dummyIterator.setValue(value);
+      processRow(key, dummyIterator);
+    }
   }
+
+
 
   @Override
   public <E> void processRow(Object key, Iterator<E> values) throws IOException {
+    if (vectorized) {
+      processVectorRows(key, values);
+      return;
+    }
+
     if (reducer.getDone()) {
       return;
     }
@@ -295,12 +354,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         reducer.setGroupKeyObject(keyObject);
         reducer.startGroup();
       }
-      /* this.keyObject passed via reference */
-      if (vectorized) {
-        processVectors(values, tag);
-      } else {
-        processKeyValues(values, tag);
-      }
+      processKeyValues(values, tag);
 
     } catch (Throwable e) {
       abort = true;
@@ -357,62 +411,152 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     return true; // give me more
   }
 
-  /**
-   * @param values
-   * @return true if it is not done and can take more inputs
-   */
-  private <E> boolean processVectors(Iterator<E> values, byte tag) throws HiveException {
-    VectorizedRowBatch batch = batches[tag];
-    batch.reset();
-    buffer.reset();
-
-    /* deserialize key into columns */
-    VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector, 0, 0, batch, buffer);
-    for (int i = 0; i < keysColumnOffset; i++) {
-      VectorizedBatchUtil.setRepeatingColumn(batch, i);
+  private <E> void processVectorRows(Object key, Iterator<E> values) throws IOException {
+    if (reducer.getDone()) {
+      return;
     }
+    while (values.hasNext()) {
+      processVectorRow(key, values.next());
+    }
+  }
 
-    int rowIdx = 0;
-    int batchBytes = 0;
+  private void processVectorRow(Object key, final Object value) throws IOException {
+    BytesWritable keyWritable = (BytesWritable) key;
+    BytesWritable valueWritable = (BytesWritable) value;
+
     try {
-      while (values.hasNext()) {
-        /* deserialize value into columns */
-        BytesWritable valueWritable = (BytesWritable) values.next();
-        Object valueObj = deserializeValue(valueWritable, tag);
 
-        VectorizedBatchUtil.addRowToBatchFrom(valueObj, valueStructInspectors[tag], rowIdx,
-            keysColumnOffset, batch, buffer);
-        batchBytes += valueWritable.getLength();
-        rowIdx++;
-        if (rowIdx >= BATCH_SIZE || batchBytes > BATCH_BYTES) {
-          VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-          reducer.process(batch, tag);
-          rowIdx = 0;
-          batchBytes = 0;
-          if (LOG.isInfoEnabled()) {
-            logMemoryInfo();
+      if (handleGroupKey) {
+        final boolean isKeyChange;
+        if (groupKey == null) {
+
+          // The first group.
+          isKeyChange = true;
+          groupKey = new BytesWritable();
+        } else {
+          isKeyChange = !keyWritable.equals(groupKey);
+        }
+
+        if (isKeyChange) {
+
+          // Flush current group batch as last batch of group.
+          if (batch.size > 0) {
+
+            // Forward; reset key and value columns.
+            forwardBatch(/* resetValueColumnsOnly */ false);
+            reducer.endGroup();
+          }
+
+          reducer.startGroup();
+
+          // Deserialize group key into vector row columns.
+          byte[] keyBytes = keyWritable.getBytes();
+          int keyLength = keyWritable.getLength();
+
+          groupKey.set(keyBytes, 0, keyLength);
+
+          keyBinarySortableDeserializeToRow.setBytes(keyBytes, 0, keyLength);
+          try {
+            keyBinarySortableDeserializeToRow.deserialize(batch, 0);
+          } catch (Exception e) {
+            throw new HiveException(
+                "\nDeserializeRead details: " +
+                    keyBinarySortableDeserializeToRow.getDetailedReadPositionString(),
+                e);
+          }
+
+          // And, mark group keys as repeating.
+          for(int i = 0; i < firstValueColumnOffset; i++) {
+            VectorizedBatchUtil.setRepeatingColumn(batch, i);
           }
         }
+
+        // Can we add to current batch?
+        if (batch.size >= batch.getMaxSize() ||
+            batch.size > 0 && batchBytes >= BATCH_BYTES) {
+
+          // Batch is full or using too much space.
+          forwardBatch(/* resetValueColumnsOnly */ true);
+        }
+
+        if (valueLazyBinaryDeserializeToRow != null) {
+          // Deserialize value into vector row columns.
+          byte[] valueBytes = valueWritable.getBytes();
+          int valueLength = valueWritable.getLength();
+          batchBytes += valueLength;
+
+          valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
+          valueLazyBinaryDeserializeToRow.deserialize(batch, batch.size);
+        }
+        batch.size++;
+      } else {
+
+        // No group key.
+
+        // Can we add to current batch?
+        if (batch.size >= batch.getMaxSize() ||
+            batch.size > 0 && batchBytes >= BATCH_BYTES) {
+
+          // Batch is full or using too much space.
+          forwardBatch(/* resetValueColumnsOnly */ false);
+        }
+
+        // Deserialize key into vector row columns.
+        byte[] keyBytes = keyWritable.getBytes();
+        int keyLength = keyWritable.getLength();
+
+        keyBinarySortableDeserializeToRow.setBytes(keyBytes, 0, keyLength);
+        try {
+          keyBinarySortableDeserializeToRow.deserialize(batch, 0);
+        } catch (Exception e) {
+          throw new HiveException(
+              "\nDeserializeRead details: " +
+                  keyBinarySortableDeserializeToRow.getDetailedReadPositionString(),
+              e);
+        }
+
+        if (valueLazyBinaryDeserializeToRow != null) {
+          // Deserialize value into vector row columns.
+          byte[] valueBytes = valueWritable.getBytes();
+          int valueLength = valueWritable.getLength();
+
+          batchBytes += valueLength;
+
+          valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
+          valueLazyBinaryDeserializeToRow.deserialize(batch, batch.size);
+        }
+        batch.size++;
       }
-      if (rowIdx > 0) {
-        VectorizedBatchUtil.setBatchSize(batch, rowIdx);
-        reducer.process(batch, tag);
+    } catch (Throwable e) {
+      abort = true;
+      if (e instanceof OutOfMemoryError) {
+        // Don't create a new object if we are already out of memory
+        throw (OutOfMemoryError) e;
+      } else {
+        throw new RuntimeException(e);
       }
-      if (LOG.isInfoEnabled()) {
-        logMemoryInfo();
-      }
-    } catch (Exception e) {
-      String rowString = null;
-      try {
-        rowString = batch.toString();
-      } catch (Exception e2) {
-        rowString = "[Error getting row data with exception " + StringUtils.stringifyException(e2)
-          + " ]";
-      }
-      throw new HiveException("Error while processing vector batch (tag=" + tag + ") "
-        + rowString, e);
     }
-    return true; // give me more
+  }
+
+  private void forwardBatch(boolean resetValueColumnsOnly) throws HiveException {
+    reducer.process(batch, 0);
+
+    if (resetValueColumnsOnly) {
+      // Reset just the value columns and value buffer.
+      for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
+        // Note that reset also resets the data buffer for bytes column vectors.
+        batch.cols[i].reset();
+      }
+      batch.size = 0;
+    } else {
+      // Reset key and value columns; and batch.size
+      batch.reset();
+    }
+
+    batchBytes = 0;
+    if (LOG.isInfoEnabled()) {
+      logMemoryInfo();
+    }
   }
 
   private Object deserializeValue(BytesWritable valueWritable, byte tag) throws HiveException {
@@ -435,10 +579,19 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     }
 
     try {
-      if (groupKey != null) {
-        // If a operator wants to do some work at the end of a group
-        LOG.trace("End Group");
-        reducer.endGroup();
+      if (vectorized) {
+        if (batch.size > 0) {
+          forwardBatch(/* resetValueColumnsOnly */ false);
+          if (handleGroupKey) {
+            reducer.endGroup();
+          }
+        }
+      } else {
+        if (groupKey != null) {
+          // If a operator wants to do some work at the end of a group
+          LOG.trace("End Group");
+          reducer.endGroup();
+        }
       }
       if (LOG.isInfoEnabled()) {
         logCloseInfo();
@@ -471,5 +624,13 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   @Override
   public boolean getDone() {
     return reducer.getDone();
+  }
+
+  public static String displayBytes(byte[] bytes, int start, int length) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < start + length; i++) {
+      sb.append(String.format("\\%03d", (int) (bytes[i] & 0xff)));
+    }
+    return sb.toString();
   }
 }

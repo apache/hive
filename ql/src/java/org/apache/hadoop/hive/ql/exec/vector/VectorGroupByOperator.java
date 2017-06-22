@@ -947,7 +947,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
       for (int i = 0; i < aggregators.length; ++i) {
         aggregators[i].init(conf.getAggregators().get(i));
-        objectInspectors.add(aggregators[i].getOutputObjectInspector());
+        ObjectInspector objInsp = aggregators[i].getOutputObjectInspector();
+        Preconditions.checkState(objInsp != null);
+        objectInspectors.add(objInsp);
       }
 
       keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);

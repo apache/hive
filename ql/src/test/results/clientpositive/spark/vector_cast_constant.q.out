@@ -144,13 +144,14 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: avg(50), avg(50.0), avg(50)
                       Group By Vectorization:
-                          aggregators: VectorUDAFAvgLong(ConstantVectorExpression(val 50) -> 11:long) -> struct<count:bigint,sum:double>, VectorUDAFAvgDouble(ConstantVectorExpression(val 50.0) -> 12:double) -> struct<count:bigint,sum:double>, VectorUDAFAvgDecimal(ConstantVectorExpression(val 50) -> 13:decimal(10,0)) -> struct<count:bigint,sum:decimal(20,0)>
+                          aggregators: VectorUDAFAvgLong(ConstantVectorExpression(val 50) -> 11:long) -> struct<count:bigint,sum:double,input:bigint>, VectorUDAFAvgDouble(ConstantVectorExpression(val 50.0) -> 12:double) -> struct<count:bigint,sum:double,input:double>, VectorUDAFAvgDecimal(ConstantVectorExpression(val 50) -> 13:decimal(10,0)) -> struct<count:bigint,sum:decimal(20,0),input:decimal(20,0)>
                           className: VectorGroupByOperator
-                          vectorOutput: false
+                          groupByMode: HASH
+                          vectorOutput: true
                           keyExpressions: col 2
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0, 1, 2]
-                          vectorOutputConditionsNotMet: Vector output of VectorUDAFAvgLong(ConstantVectorExpression(val 50) -> 11:long) -> struct<count:bigint,sum:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFAvgDouble(ConstantVectorExpression(val 50.0) -> 12:double) -> struct<count:bigint,sum:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFAvgDecimal(ConstantVectorExpression(val 50) -> 13:decimal(10,0)) -> struct<count:bigint,sum:decimal(20,0)> output type STRUCT requires PRIMITIVE IS false
                       keys: _col0 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -159,6 +160,10 @@ STAGE PLANS:
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: struct<count:bigint,sum:double,input:double>), _col3 (type: struct<count:bigint,sum:decimal(12,0),input:decimal(10,0)>)
@@ -166,20 +171,32 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: false
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function UDF avg parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,input:int> of Column[VALUE._col0] not supported
-                vectorized: false
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: avg(VALUE._col0), avg(VALUE._col1), avg(VALUE._col2)
+                Group By Vectorization:
+                    aggregators: VectorUDAFAvgFinal(col 1) -> double, VectorUDAFAvgFinal(col 2) -> double, VectorUDAFAvgDecimalFinal(col 3) -> decimal(16,4)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumns: [0, 1, 2]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3
@@ -187,6 +204,10 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: decimal(14,4))

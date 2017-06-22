@@ -48,8 +48,10 @@ STAGE PLANS:
               Group By Operator
                 aggregations: sum(_col1)
                 Group By Vectorization:
+                    groupByMode: HASH
                     vectorOutput: false
                     native: false
+                    vectorProcessingMode: NONE
                     projectedOutputColumns: null
                 keys: _col0 (type: string)
                 mode: hash
@@ -65,8 +67,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: mergepartial
@@ -205,9 +209,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFSumLong(col 4) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: [0]
                 keys: _col0 (type: string)
                 mode: hash
@@ -241,8 +247,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: sum(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: mergepartial

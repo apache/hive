@@ -259,16 +259,18 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     private DecimalTypeInfo deriveResultDecimalTypeInfo() {
-      int prec = inputOI.precision();
-      int scale = inputOI.scale();
+      return deriveResultDecimalTypeInfo(inputOI.precision(), inputOI.scale(), mode);
+    }
+
+    public static DecimalTypeInfo deriveResultDecimalTypeInfo(int precision, int scale, Mode mode) {
       if (mode == Mode.FINAL || mode == Mode.COMPLETE) {
-        int intPart = prec - scale;
+        int intPart = precision - scale;
         // The avg() result type has the same number of integer digits and 4 more decimal digits.
         scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
         return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
       } else {
         // For intermediate sum field
-        return GenericUDAFAverage.deriveSumFieldTypeInfo(prec, scale);
+        return GenericUDAFAverage.deriveSumFieldTypeInfo(precision, scale);
       }
     }
 

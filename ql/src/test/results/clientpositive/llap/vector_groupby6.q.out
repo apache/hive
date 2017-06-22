@@ -94,9 +94,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: PARTIAL1
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string)
                 mode: partial1
@@ -124,9 +126,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: FINAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: STREAMING
                     projectedOutputColumns: []
                 keys: KEY._col0 (type: string)
                 mode: final

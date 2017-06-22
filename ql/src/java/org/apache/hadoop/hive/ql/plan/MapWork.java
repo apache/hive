@@ -299,27 +299,6 @@ public class MapWork extends BaseWork {
         isLlapOn, canWrapAny, hasPathToPartInfo, hasLlap, hasNonLlap, hasAcid);
   }
 
-  private boolean checkVectorizerSupportedTypes(boolean hasLlap) {
-    for (Map.Entry<String, Operator<? extends OperatorDesc>> entry : aliasToWork.entrySet()) {
-      final String alias = entry.getKey();
-      Operator<? extends OperatorDesc> op = entry.getValue();
-      PartitionDesc partitionDesc = aliasToPartnInfo.get(alias);
-      if (op instanceof TableScanOperator && partitionDesc != null &&
-          partitionDesc.getTableDesc() != null) {
-        final TableScanOperator tsOp = (TableScanOperator) op;
-        final List<String> readColumnNames = tsOp.getNeededColumns();
-        final Properties props = partitionDesc.getTableDesc().getProperties();
-        final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
-            props.getProperty(serdeConstants.LIST_COLUMN_TYPES));
-        final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
-        final List<String> allColumnNames = Utilities.getColumnNames(props);
-        hasLlap = Utilities.checkVectorizerSupportedTypes(readColumnNames, allColumnNames,
-            allColumnTypes);
-      }
-    }
-    return hasLlap;
-  }
-
   private static String deriveLlapIoDescString(boolean isLlapOn, boolean canWrapAny,
       boolean hasPathToPartInfo, boolean hasLlap, boolean hasNonLlap, boolean hasAcid) {
     if (!isLlapOn) return null; // LLAP IO is off, don't output.
