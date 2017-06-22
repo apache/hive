@@ -55,6 +55,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -406,22 +407,24 @@ class SparkClientImpl implements SparkClient {
         String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
             "0.0.0.0");
         String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
-          List<String> kinitArgv = Lists.newLinkedList();
-          kinitArgv.add("kinit");
-          kinitArgv.add(principal);
-          kinitArgv.add("-k");
-          kinitArgv.add("-t");
-          kinitArgv.add(keyTabFile + ";");
-          kinitArgv.addAll(argv);
-          argv = kinitArgv;
-        } else {
-          // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
-          // support the possible delegation token renewal in Spark
-          argv.add("--principal");
-          argv.add(principal);
-          argv.add("--keytab");
-          argv.add(keyTabFile);
+        if (StringUtils.isNotBlank(principal) && StringUtils.isNotBlank(keyTabFile)) {
+          if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+            List<String> kinitArgv = Lists.newLinkedList();
+            kinitArgv.add("kinit");
+            kinitArgv.add(principal);
+            kinitArgv.add("-k");
+            kinitArgv.add("-t");
+            kinitArgv.add(keyTabFile + ";");
+            kinitArgv.addAll(argv);
+            argv = kinitArgv;
+          } else {
+            // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
+            // support the possible delegation token renewal in Spark
+            argv.add("--principal");
+            argv.add(principal);
+            argv.add("--keytab");
+            argv.add(keyTabFile);
+          }
         }
       }
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
