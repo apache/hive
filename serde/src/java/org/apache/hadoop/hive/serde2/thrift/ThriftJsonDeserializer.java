@@ -9,17 +9,8 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
-import org.apache.hadoop.hive.serde2.thrift.ThriftByteStreamTypedSerDe;
-import org.apache.hadoop.io.ByteWritable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.thrift.TBase;
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.protocol.TProtocolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +19,30 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 /**
+ * ThriftJsonDeserializer uses Jackson object mapper to deserialize data. It doesn't
+ * support data serialization.
+ *
+ * It can deserialize the data using Jackson and extracts groups as columns.
+ *
+ * In deserialization stage, if a json record does not match the regex, then all columns
+ * in the record will be NULL. If a record matches the regex but has less than
+ * expected groups, the missing groups will be NULL. If a record matches the Contract class
+ * but has more than expected groups, the additional groups are just ignored.
+ *
+ *
+ *
+ * Usage :
+ * SET ROW FORMAT SERDE  'org.apache.hadoop.hive.serde2.thrift.ThriftJsonDeserializer'
+ *
+ * SET SERDEPROPERTIES (
+ 'serialization.class'='contract class',
+ 'serialization.format'='org.apache.thrift.protocol.TSimpleJSONProtocol'
+ - To get the schema for tables.
+ )
+ *
  * Created by bala on 23/6/17.
  */
+
 public class ThriftJsonDeserializer extends AbstractSerDe {
 
     public static final Logger LOG = LoggerFactory.getLogger(RegexSerDe.class.getName());
@@ -39,12 +52,12 @@ public class ThriftJsonDeserializer extends AbstractSerDe {
     @Override
     public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
         // We can get the table definition from tbl.
-
         // Read the configuration parameters
         try {
             String className = tbl
                     .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_CLASS);
             recordClass = conf.getClassByName(className);
+            // Initializing the Jackson object mapper.
             objectMapper = new ObjectMapper();
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,11 +92,8 @@ public class ThriftJsonDeserializer extends AbstractSerDe {
         try {
             BytesWritable rowText = (BytesWritable) blob;
             mapOutput = objectMapper.readValue(rowText.getBytes(), recordClass);
-        } catch(Exception e) {
-            e.printStackTrace();
-            LOG.info(e.getMessage());
-            LOG.info(e.toString());
-            LOG.info(e.getStackTrace().toString());
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
         }
         return mapOutput;
     }
