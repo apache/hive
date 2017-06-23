@@ -68,6 +68,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
 import org.joda.time.Period;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +77,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.metamx.common.lifecycle.Lifecycle;
+import com.metamx.common.parsers.ParseException;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.HttpClientConfig;
 import com.metamx.http.client.HttpClientInit;
@@ -86,6 +88,8 @@ import io.druid.query.Query;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.PostAggregator;
 import io.druid.query.dimension.DimensionSpec;
+import io.druid.query.dimension.ExtractionDimensionSpec;
+import io.druid.query.extraction.TimeFormatExtractionFn;
 import io.druid.query.groupby.GroupByQuery;
 import io.druid.query.metadata.metadata.ColumnAnalysis;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
@@ -410,7 +414,7 @@ public class DruidSerDe extends AbstractSerDe {
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
       columnNames.add(ds.getOutputName());
-      columnTypes.add(TypeInfoFactory.stringTypeInfo);
+      columnTypes.add(DruidSerDeUtils.extractTypeFromDimension(ds));
     }
     // Aggregator columns
     for (AggregatorFactory af : query.getAggregatorSpecs()) {

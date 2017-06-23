@@ -72,7 +72,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import io.druid.data.input.Row;
-import io.druid.jackson.DefaultObjectMapper;
 import io.druid.query.Query;
 import io.druid.query.Result;
 import io.druid.query.groupby.GroupByQuery;
@@ -699,9 +698,12 @@ public class TestDruidSerDe {
     field1.setAccessible(true);
     field1.set(reader, query);
     if (reader instanceof DruidGroupByQueryRecordReader) {
-      Method method1 = DruidGroupByQueryRecordReader.class.getDeclaredMethod("initExtractors");
+      Method method1 = DruidGroupByQueryRecordReader.class.getDeclaredMethod("initDimensionTypes");
       method1.setAccessible(true);
       method1.invoke(reader);
+      Method method2 = DruidGroupByQueryRecordReader.class.getDeclaredMethod("initExtractors");
+      method2.setAccessible(true);
+      method2.invoke(reader);
     }
     Field field2 = DruidQueryRecordReader.class.getDeclaredField("results");
     field2.setAccessible(true);
