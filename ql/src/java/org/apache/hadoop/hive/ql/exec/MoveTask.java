@@ -94,7 +94,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       FileSystem fs = sourcePath.getFileSystem(conf);
       if (isDfsDir) {
-        moveFileInDfs (sourcePath, targetPath, fs);
+        moveFileInDfs (sourcePath, targetPath, conf);
       } else {
         // This is a local file
         FileSystem dstFs = FileSystem.getLocal(conf);
@@ -106,21 +106,36 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private void moveFileInDfs (Path sourcePath, Path targetPath, FileSystem fs)
+  private void moveFileInDfs (Path sourcePath, Path targetPath, HiveConf conf)
       throws HiveException, IOException {
+
+    final FileSystem srcFs, tgtFs;
+    try {
+      tgtFs = targetPath.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error("Failed to get dest fs", e);
+      throw new HiveException(e.getMessage(), e);
+    }
+    try {
+      srcFs = sourcePath.getFileSystem(conf);
+    } catch (IOException e) {
+      LOG.error("Failed to get src fs", e);
+      throw new HiveException(e.getMessage(), e);
+    }
+
     // if source exists, rename. Otherwise, create a empty directory
-    if (fs.exists(sourcePath)) {
+    if (srcFs.exists(sourcePath)) {
       Path deletePath = null;
       // If it multiple level of folder are there fs.rename is failing so first
       // create the targetpath.getParent() if it not exist
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
-        deletePath = createTargetPath(targetPath, fs);
+        deletePath = createTargetPath(targetPath, tgtFs);
       }
       Hive.clearDestForSubDirSrc(conf, targetPath, sourcePath, false);
       if (!Hive.moveFile(conf, sourcePath, targetPath, true, false)) {
         try {
           if (deletePath != null) {
-            fs.delete(deletePath, true);
+            tgtFs.delete(deletePath, true);
           }
         } catch (IOException e) {
           LOG.info("Unable to delete the path created for facilitating rename"
@@ -129,7 +144,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         throw new HiveException("Unable to rename: " + sourcePath
             + " to: " + targetPath);
       }
-    } else if (!fs.mkdirs(targetPath)) {
+    } else if (!tgtFs.mkdirs(targetPath)) {
       throw new HiveException("Unable to make directory: " + targetPath);
     }
   }
