@@ -102,6 +102,16 @@ select func_name, func_type from funcs order by func_name, func_type limit 5;
 
 select constraint_name from key_constraints order by constraint_name limit 5;
 
+select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5;
+
+select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5;
+
+describe sys.tab_col_stats;
+
+explain select max(num_distincts) from sys.tab_col_stats;
+
+select max(num_distincts) from sys.tab_col_stats;
+
 use INFORMATION_SCHEMA;
 
 select count(*) from SCHEMATA;
@@ -115,9 +125,3 @@ select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretype
 select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10;
 
 select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME;
-
-describe sys.tab_col_stats;
-
-explain select max(num_distincts) from sys.tab_col_stats;
-
-select max(num_distincts) from sys.tab_col_stats;
