@@ -118,12 +118,12 @@ public class GenericJdbcDatabaseAccessorTest {
 
     int count = 0;
     while (iterator.hasNext()) {
-      Map<String, String> record = iterator.next();
+      Map<String, Object> record = iterator.next();
       count++;
 
       assertThat(record, is(notNullValue()));
       assertThat(record.size(), is(equalTo(7)));
-      assertThat(record.get("STRATEGY_ID"), is(equalTo(String.valueOf(count))));
+      assertThat(record.get("STRATEGY_ID"), is(equalTo(count)));
     }
 
     assertThat(count, is(equalTo(2)));
@@ -141,12 +141,12 @@ public class GenericJdbcDatabaseAccessorTest {
 
     int count = 0;
     while (iterator.hasNext()) {
-      Map<String, String> record = iterator.next();
+      Map<String, Object> record = iterator.next();
       count++;
 
       assertThat(record, is(notNullValue()));
       assertThat(record.size(), is(equalTo(7)));
-      assertThat(record.get("STRATEGY_ID"), is(equalTo(String.valueOf(count + 2))));
+      assertThat(record.get("STRATEGY_ID"), is(equalTo(count + 2)));
     }
 
     assertThat(count, is(equalTo(2)));

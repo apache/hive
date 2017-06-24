@@ -1,7 +1,7 @@
 PREHOOK: query: CREATE EXTERNAL TABLE tables
 (
-id int,
-db_id int,
+id bigint,
+db_id bigint,
 name STRING,
 type STRING,
 #### A masked pattern was here ####
@@ -17,8 +17,8 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@tables
 POSTHOOK: query: CREATE EXTERNAL TABLE tables
 (
-id int,
-db_id int,
+id bigint,
+db_id bigint,
 name STRING,
 type STRING,
 #### A masked pattern was here ####
@@ -34,7 +34,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tables
 PREHOOK: query: CREATE EXTERNAL TABLE dbs
 (
-DB_ID int,
+DB_ID bigint,
 NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -47,7 +47,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@dbs
 POSTHOOK: query: CREATE EXTERNAL TABLE dbs
 (
-DB_ID int,
+DB_ID bigint,
 NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -276,8 +276,8 @@ PREHOOK: Input: default@tables
 POSTHOOK: query: describe tables
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tables
-id                  	string              	from deserializer   
-db_id               	string              	from deserializer   
+id                  	bigint              	from deserializer   
+db_id               	bigint              	from deserializer   
 name                	string              	from deserializer   
 type                	string              	from deserializer   
 #### A masked pattern was here ####

@@ -23,8 +23,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
@@ -48,7 +51,7 @@ public class JdbcSerDe extends AbstractSerDe {
   private int numColumns;
   private String[] hiveColumnTypeArray;
   private List<String> columnNames;
-  private List<String> row;
+  private List<Object> row;
 
 
   /*
@@ -83,13 +86,15 @@ public class JdbcSerDe extends AbstractSerDe {
 
         List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);
         for (int i = 0; i < numColumns; i++) {
-          fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+          PrimitiveTypeInfo ti = TypeInfoFactory.getPrimitiveTypeInfo(hiveColumnTypeArray[i]);
+          ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(ti);
+          fieldInspectors.add(oi);
         }
 
         objectInspector =
           ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnNames,
               fieldInspectors);
-        row = new ArrayList<String>(numColumns);
+        row = new ArrayList<Object>(numColumns);
       }
     }
     catch (Exception e) {
@@ -126,12 +131,7 @@ public class JdbcSerDe extends AbstractSerDe {
     for (int i = 0; i < numColumns; i++) {
       columnKey.set(columnNames.get(i));
       Writable value = input.get(columnKey);
-      if (value == null || value instanceof NullWritable) {
-        row.add(null);
-      }
-      else {
-        row.add(value.toString());
-      }
+      row.add(value instanceof NullWritable ? null : ((ObjectWritable)value).get());
     }
 
     return row;

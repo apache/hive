@@ -108,10 +108,16 @@ select count(*) from SCHEMATA;
 
 select * from TABLES order by TABLE_SCHEMA, TABLE_NAME;
 
-select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME limit 10;
+select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10;
 
 select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION ;
 
 select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10;
 
 select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME;
+
+describe sys.tab_col_stats;
+
+explain select max(num_distincts) from sys.tab_col_stats;
+
+select max(num_distincts) from sys.tab_col_stats;

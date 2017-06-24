@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * An iterator that allows iterating through a SQL resultset. Includes methods to clear up resources.
  */
-public class JdbcRecordIterator implements Iterator<Map<String, String>> {
+public class JdbcRecordIterator implements Iterator<Map<String, Object>> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcRecordIterator.class);
 
@@ -58,14 +58,14 @@ public class JdbcRecordIterator implements Iterator<Map<String, String>> {
 
 
   @Override
-  public Map<String, String> next() {
+  public Map<String, Object> next() {
     try {
       ResultSetMetaData metadata = rs.getMetaData();
       int numColumns = metadata.getColumnCount();
-      Map<String, String> record = new HashMap<String, String>(numColumns);
+      Map<String, Object> record = new HashMap<String, Object>(numColumns);
       for (int i = 0; i < numColumns; i++) {
         String key = metadata.getColumnName(i + 1);
-        String value = rs.getString(i + 1);
+        Object value = rs.getObject(i + 1);
         record.put(key, value);
       }
 
