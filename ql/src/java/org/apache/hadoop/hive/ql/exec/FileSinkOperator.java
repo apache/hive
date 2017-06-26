@@ -730,6 +730,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
       // only create bucket files only if no dynamic partitions,
       // buckets of dynamic partitions will be created for each newly created partition
+      //todo IOW integration. Full Acid uses the else if block to create Acid's RecordUpdater (HiveFileFormatUtils)
+      // and that will set writingBase(conf.getInsertOverwrite())
+      // If MM wants to create a new base for IOW (instead of delta dir), it should specify it here
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
         Path outPath = fsp.outPaths[filesIdx];
         if (conf.isMmTable()

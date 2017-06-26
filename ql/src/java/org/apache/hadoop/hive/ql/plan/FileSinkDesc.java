@@ -202,8 +202,11 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   /** getFinalDirName that takes into account MM, but not DP, LB or buckets. */
   public Path getMergeInputDirName() {
     Path root = getFinalDirName();
-    if (mmWriteId == null) return root;
-    return new Path(root, AcidUtils.deltaSubdir(txnId, txnId, 0));
+    if (isMmTable()) {
+      return new Path(root, AcidUtils.deltaSubdir(txnId, txnId, 0));
+    } else {
+      return root;
+    }
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

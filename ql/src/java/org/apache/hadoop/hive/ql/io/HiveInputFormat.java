@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configurable;
@@ -497,38 +498,35 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       finalPaths.add(dir);
       return;
     }
-    FileStatus[] files = fs.listStatus(dir); // TODO: batch?
+
+    // Tez require the use of recursive input dirs for union processing, so we have to look into the
+    // directory to find out
     LinkedList<Path> subdirs = new LinkedList<>();
-    for (FileStatus file : files) {
-      handleNonMmDirChild(file, validTxnList, subdirs, finalPaths);
-    }
+    subdirs.add(dir); // add itself as a starting point
     while (!subdirs.isEmpty()) {
-      Path subdir = subdirs.poll();
-      for (FileStatus file : fs.listStatus(subdir)) {
-        handleNonMmDirChild(file, validTxnList, subdirs, finalPaths);
+      Path currDir = subdirs.poll();
+      FileStatus[] files = fs.listStatus(currDir);
+      boolean hadAcidState = false;   // whether getAcidState has been called for currDir
+      for (FileStatus file : files) {
+        Path path = file.getPath();
+        Utilities.LOG14535.warn("Checking " + path + " for inputs");
+        if (!file.isDirectory()) {
+          Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
+        } else if (JavaUtils.extractTxnId(path) == null) {
+          subdirs.add(path);
+        } else {
+          if (!hadAcidState) {
+            AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
+            hadAcidState = true;
+            // todo for IOW, we also need to count in base dir, if any
+            for (AcidUtils.ParsedDelta delta : dirInfo.getCurrentDirectories()) {
+              Utilities.LOG14535.info("Adding input " + delta.getPath());
+              finalPaths.add(delta.getPath());
+            }
+          }
+        }
       }
     }
-  }
-
-  private static void handleNonMmDirChild(FileStatus file, ValidTxnList validTxnList,
-      LinkedList<Path> subdirs, List<Path> finalPaths) {
-    Path path = file.getPath();
-    Utilities.LOG14535.warn("Checking " + path + " for inputs");
-    if (!file.isDirectory()) {
-      Utilities.LOG14535.warn("Ignoring a file not in MM directory " + path);
-      return;
-    }
-    Long txnId = JavaUtils.extractTxnId(path);
-    if (txnId == null) {
-      subdirs.add(path);
-      return;
-    }
-    if (!validTxnList.isTxnValid(txnId)) {
-      Utilities.LOG14535.warn("Ignoring an uncommitted directory " + path);
-      return;
-    }
-    Utilities.LOG14535.info("Adding input " + path);
-    finalPaths.add(path);
   }
 
   Path[] getInputPaths(JobConf job) throws IOException {

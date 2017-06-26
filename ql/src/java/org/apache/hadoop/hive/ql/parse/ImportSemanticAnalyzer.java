@@ -302,15 +302,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tableExists = true;
     }
 
-    Long txnId = null;
+    Long txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
     int stmtId = 0;
-    if (table != null && MetaStoreUtils.isInsertOnlyTable(table.getParameters())) {
-      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-    } else if (table == null && isSourceMm) {
-      // We could import everything as is - directories and IDs, but that won't work with ACID
-      // txn ids in future. So, let's import everything into the new MM directory with ID == 0.
-      txnId = 0l;
-    }
     //todo due to the master merge, tblDesc is no longer CreateTableDesc, but ImportTableDesc
     /*
     if (txnId != null) {
@@ -363,7 +356,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
       Long txnId, int stmtId, boolean isSourceMm) {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    Path destPath = txnId == null ? x.getCtx().getExternalTmpPath(tgtPath)
+    Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtPath)
         : new Path(tgtPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
     Utilities.LOG14535.info("adding import work for table with source location: "
         + dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm "
@@ -453,9 +446,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tgtLocation = new Path(partSpec.getLocation());
-      Path destPath = txnId == null ? x.getCtx().getExternalTmpPath(tgtLocation)
+      Path destPath = !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtLocation)
           : new Path(tgtLocation, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
-      Path moveTaskSrc =  txnId == null ? destPath : tgtLocation;
+      Path moveTaskSrc =  !MetaStoreUtils.isInsertOnlyTable(table.getParameters()) ? destPath : tgtLocation;
       Utilities.LOG14535.info("adding import work for partition with source location: "
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
           + txnId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
@@ -788,7 +781,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (table.isPartitioned()) {
         x.getLOG().debug("table partitioned");
         Task<?> ict = createImportCommitTask(
-            table.getDbName(), table.getTableName(), txnId, stmtId, x.getConf());
+            table.getDbName(), table.getTableName(), txnId, stmtId, x.getConf(),
+            MetaStoreUtils.isInsertOnlyTable(table.getParameters()));
 
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
@@ -824,7 +818,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (isPartitioned(tblDesc)) {
         Task<?> ict = createImportCommitTask(
-            tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
+            tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
+            MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           t.addDependentTask(addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc,
             replicationSpec, x, txnId, stmtId, isSourceMm, ict));
@@ -858,9 +853,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<?> createImportCommitTask(
-      String dbName, String tblName, Long txnId, int stmtId, HiveConf conf) {
+      String dbName, String tblName, Long txnId, int stmtId, HiveConf conf, boolean isMmTable) {
     @SuppressWarnings("unchecked")
-    Task<ImportCommitWork> ict = (txnId == null) ? null : TaskFactory.get(
+    Task<ImportCommitWork> ict = (!isMmTable) ? null : TaskFactory.get(
         new ImportCommitWork(dbName, tblName, txnId, stmtId), conf);
     return ict;
   }
@@ -942,7 +937,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {
           Task<?> ict = createImportCommitTask(
-              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
+              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
+              MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
             addPartitionDesc.setReplicationSpec(replicationSpec);
             t.addDependentTask(
@@ -970,7 +966,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
           Task<?> ict = replicationSpec.isMetadataOnly() ? null : createImportCommitTask(
-              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf());
+              tblDesc.getDatabaseName(), tblDesc.getTableName(), txnId, stmtId, x.getConf(),
+              MetaStoreUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
