@@ -197,7 +197,7 @@ public class ParquetRecordReaderBase {
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
     if (p != null) {
       // Filter may have sensitive information. Do not send to debug.
-      LOG.debug("PARQUET predicate push down generated.");
+      LOG.debug("PARQUET predicate push down generated. Predicates = [" + p + "]");
       ParquetInputFormat.setFilterPredicate(conf, p);
       return FilterCompat.get(p);
     } else {

@@ -66,14 +66,15 @@ public class ParquetFilterPredicateConverter {
     switch (root.getOperator()) {
       case OR:
         for(ExpressionTree child: root.getChildren()) {
+          FilterPredicate childPredicate = translate(child, leaves, columns, schema);
+          if (childPredicate == null) {
+            return null;
+          }
+
           if (p == null) {
-            p = translate(child, leaves, columns, schema);
+            p = childPredicate;
           } else {
-            FilterPredicate right = translate(child, leaves, columns, schema);
-            // constant means no filter, ignore it when it is null
-            if(right != null){
-              p = FilterApi.or(p, right);
-            }
+            p = FilterApi.or(p, childPredicate);
           }
         }
         return p;
