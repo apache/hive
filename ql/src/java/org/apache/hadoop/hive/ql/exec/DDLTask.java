@@ -3829,6 +3829,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS, alterTbl.getOldName());
         }
       }
+
+      boolean partitioned = tbl.isPartitioned();
+      boolean droppingColumns = alterTbl.getNewCols().size() < sd.getCols().size();
+      if (ParquetHiveSerDe.isParquetTable(tbl) &&
+          isSchemaEvolutionEnabled(tbl) &&
+          !alterTbl.getIsCascade() &&
+          droppingColumns && partitioned) {
+        LOG.warn("Cannot drop columns from a partitioned parquet table without the CASCADE option");
+        throw new HiveException(ErrorMsg.REPLACE_CANNOT_DROP_COLUMNS,
+            alterTbl.getOldName());
+      }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       if (StatsSetupConst.USER.equals(environmentContext.getProperties()
