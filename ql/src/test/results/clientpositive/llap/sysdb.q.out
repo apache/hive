@@ -130,6 +130,10 @@ default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: DROP DATABASE IF EXISTS SYS
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS
+POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE SYS
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:SYS
@@ -2183,6 +2187,10 @@ POSTHOOK: Lineage: PARTITION_STATS_VIEW.part_id SIMPLE [(partition_params)partit
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.raw_data_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.total_size EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: PARTITION_STATS_VIEW.transient_last_ddl_time EXPRESSION [(partition_params)partition_params.FieldSchema(name:param_key, type:string, comment:from deserializer), (partition_params)partition_params.FieldSchema(name:param_value, type:string, comment:from deserializer), ]
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:INFORMATION_SCHEMA
