@@ -312,10 +312,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: hbase_pushdown
-            filterExpr: ((key < '80') and (key > '90')) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (value like '%90%') (type: boolean)
+              predicate: false (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

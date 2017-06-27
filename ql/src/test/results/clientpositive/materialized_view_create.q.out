@@ -164,3 +164,43 @@ key	value
 numFiles	1
 totalSize	710
 #### A masked pattern was here ####
+PREHOOK: query: drop materialized view cmv_mat_view
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view
+PREHOOK: Output: default@cmv_mat_view
+POSTHOOK: query: drop materialized view cmv_mat_view
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view
+PREHOOK: query: drop materialized view cmv_mat_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Output: default@cmv_mat_view2
+POSTHOOK: query: drop materialized view cmv_mat_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2
+PREHOOK: query: drop materialized view cmv_mat_view3
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view3
+PREHOOK: Output: default@cmv_mat_view3
+POSTHOOK: query: drop materialized view cmv_mat_view3
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view3
+POSTHOOK: Output: default@cmv_mat_view3
+PREHOOK: query: drop materialized view cmv_mat_view4
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view4
+PREHOOK: Output: default@cmv_mat_view4
+POSTHOOK: query: drop materialized view cmv_mat_view4
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view4
+POSTHOOK: Output: default@cmv_mat_view4
+PREHOOK: query: drop materialized view cmv_mat_view5
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view5
+PREHOOK: Output: default@cmv_mat_view5
+POSTHOOK: query: drop materialized view cmv_mat_view5
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view5
+POSTHOOK: Output: default@cmv_mat_view5

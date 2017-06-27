@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.calcite.avatica.util.DateTimeUtils;
 import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.RelOptCluster;
@@ -50,7 +49,9 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
+import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -99,8 +100,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -659,40 +658,29 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-        // The Calcite literal is in GMT, this will be converted back to JVM locale 
-        // by ASTBuilder.literal during Calcite->Hive plan conversion
-        final Calendar cal = Calendar.getInstance(DateTimeUtils.GMT_ZONE, Locale.getDefault());
-        cal.setTime((Date) value);
-        calciteLiteral = rexBuilder.makeDateLiteral(cal);
-        break;
-      case TIMESTAMP:
-        // The Calcite literal is in GMT, this will be converted back to JVM locale 
-        // by ASTBuilder.literal during Calcite->Hive plan conversion
-        final Calendar calt = Calendar.getInstance(DateTimeUtils.GMT_ZONE, Locale.getDefault());
-        if (value instanceof Calendar) {
-          final Calendar c = (Calendar) value;
-          long timeMs = c.getTimeInMillis();
-          calt.setTimeInMillis(timeMs);
-        } else {
-          final Timestamp ts = (Timestamp) value;
-          // CALCITE-1690
-          // Calcite cannot represent TIMESTAMP literals with precision higher than 3
-          if (ts.getNanos() % 1000000 != 0) {
-            throw new CalciteSemanticException(
-              "High Precision Timestamp: " + String.valueOf(ts),
-              UnsupportedFeature.HighPrecissionTimestamp);
-          }
-          calt.setTimeInMillis(ts.getTime());
-        }
-        // Must call makeLiteral, not makeTimestampLiteral 
-        // to have the RexBuilder.roundTime logic kick in
-        calciteLiteral = rexBuilder.makeLiteral(
-          calt,
-          rexBuilder.getTypeFactory().createSqlType(
-            SqlTypeName.TIMESTAMP,
-            rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP)),
-          false);
-        break;
+      final Calendar cal = Calendar.getInstance(Locale.getDefault());
+      cal.setTime((Date) value);
+      calciteLiteral = rexBuilder.makeDateLiteral(DateString.fromCalendarFields(cal));
+      break;
+    case TIMESTAMP:
+      final TimestampString tsString;
+      if (value instanceof Calendar) {
+        tsString = TimestampString.fromCalendarFields((Calendar) value);
+      } else {
+        final Timestamp ts = (Timestamp) value;
+        final Calendar calt = Calendar.getInstance(Locale.getDefault());
+        calt.setTimeInMillis(ts.getTime());
+        tsString = TimestampString.fromCalendarFields(calt).withNanos(ts.getNanos());
+      }
+      // Must call makeLiteral, not makeTimestampLiteral
+      // to have the RexBuilder.roundTime logic kick in
+      calciteLiteral = rexBuilder.makeLiteral(
+        tsString,
+        rexBuilder.getTypeFactory().createSqlType(
+          SqlTypeName.TIMESTAMP,
+          rexBuilder.getTypeFactory().getTypeSystem().getDefaultPrecision(SqlTypeName.TIMESTAMP)),
+        false);
+      break;
     case INTERVAL_YEAR_MONTH:
       // Calcite year-month literal value is months as BigDecimal
       BigDecimal totalMonths = BigDecimal.valueOf(((HiveIntervalYearMonth) value).getTotalMonths());

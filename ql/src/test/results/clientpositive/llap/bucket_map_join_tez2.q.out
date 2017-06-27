@@ -343,12 +343,12 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 1) and (key > 2)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 2) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -358,10 +358,10 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 2
-                        Statistics: Num rows: 60 Data size: 1126 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 182 Data size: 3400 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 60 Data size: 1126 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 182 Data size: 3400 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -374,17 +374,17 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 2) and (key > 1)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 2) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -449,17 +449,17 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 2) and (key > 1)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 2) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -493,17 +493,17 @@ STAGE PLANS:
                   alias: tab_part
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key > 1) and (key > 2)) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key > 2) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 55 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 166 Data size: 3091 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 2 

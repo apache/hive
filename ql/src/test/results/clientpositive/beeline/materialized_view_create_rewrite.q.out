@@ -320,3 +320,11 @@ POSTHOOK: Input: default@cmv_basetable
 #### A masked pattern was here ####
 3	9.80	3	978.76
 3	978.76	3	978.76
+PREHOOK: query: drop materialized view cmv_mat_view
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@cmv_mat_view
+PREHOOK: Output: default@cmv_mat_view
+POSTHOOK: query: drop materialized view cmv_mat_view
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view
