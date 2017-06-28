@@ -239,18 +239,8 @@ public class TestNanoTimeUtils {
     NanoTimeUtils.validateTimeZone("Europe/Budapest");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = IllegalStateException.class)
   public void testTimeZoneValidationWithIncorrectZoneId() {
     NanoTimeUtils.validateTimeZone("UCC");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testTimeZoneValidationWithMissingZoneId() {
-    NanoTimeUtils.validateTimeZone(null);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testTimeZoneValidationWithEmptyZoneId() {
-    NanoTimeUtils.validateTimeZone("");
   }
 }

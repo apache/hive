@@ -69,7 +69,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
   static final String HIVE_DEBUG_RECURSIVE = "HIVE_DEBUG_RECURSIVE";
   static final String HIVE_MAIN_CLIENT_DEBUG_OPTS = "HIVE_MAIN_CLIENT_DEBUG_OPTS";
   static final String HIVE_CHILD_CLIENT_DEBUG_OPTS = "HIVE_CHILD_CLIENT_DEBUG_OPTS";
-  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id", "user.timezone"};
+  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
 
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
