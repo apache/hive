@@ -47,7 +47,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.parquet.example.data.Group;
 import org.apache.parquet.example.data.simple.SimpleGroupFactory;
 import org.apache.parquet.hadoop.ParquetInputFormat;
-import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.hadoop.example.GroupWriteSupport;
@@ -223,7 +222,7 @@ public class VectorizedColumnReaderTestBase {
     Job vectorJob = new Job(conf, "read vector");
     ParquetInputFormat.setInputPaths(vectorJob, file);
     ParquetInputFormat parquetInputFormat = new ParquetInputFormat(GroupReadSupport.class);
-    ParquetInputSplit split = (ParquetInputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
+    InputSplit split = (InputSplit) parquetInputFormat.getSplits(vectorJob).get(0);
     initialVectorizedRowBatchCtx(conf);
     return new VectorizedParquetRecordReader(split, new JobConf(conf));
   }
