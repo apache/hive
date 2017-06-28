@@ -87,7 +87,6 @@ class SparkClientImpl implements SparkClient {
 
   private final Map<String, String> conf;
   private final HiveConf hiveConf;
-  private final AtomicInteger childIdGenerator;
   private final Thread driverThread;
   private final Map<String, JobHandleImpl<?>> jobs;
   private final Rpc driverRpc;
@@ -97,7 +96,6 @@ class SparkClientImpl implements SparkClient {
   SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf) throws IOException, SparkException {
     this.conf = conf;
     this.hiveConf = hiveConf;
-    this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
     String clientId = UUID.randomUUID().toString();
@@ -484,10 +482,10 @@ class SparkClientImpl implements SparkClient {
       }
 
       final Process child = pb.start();
-      int childId = childIdGenerator.incrementAndGet();
+      String threadName = Thread.currentThread().getName();
       final List<String> childErrorLog = Collections.synchronizedList(new ArrayList<String>());
-      redirect("stdout-redir-" + childId, new Redirector(child.getInputStream()));
-      redirect("stderr-redir-" + childId, new Redirector(child.getErrorStream(), childErrorLog));
+      redirect("RemoteDriver-stdout-redir-" + threadName, new Redirector(child.getInputStream()));
+      redirect("RemoteDriver-stderr-redir-" + threadName, new Redirector(child.getErrorStream(), childErrorLog));
 
       runnable = new Runnable() {
         @Override
