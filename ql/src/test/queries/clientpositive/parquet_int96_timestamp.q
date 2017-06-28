@@ -1,7 +1,7 @@
 create table dummy (id int);
 insert into table dummy values (1);
 
-set hive.parquet.mr.int96.enable.utc.write.zone=true;
+set parquet.mr.int96.enable.utc.write.zone=true;
 set hive.parquet.timestamp.skip.conversion=false;
 
 -- read/write timestamps using UTC as default write zone
@@ -18,7 +18,7 @@ select * from timestamps;
 describe formatted timestamps;
 drop table timestamps;
 
-set hive.parquet.mr.int96.enable.utc.write.zone=false;
+set parquet.mr.int96.enable.utc.write.zone=false;
 
 -- read/write timestamps using local timezone
 create table timestamps (ts timestamp) stored as parquet;
