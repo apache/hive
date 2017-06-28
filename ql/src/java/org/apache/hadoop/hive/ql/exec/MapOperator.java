@@ -346,6 +346,9 @@ public class MapOperator extends AbstractMapOperator {
       }
 
       String tableName = conf.getPathToPartitionInfo().get(e.getKey()).getTableName();
+      if (tableNameToConf.containsKey(tableName)) {
+        continue;
+      }
       for (String alias: aliases) {
         Operator<?> rootOp = conf.getAliasToWork().get(alias);
         if (!(rootOp instanceof TableScanOperator)) {
