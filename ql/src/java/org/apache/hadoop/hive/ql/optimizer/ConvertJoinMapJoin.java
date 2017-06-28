@@ -888,19 +888,31 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
       // Found a semijoin branch.
-      for (Operator<?> parent : mapjoinOp.getParentOperators()) {
-        if (!(parent instanceof ReduceSinkOperator)) {
-          continue;
-        }
-
-        Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
-                TableScanOperator.class);
-        for (TableScanOperator parentTS : tsOps) {
-          // If the parent is same as the ts, then we have a cycle.
-          if (ts == parentTS) {
-            semiJoinMap.put(rs, ts);
-            break;
+      // There can be more than one semijoin branch coming from the parent
+      // GBY Operator of the RS Operator.
+      Operator<?> parentGB = op.getParentOperators().get(0);
+      for (Operator<?> childRS : parentGB.getChildOperators()) {
+        // Get the RS and TS for this branch
+        rs = (ReduceSinkOperator) childRS;
+        ts = parseContext.getRsToSemiJoinBranchInfo().get(rs).getTsOp();
+        assert ts != null;
+        for (Operator<?> parent : mapjoinOp.getParentOperators()) {
+          if (!(parent instanceof ReduceSinkOperator)) {
+            continue;
           }
+
+          Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
+                  TableScanOperator.class);
+          boolean found = false;
+          for (TableScanOperator parentTS : tsOps) {
+            // If the parent is same as the ts, then we have a cycle.
+            if (ts == parentTS) {
+              semiJoinMap.put(rs, ts);
+              found = true;
+              break;
+            }
+          }
+          if (found) break;
         }
       }
     }
