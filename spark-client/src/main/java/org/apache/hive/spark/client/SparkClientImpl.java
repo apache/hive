@@ -107,19 +107,25 @@ class SparkClientImpl implements SparkClient {
       // The RPC server will take care of timeouts here.
       this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
     } catch (Throwable e) {
+      String errorMsg = null;
       if (e.getCause() instanceof TimeoutException) {
-        LOG.error("Timed out waiting for client to connect.\nPossible reasons include network " +
+        errorMsg = "Timed out waiting for client to connect.\nPossible reasons include network " +
             "issues, errors in remote driver or the cluster has no available resources, etc." +
-            "\nPlease check YARN or Spark driver's logs for further information.", e);
+            "\nPlease check YARN or Spark driver's logs for further information.";
+      } else if (e.getCause() instanceof InterruptedException) {
+        errorMsg = "Interruption occurred while waiting for client to connect.\nPossibly the Spark session is closed " +
+            "such as in case of query cancellation." +
+            "\nPlease refer to HiveServer2 logs for further information.";
       } else {
-        LOG.error("Error while waiting for client to connect.", e);
+        errorMsg = "Error while waiting for client to connect.";
       }
+      LOG.error(errorMsg, e);
       driverThread.interrupt();
       try {
         driverThread.join();
       } catch (InterruptedException ie) {
         // Give up.
-        LOG.debug("Interrupted before driver thread was finished.");
+        LOG.warn("Interrupted before driver thread was finished.", ie);
       }
       throw Throwables.propagate(e);
     }

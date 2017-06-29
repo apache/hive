@@ -56,13 +56,18 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void open(HiveConf conf) throws HiveException {
+    LOG.info("Trying to open Spark session {}", sessionId);
     this.conf = conf;
     isOpen = true;
     try {
       hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf);
     } catch (Throwable e) {
-      throw new HiveException("Failed to create spark client.", e);
+      // It's possible that user session is closed while creating Spark client.
+      String msg = isOpen ? "Failed to create Spark client for Spark session " + sessionId :
+        "Spark Session " + sessionId + " is closed before Spark client is created";
+      throw new HiveException(msg, e);
     }
+    LOG.info("Spark session {} is successfully opened", sessionId);
   }
 
   @Override
@@ -121,10 +126,12 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void close() {
+    LOG.info("Trying to close Spark session {}", sessionId);
     isOpen = false;
     if (hiveSparkClient != null) {
       try {
         hiveSparkClient.close();
+        LOG.info("Spark session {} is successfully closed", sessionId);
         cleanScratchDir();
       } catch (IOException e) {
         LOG.error("Failed to close spark session (" + sessionId + ").", e);
