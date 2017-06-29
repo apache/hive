@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -145,16 +146,21 @@ public class VectorizedRowBatchCtx {
 
   public static void getPartitionValues(VectorizedRowBatchCtx vrbCtx, Configuration hiveConf,
       FileSplit split, Object[] partitionValues) throws IOException {
+    // TODO: this is invalid for SMB. Keep this for now for legacy reasons. See the other overload.
+    MapWork mapWork = Utilities.getMapWork(hiveConf);
+    getPartitionValues(vrbCtx, mapWork, split, partitionValues);
+  }
 
-    Map<Path, PartitionDesc> pathToPartitionInfo = Utilities
-        .getMapWork(hiveConf).getPathToPartitionInfo();
+  public static void getPartitionValues(VectorizedRowBatchCtx vrbCtx,
+      MapWork mapWork, FileSplit split, Object[] partitionValues)
+      throws IOException {
+    Map<Path, PartitionDesc> pathToPartitionInfo = mapWork.getPathToPartitionInfo();
 
     PartitionDesc partDesc = HiveFileFormatUtils
         .getPartitionDescFromPathRecursively(pathToPartitionInfo,
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
 
     getPartitionValues(vrbCtx, partDesc, partitionValues);
-
   }
 
   public static void getPartitionValues(VectorizedRowBatchCtx vrbCtx, PartitionDesc partDesc,
