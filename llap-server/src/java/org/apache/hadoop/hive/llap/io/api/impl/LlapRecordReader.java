@@ -25,8 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.ReadPipeline;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -45,8 +45,8 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -62,12 +62,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import com.google.common.collect.Lists;
+
 class LlapRecordReader
     implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapRecordReader.class);
 
   private final FileSplit split;
-  private final List<Integer> columnIds;
+  private List<Integer> columnIds;
   private final SearchArgument sarg;
   private final String[] columnNames;
   private final VectorizedRowBatchCtx rbCtx;
@@ -86,19 +88,34 @@ class LlapRecordReader
   private long firstReturnTime;
 
   private final JobConf jobConf;
-  private final boolean[] includedColumns;
   private final ReadPipeline rp;
   private final ExecutorService executor;
   private final int columnCount;
-
-  private SchemaEvolution evolution;
-
   private final boolean isAcidScan;
 
-  public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
+  /**
+   * Creates the record reader and checks the input-specific compatibility.
+   * @return The reader if the split can be read, null otherwise.
+   */
+  public static LlapRecordReader create(JobConf job, FileSplit split, List<Integer> includedCols,
       String hostName, ColumnVectorProducer cvp, ExecutorService executor,
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe, Reporter reporter)
           throws IOException, HiveException {
+    MapWork mapWork = findMapWork(job);
+    if (mapWork == null) return null; // No compatible MapWork.
+    LlapRecordReader rr = new LlapRecordReader(mapWork, job, split, includedCols, hostName,
+        cvp, executor, sourceInputFormat, sourceSerDe, reporter);
+    if (!rr.checkOrcSchemaEvolution()) {
+      rr.close();
+      return null;
+    }
+    return rr;
+  }
+
+  private LlapRecordReader(MapWork mapWork, JobConf job, FileSplit split,
+      List<Integer> includedCols, String hostName, ColumnVectorProducer cvp,
+      ExecutorService executor, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      Reporter reporter) throws IOException, HiveException {
     this.executor = executor;
     this.jobConf = job;
     this.split = split;
@@ -120,7 +137,12 @@ class LlapRecordReader
     this.counters = new QueryFragmentCounters(job, taskCounters);
     this.counters.setDesc(QueryFragmentCounters.Desc.MACHINE, hostName);
 
-    MapWork mapWork = Utilities.getMapWork(job);
+    isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
+        job, isAcidScan, Integer.MAX_VALUE);
+    this.columnIds = includedCols;
+    this.columnCount = columnIds.size();
+
     VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
     if (includedCols == null) {
@@ -130,35 +152,56 @@ class LlapRecordReader
         includedCols.add(i);
       }
     }
-    this.columnIds = includedCols;
-    this.columnCount = columnIds.size();
 
     int partitionColumnCount = rbCtx.getPartitionColumnCount();
     if (partitionColumnCount > 0) {
       partitionValues = new Object[partitionColumnCount];
-      VectorizedRowBatchCtx.getPartitionValues(rbCtx, job, split, partitionValues);
+      VectorizedRowBatchCtx.getPartitionValues(rbCtx, mapWork, split, partitionValues);
     } else {
       partitionValues = null;
     }
-
-    isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
-    TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
-        job, isAcidScan, Integer.MAX_VALUE);
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames,
         counters, schema, sourceInputFormat, sourceSerDe, reporter, job,
         mapWork.getPathToPartitionInfo());
-    evolution = rp.getSchemaEvolution();
-    includedColumns = rp.getIncludedColumns();
+  }
+
+  private static MapWork findMapWork(JobConf job) throws HiveException {
+    String inputName = job.get(Utilities.INPUT_NAME, null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Initializing for input " + inputName);
+    }
+    String prefixes = job.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
+    if (prefixes != null && !StringUtils.isBlank(prefixes)) {
+      // Currently SMB is broken, so we cannot check if it's  compatible with IO elevator.
+      // So, we don't use the below code that would get the correct MapWork. See HIVE-16985.
+      return null;
+    }
+
+    BaseWork work = null;
+    // HIVE-16985: try to find the fake merge work for SMB join, that is really another MapWork.
+    /*
+    if (inputName != null) {
+      if (prefixes == null ||
+          !Lists.newArrayList(prefixes.split(",")).contains(inputName)) {
+        inputName = null;
+      }
+    }
+    if (inputName != null) {
+      work = Utilities.getMergeWork(job, inputName);
+    }
+    */
+    if (work == null || !(work instanceof MapWork)) {
+      work = Utilities.getMapWork(job);
+    }
+    return (MapWork) work;
   }
 
   /**
    * Starts the data read pipeline
    */
-  public boolean init() {
-    if (!checkOrcSchemaEvolution()) return false;
-
+  public void start() {
     // perform the data read asynchronously
     if (executor instanceof StatsRecordingThreadPool) {
       // Every thread created by this thread pool will use the same handler
@@ -166,10 +209,10 @@ class LlapRecordReader
           new IOUncaughtExceptionHandler());
     }
     executor.submit(rp.getReadCallable());
-    return true;
   }
 
   private boolean checkOrcSchemaEvolution() {
+    SchemaEvolution evolution = rp.getSchemaEvolution();
     for (int i = 0; i < columnCount; ++i) {
       int projectedColId = columnIds == null ? i : columnIds.get(i);
       // Adjust file column index for ORC struct.
