@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
@@ -112,7 +113,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       destinationDbName = context.isDbNameEmpty() ? metadata.function.getDbName() : context.dbName;
     }
 
-    private CreateFunctionDesc build() {
+    private CreateFunctionDesc build() throws SemanticException {
       replCopyTasks.clear();
       PrimaryToReplicaResourceFunction conversionFunction =
           new PrimaryToReplicaResourceFunction(context, metadata, destinationDbName);
@@ -127,8 +128,12 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       String fullQualifiedFunctionName = FunctionUtils.qualifyFunctionName(
           metadata.function.getFunctionName(), destinationDbName
       );
+      // For bootstrap load, the create function should be always performed.
+      // Only for incremental load, need to validate if event is newer than the database.
+      ReplicationSpec replSpec = (context.dmd == null) ? null : context.eventOnlyReplicationSpec();
       return new CreateFunctionDesc(
-          fullQualifiedFunctionName, false, metadata.function.getClassName(), transformedUris
+              fullQualifiedFunctionName, false, metadata.function.getClassName(),
+              transformedUris, replSpec
       );
     }
   }

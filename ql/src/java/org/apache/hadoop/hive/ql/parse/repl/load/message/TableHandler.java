@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class TableHandler extends AbstractMessageHandler {
@@ -37,27 +36,18 @@ public class TableHandler extends AbstractMessageHandler {
       throw new SemanticException("Database name cannot be null for a table load");
     }
     try {
-      // TODO: why not have the below variables as static / inline seems to have no possibility of updates back here
-
-      // no location set on repl loads
-      boolean isLocationSet = false;
-      // all repl imports are non-external
-      boolean isExternalSet = false;
-      // bootstrap loads are not partition level
-      boolean isPartSpecSet = false;
-      // repl loads are not partition level
-      LinkedHashMap<String, String> parsedPartSpec = null;
-      // no location for repl imports
-      String parsedLocation = null;
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
 
       EximUtil.SemanticAnalyzerWrapperContext x =
           new EximUtil.SemanticAnalyzerWrapperContext(
               context.hiveConf, context.db, readEntitySet, writeEntitySet, importTasks, context.log,
               context.nestedContext);
-      ImportSemanticAnalyzer.prepareImport(isLocationSet, isExternalSet, isPartSpecSet,
-          (context.precursor != null), parsedLocation, context.tableName, context.dbName,
-          parsedPartSpec, context.location, x,
+
+      // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
+      // Also, REPL LOAD doesn't support external table and hence no location set as well.
+      ImportSemanticAnalyzer.prepareImport(false, false, false,
+          (context.precursor != null), null, context.tableName, context.dbName,
+          null, context.location, x,
           databasesUpdated, tablesUpdated);
 
       return importTasks;

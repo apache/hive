@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -131,6 +132,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   List<SQLForeignKey> foreignKeyCols;
   List<SQLUniqueConstraint> uniqueConstraintCols;
   List<SQLNotNullConstraint> notNullConstraintCols;
+  ReplicationSpec replicationSpec;
 
   public AlterTableDesc() {
   }
@@ -188,12 +190,17 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          old name of the table
    * @param newName
    *          new name of the table
+   * @param expectView
+   *          Flag to denote if current table can be a view
+   * @param replicationSpec
+   *          Replication specification with current event ID
    */
-  public AlterTableDesc(String oldName, String newName, boolean expectView) {
+  public AlterTableDesc(String oldName, String newName, boolean expectView, ReplicationSpec replicationSpec) {
     op = AlterTableTypes.RENAME;
     this.oldName = oldName;
     this.newName = newName;
     this.expectView = expectView;
+    this.replicationSpec = replicationSpec;
   }
 
   /**
@@ -214,6 +221,17 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @param alterType
    *          type of alter op
+   * @param replicationSpec
+   *          Replication specification with current event ID
+   */
+  public AlterTableDesc(AlterTableTypes alterType, ReplicationSpec replicationSpec) {
+    op = alterType;
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @param alterType
+   *          type of alter op
    */
   public AlterTableDesc(AlterTableTypes alterType) {
     this(alterType, null, false);
@@ -222,6 +240,10 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @param alterType
    *          type of alter op
+   * @param expectView
+   *          Flag to denote if current table can be a view
+   * @param partSpec
+   *          Partition specifier with map of key and values.
    */
   public AlterTableDesc(AlterTableTypes alterType, HashMap<String, String> partSpec, boolean expectView) {
     op = alterType;
@@ -858,4 +880,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.environmentContext = environmentContext;
   }
 
+  /**
+   * @return what kind of replication scope this alter is running under.
+   * This can result in a "ALTER IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec(){ return this.replicationSpec; }
 }

@@ -56,12 +56,4 @@ abstract class AbstractMessageHandler implements MessageHandler {
     return databasesUpdated;
   }
 
-  ReplicationSpec eventOnlyReplicationSpec(Context forContext) throws SemanticException {
-    String eventId = forContext.dmd.getEventTo().toString();
-    return replicationSpec(eventId, eventId);
-  }
-
-  private ReplicationSpec replicationSpec(String fromId, String toId) throws SemanticException {
-    return new ReplicationSpec(true, false, fromId, toId, false, true, false);
-  }
 }

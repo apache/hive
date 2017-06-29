@@ -22,6 +22,7 @@ import static org.apache.hadoop.util.StringUtils.stringifyException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -29,7 +30,6 @@ import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -77,6 +77,19 @@ public class FunctionTask extends Task<FunctionWork> {
         return createTemporaryFunction(createFunctionDesc);
       } else {
         try {
+          if (createFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    createFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            String funcName = qualifiedNameParts[1];
+            Map<String, String> dbProps = Hive.get().getDatabase(dbName).getParameters();
+            if (!createFunctionDesc.getReplicationSpec().allowEventReplacementInto(dbProps)) {
+              // If the database is newer than the create event, then noop it.
+              LOG.debug("FunctionTask: Create Function {} is skipped as database {} " +
+                        "is newer than update", funcName, dbName);
+              return 0;
+            }
+          }
           return createPermanentFunction(Hive.get(conf), createFunctionDesc);
         } catch (Exception e) {
           setException(e);
@@ -92,6 +105,19 @@ public class FunctionTask extends Task<FunctionWork> {
         return dropTemporaryFunction(dropFunctionDesc);
       } else {
         try {
+          if (dropFunctionDesc.getReplicationSpec().isInReplicationScope()) {
+            String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(
+                    dropFunctionDesc.getFunctionName());
+            String dbName = qualifiedNameParts[0];
+            String funcName = qualifiedNameParts[1];
+            Map<String, String> dbProps = Hive.get().getDatabase(dbName).getParameters();
+            if (!dropFunctionDesc.getReplicationSpec().allowEventReplacementInto(dbProps)) {
+              // If the database is newer than the drop event, then noop it.
+              LOG.debug("FunctionTask: Drop Function {} is skipped as database {} " +
+                        "is newer than update", funcName, dbName);
+              return 0;
+            }
+          }
           return dropPermanentFunction(Hive.get(conf), dropFunctionDesc);
         } catch (Exception e) {
           setException(e);

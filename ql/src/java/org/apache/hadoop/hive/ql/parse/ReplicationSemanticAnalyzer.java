@@ -668,11 +668,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         for (String tableName : tablesUpdated.keySet()){
           // weird - AlterTableDesc requires a HashMap to update props instead of a Map.
           HashMap<String,String> mapProp = new HashMap<String,String>();
-          mapProp.put(
-              ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-              tablesUpdated.get(tableName).toString());
+          String eventId = tablesUpdated.get(tableName).toString();
+
+          mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), eventId);
           AlterTableDesc alterTblDesc =  new AlterTableDesc(
-              AlterTableDesc.AlterTableTypes.ADDPROPS, null, false);
+              AlterTableDesc.AlterTableTypes.ADDPROPS, new ReplicationSpec(eventId, eventId));
           alterTblDesc.setProps(mapProp);
           alterTblDesc.setOldName(tableName);
           Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
@@ -682,10 +682,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         for (String dbName : dbsUpdated.keySet()){
           Map<String,String> mapProp = new HashMap<String,String>();
-          mapProp.put(
-              ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-              dbsUpdated.get(dbName).toString());
-          AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, mapProp);
+          String eventId = dbsUpdated.get(dbName).toString();
+
+          mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), eventId);
+          AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, mapProp, new ReplicationSpec(eventId, eventId));
           Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
               new DDLWork(inputs, outputs, alterDbDesc), conf);
           taskChainTail.addDependentTask(updateReplIdTask);
@@ -786,7 +786,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Task<? extends Serializable> dbRootTask = null;
       if (existEmptyDb(dbName)) {
-        AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, dbObj.getParameters());
+        AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, dbObj.getParameters(), null);
         dbRootTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
       } else {
         CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc();

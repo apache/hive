@@ -57,20 +57,21 @@ public class RenameTableHandler extends AbstractMessageHandler {
 
       String oldName = oldDbName + "." + msg.getTableObjBefore().getTableName();
       String newName = newDbName + "." + msg.getTableObjAfter().getTableName();
-      AlterTableDesc renameTableDesc = new AlterTableDesc(oldName, newName, false);
+      AlterTableDesc renameTableDesc = new AlterTableDesc(
+              oldName, newName, false, context.eventOnlyReplicationSpec());
       Task<DDLWork> renameTableTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf
-      );
-      context.log.debug(
-          "Added rename table task : {}:{}->{}", renameTableTask.getId(), oldName, newName
-      );
+          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
+      context.log.debug("Added rename table task : {}:{}->{}",
+                        renameTableTask.getId(), oldName, newName);
+
       // oldDbName and newDbName *will* be the same if we're here
       databasesUpdated.put(newDbName, context.dmd.getEventTo());
       tablesUpdated.remove(oldName);
       tablesUpdated.put(newName, context.dmd.getEventTo());
-      // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out tablesUpdated
-      // However, we explicitly don't support repl of that sort, and error out above if so. If that should
-      // ever change, this will need reworking.
+
+      // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out
+      // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above
+      // if so. If that should ever change, this will need reworking.
       return Collections.singletonList(renameTableTask);
     } catch (Exception e) {
       throw (e instanceof SemanticException)

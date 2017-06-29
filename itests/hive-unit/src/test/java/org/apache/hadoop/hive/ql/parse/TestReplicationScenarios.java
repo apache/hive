@@ -163,26 +163,54 @@ public class TestReplicationScenarios {
   }
 
  static class Tuple {
-    final String replicatedDbName;
-    final String lastReplicationId;
+    final String dumpLocation;
+    final String lastReplId;
 
-    Tuple(String replicatedDbName, String lastReplicationId) {
-      this.replicatedDbName = replicatedDbName;
-      this.lastReplicationId = lastReplicationId;
+    Tuple(String dumpLocation, String lastReplId) {
+      this.dumpLocation = dumpLocation;
+      this.lastReplId = lastReplId;
     }
   }
 
-  private Tuple loadAndVerify(String dbName) throws IOException {
+  private Tuple bootstrapLoadAndVerify(String dbName, String replDbName) throws IOException {
+    return incrementalLoadAndVerify(dbName, null, replDbName);
+  }
+
+  private Tuple incrementalLoadAndVerify(String dbName, String fromReplId, String replDbName) throws IOException {
+    Tuple dump = replDumpDb(dbName, fromReplId, null, null);
+    loadAndVerify(replDbName, dump.dumpLocation, dump.lastReplId);
+    return dump;
+  }
+
+  private Tuple dumpDbFromLastDump(String dbName, Tuple lastDump) throws IOException {
+    return replDumpDb(dbName, lastDump.lastReplId, null, null);
+  }
+
+  private Tuple replDumpDb(String dbName, String fromReplID, String toReplID, String limit) throws IOException {
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
+    String dumpCmd = "REPL DUMP " + dbName;
+    if (null != fromReplID) {
+      dumpCmd = dumpCmd + " FROM " + fromReplID;
+    }
+    if (null != toReplID) {
+      dumpCmd = dumpCmd + " TO " + toReplID;
+    }
+    if (null != limit) {
+      dumpCmd = dumpCmd + " LIMIT " + limit;
+    }
+    run(dumpCmd);
     String dumpLocation = getResult(0, 0);
-    String lastReplicationId = getResult(0, 1, true);
-    String replicatedDbName = dbName + "_replicated";
-    run("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    String lastReplId = getResult(0, 1, true);
+    LOG.info("Dumped to {} with id {} for command: {}", dumpLocation, lastReplId, dumpCmd);
+    return new Tuple(dumpLocation, lastReplId);
+  }
+
+  private void loadAndVerify(String replDbName, String dumpLocation, String lastReplId) throws IOException {
+    run("EXPLAIN REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'");
     printOutput();
-    run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
-    verifyRun("REPL STATUS " + replicatedDbName, lastReplicationId);
-    return new Tuple(replicatedDbName, lastReplicationId);
+    run("REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'");
+    verifyRun("REPL STATUS " + replDbName, lastReplId);
+    return;
   }
 
   /**
@@ -222,7 +250,8 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
 
-    String replicatedDbName = loadAndVerify(dbName).replicatedDbName;
+    String replicatedDbName = dbName + "_dupe";
+    bootstrapLoadAndVerify(dbName, replicatedDbName);
 
     verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data);
     verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1);
@@ -2066,6 +2095,194 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
 
     verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1);
+  }
+
+  @Test
+  public void testIncrementalRepeatEventOnExistingObject() throws IOException {
+    String testName = "incrementalRepeatEventOnExistingObject";
+    String dbName = createDB(testName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    // List to maintain the incremental dumps for each operation
+    List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
+
+    String[] empty = new String[] {};
+    String[] unptn_data = new String[] { "ten" };
+    String[] ptn_data_1 = new String[] { "fifteen" };
+    String[] ptn_data_2 = new String[] { "seventeen" };
+
+    // INSERT EVENT to unpartitioned table
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    Tuple replDump = dumpDbFromLastDump(dbName, bootstrapDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // ADD_PARTITION EVENT to partitioned table
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table on existing partition
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // TRUNCATE_PARTITION EVENT on partitioned table
+    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION (b=1)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // TRUNCATE_TABLE EVENT on unpartitioned table
+    run("TRUNCATE TABLE " + dbName + ".unptned");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // CREATE_TABLE EVENT with multiple partitions
+    run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".ptned");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // Replicate all the events happened so far
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty);
+    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+
+    // Load each incremental dump from the list. Each dump have only one operation.
+    for (Tuple currDump : incrementalDumpList) {
+      // Load the incremental dump and ensure it does nothing and lastReplID remains same
+      loadAndVerify(replDbName, currDump.dumpLocation, incrDump.lastReplId);
+
+      // Verify if the data are intact even after applying an applied event once again on existing objects
+      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty);
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty);
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty);
+      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+    }
+  }
+
+  @Test
+  public void testIncrementalRepeatEventOnMissingObject() throws IOException {
+    String testName = "incrementalRepeatEventOnMissingObject";
+    String dbName = createDB(testName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    // List to maintain the incremental dumps for each operation
+    List<Tuple> incrementalDumpList = new ArrayList<Tuple>();
+
+    String[] empty = new String[] {};
+    String[] unptn_data = new String[] { "ten" };
+    String[] ptn_data_1 = new String[] { "fifteen" };
+    String[] ptn_data_2 = new String[] { "seventeen" };
+
+    // INSERT EVENT to unpartitioned table
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    Tuple replDump = dumpDbFromLastDump(dbName, bootstrapDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // ADD_PARTITION EVENT to partitioned table
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table on existing partition
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // TRUNCATE_PARTITION EVENT on partitioned table
+    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION(b=1)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // TRUNCATE_TABLE EVENT on unpartitioned table
+    run("TRUNCATE TABLE " + dbName + ".unptned");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // CREATE_TABLE EVENT on partitioned table
+    run("CREATE TABLE " + dbName + ".ptned_tmp (a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
+    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=10) values('" + ptn_data_1[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
+    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=20) values('" + ptn_data_2[0] + "')");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // DROP_PARTITION EVENT to partitioned table
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // RENAME_PARTITION EVENT to partitioned table
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=20)");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // RENAME_TABLE EVENT to unpartitioned table
+    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_new");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // DROP_TABLE EVENT to partitioned table
+    run("DROP TABLE " + dbName + ".ptned_tmp");
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // Replicate all the events happened so far
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+
+    verifyIfTableNotExist(replDbName, "unptned");
+    verifyIfTableNotExist(replDbName, "ptned_tmp");
+    verifyIfTableExist(replDbName, "unptned_new");
+    verifyIfTableExist(replDbName, "ptned");
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")));
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")));
+    verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")));
+
+    // Load each incremental dump from the list. Each dump have only one operation.
+    for (Tuple currDump : incrementalDumpList) {
+      // Load the current incremental dump and ensure it does nothing and lastReplID remains same
+      loadAndVerify(replDbName, currDump.dumpLocation, incrDump.lastReplId);
+
+      // Verify if the data are intact even after applying an applied event once again on missing objects
+      verifyIfTableNotExist(replDbName, "unptned");
+      verifyIfTableNotExist(replDbName, "ptned_tmp");
+      verifyIfTableExist(replDbName, "unptned_new");
+      verifyIfTableExist(replDbName, "ptned");
+      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")));
+      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")));
+      verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")));
+    }
   }
 
   @Test

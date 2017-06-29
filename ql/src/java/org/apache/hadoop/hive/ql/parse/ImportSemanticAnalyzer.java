@@ -792,21 +792,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Task dr = null;
     WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
 
-    if ((table != null) && (isPartitioned(tblDesc) != table.isPartitioned())){
-      // If destination table exists, but is partitioned, and we think we're writing to an unpartitioned
-      // or if destination table exists, but is unpartitioned and we think we're writing to a partitioned
-      // table, then this can only happen because there are drops in the queue that are yet to be processed.
-      // So, we check the repl.last.id of the destination, and if it's newer, we no-op. If it's older, we
-      // drop and re-create.
-      if (replicationSpec.allowReplacementInto(table)){
-        dr = dropTableTask(table, x);
-        lockType = WriteEntity.WriteType.DDL_EXCLUSIVE;
-        table = null; // null it out so we go into the table re-create flow.
-      } else {
-        return; // noop out of here.
-      }
-    }
-
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
     // is a error condition. However, in the case of a REPL LOAD, it is possible that we are trying
     // to create tasks to create a table inside a db that as-of-now does not exist, but there is
@@ -818,6 +803,20 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tblDesc.getDatabaseName()));
       }
     }
+
+    if (table != null) {
+      if (!replicationSpec.allowReplacementInto(table.getParameters())) {
+        // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
+        return;
+      }
+    } else {
+      // If table doesn't exist, allow creating a new one only if the database state is older than the update.
+      if ((parentDb != null) && (!replicationSpec.allowReplacementInto(parentDb.getParameters()))) {
+        // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
+        return;
+      }
+    }
+
     if (tblDesc.getLocation() == null) {
       if (!waitOnPrecursor){
         tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName()).toString());
@@ -832,16 +831,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-     /* Note: In the following section, Metadata-only import handling logic is
-        interleaved with regular repl-import logic. The rule of thumb being
-        followed here is that MD-only imports are essentially ALTERs. They do
-        not load data, and should not be "creating" any metadata - they should
-        be replacing instead. The only place it makes sense for a MD-only import
-        to create is in the case of a table that's been dropped and recreated,
-        or in the case of an unpartitioned table. In all other cases, it should
-        behave like a noop or a pure MD alter.
-     */
-
+    /* Note: In the following section, Metadata-only import handling logic is
+       interleaved with regular repl-import logic. The rule of thumb being
+       followed here is that MD-only imports are essentially ALTERs. They do
+       not load data, and should not be "creating" any metadata - they should
+       be replacing instead. The only place it makes sense for a MD-only import
+       to create is in the case of a table that's been dropped and recreated,
+       or in the case of an unpartitioned table. In all other cases, it should
+       behave like a noop or a pure MD alter.
+    */
     if (table == null) {
       // Either we're dropping and re-creating, or the table didn't exist, and we're creating.
 
@@ -889,7 +887,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
-            if (replicationSpec.allowReplacementInto(ptn)){
+            if (replicationSpec.allowReplacementInto(ptn.getParameters())){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(
                     fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x));
@@ -915,7 +913,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         x.getLOG().debug("table non-partitioned");
-        if (!replicationSpec.allowReplacementInto(table)){
+        if (!replicationSpec.allowReplacementInto(table.getParameters())){
           return; // silently return, table is newer than our replacement.
         }
         if (!replicationSpec.isMetadataOnly()) {
