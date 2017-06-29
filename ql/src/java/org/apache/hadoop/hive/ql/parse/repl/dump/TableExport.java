@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -45,7 +45,7 @@ import java.util.Set;
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.toWriteEntity;
 
 public class TableExport {
-  private BaseSemanticAnalyzer.TableSpec tableSpec;
+  private TableSpec tableSpec;
   private final ReplicationSpec replicationSpec;
   private final Hive db;
   private final HiveConf conf;
@@ -53,7 +53,7 @@ public class TableExport {
   private final Paths paths;
   private final AuthEntities authEntities = new AuthEntities();
 
-  public TableExport(Paths paths, BaseSemanticAnalyzer.TableSpec tableSpec,
+  public TableExport(Paths paths, TableSpec tableSpec,
       ReplicationSpec replicationSpec, Hive db, HiveConf conf, Logger logger)
       throws SemanticException {
     this.tableSpec = (tableSpec != null
@@ -89,7 +89,7 @@ public class TableExport {
       long currentEventId = db.getMSC().getCurrentNotificationEventId().getEventId();
       replicationSpec.setCurrentReplicationState(String.valueOf(currentEventId));
       if (tableSpec.tableHandle.isPartitioned()) {
-        if (tableSpec.specType == BaseSemanticAnalyzer.TableSpec.SpecType.TABLE_ONLY) {
+        if (tableSpec.specType == TableSpec.SpecType.TABLE_ONLY) {
           // TABLE-ONLY, fetch partitions if regular export, don't if metadata-only
           if (replicationSpec.isMetadataOnly()) {
             return null;
