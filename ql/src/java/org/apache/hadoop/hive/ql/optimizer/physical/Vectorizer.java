@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
@@ -229,6 +231,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.base.Preconditions;
@@ -237,7 +240,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
-  static Pattern supportedDataTypesPattern;
+  private static final Pattern supportedDataTypesPattern;
 
   static {
     StringBuilder patternBuilder = new StringBuilder();
@@ -290,6 +293,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean isVectorizationComplexTypesEnabled;
   private boolean isVectorizationGroupByComplexTypesEnabled;
   private boolean isVectorizedRowIdentifierEnabled;
+  private Collection<Class<?>> rowDeserializeInputFormatExcludes;
 
   private boolean isSchemaEvolution;
 
@@ -877,7 +881,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           if (lastColumnTakesRest) {
 
             // If row mode will not catch this input file format, then not enabled.
-            if (useRowDeserialize) {
+            if (useRowDeserialize && canUseRowDeserializeFor(inputFileFormatClassName)) {
               enabledConditionsNotMetList.add(
                   inputFileFormatClassName + " " +
                   serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST + " must be disabled ");
@@ -907,18 +911,21 @@ public class Vectorizer implements PhysicalPlanResolver {
       // inspect-able Object[] row to a VectorizedRowBatch in the VectorMapOperator.
 
       if (useRowDeserialize) {
-
-        pd.setVectorPartitionDesc(
-            VectorPartitionDesc.createRowDeserialize(
-                inputFileFormatClassName,
-                Utilities.isInputFileFormatSelfDescribing(pd),
-                deserializerClassName));
-
-        enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
-        return true;
-
+        if (canUseRowDeserializeFor(inputFileFormatClassName)) {
+          pd.setVectorPartitionDesc(
+              VectorPartitionDesc.createRowDeserialize(
+                  inputFileFormatClassName,
+                  Utilities.isInputFileFormatSelfDescribing(pd),
+                  deserializerClassName));
+  
+          enabledConditionsMetSet.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname);
+          return true;
+        } else {
+          enabledConditionsNotMetList.add(ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE.varname
+              + " IS true AND " + ConfVars.HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES.varname
+              + " NOT CONTAINS " + inputFileFormatClassName);
+        }
       }
-
       if (isInputFileFormatVectorized) {
         Preconditions.checkState(!useVectorizedInputFileFormat);
         enabledConditionsNotMetList.add(HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
@@ -934,6 +941,21 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
  
       return false;
+    }
+
+    private boolean canUseRowDeserializeFor(String inputFileFormatClassName) {
+      Class<?> ifClass = null;
+      try {
+        ifClass = Class.forName(inputFileFormatClassName);
+      } catch (ClassNotFoundException e) {
+        LOG.warn("Cannot verify class for " + inputFileFormatClassName
+            + ", not using row deserialize", e);
+        return false;
+      }
+      for (Class<?> badClass : rowDeserializeInputFormatExcludes) {
+        if (badClass.isAssignableFrom(ifClass)) return false;
+      }
+      return true;
     }
 
     private ImmutablePair<Boolean, Boolean> validateInputFormatAndSchemaEvolution(MapWork mapWork, String alias,
@@ -1801,6 +1823,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     useRowDeserialize =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE);
+    if (useRowDeserialize) {
+      initRowDeserializeExcludeClasses();
+    }
+
     // TODO: we could also vectorize some formats based on hive.llap.io.encode.formats if LLAP IO
     //       is enabled and we are going to run in LLAP. However, we don't know if we end up in
     //       LLAP or not at this stage, so don't do this now. We may need to add a 'force' option.
@@ -1840,6 +1866,21 @@ public class Vectorizer implements PhysicalPlanResolver {
     // begin to walk through the task tree.
     ogw.startWalking(topNodes, null);
     return physicalContext;
+  }
+
+  private void initRowDeserializeExcludeClasses() {
+    rowDeserializeInputFormatExcludes = new ArrayList<>();
+    String[] classNames = StringUtils.getStrings(HiveConf.getVar(hiveConf,
+        ConfVars.HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES));
+    if (classNames == null) return;
+    for (String className : classNames) {
+      if (className == null || className.isEmpty()) continue;
+      try {
+        rowDeserializeInputFormatExcludes.add(Class.forName(className));
+      } catch (Exception ex) {
+        LOG.warn("Cannot create class " + className + " for row.deserialize checks");
+      }
+    }
   }
 
   private void setOperatorNotSupported(Operator<? extends OperatorDesc> op) {
