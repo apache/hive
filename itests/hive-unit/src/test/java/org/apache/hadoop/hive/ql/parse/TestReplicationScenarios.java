@@ -2355,7 +2355,13 @@ public class TestReplicationScenarios {
         dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
         "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)");
 
-    assertTrue(finalTblReplDumpId.compareTo(lastTblReplDumpId) > 0);
+    /*
+    Comparisons using Strings for event Ids is wrong. This should be numbers since lexical string comparison
+    and numeric comparision differ. This requires a broader change where we return the dump Id as long and not string
+    fixing this here for now as it was observed in one of the builds where "1001".compareTo("998") results
+    in failure of the assertion below.
+     */
+    assertTrue(new Long(Long.parseLong(finalTblReplDumpId)).compareTo(Long.parseLong(lastTblReplDumpId)) > 0);
 
     // TODO : currently not testing the following scenarios:
     //   a) Multi-db wh-level REPL LOAD - need to add that

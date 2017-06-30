@@ -159,7 +159,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         if (!rwork.getListFilesOnOutputBehaviour(oneSrc)){
 
           LOG.debug("ReplCopyTask :cp:" + oneSrc.getPath() + "=>" + toPath);
-          if (!doCopy(toPath, dstFs, oneSrc.getPath(), actualSrcFs)) {
+          if (!doCopy(toPath, dstFs, oneSrc.getPath(), actualSrcFs, conf)) {
           console.printError("Failed to copy: '" + oneSrc.getPath().toString()
               + "to: '" + toPath.toString() + "'");
           return 1;
@@ -186,7 +186,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private boolean doCopy(Path dst, FileSystem dstFs, Path src, FileSystem srcFs) throws IOException {
+  public static boolean doCopy(Path dst, FileSystem dstFs, Path src, FileSystem srcFs,
+      HiveConf conf) throws IOException {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)
         || isLocalFile(src) || isLocalFile(dst)){
       // regular copy in test env, or when source or destination is a local file
@@ -200,7 +201,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  private boolean isLocalFile(Path p) {
+  private static boolean isLocalFile(Path p) {
     String scheme = p.toUri().getScheme();
     boolean isLocalFile = scheme.equalsIgnoreCase("file");
     LOG.debug("{} was a local file? {}, had scheme {}",p.toUri(), isLocalFile, scheme);
@@ -275,23 +276,4 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
     return copyTask;
   }
-
-  public static Task<?> getDumpCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath, HiveConf conf) {
-    Task<?> copyTask = null;
-    LOG.debug("ReplCopyTask:getDumpCopyTask: "+srcPath + "=>" + dstPath);
-    if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
-      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
-      LOG.debug("ReplCopyTask:\trcwork");
-      if (replicationSpec.isLazy()){
-        LOG.debug("ReplCopyTask:\tlazy");
-        rcwork.setListFilesOnOutputBehaviour(true);
-      }
-      copyTask = TaskFactory.get(rcwork, conf);
-    } else {
-      LOG.debug("ReplCopyTask:\tcwork");
-      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf);
-    }
-    return copyTask;
-  }
-
 }
