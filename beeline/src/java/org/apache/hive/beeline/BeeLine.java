@@ -2182,8 +2182,7 @@ public class BeeLine implements Closeable {
       output(getColorBuffer().pad(loc("scanning", f.getAbsolutePath()), 60),
           false);
 
-      try {
-        ZipFile zf = new ZipFile(f);
+      try (ZipFile zf = new ZipFile(f)) {
         int total = zf.size();
         int index = 0;
 

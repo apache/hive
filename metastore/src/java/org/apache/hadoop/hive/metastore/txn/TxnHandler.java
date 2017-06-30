@@ -1484,16 +1484,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // Get the id for the next entry in the queue
     String s = sqlGenerator.addForUpdateClause("select ncq_next from NEXT_COMPACTION_QUEUE_ID");
     LOG.debug("going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new IllegalStateException("Transaction tables not properly initiated, " +
-        "no record found in next_compaction_queue_id");
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        throw new IllegalStateException("Transaction tables not properly initiated, "
+            + "no record found in next_compaction_queue_id");
+      }
+      long id = rs.getLong(1);
+      s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
+      return id;
     }
-    long id = rs.getLong(1);
-    s = "update NEXT_COMPACTION_QUEUE_ID set ncq_next = " + (id + 1);
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
-    return id;
   }
   @Override
   @RetrySemantics.Idempotent
@@ -2863,22 +2864,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private TxnStatus findTxnState(long txnid, Statement stmt) throws SQLException, MetaException {
     String s = "select txn_state from TXNS where txn_id = " + txnid;
     LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      s = sqlGenerator.addLimitClause(1, "1 from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid);
-      LOG.debug("Going to execute query <" + s + ">");
-      ResultSet rs2 = stmt.executeQuery(s);
-      if(rs2.next()) {
-        return TxnStatus.COMMITTED;
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        s =
+            sqlGenerator.addLimitClause(1, "1 from COMPLETED_TXN_COMPONENTS where CTC_TXNID = "
+                + txnid);
+        LOG.debug("Going to execute query <" + s + ">");
+        try (ResultSet rs2 = stmt.executeQuery(s)) {
+          if (rs2.next()) {
+            return TxnStatus.COMMITTED;
+          }
+        }
+        // could also check WRITE_SET but that seems overkill
+        return TxnStatus.UNKNOWN;
       }
-      //could also check WRITE_SET but that seems overkill
-      return TxnStatus.UNKNOWN;
+      char txnState = rs.getString(1).charAt(0);
+      if (txnState == TXN_ABORTED) {
+        return TxnStatus.ABORTED;
+      }
+      assert txnState == TXN_OPEN : "we found it in TXNS but it's not ABORTED, so must be OPEN";
     }
-    char txnState = rs.getString(1).charAt(0);
-    if (txnState == TXN_ABORTED) {
-      return TxnStatus.ABORTED;
-    }
-    assert txnState == TXN_OPEN : "we found it in TXNS but it's not ABORTED, so must be OPEN";
     return TxnStatus.OPEN;
   }
 
@@ -2909,27 +2914,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // We need to check whether this transaction is valid and open
     String s = "select txn_state from TXNS where txn_id = " + txnid;
     LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      //todo: add LIMIT 1 instead of count - should be more efficient
-      s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
-      ResultSet rs2 = stmt.executeQuery(s);
-      //todo: strictly speaking you can commit an empty txn, thus 2nd conjunct is wrong but only
-      //possible for for multi-stmt txns
-      boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      if(alreadyCommitted) {
-        //makes the message more informative - helps to find bugs in client code
-        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+    try (ResultSet rs = stmt.executeQuery(s)) {
+      if (!rs.next()) {
+        // todo: add LIMIT 1 instead of count - should be more efficient
+        s = "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid;
+        try (ResultSet rs2 = stmt.executeQuery(s)) {
+          // todo: strictly speaking you can commit an empty txn, thus 2nd conjunct is wrong but
+          // only
+          // possible for for multi-stmt txns
+          boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
+          LOG.debug("Going to rollback");
+          rollbackDBConn(dbConn);
+          if (alreadyCommitted) {
+            // makes the message more informative - helps to find bugs in client code
+            throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid)
+                + " is already committed.");
+          }
+          throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+        }
       }
-      throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
-    }
-    if (rs.getString(1).charAt(0) == TXN_ABORTED) {
-      LOG.debug("Going to rollback");
-      rollbackDBConn(dbConn);
-      throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
-        " already aborted");//todo: add time of abort, which is not currently tracked.  Requires schema change
+      if (rs.getString(1).charAt(0) == TXN_ABORTED) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid)
+            + " already aborted");// todo: add time of abort, which is not currently tracked.
+                                  // Requires schema change
+      }
     }
   }
 
