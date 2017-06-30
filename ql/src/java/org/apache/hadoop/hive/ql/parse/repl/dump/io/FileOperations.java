@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
@@ -62,12 +62,11 @@ public class FileOperations {
    * This writes the actual data in the exportRootDataDir from the source.
    */
   private void copyFiles() throws IOException {
-    RemoteIterator<LocatedFileStatus> itr = dataFileSystem.listFiles(dataFileListPath, true);
-    while (itr.hasNext()) {
-      LocatedFileStatus fileStatus = itr.next();
-      if (shouldExport(fileStatus)) {
-        ReplCopyTask.doCopy(exportRootDataDir, exportFileSystem, fileStatus.getPath(), dataFileSystem, hiveConf);
-      }
+    FileStatus[] fileStatuses =
+        LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
+    for (FileStatus fileStatus : fileStatuses) {
+      ReplCopyTask.doCopy(exportRootDataDir, exportFileSystem, fileStatus.getPath(), dataFileSystem,
+          hiveConf);
     }
   }
 
@@ -78,20 +77,13 @@ public class FileOperations {
    */
   private void exportFilesAsList() throws SemanticException, IOException {
     try (BufferedWriter writer = writer()) {
-      RemoteIterator<LocatedFileStatus> itr = dataFileSystem.listFiles(dataFileListPath, true);
-      while (itr.hasNext()) {
-        LocatedFileStatus fileStatus = itr.next();
-        if (shouldExport(fileStatus)) {
-          writer.write(encodedUri(fileStatus));
-          writer.newLine();
-        }
+      FileStatus[] fileStatuses =
+          LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
+      for (FileStatus fileStatus : fileStatuses) {
+        writer.write(encodedUri(fileStatus));
+        writer.newLine();
       }
     }
-  }
-
-  private boolean shouldExport(LocatedFileStatus fileStatus) {
-    String name = fileStatus.getPath().getName();
-    return !(fileStatus.isDirectory() || name.startsWith("_") || name.startsWith("."));
   }
 
   private BufferedWriter writer() throws IOException {
@@ -107,7 +99,7 @@ public class FileOperations {
     );
   }
 
-  private String encodedUri(LocatedFileStatus fileStatus) throws IOException {
+  private String encodedUri(FileStatus fileStatus) throws IOException {
     Path currentDataFilePath = fileStatus.getPath();
     String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
     return ReplChangeManager.encodeFileUri(currentDataFilePath.toUri().toString(), checkSum);
