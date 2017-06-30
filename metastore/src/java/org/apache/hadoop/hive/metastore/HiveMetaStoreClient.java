@@ -128,6 +128,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     this(conf, null, true);
   }
 
+  public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader) throws MetaException {
+    this(conf, hookLoader, true);
+  }
+
   public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
 
