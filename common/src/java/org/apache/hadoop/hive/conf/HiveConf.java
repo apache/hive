@@ -1608,6 +1608,8 @@ public class HiveConf extends Configuration {
     HIVESAMPLINGNUMBERFORORDERBY("hive.optimize.sampling.orderby.number", 1000, "Total number of samples to be obtained."),
     HIVESAMPLINGPERCENTFORORDERBY("hive.optimize.sampling.orderby.percent", 0.1f, new RatioValidator(),
         "Probability with which a row will be chosen."),
+    HIVE_REMOVE_ORDERBY_IN_SUBQUERY("hive.remove.orderby.in.subquery", true,
+        "If set to true, order/sort by without limit in sub queries will be removed."),
     HIVEOPTIMIZEDISTINCTREWRITE("hive.optimize.distinct.rewrite", true, "When applicable this "
         + "optimization rewrites distinct aggregates from a single stage to multi-stage "
         + "aggregation. This may not be optimal in all cases. Ideally, whether to trigger it or "

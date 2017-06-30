@@ -11,8 +11,7 @@ FROM (
   FROM src
   MAP src.key, src.key 
   USING 'cat'
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
@@ -24,8 +23,7 @@ FROM (
   FROM src
   MAP src.key, src.key 
   USING 'cat'
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
@@ -56,9 +54,8 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
+                  sort order: 
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string)
       Reduce Operator Tree:
@@ -103,8 +100,7 @@ PREHOOK: query: FROM (
   FROM src
   MAP src.key, src.key
   USING 'cat' 
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
@@ -117,8 +113,7 @@ POSTHOOK: query: FROM (
   FROM src
   MAP src.key, src.key
   USING 'cat' 
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
@@ -129,11 +124,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest1 SORT BY key, value
+PREHOOK: query: SELECT * FROM dest1 ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1 SORT BY key, value
+POSTHOOK: query: SELECT * FROM dest1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####

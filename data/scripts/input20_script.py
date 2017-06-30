@@ -18,13 +18,13 @@
 #
 import sys
 import re
-line = sys.stdin.readline()
-x = 1
-while line:
-  tem = sys.stdin.readline()
-  if line == tem:
-    x = x + 1
+dict = {}
+for line in sys.stdin.readlines():
+  if dict.has_key(line):
+    x = dict[line]
+    dict[line] = x + 1
   else:
-    print str(x).strip()+'\t'+re.sub('\t','_',line.strip())
-    line = tem
-    x = 1
+    dict[line] = 1
+for key in dict:
+  x = dict[key]
+  print str(x).strip()+'\t'+re.sub('\t','_',key.strip())

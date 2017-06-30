@@ -11256,6 +11256,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genPlan(qb);
   }
 
+  private void removeOBInSubQuery(QBExpr qbExpr) {
+    if (qbExpr == null) {
+      return;
+    }
+
+    if (qbExpr.getOpcode() == QBExpr.Opcode.NULLOP) {
+      QB subQB = qbExpr.getQB();
+      QBParseInfo parseInfo = subQB.getParseInfo();
+      String alias = qbExpr.getAlias();
+      Map<String, ASTNode> destToOrderBy = parseInfo.getDestToOrderBy();
+      Map<String, ASTNode> destToSortBy = parseInfo.getDestToSortBy();
+      final String warning = "WARNING: Order/Sort by without limit in sub query or view [" +
+          alias + "] is removed, as it's pointless and bad for performance.";
+      if (destToOrderBy != null) {
+        for (String dest : destToOrderBy.keySet()) {
+          if (parseInfo.getDestLimit(dest) == null) {
+            removeASTChild(destToOrderBy.get(dest));
+            destToOrderBy.remove(dest);
+            console.printInfo(warning);
+          }
+        }
+      }
+      if (destToSortBy != null) {
+        for (String dest : destToSortBy.keySet()) {
+          if (parseInfo.getDestLimit(dest) == null) {
+            removeASTChild(destToSortBy.get(dest));
+            destToSortBy.remove(dest);
+            console.printInfo(warning);
+          }
+        }
+      }
+    } else {
+      removeOBInSubQuery(qbExpr.getQBExpr1());
+      removeOBInSubQuery(qbExpr.getQBExpr2());
+    }
+  }
+
+  private static void removeASTChild(ASTNode node) {
+    Tree parent = node.getParent();
+    if (parent != null) {
+      parent.deleteChild(node.getChildIndex());
+      node.setParent(null);
+    }
+  }
+
   void analyzeInternal(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
@@ -11263,6 +11308,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     processPositionAlias(ast);
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
+    }
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
+      for (String alias : qb.getSubqAliases()) {
+        removeOBInSubQuery(qb.getSubqForAlias(alias));
+      }
     }
 
     // 2. Gen OP Tree from resolved Parse Tree

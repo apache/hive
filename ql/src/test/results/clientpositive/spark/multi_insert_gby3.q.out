@@ -47,8 +47,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 1)
-        Reducer 3 <- Reducer 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -61,23 +60,12 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
+                      key expressions: _col0 (type: string), _col2 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: double), _col2 (type: string)
+                      value expressions: _col1 (type: double)
         Reducer 2 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col2 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: double)
-        Reducer 3 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -169,8 +157,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 1)
-        Reducer 3 <- Reducer 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (GROUP PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -183,23 +170,12 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      sort order: +
+                      key expressions: _col0 (type: string), _col2 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: double), _col2 (type: string)
+                      value expressions: _col1 (type: double)
         Reducer 2 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col2 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: double)
-        Reducer 3 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1747,11 +1723,11 @@ STAGE PLANS:
   Stage: Stage-3
     Spark
       Edges:
-        Reducer 2 <- Map 1 (SORT, 1)
-        Reducer 3 <- Reducer 2 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 4 (GROUP PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (GROUP, 2)
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: src
@@ -1761,42 +1737,32 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: double), _col2 (type: string)
-                      sort order: ++++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: double), _col2 (type: string)
+                      key expressions: _col0 (type: string), _col2 (type: string)
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: double), _col2 (type: string)
-        Reducer 2 
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string), _col2 (type: string)
-                  sort order: ++
-                  Map-reduce partition columns: _col0 (type: string)
+                      value expressions: _col1 (type: double)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: src
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: double)
-                Group By Operator
-                  aggregations: count(DISTINCT _col1)
-                  keys: _col0 (type: string), _col1 (type: double), _col2 (type: string)
-                  mode: complete
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col0 (type: string), UDFToDouble(_col3) (type: double)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.e3
-        Reducer 3 
+                    expressions: key (type: string), UDFToDouble(key) (type: double), value (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(DISTINCT _col1)
+                      keys: _col0 (type: string), _col1 (type: double), _col2 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: double), _col2 (type: string)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: double), _col2 (type: string)
+                        Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
             Reduce Operator Tree:
               Forward
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -1836,6 +1802,26 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.e2
+        Reducer 3 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col3:0._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: double), KEY._col2 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToDouble(_col3) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.e3
 
   Stage: Stage-0
     Move Operator

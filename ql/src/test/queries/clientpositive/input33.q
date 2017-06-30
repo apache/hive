@@ -7,8 +7,7 @@ FROM (
   FROM src
   MAP src.key, src.key 
   USING 'cat'
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
@@ -19,12 +18,11 @@ FROM (
   FROM src
   MAP src.key, src.key
   USING 'cat' 
-  DISTRIBUTE BY key
-  SORT BY key, value
+  DISTRIBUTE BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS (key STRING, value STRING);
 
-SELECT * FROM dest1 SORT BY key, value;
+SELECT * FROM dest1 ORDER BY key, value;
