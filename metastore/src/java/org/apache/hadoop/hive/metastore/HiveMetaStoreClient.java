@@ -90,7 +90,7 @@ import com.google.common.collect.Lists;
  */
 @Public
 @Unstable
-public class HiveMetaStoreClient implements IMetaStoreClient {
+public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
    * implying the usage of some expanded features that require client-side support that this client
