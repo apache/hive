@@ -184,26 +184,21 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         listBW.close();
       }
 
-      // If the srcMap is not empty which means we made the list of files for distCp. If there are files from different
-      // filesystems, then the map have multiple entries.
+      // If the srcMap is not empty which means we made the list of files for distCp.
+      // If there are files from different filesystems, then the map will have multiple entries.
       if (!srcMap.isEmpty()) {
-        boolean success = true;
         for (final HashMap.Entry<FileSystem, List<Path>> entry : srcMap.entrySet()) {
           FileSystem actualSrcFs = entry.getKey();
           List<Path> srcPaths = entry.getValue();
           if (!doCopy(toPath, dstFs, srcPaths, actualSrcFs, conf)) {
             console.printError("Failed to copy: " + srcPaths.size()
                     + " files to: '" + toPath.toString() + "'");
-            success = false;
+            return 1;
           }
-        }
-        if (!success) {
-          return 1;
         }
       }
 
       return 0;
-
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
