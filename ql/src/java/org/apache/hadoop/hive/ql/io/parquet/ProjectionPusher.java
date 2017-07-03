@@ -115,7 +115,9 @@ public class ProjectionPusher {
           allColumnsNeeded = true;
         } else {
           neededColumnIDs.addAll(ts.getNeededColumnIDs());
-          neededNestedColumnPaths.addAll(ts.getNeededNestedColumnPaths());
+          if (ts.getNeededNestedColumnPaths() != null) {
+            neededNestedColumnPaths.addAll(ts.getNeededNestedColumnPaths());
+          }
         }
 
         rowSchema = ts.getSchema();
