@@ -202,7 +202,7 @@ public class Warehouse {
       if (needCmRecycle) {
         // Copy the source files to cmroot. As the client will move the source files to another
         // location, we should make a copy of the files to cmroot instead of moving it.
-        cm.recycle(sourcePath, RecycleType.COPY, false);
+        cm.recycle(sourcePath, RecycleType.COPY, true);
       }
       FileSystem fs = getFs(sourcePath);
       return FileUtils.rename(fs, sourcePath, destPath, conf);
