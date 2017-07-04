@@ -84,7 +84,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
-  private static final String FUNCTION_METADATA_DIR_NAME = "_metadata";
   private final static Logger REPL_STATE_LOG = LoggerFactory.getLogger("ReplState");
 
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -181,29 +180,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       LOG.warn("Error during analyzeReplDump", e);
       throw new SemanticException(e);
-    }
-  }
-
-
-  public static void injectNextDumpDirForTest(String dumpdir){
-    testInjectDumpDir = dumpdir;
-  }
-
-  private String getNextDumpDir() {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
-      // make it easy to write .q unit tests, instead of unique id generation.
-      // however, this does mean that in writing tests, we have to be aware that
-      // repl dump will clash with prior dumps, and thus have to clean up properly.
-      if (testInjectDumpDir == null){
-        return "next";
-      } else {
-        return testInjectDumpDir;
-      }
-    } else {
-      return String.valueOf(System.currentTimeMillis());
-      // TODO: time good enough for now - we'll likely improve this.
-      // We may also work in something the equivalent of pid, thrid and move to nanos to ensure
-      // uniqueness.
     }
   }
 
@@ -747,54 +723,5 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ctx.setResFile(ctx.getLocalTmpPath());
     Utils.writeOutput(values, ctx.getResFile(), conf);
-  }
-
-  private ReplicationSpec getNewReplicationSpec() throws SemanticException {
-    try {
-      ReplicationSpec rspec = getNewReplicationSpec("replv2", "will-be-set");
-      rspec.setCurrentReplicationState(String.valueOf(db.getMSC()
-          .getCurrentNotificationEventId().getEventId()));
-      return rspec;
-    } catch (Exception e) {
-      throw new SemanticException(e); // TODO : simple wrap & rethrow for now, clean up with error codes
-    }
-  }
-
-  // Use for specifying object state as well as event state
-  private ReplicationSpec getNewReplicationSpec(String evState, String objState) throws SemanticException {
-    return new ReplicationSpec(true, false, evState, objState, false, true, true);
-  }
-
-  // Use for replication states focused on event only, where the obj state will be the event state
-  private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) throws SemanticException {
-    return getNewReplicationSpec(eventId.toString(), eventId.toString());
-  }
-
-  private Iterable<? extends String> matchesTbl(String dbName, String tblPattern)
-      throws HiveException {
-    if (tblPattern == null) {
-      return removeValuesTemporaryTables(db.getAllTables(dbName));
-    } else {
-      return db.getTablesByPattern(dbName, tblPattern);
-    }
-  }
-
-  private final static String TMP_TABLE_PREFIX =
-      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase();
-
-  static Iterable<String> removeValuesTemporaryTables(List<String> tableNames) {
-    return Collections2.filter(tableNames,
-        tableName -> {
-          assert tableName != null;
-          return !tableName.toLowerCase().startsWith(TMP_TABLE_PREFIX);
-        });
-  }
-
-  private Iterable<? extends String> matchesDb(String dbPattern) throws HiveException {
-    if (dbPattern == null) {
-      return db.getAllDatabases();
-    } else {
-      return db.getDatabasesByPattern(dbPattern);
-    }
   }
 }
