@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -259,8 +259,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private void dumpTable(String dbName, String tblName, Path dbRoot) throws Exception {
     try {
       Hive db = getHive();
-      BaseSemanticAnalyzer.TableSpec
-          ts = new BaseSemanticAnalyzer.TableSpec(db, conf, dbName + "." + tblName, null);
+      TableSpec ts = new TableSpec(db, conf, dbName + "." + tblName, null);
       TableExport.Paths exportPaths =
           new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf);
       new TableExport(exportPaths, ts, getNewReplicationSpec(), db, conf, LOG).run();
