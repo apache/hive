@@ -181,7 +181,7 @@
     <mockito-all.version>1.10.19</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.29.Final</netty.version>
-    <parquet.version>1.8.1</parquet.version>
+    <parquet.version>1.9.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
