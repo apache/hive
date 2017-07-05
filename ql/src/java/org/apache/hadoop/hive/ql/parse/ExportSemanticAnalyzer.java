@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -70,7 +71,8 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // initialize export path
     String tmpPath = stripQuotes(toTree.getText());
     // All parsing is done, we're now good to start the export process.
-    TableExport.Paths exportPaths = new TableExport.Paths(ast, tmpPath, conf);
+    TableExport.Paths exportPaths =
+        new TableExport.Paths(ErrorMsg.INVALID_PATH.getMsg(ast), tmpPath, conf);
     TableExport.AuthEntities authEntities =
         new TableExport(exportPaths, ts, replicationSpec, db, conf, LOG).run();
     inputs.addAll(authEntities.inputs);

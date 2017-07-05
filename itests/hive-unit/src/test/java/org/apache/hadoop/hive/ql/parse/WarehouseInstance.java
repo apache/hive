@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -131,7 +132,7 @@ class WarehouseInstance implements Closeable {
 
   private void advanceDumpDir() {
     next++;
-    ReplicationSemanticAnalyzer.injectNextDumpDirForTest(String.valueOf(next));
+    ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
   }
 
   private ArrayList<String> lastResults;
