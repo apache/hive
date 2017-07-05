@@ -137,7 +137,7 @@ public class SharedCache {
   }
 
   public static synchronized ColumnStatisticsObj getCachedTableColStats(String colStatsCacheKey) {
-    return tableColStatsCache.get(colStatsCacheKey).deepCopy();
+    return tableColStatsCache.get(colStatsCacheKey)!=null?tableColStatsCache.get(colStatsCacheKey).deepCopy():null;
   }
 
   public static synchronized void removeTableColStatsFromCache(String dbName, String tblName) {
@@ -426,7 +426,7 @@ public class SharedCache {
   }
 
   public static synchronized ColumnStatisticsObj getCachedPartitionColStats(String key) {
-    return partitionColStatsCache.get(key).deepCopy();
+    return partitionColStatsCache.get(key)!=null?partitionColStatsCache.get(key).deepCopy():null;
   }
 
   public static synchronized void addPartitionColStatsToCache(String dbName, String tableName,
