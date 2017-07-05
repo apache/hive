@@ -33,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -98,7 +99,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       List<FileStatus> srcFiles = new ArrayList<>();
       FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
       LOG.debug("ReplCopyTasks srcs=" + (srcs == null ? "null" : srcs.length));
-      if (! rwork.getReadListFromInput()){
+      if (!rwork.getReadListFromInput()) {
         if (srcs == null || srcs.length == 0) {
           if (work.isErrorOnSrcEmpty()) {
             console.printError("No files matching path: " + fromPath.toString());
@@ -132,7 +133,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
 
       BufferedWriter listBW = null;
-      if (rwork.getListFilesOnOutputBehaviour()){
+      if (rwork.getListFilesOnOutputBehaviour()) {
         Path listPath = new Path(toPath,EximUtil.FILES_NAME);
         LOG.debug("ReplCopyTask : generating _files at :" + listPath.toUri().toString());
         if (dstFs.exists(listPath)){
@@ -144,27 +145,33 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         // later(for cases where filenames have unicode chars)
       }
 
+      HashMap<FileSystem, List<Path>> srcMap = new HashMap<>();
       for (FileStatus oneSrc : srcFiles) {
         console.printInfo("Copying file: " + oneSrc.getPath().toString());
         LOG.debug("Copying file: " + oneSrc.getPath().toString());
 
         FileSystem actualSrcFs = null;
-        if (rwork.getReadListFromInput()){
+        if (rwork.getReadListFromInput()) {
           // TODO : filesystemcache prevents this from being a perf nightmare, but we
           // should still probably follow up to see if we need to do something better here.
           actualSrcFs = oneSrc.getPath().getFileSystem(conf);
         } else {
           actualSrcFs = srcFs;
         }
-        if (!rwork.getListFilesOnOutputBehaviour(oneSrc)){
 
+        if (!rwork.getListFilesOnOutputBehaviour(oneSrc)) {
           LOG.debug("ReplCopyTask :cp:" + oneSrc.getPath() + "=>" + toPath);
-          if (!doCopy(toPath, dstFs, oneSrc.getPath(), actualSrcFs, conf)) {
-          console.printError("Failed to copy: '" + oneSrc.getPath().toString()
-              + "to: '" + toPath.toString() + "'");
-          return 1;
+
+          // We just make the list of files to copied using distCp.
+          // If files come from different file system, then just make separate lists for each filesystem.
+          if (srcMap.containsKey(actualSrcFs)) {
+            srcMap.get(actualSrcFs).add(oneSrc.getPath());
+          } else {
+            List<Path> srcPaths = new ArrayList<>();
+            srcPaths.add(oneSrc.getPath());
+            srcMap.put(actualSrcFs, srcPaths);
           }
-        }else{
+        } else {
           LOG.debug("ReplCopyTask _files now tracks:" + oneSrc.getPath().toUri());
           console.printInfo("Tracking file: " + oneSrc.getPath().toUri());
           String chksumString = ReplChangeManager.checksumFor(oneSrc.getPath(), actualSrcFs);
@@ -177,8 +184,21 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         listBW.close();
       }
 
-      return 0;
+      // If the srcMap is not empty which means we made the list of files for distCp.
+      // If there are files from different filesystems, then the map will have multiple entries.
+      if (!srcMap.isEmpty()) {
+        for (final HashMap.Entry<FileSystem, List<Path>> entry : srcMap.entrySet()) {
+          FileSystem actualSrcFs = entry.getKey();
+          List<Path> srcPaths = entry.getValue();
+          if (!doCopy(toPath, dstFs, srcPaths, actualSrcFs, conf)) {
+            console.printError("Failed to copy: " + srcPaths.size()
+                    + " files to: '" + toPath.toString() + "'");
+            return 1;
+          }
+        }
+      }
 
+      return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
@@ -186,26 +206,31 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
-  public static boolean doCopy(Path dst, FileSystem dstFs, Path src, FileSystem srcFs,
-      HiveConf conf) throws IOException {
+  public static boolean doCopy(Path dst, FileSystem dstFs, List<Path> srcPaths, FileSystem srcFs,
+              HiveConf conf) throws IOException {
+    boolean result = true;
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)
-        || isLocalFile(src) || isLocalFile(dst)){
-      // regular copy in test env, or when source or destination is a local file
-      // distcp runs inside a mapper task, and cannot handle file:///
-      LOG.debug("Using regular copy for {} -> {}", src.toUri(), dst.toUri());
-      return FileUtils.copy(srcFs, src, dstFs, dst, false, true, conf);
+            || isLocalFileSystem(dstFs) || isLocalFileSystem(srcFs)) {
+      for (final Path src : srcPaths) {
+        // regular copy in test env, or when source or destination is a local file
+        // distcp runs inside a mapper task, and cannot handle file:///
+        LOG.debug("Using regular copy for {} -> {}", src.toUri(), dst.toUri());
+        if (!FileUtils.copy(srcFs, src, dstFs, dst, false, true, conf)) {
+          result = false;
+        }
+      }
     } else {
       // distcp in actual deployment with privilege escalation
-      LOG.debug("Using privleged distcp for {} -> {}", src.toUri(), dst.toUri());
-      return FileUtils.privilegedCopy(srcFs, src, dst, conf);
+      result = FileUtils.privilegedCopy(srcFs, srcPaths, dst, conf);
     }
+    return result;
   }
 
-  private static boolean isLocalFile(Path p) {
-    String scheme = p.toUri().getScheme();
-    boolean isLocalFile = scheme.equalsIgnoreCase("file");
-    LOG.debug("{} was a local file? {}, had scheme {}",p.toUri(), isLocalFile, scheme);
-    return isLocalFile;
+  private static boolean isLocalFileSystem(FileSystem fs) {
+    String scheme = fs.getScheme();
+    boolean isLocalFileSystem = scheme.equalsIgnoreCase("file");
+    LOG.debug("Scheme {} was a local file system? {}", scheme, isLocalFileSystem);
+    return isLocalFileSystem;
   }
 
   private List<FileStatus> filesInFileListing(FileSystem fs, Path path)

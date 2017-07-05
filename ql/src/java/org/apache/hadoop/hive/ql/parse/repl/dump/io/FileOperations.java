@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileOperations {
   private static Logger logger = LoggerFactory.getLogger(FileOperations.class);
@@ -64,10 +66,12 @@ public class FileOperations {
   private void copyFiles() throws IOException {
     FileStatus[] fileStatuses =
         LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
+    List<Path> srcPaths = new ArrayList<>();
     for (FileStatus fileStatus : fileStatuses) {
-      ReplCopyTask.doCopy(exportRootDataDir, exportFileSystem, fileStatus.getPath(), dataFileSystem,
-          hiveConf);
+      srcPaths.add(fileStatus.getPath());
     }
+
+    ReplCopyTask.doCopy(exportRootDataDir, exportFileSystem, srcPaths, dataFileSystem, hiveConf);
   }
 
   /**

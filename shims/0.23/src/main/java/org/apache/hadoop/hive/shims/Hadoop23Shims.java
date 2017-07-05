@@ -29,7 +29,6 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -1086,7 +1084,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-  List<String> constructDistCpParams(Path src, Path dst, Configuration conf) {
+  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
     List<String> params = new ArrayList<String>();
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
       String distCpOption = entry.getKey();
@@ -1102,20 +1100,22 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       params.add("-skipcrccheck");
       params.add("-pb");
     }
-    params.add(src.toString());
+    for (Path src : srcPaths) {
+      params.add(src.toString());
+    }
     params.add(dst.toString());
     return params;
   }
 
   @Override
-  public boolean runDistCpAs(Path src, Path dst, Configuration conf, String doAsUser) throws IOException {
+  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException {
     UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
         doAsUser, UserGroupInformation.getLoginUser());
     try {
       return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
         @Override
         public Boolean run() throws Exception {
-          return runDistCp(src, dst, conf);
+          return runDistCp(srcPaths, dst, conf);
         }
       });
     } catch (InterruptedException e) {
@@ -1124,14 +1124,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
-    DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
+    DistCpOptions options = new DistCpOptions(srcPaths, dst);
     options.setSyncFolder(true);
     options.setSkipCRC(true);
     options.preserve(FileAttribute.BLOCKSIZE);
 
     // Creates the command-line parameters for distcp
-    List<String> params = constructDistCpParams(src, dst, conf);
+    List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
