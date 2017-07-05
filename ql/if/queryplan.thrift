@@ -100,6 +100,7 @@ enum StageType {
   STATS,
   DEPENDENCY_COLLECTION,
   COLUMNSTATS,
+  REPLDUMP,
 }
 
 struct Stage {

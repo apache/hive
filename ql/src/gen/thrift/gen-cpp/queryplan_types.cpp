@@ -115,7 +115,8 @@ int _kStageTypeValues[] = {
   StageType::MOVE,
   StageType::STATS,
   StageType::DEPENDENCY_COLLECTION,
-  StageType::COLUMNSTATS
+  StageType::COLUMNSTATS,
+  StageType::REPLDUMP
 };
 const char* _kStageTypeNames[] = {
   "CONDITIONAL",
@@ -129,9 +130,10 @@ const char* _kStageTypeNames[] = {
   "MOVE",
   "STATS",
   "DEPENDENCY_COLLECTION",
-  "COLUMNSTATS"
+  "COLUMNSTATS",
+  "REPLDUMP"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(12, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(13, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 
 Adjacency::~Adjacency() throw() {

@@ -160,6 +160,7 @@ class StageType:
   STATS = 9
   DEPENDENCY_COLLECTION = 10
   COLUMNSTATS = 11
+  REPLDUMP = 12
 
   _VALUES_TO_NAMES = {
     0: "CONDITIONAL",
@@ -174,6 +175,7 @@ class StageType:
     9: "STATS",
     10: "DEPENDENCY_COLLECTION",
     11: "COLUMNSTATS",
+    12: "REPLDUMP",
   }
 
   _NAMES_TO_VALUES = {
@@ -189,6 +191,7 @@ class StageType:
     "STATS": 9,
     "DEPENDENCY_COLLECTION": 10,
     "COLUMNSTATS": 11,
+    "REPLDUMP": 12,
   }
 
 
