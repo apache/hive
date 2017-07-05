@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -172,7 +173,7 @@ public class TestReplChangeManager {
 
     ReplChangeManager cm = ReplChangeManager.getInstance(hiveConf);
     // verify cm.recycle(db, table, part) api moves file to cmroot dir
-    int ret = cm.recycle(part1Path, false);
+    int ret = cm.recycle(part1Path, RecycleType.MOVE, false);
     Assert.assertEquals(ret, 1);
     Path cmPart1Path = ReplChangeManager.getCMPath(hiveConf, path1Chksum);
     assertTrue(cmPart1Path.getFileSystem(hiveConf).exists(cmPart1Path));
@@ -242,7 +243,7 @@ public class TestReplChangeManager {
 
     ReplChangeManager cm = ReplChangeManager.getInstance(hiveConf);
     // verify cm.recycle(Path) api moves file to cmroot dir
-    cm.recycle(filePath1, false);
+    cm.recycle(filePath1, RecycleType.MOVE, false);
     assertFalse(filePath1.getFileSystem(hiveConf).exists(filePath1));
 
     Path cmPath1 = ReplChangeManager.getCMPath(hiveConf, fileChksum1);
@@ -293,9 +294,9 @@ public class TestReplChangeManager {
     createFile(part32, "testClearer32");
     String fileChksum32 = ReplChangeManager.checksumFor(part32, fs);
 
-    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, false);
-    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, false);
-    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl3, true);
+    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
+    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, RecycleType.MOVE, false);
+    ReplChangeManager.getInstance(hiveConf).recycle(dirTbl3, RecycleType.MOVE, true);
 
     assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum11)));
     assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, fileChksum12)));
