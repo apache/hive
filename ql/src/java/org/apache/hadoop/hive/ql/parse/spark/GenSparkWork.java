@@ -211,7 +211,7 @@ public class GenSparkWork implements NodeProcessor {
           "AssertionError: expected operator to be a ReduceSinkOperator, but was "
           + parent.getClass().getName());
         ReduceSinkOperator rsOp = (ReduceSinkOperator) parent;
-        SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(rsOp, reduceWork);
+        SparkEdgeProperty edgeProp = GenSparkUtils.getEdgeProperty(context.conf, rsOp, reduceWork);
 
         rsOp.getConf().setOutputName(reduceWork.getName());
         GenMapRedUtils.setKeyAndValueDesc(reduceWork, rsOp);

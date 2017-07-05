@@ -117,7 +117,7 @@ public class GenSparkUtils {
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
     setupReduceSink(context, reduceWork, reduceSink);
     sparkWork.add(reduceWork);
-    SparkEdgeProperty edgeProp = getEdgeProperty(reduceSink, reduceWork);
+    SparkEdgeProperty edgeProp = getEdgeProperty(context.conf, reduceSink, reduceWork);
 
     sparkWork.connect(context.preceedingWork, reduceWork, edgeProp);
 
@@ -425,8 +425,9 @@ public class GenSparkUtils {
     keys.add(desc.getPartKey());
   }
 
-  public static SparkEdgeProperty getEdgeProperty(ReduceSinkOperator reduceSink,
+  public static SparkEdgeProperty getEdgeProperty(HiveConf conf, ReduceSinkOperator reduceSink,
       ReduceWork reduceWork) throws SemanticException {
+    boolean useSparkGroupBy = conf.getBoolVar(HiveConf.ConfVars.SPARK_USE_GROUPBY_SHUFFLE);
     SparkEdgeProperty edgeProperty = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
     edgeProperty.setNumPartitions(reduceWork.getNumReduceTasks());
     String sortOrder = Strings.nullToEmpty(reduceSink.getConf().getOrder()).trim();
@@ -435,7 +436,10 @@ public class GenSparkUtils {
       edgeProperty.setShuffleGroup();
       // test if the group by needs partition level sort, if so, use the MR style shuffle
       // SHUFFLE_SORT shouldn't be used for this purpose, see HIVE-8542
-      if (!sortOrder.isEmpty() && groupByNeedParLevelOrder(reduceSink)) {
+      if (!useSparkGroupBy || (!sortOrder.isEmpty() && groupByNeedParLevelOrder(reduceSink))) {
+        if (!useSparkGroupBy) {
+          LOG.info("hive.spark.use.groupby.shuffle is off. Use repartition shuffle instead.");
+        }
         edgeProperty.setMRShuffle();
       }
     }
@@ -468,11 +472,16 @@ public class GenSparkUtils {
       }
     }
 
-    // set to groupby-shuffle if it's still NONE
     // simple distribute-by goes here
     if (edgeProperty.isShuffleNone()) {
-      edgeProperty.setShuffleGroup();
+      if (!useSparkGroupBy) {
+        LOG.info("hive.spark.use.groupby.shuffle is off. Use repartition shuffle instead.");
+        edgeProperty.setMRShuffle();
+      } else {
+        edgeProperty.setShuffleGroup();
+      }
     }
+
 
     return edgeProperty;
   }
