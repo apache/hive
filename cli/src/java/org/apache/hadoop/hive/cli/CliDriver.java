@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +123,7 @@ public class CliDriver {
 
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
-    String cmd_trimmed = cmd.trim();
+    String cmd_trimmed = HiveStringUtils.removeComments(cmd).trim();
     String[] tokens = tokenizeCmd(cmd_trimmed);
     int ret = 0;
 
@@ -181,7 +182,12 @@ public class CliDriver {
     }  else { // local mode
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        ret = processLocalCmd(cmd, proc, ss);
+        if (proc instanceof Driver) {
+          // Let Driver strip comments using sql parser
+          ret = processLocalCmd(cmd, proc, ss);
+        } else {
+          ret = processLocalCmd(cmd_trimmed, proc, ss);
+        }
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
           org.apache.hadoop.util.StringUtils.stringifyException(e));

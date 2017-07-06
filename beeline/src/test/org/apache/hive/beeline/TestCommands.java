@@ -20,29 +20,28 @@ package org.apache.hive.beeline;
 
 import org.junit.Test;
 
+import static org.apache.hive.common.util.HiveStringUtils.removeComments;
 import static org.junit.Assert.assertEquals;
 
 public class TestCommands {
 
   @Test
   public void testLinesEndingWithComments() {
-    BeeLine beeline = new BeeLine();
-    Commands commands = new Commands(beeline);
     int[] escape = {-1};
-    assertEquals("show tables;", commands.removeComments("show tables;",escape));
-    assertEquals("show tables;", commands.removeComments("show tables; --comments",escape));
-    assertEquals("show tables;", commands.removeComments("show tables; -------comments",escape));
-    assertEquals("show tables;", commands.removeComments("show tables; -------comments;one;two;three;;;;",escape));
-    assertEquals("show", commands.removeComments("show-- tables; -------comments",escape));
-    assertEquals("show", commands.removeComments("show --tables; -------comments",escape));
-    assertEquals("s", commands.removeComments("s--how --tables; -------comments",escape));
-    assertEquals("", commands.removeComments("-- show tables; -------comments",escape));
+    assertEquals("show tables;", removeComments("show tables;",escape));
+    assertEquals("show tables;", removeComments("show tables; --comments",escape));
+    assertEquals("show tables;", removeComments("show tables; -------comments",escape));
+    assertEquals("show tables;", removeComments("show tables; -------comments;one;two;three;;;;",escape));
+    assertEquals("show", removeComments("show-- tables; -------comments",escape));
+    assertEquals("show", removeComments("show --tables; -------comments",escape));
+    assertEquals("s", removeComments("s--how --tables; -------comments",escape));
+    assertEquals("", removeComments("-- show tables; -------comments",escape));
 
-    assertEquals("\"show tables\"", commands.removeComments("\"show tables\" --comments",escape));
-    assertEquals("\"show --comments tables\"", commands.removeComments("\"show --comments tables\" --comments",escape));
-    assertEquals("\"'show --comments' tables\"", commands.removeComments("\"'show --comments' tables\" --comments",escape));
-    assertEquals("'show --comments tables'", commands.removeComments("'show --comments tables' --comments",escape));
-    assertEquals("'\"show --comments tables\"'", commands.removeComments("'\"show --comments tables\"' --comments",escape));
+    assertEquals("\"show tables\"", removeComments("\"show tables\" --comments",escape));
+    assertEquals("\"show --comments tables\"", removeComments("\"show --comments tables\" --comments",escape));
+    assertEquals("\"'show --comments' tables\"", removeComments("\"'show --comments' tables\" --comments",escape));
+    assertEquals("'show --comments tables'", removeComments("'show --comments tables' --comments",escape));
+    assertEquals("'\"show --comments tables\"'", removeComments("'\"show --comments tables\"' --comments",escape));
   }
 }
 
