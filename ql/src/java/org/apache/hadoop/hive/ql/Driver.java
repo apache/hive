@@ -554,6 +554,7 @@ public class Driver implements CommandProcessor {
         hookCtx.setUserName(userName);
         hookCtx.setIpAddress(SessionState.get().getUserIpAddress());
         hookCtx.setCommand(command);
+        hookCtx.setHiveOperation(queryState.getHiveOperation());
         for (HiveSemanticAnalyzerHook hook : saHooks) {
           tree = hook.preAnalyze(hookCtx, tree);
         }
