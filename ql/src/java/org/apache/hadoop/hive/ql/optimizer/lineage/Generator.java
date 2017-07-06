@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class generates the lineage information for the columns
@@ -54,6 +56,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * optimization phases.
  */
 public class Generator extends Transform {
+
+  private static final Logger LOG = LoggerFactory.getLogger(Generator.class);
 
   /* (non-Javadoc)
    * @see org.apache.hadoop.hive.ql.optimizer.Transform#transform(org.apache.hadoop.hive.ql.parse.ParseContext)
@@ -64,6 +68,7 @@ public class Generator extends Transform {
     Index index = SessionState.get() != null ?
       SessionState.get().getLineageState().getIndex() : new Index();
 
+    long sTime = System.currentTimeMillis();
     // Create the lineage context
     LineageCtx lCtx = new LineageCtx(pctx, index);
 
@@ -101,6 +106,7 @@ public class Generator extends Transform {
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
 
+    LOG.debug("Time taken for lineage transform={}", (System.currentTimeMillis() - sTime));
     return pctx;
   }
 

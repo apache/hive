@@ -80,6 +80,9 @@ public class RuleRegExp implements Rule {
       if (wildCards.contains(pc)) {
         hasWildCard = true;
         ret = ret && (pc == wcc);
+        if (!ret) {
+          return false;
+        }
       }
     }
     return ret && hasWildCard;

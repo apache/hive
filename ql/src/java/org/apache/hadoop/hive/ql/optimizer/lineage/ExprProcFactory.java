@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -64,6 +64,19 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * and also generates a string representation of the expression.
  */
 public class ExprProcFactory {
+
+
+  private static final String exprNodeColDescRegExp = ExprNodeColumnDesc.class.getName() + "%";
+  private static final String exprNodeFieldDescRegExp = ExprNodeFieldDesc.class.getName() + "%";
+  private static final String exprNodeGenFuncDescRegExp = ExprNodeGenericFuncDesc.class.getName() + "%";
+
+  private static final Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
+
+  static {
+    exprRules.put(new RuleRegExp("R1", exprNodeColDescRegExp), getColumnProcessor());
+    exprRules.put(new RuleRegExp("R2", exprNodeFieldDescRegExp), getFieldProcessor());
+    exprRules.put(new RuleRegExp("R3", exprNodeGenFuncDescRegExp), getGenericFuncProcessor());
+  }
 
   /**
    * Processor for column expressions.
@@ -272,6 +285,26 @@ public class ExprProcFactory {
   public static Dependency getExprDependency(LineageCtx lctx,
       Operator<? extends OperatorDesc> inpOp, ExprNodeDesc expr)
       throws SemanticException {
+    return getExprDependency(lctx, inpOp, expr, new HashMap<Node, Object>());
+  }
+
+  /**
+   * Gets the expression dependencies for the expression.
+   *
+   * @param lctx
+   *          The lineage context containing the input operators dependencies.
+   * @param inpOp
+   *          The input operator to the current operator.
+   * @param expr
+   *          The expression that is being processed.
+   * @param outputMap
+   * @throws SemanticException
+   */
+  public static Dependency getExprDependency(LineageCtx lctx,
+      Operator<? extends OperatorDesc> inpOp, ExprNodeDesc expr, HashMap<Node, Object> outputMap)
+      throws SemanticException {
+
+    outputMap.clear();
 
     // Create the walker, the rules dispatcher and the context.
     ExprProcCtx exprCtx = new ExprProcCtx(lctx, inpOp);
@@ -279,15 +312,6 @@ public class ExprProcFactory {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
-    exprRules.put(
-        new RuleRegExp("R1", ExprNodeColumnDesc.class.getName() + "%"),
-        getColumnProcessor());
-    exprRules.put(
-        new RuleRegExp("R2", ExprNodeFieldDesc.class.getName() + "%"),
-        getFieldProcessor());
-    exprRules.put(new RuleRegExp("R3", ExprNodeGenericFuncDesc.class.getName()
-        + "%"), getGenericFuncProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -295,10 +319,8 @@ public class ExprProcFactory {
         exprRules, exprCtx);
     GraphWalker egw = new DefaultGraphWalker(disp);
 
-    List<Node> startNodes = new ArrayList<Node>();
-    startNodes.add(expr);
+    List<Node> startNodes = Collections.singletonList((Node)expr);
 
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
     egw.startWalking(startNodes, outputMap);
     return (Dependency)outputMap.get(expr);
   }
