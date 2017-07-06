@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 /**
  * Context information provided by Hive to implementations of
@@ -65,4 +66,8 @@ public interface HiveSemanticAnalyzerHookContext extends Configurable{
   public String getCommand();
 
   public void setCommand(String command);
+
+  public HiveOperation getHiveOperation();
+
+  public void setHiveOperation(HiveOperation commandType);
 }
