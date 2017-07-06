@@ -25,7 +25,13 @@ import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -56,11 +62,14 @@ public class EmbeddedLockManager implements HiveLockManager {
   @Override
   public HiveLock lock(HiveLockObject key, HiveLockMode mode, boolean keepAlive)
       throws LockException {
+    LOG.debug("Acquiring lock for {} with mode {} {}", key.getName(), mode,
+        key.getData().getLockMode());
     return lock(key, mode, numRetriesForLock, sleepTime);
   }
 
   @Override
-  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive, LockedDriverState lDrvState) throws LockException {
+  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive, LockedDriverState lDrvState)
+      throws LockException {
     return lock(objs, numRetriesForLock, sleepTime);
   }
 
@@ -121,9 +130,16 @@ public class EmbeddedLockManager implements HiveLockManager {
     }
   }
 
-  public List<HiveLock> lock(List<HiveLockObj> objs, int numRetriesForLock, long sleepTime)
+  private List<HiveLock> lock(List<HiveLockObj> objs, int numRetriesForLock, long sleepTime)
       throws LockException {
     sortLocks(objs);
+    if (LOG.isDebugEnabled()) {
+      for (HiveLockObj obj : objs) {
+        LOG.debug("Acquiring lock for {} with mode {}", obj.getObj().getName(),
+            obj.getMode());
+      }
+    }
+
     for (int i = 0; i <= numRetriesForLock; i++) {
       if (i > 0) {
         sleep(sleepTime);
