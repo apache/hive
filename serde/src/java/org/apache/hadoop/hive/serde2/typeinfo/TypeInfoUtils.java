@@ -449,6 +449,10 @@ public final class TypeInfoUtils {
           if (params == null || params.length == 0) {
             // It's possible that old metadata still refers to "decimal" as a column type w/o
             // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.
+          } else if (params.length == 1) {
+            // only precision is specified
+            precision = Integer.valueOf(params[0]);
+            HiveDecimalUtils.validateParameter(precision, scale);
           } else if (params.length == 2) {
             // New metadata always have two parameters.
             precision = Integer.parseInt(params[0]);
