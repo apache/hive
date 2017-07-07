@@ -4706,7 +4706,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public Index add_index(final Index newIndex, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException, TException {
-      startFunction("add_index", ": " + newIndex.toString() + " " + indexTable.toString());
+      String tableName = indexTable != null ? indexTable.getTableName() : "";
+      startFunction("add_index", ": " + newIndex.toString() + " " + tableName);
       Index ret = null;
       Exception ex = null;
       try {
@@ -4725,7 +4726,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw newMetaException(e);
         }
       } finally {
-        String tableName = indexTable != null ? indexTable.getTableName() : null;
         endFunction("add_index", ret != null, ex, tableName);
       }
       return ret;
