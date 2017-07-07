@@ -1,3 +1,5 @@
+-- SORT_BEFORE_DIFF
+
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 
@@ -45,6 +47,17 @@ select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 0;
 select count(*) from test_table3 where ds = '1' and hash(value1) % 2 = 1;
 select count(*) from test_table3 tablesample (bucket 1 out of 2) s where ds = '1';
 select count(*) from test_table3 tablesample (bucket 2 out of 2) s where ds = '1';
+
+select * from test_table3;
+
+set hive.optimize.bucketingsorting=false;
+
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+SELECT a.value, a.key, a.value FROM test_table1 a WHERE a.ds = '1';
+
+select * from test_table3;
+
+set hive.optimize.bucketingsorting=true;
 
 -- Insert data into the bucketed table by selecting from another bucketed table
 -- However, since an expression is being selected, it should involve a reducer
