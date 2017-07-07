@@ -415,7 +415,11 @@ public class ObjectStore implements RawStore, Configurable {
     if (isInitialized) {
       expressionProxy = createExpressionProxy(hiveConf);
       if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)) {
-        directSql = new MetaStoreDirectSql(pm, hiveConf);
+        String schema = prop.getProperty("javax.jdo.mapping.Schema");
+        if (schema != null && schema.isEmpty()) {
+          schema = null;
+        }
+        directSql = new MetaStoreDirectSql(pm, hiveConf, schema);
       }
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
