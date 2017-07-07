@@ -115,3 +115,6 @@ Hive2.2.0 修改记录
 |序号|项目|类|方法|行号|修改说明| 
 |---|---|---|---|---|---|  
 |201706-01|hive-exec|FetchOperator|getInputFormat|233,402|检测到使用的InputFormat是Hbase时，初始化HiveHbaseTableInputFormat时将Operator对象传递进去|
+|201707-07|hive-exec|SparkUtilities|getSparkSession|108,134|添加静态变量用于存储session|
+|201707-07|hive-exec|SparkSessionManagerImpl|closeSession|132,142|清空方法，不让session被销毁|
+|201707-07|hive-service|HiveServer2|startHiveServer2|616,618|启动时获取session|
