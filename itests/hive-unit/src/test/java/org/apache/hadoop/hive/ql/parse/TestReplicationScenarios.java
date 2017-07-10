@@ -2412,6 +2412,59 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testConcatenateTable() throws IOException {
+    String testName = "concatenateTable";
+    String dbName = createDB(testName);
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS ORC");
+
+    String[] unptn_data = new String[] { "eleven", "twelve" };
+    String[] empty = new String[] {};
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
+    run("ALTER TABLE " + dbName + ".unptned CONCATENATE");
+
+    // Replicate all the events happened after bootstrap
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data);
+  }
+
+  @Test
+  public void testConcatenatePartitionedTable() throws IOException {
+    String testName = "concatenatePartitionedTable";
+    String dbName = createDB(testName);
+
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS ORC");
+
+    String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
+    String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
+
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')");
+
+    // Bootstrap dump/load
+    String replDbName = dbName + "_dupe";
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[2] + "')");
+
+    run("ALTER TABLE " + dbName + ".ptned PARTITION(b=2) CONCATENATE");
+
+    // Replicate all the events happened so far
+    Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
+    verifySetup("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
+    verifySetup("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+  }
+
+  @Test
   public void testStatus() throws IOException {
     // first test ReplStateMap functionality
     Map<String,Long> cmap = new ReplStateMap<String,Long>();
