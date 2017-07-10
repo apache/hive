@@ -96,9 +96,8 @@
       <version>${libthrift.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
+      <groupId>com.tdunning</groupId>
       <artifactId>json</artifactId>
-      <version>${json.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -230,6 +229,10 @@
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
     </dependency>
 
     <!-- test inter-project -->

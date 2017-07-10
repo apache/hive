@@ -139,27 +139,27 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     assert(work.getDependency());
 
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
-    List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
+    JSONArray inputTableInfo = new JSONArray();
+    JSONArray inputPartitionInfo = new JSONArray();
     for (ReadEntity input: work.getInputs()) {
       switch (input.getType()) {
         case TABLE:
           Table table = input.getTable();
-          Map<String, String> tableInfo = new LinkedHashMap<String, String>();
+          JSONObject tableInfo = new JSONObject();
           tableInfo.put("tablename", table.getCompleteName());
           tableInfo.put("tabletype", table.getTableType().toString());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             tableInfo.put("tableParents", input.getParents().toString());
           }
-          inputTableInfo.add(tableInfo);
+          inputTableInfo.put(tableInfo);
           break;
         case PARTITION:
-          Map<String, String> partitionInfo = new HashMap<String, String>();
+          JSONObject partitionInfo = new JSONObject();
           partitionInfo.put("partitionName", input.getPartition().getCompleteName());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             partitionInfo.put("partitionParents", input.getParents().toString());
           }
-          inputPartitionInfo.add(partitionInfo);
+          inputPartitionInfo.put(partitionInfo);
           break;
         default:
           break;
@@ -238,10 +238,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
     if (jsonOutput) {
       json.put("enabled", isVectorizationEnabled);
+      JSONArray jsonArray = new JSONArray(Arrays.asList(isVectorizationEnabledCondName));
       if (!isVectorizationEnabled) {
-        json.put("enabledConditionsNotMet", isVectorizationEnabledCondList);
+        json.put("enabledConditionsNotMet", jsonArray);
       } else {
-        json.put("enabledConditionsMet", isVectorizationEnabledCondList);
+        json.put("enabledConditionsMet", jsonArray);
       }
     }
 
@@ -278,7 +279,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     boolean suppressOthersForVectorization = false;
     if (this.work != null && this.work.isVectorization()) {
       ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
-  
+
       if (this.work.isVectorizationOnly()) {
         // Suppress the STAGES if vectorization is off.
         suppressOthersForVectorization = !planVecPair.left;
@@ -287,7 +288,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       if (out != null) {
         out.println();
       }
-  
+
       if (jsonOutput) {
         outJSONObject.put("PLAN VECTORIZATION", planVecPair.right);
       }
@@ -405,7 +406,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             if (jsonParser != null) {
               jsonParser.print(jsonPlan, null);
               LOG.info("JsonPlan is augmented to " + jsonPlan.toString());
-            } 
+            }
             out.print(jsonPlan);
           }
         }
@@ -617,9 +618,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   /**
    * Retruns a map which have either primitive or string keys.
-   * 
+   *
    * This is neccessary to discard object level comparators which may sort the objects based on some non-trivial logic.
-   * 
+   *
    * @param mp
    * @return
    */

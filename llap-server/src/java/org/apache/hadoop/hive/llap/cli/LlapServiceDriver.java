@@ -52,6 +52,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.tez.dag.api.TezConfiguration;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -79,8 +81,6 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.eclipse.jetty.rewrite.handler.Rule;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.joda.time.DateTime;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -642,7 +642,7 @@ public class LlapServiceDriver {
   }
 
   private JSONObject createConfigJson(long containerSize, long cache, long xmx,
-      String java_home) throws JSONException {
+                                      String java_home) throws JSONException {
     // extract configs for processing by the python fragments in Slider
     JSONObject configs = new JSONObject();
 

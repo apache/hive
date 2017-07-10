@@ -446,9 +446,8 @@
       <version>${gson.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
+      <groupId>com.tdunning</groupId>
       <artifactId>json</artifactId>
-      <version>${json.version}</version>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
@@ -883,7 +882,7 @@
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
                   <include>org.jodd:jodd-core</include>
-                  <include>org.json:json</include>
+                  <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
