@@ -98,27 +98,27 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     assert(work.getDependency());
 
     JSONObject outJSONObject = new JSONObject(new LinkedHashMap<>());
-    List<Map<String, String>> inputTableInfo = new ArrayList<Map<String, String>>();
-    List<Map<String, String>> inputPartitionInfo = new ArrayList<Map<String, String>>();
+    JSONArray inputTableInfo = new JSONArray();
+    JSONArray inputPartitionInfo = new JSONArray();
     for (ReadEntity input: work.getInputs()) {
       switch (input.getType()) {
         case TABLE:
           Table table = input.getTable();
-          Map<String, String> tableInfo = new LinkedHashMap<String, String>();
+          JSONObject tableInfo = new JSONObject();
           tableInfo.put("tablename", table.getCompleteName());
           tableInfo.put("tabletype", table.getTableType().toString());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             tableInfo.put("tableParents", input.getParents().toString());
           }
-          inputTableInfo.add(tableInfo);
+          inputTableInfo.put(tableInfo);
           break;
         case PARTITION:
-          Map<String, String> partitionInfo = new HashMap<String, String>();
+          JSONObject partitionInfo = new JSONObject();
           partitionInfo.put("partitionName", input.getPartition().getCompleteName());
           if ((input.getParents() != null) && (!input.getParents().isEmpty())) {
             partitionInfo.put("partitionParents", input.getParents().toString());
           }
-          inputPartitionInfo.add(partitionInfo);
+          inputPartitionInfo.put(partitionInfo);
           break;
         default:
           break;

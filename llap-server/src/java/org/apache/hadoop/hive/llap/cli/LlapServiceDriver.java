@@ -75,8 +75,8 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
-import org.json.JSONObject;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
