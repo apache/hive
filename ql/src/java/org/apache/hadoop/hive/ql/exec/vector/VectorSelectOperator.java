@@ -115,7 +115,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      forward(row, inputObjInspectors[tag]);
+      forward(row, inputObjInspectors[tag], true);
       return;
     }
 
@@ -134,7 +134,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     int originalProjectionSize = vrg.projectionSize;
     vrg.projectionSize = projectedOutputColumns.length;
     vrg.projectedColumns = this.projectedOutputColumns;
-    forward(vrg, outputObjInspector);
+    forward(vrg, outputObjInspector, true);
 
     // Revert the projected columns back, because vrg will be re-used.
     vrg.projectionSize = originalProjectionSize;

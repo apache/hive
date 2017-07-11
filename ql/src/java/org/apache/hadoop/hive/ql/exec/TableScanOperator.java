@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.VectorTableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -68,6 +69,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private transient int currCount = 0;
   // insiderView will tell this TableScan is inside a view or not.
   private transient boolean insideView;
+
+  private transient boolean vectorized;
 
   private String defaultPartitionName;
 
@@ -110,6 +113,10 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   public void process(Object row, int tag) throws HiveException {
     if (rowLimit >= 0) {
       if (row instanceof VectorizedRowBatch) {
+        // We need to check with 'instanceof' instead of just checking
+        // vectorized because the row can be a VectorizedRowBatch when
+        // FetchOptimizer kicks in even if the operator pipeline is not
+        // vectorized
         VectorizedRowBatch batch = (VectorizedRowBatch) row;
         if (currCount >= rowLimit) {
           setDone(true);
@@ -127,7 +134,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     if (conf != null && conf.isGatherStats()) {
       gatherStats(row);
     }
-    forward(row, inputObjInspectors[tag]);
+    forward(row, inputObjInspectors[tag], vectorized);
   }
 
   // Change the table partition for collecting stats
@@ -258,6 +265,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     currentStat = null;
     stats = new HashMap<String, Stat>();
+
+    vectorized = conf.isVectorized();
   }
 
   @Override

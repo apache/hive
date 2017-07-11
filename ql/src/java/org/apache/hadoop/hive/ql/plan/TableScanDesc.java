@@ -102,6 +102,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isAcidTable;
 
+  private boolean vectorized;
+
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
   private transient TableSample tableSample;
@@ -443,5 +445,13 @@ public class TableScanDesc extends AbstractOperatorDesc {
       return null;
     }
     return new TableScanOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  public void setVectorized(boolean vectorized) {
+    this.vectorized = vectorized;
+  }
+
+  public boolean isVectorized() {
+    return vectorized;
   }
 }

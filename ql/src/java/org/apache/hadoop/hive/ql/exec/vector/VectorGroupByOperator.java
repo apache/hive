@@ -1057,7 +1057,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       for (int i = 0; i < aggregators.length; ++i) {
         forwardCache[fi++] = aggregators[i].evaluateOutput(agg.getAggregationBuffer(i));
       }
-      forward(forwardCache, outputObjInspector);
+      forward(forwardCache, outputObjInspector, false);
     } else {
       // Output keys and aggregates into the output batch.
       for (int i = 0; i < outputKeyLength; ++i) {
@@ -1097,7 +1097,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null);
+    forward(outputBatch, null, true);
     outputBatch.reset();
   }
 

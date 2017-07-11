@@ -307,7 +307,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null);
+    forward(outputBatch, null, true);
     outputBatch.reset();
   }
 
