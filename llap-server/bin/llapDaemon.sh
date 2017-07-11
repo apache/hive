@@ -115,6 +115,9 @@ case $startStop in
     export LLAP_DAEMON_LOGFILE=${LLAP_DAEMON_LOG_BASE}.log
     nohup nice -n $LLAP_DAEMON_NICENESS "$LLAP_DAEMON_BIN_HOME"/runLlapDaemon.sh run  >> "$logOut" 2>&1 < /dev/null &
     echo $! > $pid
+    # capture the ulimit output
+    echo "ulimit -a" >> $logOut
+    ulimit -a >> $logOut 2>&1
     ;;
           
   (stop)
