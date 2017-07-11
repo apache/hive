@@ -189,6 +189,7 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new ReaderPair(key, reader, 20, minKey, maxKey,
         new Reader.Options(), 0);
+    pair.advnaceToMinKey();
     RecordReader recordReader = pair.recordReader;
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketId());
@@ -215,6 +216,7 @@ public class TestOrcRawRecordMerger {
 
     ReaderPair pair = new ReaderPair(key, reader, 20, null, null,
         new Reader.Options(), 0);
+    pair.advnaceToMinKey();
     RecordReader recordReader = pair.recordReader;
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketId());
@@ -290,8 +292,14 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(0, 10, 1);
     RecordIdentifier maxKey = new RecordIdentifier(0, 10, 3);
     boolean[] includes = new boolean[]{true, true};
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.getLocal(conf);
+    Path root = new Path(tmpDir, "testOriginalReaderPair");
+    fs.makeQualified(root);
+    fs.create(root);
     ReaderPair pair = new OriginalReaderPair(key, reader, 10, minKey, maxKey,
-        new Reader.Options().include(includes));
+        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+    pair.advnaceToMinKey();
     RecordReader recordReader = pair.recordReader;
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketId());
@@ -319,8 +327,14 @@ public class TestOrcRawRecordMerger {
   public void testOriginalReaderPairNoMin() throws Exception {
     ReaderKey key = new ReaderKey();
     Reader reader = createMockOriginalReader();
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.getLocal(conf);
+    Path root = new Path(tmpDir, "testOriginalReaderPairNoMin");
+    fs.makeQualified(root);
+    fs.create(root);
     ReaderPair pair = new OriginalReaderPair(key, reader, 10, null, null,
-        new Reader.Options());
+        new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
+    pair.advnaceToMinKey();
     assertEquals("first", value(pair.nextRecord));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketId());
@@ -423,7 +437,7 @@ public class TestOrcRawRecordMerger {
 
     OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, false, reader,
         false, 10, createMaximalTxnList(),
-        new Reader.Options().range(1000, 1000), null);
+        new Reader.Options().range(1000, 1000), null, new OrcRawRecordMerger.Options());
     RecordReader rr = merger.getCurrentReader().recordReader;
     assertEquals(0, merger.getOtherReaders().size());
 
@@ -531,7 +545,7 @@ public class TestOrcRawRecordMerger {
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
-            AcidUtils.getPaths(directory.getCurrentDirectories()));
+            AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options().isCompacting(false));
     RecordIdentifier key = merger.createKey();
     OrcStruct value = merger.createValue();
     assertEquals(false, merger.next(key, value));
@@ -606,7 +620,7 @@ public class TestOrcRawRecordMerger {
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
-            AcidUtils.getPaths(directory.getCurrentDirectories()));
+            AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options().isCompacting(false));
     assertEquals(null, merger.getMinKey());
     assertEquals(null, merger.getMaxKey());
     RecordIdentifier id = merger.createKey();
@@ -681,7 +695,7 @@ public class TestOrcRawRecordMerger {
     // make a merger that doesn't collapse events
     merger = new OrcRawRecordMerger(conf, false, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
-            AcidUtils.getPaths(directory.getCurrentDirectories()));
+            AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options().isCompacting(true));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.UPDATE_OPERATION,
@@ -780,7 +794,7 @@ public class TestOrcRawRecordMerger {
     merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             txns, new Reader.Options(),
-            AcidUtils.getPaths(directory.getCurrentDirectories()));
+            AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options().isCompacting(false));
     for(int i=0; i < values.length; ++i) {
       assertEquals(true, merger.next(id, event));
       LOG.info("id = " + id + "event = " + event);

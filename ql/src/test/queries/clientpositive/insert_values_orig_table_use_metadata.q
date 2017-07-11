@@ -1,9 +1,24 @@
-set hive.strict.checks.bucketing=false;
-
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.compute.query.using.stats=true;
+
+drop table if exists acid_ivot_stage;
+create table acid_ivot_stage(
+    ctinyint TINYINT,
+    csmallint SMALLINT,
+    cint INT,
+    cbigint BIGINT,
+    cfloat FLOAT,
+    cdouble DOUBLE,
+    cstring1 STRING,
+    cstring2 STRING,
+    ctimestamp1 TIMESTAMP,
+    ctimestamp2 TIMESTAMP,
+    cboolean1 BOOLEAN,
+    cboolean2 BOOLEAN) stored as orc;
+
+LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot_stage;
 
 create table acid_ivot(
     ctinyint TINYINT,
@@ -21,7 +36,7 @@ create table acid_ivot(
 
 desc formatted acid_ivot;
 
-LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot;
+insert into acid_ivot select * from acid_ivot_stage;
 
 desc formatted acid_ivot;
 
@@ -71,7 +86,7 @@ explain select count(*) from acid_ivot;
 
 select count(*) from acid_ivot;
 
-LOAD DATA LOCAL INPATH "../../data/files/alltypesorc" into table acid_ivot;
+insert into acid_ivot select * from acid_ivot_stage;
 
 desc formatted acid_ivot;
 

@@ -319,6 +319,68 @@ public class TestTxnCommands2 {
     resultData = new int[][] {{3,8}, {5,6}, {9,20}};
     Assert.assertEquals(stringifyValues(resultData), rs);
   }
+  /**
+   * see HIVE-16177
+   * See also {@link TestTxnCommands#testNonAcidToAcidConversion01()}
+   */
+  @Test
+  public void testNonAcidToAcidConversion02() throws Exception {
+    //create 2 rows in a file 000001_0 (and an empty 000000_0)
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2),(1,3)");
+    //create 2 rows in a file 000000_0_copy1 and 2 rows in a file 000001_0_copy1
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,12),(0,13),(1,4),(1,5)");
+    //create 1 row in a file 000001_0_copy2 (and empty 000000_0_copy2?)
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,6)");
+
+    //convert the table to Acid
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    List<String> rs1 = runStatementOnDriver("describe "+ Table.NONACIDORCTBL);
+    //create a some of delta directories
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,15),(1,16)");
+    runStatementOnDriver("update " + Table.NONACIDORCTBL + " set b = 120 where a = 0 and b = 12");
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,17)");
+    runStatementOnDriver("delete from " + Table.NONACIDORCTBL + " where a = 1 and b = 3");
+
+    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " +  Table.NONACIDORCTBL + " order by a,b");
+    LOG.warn("before compact");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    /*
+     * All ROW__IDs are unique on read after conversion to acid 
+     * ROW__IDs are exactly the same before and after compaction
+     * Also check the file name after compaction for completeness
+     */
+    String[][] expected = {
+      {"{\"transactionid\":0,\"bucketid\":0,\"rowid\":0}\t0\t13",  "bucket_00000"},
+      {"{\"transactionid\":18,\"bucketid\":0,\"rowid\":0}\t0\t15", "bucket_00000"},
+      {"{\"transactionid\":20,\"bucketid\":0,\"rowid\":0}\t0\t17", "bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":0,\"rowid\":1}\t0\t120", "bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":1}\t1\t2",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":3}\t1\t4",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":2}\t1\t5",   "bucket_00001"},
+      {"{\"transactionid\":0,\"bucketid\":1,\"rowid\":4}\t1\t6",   "bucket_00001"},
+      {"{\"transactionid\":18,\"bucketid\":1,\"rowid\":0}\t1\t16", "bucket_00001"}
+    };
+    Assert.assertEquals("Unexpected row count before compaction", expected.length, rs.size());
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+    }
+    //run Compaction
+    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by a,b");
+    LOG.warn("after compact");
+    for(String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after compaction", expected.length, rs.size());
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " ac: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(bucket) " + i + " ac: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+    }
+    //make sure they are the same before and after compaction
+  }
 
   /**
    * Test the query correctness and directory layout after ACID table conversion and MAJOR compaction

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -42,9 +41,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.orc.OrcProto;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
@@ -360,8 +356,11 @@ public class VectorizedOrcAcidRowBatchReader
           int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucket();
           String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
           this.validTxnList = (txnString == null) ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+          OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(false);
+          assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
           this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
-                                                      validTxnList, readerOptions, deleteDeltas);
+                                                      validTxnList, readerOptions, deleteDeltas,
+                                                      mergerOptions);
           this.deleteRecordKey = new OrcRawRecordMerger.ReaderKey();
           this.deleteRecordValue = this.deleteRecords.createValue();
           // Initialize the first value in the delete reader.

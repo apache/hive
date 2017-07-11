@@ -112,10 +112,13 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     private long minTxnId;
     private long maxTxnId;
     private List<Integer> stmtIds;
-    
+
     public DeltaMetaData() {
       this(0,0,new ArrayList<Integer>());
     }
+    /**
+     * @param stmtIds delta dir suffixes when a single txn writes > 1 delta in the same partition
+     */
     DeltaMetaData(long minTxnId, long maxTxnId, List<Integer> stmtIds) {
       this.minTxnId = minTxnId;
       this.maxTxnId = maxTxnId;

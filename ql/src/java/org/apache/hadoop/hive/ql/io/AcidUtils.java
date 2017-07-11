@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +48,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -99,6 +102,10 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+  /**
+   * This does not need to use ORIGINAL_PATTERN_COPY because it's used to read
+   * a "delta" dir written by a real Acid write - cannot have any copies
+   */
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -113,6 +120,11 @@ public class AcidUtils {
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
+  /**
+   * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+   */
+  private static final Pattern ORIGINAL_PATTERN_COPY =
+    Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "[0-9]+");
 
   public static final PathFilter hiddenFileFilter = new PathFilter(){
     @Override
@@ -243,7 +255,21 @@ public class AcidUtils {
           .maximumTransactionId(0)
           .bucket(bucket)
           .writingBase(true);
-    } else if (filename.startsWith(BUCKET_PREFIX)) {
+    }
+    else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
+      //todo: define groups in regex and use parseInt(Matcher.group(2))....
+      int bucket =
+        Integer.parseInt(filename.substring(0, filename.indexOf('_')));
+      int copyNumber = Integer.parseInt(filename.substring(filename.lastIndexOf('_') + 1));
+      result
+        .setOldStyle(true)
+        .minimumTransactionId(0)
+        .maximumTransactionId(0)
+        .bucket(bucket)
+        .copyNumber(copyNumber)
+        .writingBase(true);
+    }
+    else if (filename.startsWith(BUCKET_PREFIX)) {
       int bucket =
           Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
       if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
@@ -482,7 +508,7 @@ public class AcidUtils {
     Path getBaseDirectory();
 
     /**
-     * Get the list of original files.  Not {@code null}.
+     * Get the list of original files.  Not {@code null}.  Must be sorted.
      * @return the list of original files (eg. 000000_0)
      */
     List<HdfsFileStatusWithId> getOriginalFiles();
@@ -825,7 +851,7 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
       for (FileStatus origDir : originalDirectories) {
-        findOriginals(fs, origDir, original, useFileIds);
+        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles);
       }
     }
 
@@ -893,7 +919,17 @@ public class AcidUtils {
     final Path base = bestBase.status == null ? null : bestBase.status.getPath();
     LOG.debug("in directory " + directory.toUri().toString() + " base = " + base + " deltas = " +
         deltas.size());
-
+    /**
+     * If this sort order is changed and there are tables that have been converted to transactional
+     * and have had any update/delete/merge operations performed but not yet MAJOR compacted, it
+     * may result in data loss since it may change how
+     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns 
+     * {@link RecordIdentifier#rowId} for read (that have happened) and compaction (yet to happen).
+     */
+    Collections.sort(original, (HdfsFileStatusWithId o1, HdfsFileStatusWithId o2) -> {
+      //this does "Path.uri.compareTo(that.uri)"
+      return o1.getFileStatus().compareTo(o2.getFileStatus());
+    });
     return new Directory(){
 
       @Override
@@ -1011,7 +1047,7 @@ public class AcidUtils {
    * @throws IOException
    */
   private static void findOriginals(FileSystem fs, FileStatus stat,
-      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds) throws IOException {
+      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
     assert stat.isDir();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
@@ -1031,18 +1067,22 @@ public class AcidUtils {
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         if (child.getFileStatus().isDir()) {
-          findOriginals(fs, child.getFileStatus(), original, useFileIds);
+          findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles);
         } else {
-          original.add(child);
+          if(!ignoreEmptyFiles || child.getFileStatus().getLen() > 0) {
+            original.add(child);
+          }
         }
       }
     } else {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
       for (FileStatus child : children) {
         if (child.isDir()) {
-          findOriginals(fs, child, original, useFileIds);
+          findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles);
         } else {
-          original.add(createOriginalObj(null, child));
+          if(!ignoreEmptyFiles || child.getLen() > 0) {
+            original.add(createOriginalObj(null, child));
+          }
         }
       }
     }
