@@ -842,7 +842,7 @@ public final class PrimitiveObjectInspectorUtils {
       }
       break;
     case BOOLEAN:
-      result = String.valueOf((((BooleanObjectInspector) oi).get(o)));
+      result = (((BooleanObjectInspector) oi).get(o)) ? "TRUE" : "FALSE";
       break;
     case BYTE:
       result = String.valueOf((((ByteObjectInspector) oi).get(o)));

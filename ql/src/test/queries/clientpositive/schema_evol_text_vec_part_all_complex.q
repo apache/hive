@@ -12,9 +12,6 @@ set hive.metastore.disallow.incompatible.col.type.changes=false;
 set hive.default.fileformat=textfile;
 set hive.llap.io.enabled=false;
 
--- TEMPORARY UNTIL Vectorized Text Schema Evolution works.
-set hive.vectorized.complex.types.enabled=false;
-
 -- SORT_QUERY_RESULTS
 --
 -- FILE VARIATION: TEXTFILE, Non-Vectorized, MapWork, Partitioned --> all complex conversions

@@ -257,8 +257,14 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytes == null) {
-              LOG.info("null binary entry: batchIndex " + batchIndex);
+            if (bytesColVector.isRepeating) {
+              if (!bytesColVector.isNull[0] && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+            } else {
+              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
             }
 
             BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
@@ -273,8 +279,14 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytes == null) {
-              nullBytesReadError(primitiveCategory, batchIndex);
+            if (bytesColVector.isRepeating) {
+              if (!bytesColVector.isNull[0] && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+            } else {
+              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
             }
 
             // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
@@ -289,8 +301,14 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytes == null) {
-              nullBytesReadError(primitiveCategory, batchIndex);
+            if (bytesColVector.isRepeating) {
+              if (!bytesColVector.isNull[0] && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+            } else {
+              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
             }
 
             final int adjustedLength = StringExpr.truncate(bytes, start, length,
@@ -308,8 +326,14 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytes == null) {
-              nullBytesReadError(primitiveCategory, batchIndex);
+            if (bytesColVector.isRepeating) {
+              if (!bytesColVector.isNull[0] && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+            } else {
+              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
             }
 
             final int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,

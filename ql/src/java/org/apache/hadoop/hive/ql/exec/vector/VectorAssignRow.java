@@ -23,7 +23,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -53,7 +56,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -106,7 +108,7 @@ public class VectorAssignRow {
    * These members have information for data type conversion.
    * Not defined if there is no conversion.
    */
-  PrimitiveObjectInspector[] convertSourcePrimitiveObjectInspectors;
+  ObjectInspector[] convertSourceOI;
                 // The primitive object inspector of the source data type for any column being
                 // converted.  Otherwise, null.
 
@@ -128,7 +130,7 @@ public class VectorAssignRow {
    * Allocate the source conversion related arrays (optional).
    */
   private void allocateConvertArrays(int count) {
-    convertSourcePrimitiveObjectInspectors = new PrimitiveObjectInspector[count];
+    convertSourceOI = new ObjectInspector[count];
     convertTargetWritables = new Writable[count];
   }
 
@@ -163,12 +165,10 @@ public class VectorAssignRow {
   private void initConvertSourceEntry(int logicalColumnIndex, TypeInfo convertSourceTypeInfo) {
     isConvert[logicalColumnIndex] = true;
     final Category convertSourceCategory = convertSourceTypeInfo.getCategory();
-    if (convertSourceCategory == Category.PRIMITIVE) {
-      final PrimitiveTypeInfo convertSourcePrimitiveTypeInfo = (PrimitiveTypeInfo) convertSourceTypeInfo;
-      convertSourcePrimitiveObjectInspectors[logicalColumnIndex] =
-        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-            convertSourcePrimitiveTypeInfo);
+    convertSourceOI[logicalColumnIndex] =
+        TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(convertSourceTypeInfo);
 
+    if (convertSourceCategory == Category.PRIMITIVE) {
       // These need to be based on the target.
       final PrimitiveCategory targetPrimitiveCategory =
           ((PrimitiveTypeInfo) targetTypeInfos[logicalColumnIndex]).getPrimitiveCategory();
@@ -298,36 +298,29 @@ public class VectorAssignRow {
 
       } else {
         final TypeInfo targetTypeInfo = targetTypeInfos[i];
+        final TypeInfo sourceTypeInfo = sourceTypeInfos[i];
 
-        if (targetTypeInfo.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+        if (!sourceTypeInfo.equals(targetTypeInfo)) {
 
-          // For now, we don't have an assigner for complex types...
+          if (VectorPartitionConversion.isImplicitVectorColumnConversion(
+              sourceTypeInfo, targetTypeInfo)) {
 
-        } else {
-          final TypeInfo sourceTypeInfo = sourceTypeInfos[i];
+            // Do implicit conversion accepting the source type and putting it in the same
+            // target type ColumnVector type.
+            initTargetEntry(i, i, sourceTypeInfo);
 
-          if (!sourceTypeInfo.equals(targetTypeInfo)) {
-
-            if (VectorPartitionConversion.isImplicitVectorColumnConversion(
-                sourceTypeInfo, targetTypeInfo)) {
-
-              // Do implicit conversion accepting the source type and putting it in the same
-              // target type ColumnVector type.
-              initTargetEntry(i, i, sourceTypeInfo);
-
-            } else {
-
-              // Do formal conversion...
-              initTargetEntry(i, i, targetTypeInfo);
-              initConvertSourceEntry(i, sourceTypeInfo);
-
-            }
           } else {
 
-            // No conversion.
+            // Do formal conversion...
             initTargetEntry(i, i, targetTypeInfo);
+            initConvertSourceEntry(i, sourceTypeInfo);
 
           }
+        } else {
+
+          // No conversion.
+          initTargetEntry(i, i, targetTypeInfo);
+
         }
       }
     }
@@ -594,18 +587,18 @@ public class VectorAssignRow {
     case STRUCT:
       {
         final StructColumnVector structColumnVector = (StructColumnVector) columnVector;
-        final StructTypeInfo structTypeInfo = (StructTypeInfo) targetTypeInfo;
-        final List<TypeInfo> fieldStructTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-        final int size = fieldStructTypeInfos.size();
+        final StructTypeInfo targetStructTypeInfo = (StructTypeInfo) targetTypeInfo;
+        final List<TypeInfo> targetFieldTypeInfos = targetStructTypeInfo.getAllStructFieldTypeInfos();
+        final int size = targetFieldTypeInfos.size();
         if (object instanceof List) {
           final List struct = (List) object;
           for (int i = 0; i < size; i++) {
-            assignRowColumn(structColumnVector.fields[i], batchIndex, fieldStructTypeInfos.get(i), struct.get(i));
+            assignRowColumn(structColumnVector.fields[i], batchIndex, targetFieldTypeInfos.get(i), struct.get(i));
           }
         } else {
           final Object[] array = (Object[]) object;
           for (int i = 0; i < size; i++) {
-            assignRowColumn(structColumnVector.fields[i], batchIndex, fieldStructTypeInfos.get(i), array[i]);
+            assignRowColumn(structColumnVector.fields[i], batchIndex, targetFieldTypeInfos.get(i), array[i]);
           }
         }
       }
@@ -647,113 +640,134 @@ public class VectorAssignRow {
   public void assignConvertRowColumn(VectorizedRowBatch batch, int batchIndex,
       int logicalColumnIndex, Object object) {
     Preconditions.checkState(isConvert[logicalColumnIndex]);
-    final Category targetCategory = targetTypeInfos[logicalColumnIndex].getCategory();
+    final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
+    assignConvertRowColumn(
+        batch.cols[projectionColumnNum],
+        batchIndex,
+        targetTypeInfos[logicalColumnIndex],
+        convertSourceOI[logicalColumnIndex],
+        convertTargetWritables[logicalColumnIndex],
+        object);
+  }
+
+  private void assignConvertRowColumn(ColumnVector columnVector, int batchIndex,
+      TypeInfo targetTypeInfo, ObjectInspector sourceObjectInspector,
+      Writable convertTargetWritable, Object object) {
+
+    final Category targetCategory = targetTypeInfo.getCategory();
     if (targetCategory == null) {
       /*
        * This is a column that we don't want (i.e. not included) -- we are done.
        */
       return;
     }
-    final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     if (object == null) {
-      VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+      VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
       return;
     }
     try {
       switch (targetCategory) {
       case PRIMITIVE:
+        final PrimitiveObjectInspector sourcePrimitiveOI =
+            (PrimitiveObjectInspector) sourceObjectInspector;
         final PrimitiveCategory targetPrimitiveCategory =
-            ((PrimitiveTypeInfo) targetTypeInfos[logicalColumnIndex]).getPrimitiveCategory();
+            ((PrimitiveTypeInfo) targetTypeInfo).getPrimitiveCategory();
         switch (targetPrimitiveCategory) {
         case VOID:
-          VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+          VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
           return;
         case BOOLEAN:
-          ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((LongColumnVector) columnVector).vector[batchIndex] =
               (PrimitiveObjectInspectorUtils.getBoolean(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]) ? 1 : 0);
+                  object, sourcePrimitiveOI) ? 1 : 0);
           break;
         case BYTE:
-          ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((LongColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getByte(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case SHORT:
-          ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((LongColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getShort(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case INT:
-          ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((LongColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getInt(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case LONG:
-          ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((LongColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getLong(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case TIMESTAMP:
           {
             final Timestamp timestamp =
               PrimitiveObjectInspectorUtils.getTimestamp(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
             if (timestamp == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((TimestampColumnVector) batch.cols[projectionColumnNum]).set(
+            ((TimestampColumnVector) columnVector).set(
                 batchIndex, timestamp);
           }
           break;
         case DATE:
           {
             final Date date = PrimitiveObjectInspectorUtils.getDate(
-                object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                object, sourcePrimitiveOI);
             if (date == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            final DateWritable dateWritable = (DateWritable) convertTargetWritables[logicalColumnIndex];
+            DateWritable dateWritable = (DateWritable) convertTargetWritable;
+            if (dateWritable == null) {
+              dateWritable = new DateWritable();
+            }
             dateWritable.set(date);
-            ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+            ((LongColumnVector) columnVector).vector[batchIndex] =
                 dateWritable.getDays();
           }
           break;
         case FLOAT:
-          ((DoubleColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((DoubleColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getFloat(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case DOUBLE:
-          ((DoubleColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+          ((DoubleColumnVector) columnVector).vector[batchIndex] =
               PrimitiveObjectInspectorUtils.getDouble(
-                  object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                  object, sourcePrimitiveOI);
           break;
         case BINARY:
           {
             final BytesWritable bytesWritable =
                 PrimitiveObjectInspectorUtils.getBinary(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (bytesWritable == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
+            ((BytesColumnVector) columnVector).setVal(
                 batchIndex, bytesWritable.getBytes(), 0, bytesWritable.getLength());
           }
           break;
         case STRING:
           {
             final String string = PrimitiveObjectInspectorUtils.getString(
-                object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                object, sourcePrimitiveOI);
             if (string == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            Text text = (Text) convertTargetWritables[logicalColumnIndex];
+            Text text = (Text) convertTargetWritable;
+            if (text == null) {
+              text = new Text();
+            }
             text.set(string);
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
+            ((BytesColumnVector) columnVector).setVal(
                 batchIndex, text.getBytes(), 0, text.getLength());
           }
           break;
@@ -763,16 +777,16 @@ public class VectorAssignRow {
 
             final HiveVarchar hiveVarchar =
                 PrimitiveObjectInspectorUtils.getHiveVarchar(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (hiveVarchar == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
 
             // TODO: Do we need maxLength checking?
 
             byte[] bytes = hiveVarchar.getValue().getBytes();
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
+            ((BytesColumnVector) columnVector).setVal(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
@@ -782,9 +796,9 @@ public class VectorAssignRow {
 
             final HiveChar hiveChar =
                 PrimitiveObjectInspectorUtils.getHiveChar(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (hiveChar == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
             // We store CHAR in vector row batch with padding stripped.
@@ -792,7 +806,7 @@ public class VectorAssignRow {
             // TODO: Do we need maxLength checking?
 
             final byte[] bytes = hiveChar.getStrippedValue().getBytes();
-            ((BytesColumnVector) batch.cols[projectionColumnNum]).setVal(
+            ((BytesColumnVector) columnVector).setVal(
                 batchIndex, bytes, 0, bytes.length);
           }
           break;
@@ -800,12 +814,12 @@ public class VectorAssignRow {
           {
             final HiveDecimal hiveDecimal =
                 PrimitiveObjectInspectorUtils.getHiveDecimal(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (hiveDecimal == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((DecimalColumnVector) batch.cols[projectionColumnNum]).set(
+            ((DecimalColumnVector) columnVector).set(
                 batchIndex, hiveDecimal);
           }
           break;
@@ -813,12 +827,12 @@ public class VectorAssignRow {
           {
             final HiveIntervalYearMonth intervalYearMonth =
                 PrimitiveObjectInspectorUtils.getHiveIntervalYearMonth(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (intervalYearMonth == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =
+            ((LongColumnVector) columnVector).vector[batchIndex] =
                 intervalYearMonth.getTotalMonths();
           }
           break;
@@ -826,12 +840,12 @@ public class VectorAssignRow {
           {
             final HiveIntervalDayTime intervalDayTime =
                 PrimitiveObjectInspectorUtils.getHiveIntervalDayTime(
-                    object, convertSourcePrimitiveObjectInspectors[logicalColumnIndex]);
+                    object, sourcePrimitiveOI);
             if (intervalDayTime == null) {
-              VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+              VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
               return;
             }
-            ((IntervalDayTimeColumnVector) batch.cols[projectionColumnNum]).set(
+            ((IntervalDayTimeColumnVector) columnVector).set(
                 batchIndex, intervalDayTime);
           }
           break;
@@ -840,18 +854,113 @@ public class VectorAssignRow {
               " not supported");
         }
         break;
+      case LIST:
+        {
+          final ListColumnVector listColumnVector = (ListColumnVector) columnVector;
+          final ListObjectInspector sourceListOI = (ListObjectInspector) sourceObjectInspector;
+          final ObjectInspector sourceElementOI = sourceListOI.getListElementObjectInspector();
+          final int size = sourceListOI.getListLength(object);
+          final TypeInfo targetElementTypeInfo = ((ListTypeInfo) targetTypeInfo).getListElementTypeInfo();
+
+          listColumnVector.offsets[batchIndex] = listColumnVector.childCount;
+          listColumnVector.childCount += size;
+          listColumnVector.ensureSize(listColumnVector.childCount, true);
+          listColumnVector.lengths[batchIndex] = size;
+
+          for (int i = 0; i < size; i++) {
+            final Object element = sourceListOI.getListElement(object, i);
+            final int offset = (int) (listColumnVector.offsets[batchIndex] + i);
+            assignConvertRowColumn(
+                listColumnVector.child,
+                offset,
+                targetElementTypeInfo,
+                sourceElementOI,
+                null,
+                element);
+          }
+        }
+        break;
+      case MAP:
+        {
+          final MapColumnVector mapColumnVector = (MapColumnVector) columnVector;
+          final MapObjectInspector mapObjectInspector = (MapObjectInspector) sourceObjectInspector;
+          final MapTypeInfo mapTypeInfo = (MapTypeInfo) targetTypeInfo;
+
+          final Map<?, ?> map = mapObjectInspector.getMap(object);
+          for (Map.Entry<?, ?> entry : map.entrySet()) {
+            assignConvertRowColumn(
+                mapColumnVector.keys,
+                batchIndex,
+                mapTypeInfo.getMapKeyTypeInfo(),
+                mapObjectInspector.getMapKeyObjectInspector(),
+                null,
+                entry.getKey());
+            assignConvertRowColumn(
+                mapColumnVector.values,
+                batchIndex,
+                mapTypeInfo.getMapValueTypeInfo(),
+                mapObjectInspector.getMapValueObjectInspector(),
+                null,
+                entry.getValue());
+          }
+        }
+        break;
+      case STRUCT:
+        {
+          final StructColumnVector structColumnVector = (StructColumnVector) columnVector;
+          final StructObjectInspector sourceStructOI = (StructObjectInspector) sourceObjectInspector;
+          final List<? extends StructField> sourceFields = sourceStructOI.getAllStructFieldRefs();
+          final StructTypeInfo targetStructTypeInfo = (StructTypeInfo) targetTypeInfo;
+          final List<TypeInfo> targetTypeInfos = targetStructTypeInfo.getAllStructFieldTypeInfos();
+          final int size = targetTypeInfos.size();
+
+          for (int i = 0; i < size; i++) {
+            if (i < sourceFields.size()) {
+              final StructField sourceStructField = sourceFields.get(i);
+              final ObjectInspector sourceFieldOI = sourceStructField.getFieldObjectInspector();
+              final Object sourceData = sourceStructOI.getStructFieldData(object, sourceStructField);
+              assignConvertRowColumn(
+                  structColumnVector.fields[i],
+                  batchIndex,
+                  targetTypeInfos.get(i),
+                  sourceFieldOI,
+                  null,
+                  sourceData);
+            } else {
+              final ColumnVector fieldColumnVector = structColumnVector.fields[i];
+              VectorizedBatchUtil.setNullColIsNullValue(fieldColumnVector, batchIndex);
+            }
+          }
+        }
+        break;
+      case UNION:
+        {
+          final UnionColumnVector unionColumnVector = (UnionColumnVector) columnVector;
+          final UnionObjectInspector unionObjectInspector = (UnionObjectInspector) sourceObjectInspector;
+          final UnionTypeInfo unionTypeInfo = (UnionTypeInfo) targetTypeInfo;
+          final int tag = unionObjectInspector.getTag(object);
+
+          assignConvertRowColumn(
+              unionColumnVector.fields[tag],
+              batchIndex,
+              unionTypeInfo.getAllUnionObjectTypeInfos().get(tag),
+              unionObjectInspector.getObjectInspectors().get(tag),
+              null,
+              unionObjectInspector.getField(tag));
+        }
+        break;
       default:
         throw new RuntimeException("Category " + targetCategory.name() + " not supported");
       }
     } catch (NumberFormatException e) {
 
       // Some of the conversion methods throw this exception on numeric parsing errors.
-      VectorizedBatchUtil.setNullColIsNullValue(batch.cols[projectionColumnNum], batchIndex);
+      VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
       return;
     }
 
     // We always set the null flag to false when there is a value.
-    batch.cols[projectionColumnNum].isNull[batchIndex] = false;
+    columnVector.isNull[batchIndex] = false;
   }
 
   /*
