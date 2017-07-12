@@ -70,6 +70,9 @@ public abstract class GenericUDFBasePad extends GenericUDF {
       return null;
     }
     int len = lenW.get();
+    if (len < 0) {
+      return null;
+    }
     builder.setLength(0);
 
     performOp(builder, len, str.toString(), pad.toString());
