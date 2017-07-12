@@ -101,14 +101,7 @@ public class TestHCatLoaderEncryption {
   private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
   private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
-      new HashMap<String, Set<String>>() {{
-        put(IOConstants.PARQUETFILE, new HashSet<String>() {{
-          add("testReadDataBasic");
-          add("testReadPartitionedBasic");
-          add("testProjectionsBasic");
-          add("testReadDataFromEncryptedHiveTable");
-        }});
-      }};
+      new HashMap<String, Set<String>>();
 
   private String storageFormat;
 
