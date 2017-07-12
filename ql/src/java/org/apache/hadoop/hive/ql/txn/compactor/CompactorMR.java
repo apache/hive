@@ -251,6 +251,7 @@ public class CompactorMR {
           // There are original format files
           for (HdfsFileStatusWithId stat : originalFiles) {
             Path path = stat.getFileStatus().getPath();
+            //note that originalFiles are all original files recursively not dirs
             dirsToSearch.add(path);
             LOG.debug("Adding original file " + path + " to dirs to search");
           }
@@ -275,6 +276,12 @@ public class CompactorMR {
 
     su.gatherStats();
   }
+
+  /**
+   * @param baseDir if not null, it's either table/partition root folder or base_xxxx.  
+   *                If it's base_xxxx, it's in dirsToSearch, else the actual original files
+   *                (all leaves recursively) are in the dirsToSearch list
+   */
   private void launchCompactionJob(JobConf job, Path baseDir, CompactionType compactionType,
                                    StringableList dirsToSearch,
                                    List<AcidUtils.ParsedDelta> parsedDeltas,
@@ -363,7 +370,7 @@ public class CompactorMR {
      * @param hadoopConf
      * @param bucket bucket to be processed by this split
      * @param files actual files this split should process.  It is assumed the caller has already
-     *              parsed out the files in base and deltas to populate this list.
+     *              parsed out the files in base and deltas to populate this list.  Includes copy_N
      * @param base directory of the base, or the partition/table location if the files are in old
      *             style.  Can be null.
      * @param deltas directories of the delta files.

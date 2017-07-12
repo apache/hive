@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.WritableComparable;
@@ -51,6 +52,11 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private long minimumTransactionId;
     private long maximumTransactionId;
     private int bucket;
+    /**
+     * Based on {@link org.apache.hadoop.hive.ql.metadata.Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean)}
+     * _copy_N starts with 1.
+     */
+    private int copyNumber = 0;
     private PrintStream dummyStream = null;
     private boolean oldStyle = false;
     private int recIdCol = -1;  // Column the record identifier is in, -1 indicates no record id
@@ -180,6 +186,18 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
 
     /**
+     * Multiple inserts into legacy (pre-acid) tables can generate multiple copies of each bucket
+     * file.
+     * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+     * @param copyNumber the number of the copy ( > 0)
+     * @return this
+     */
+    public Options copyNumber(int copyNumber) {
+      this.copyNumber = copyNumber;
+      return this;
+    }
+
+    /**
      * Whether it should use the old style (0000000_0) filenames.
      * @param value should use the old style names
      * @return this
@@ -292,6 +310,9 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
     public int getStatementId() {
       return statementId;
+    }
+    public int getCopyNumber() {
+      return copyNumber;
     }
     public Path getFinalDestination() {
       return finalDestination;
