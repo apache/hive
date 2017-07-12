@@ -68,14 +68,14 @@ STAGE PLANS:
             1 key (type: string)
             2 key (type: string)
           outputColumnNames: key, c_int, key0, c_int0
-          Statistics: Num rows: 324 Data size: 57672 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 324 Data size: 57494 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int)
             outputColumnNames: key, c_int, p, q
-            Statistics: Num rows: 324 Data size: 57672 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 324 Data size: 57494 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 324 Data size: 57672 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 324 Data size: 57494 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -730,14 +730,14 @@ STAGE PLANS:
             2 key (type: string)
             3 key (type: string)
           outputColumnNames: key, c_int, key0, c_int0, key1, c_int2
-          Statistics: Num rows: 1620 Data size: 432540 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 1620 Data size: 432273 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string), c_int (type: int), key0 (type: string), c_int0 (type: int), key1 (type: string), c_int2 (type: int)
             outputColumnNames: key, c_int, p, q, x, b
-            Statistics: Num rows: 1620 Data size: 432540 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 1620 Data size: 432273 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1620 Data size: 432540 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 1620 Data size: 432273 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
