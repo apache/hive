@@ -56,10 +56,6 @@ public class TestDateParser {
     // Leading spaces
     checkValidCase(" 1946-01-01", Date.valueOf("1946-01-01"));
     checkValidCase(" 2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
-
-    // Current date parsing is lenient
-    checkValidCase("2001-13-12", Date.valueOf("2002-01-12"));
-    checkValidCase("2001-11-31", Date.valueOf("2001-12-01"));
   }
 
   @Test
@@ -69,5 +65,9 @@ public class TestDateParser {
     checkInvalidCase("abc");
     checkInvalidCase(" 2001 ");
     checkInvalidCase("a2001-01-01");
+
+    // Date parsing should not be lenient
+    checkInvalidCase("2001-13-12");
+    checkInvalidCase("2001-11-31");
   }
 }

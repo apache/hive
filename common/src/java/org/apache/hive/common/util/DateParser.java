@@ -47,6 +47,13 @@ public class DateParser {
     if (parsedVal == null) {
       return false;
     }
+
+    String formattedParsedValue = formatter.format(parsedVal);
+    String cleanInput = strValue.trim().substring(0, 10);
+    if(!cleanInput.equals(formattedParsedValue)){
+      return false;
+    }
+
     result.setTime(parsedVal.getTime());
     return true;
   }
