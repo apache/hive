@@ -493,53 +493,10 @@ public class TestTxnCommands {
    * sorts rows in dictionary order
    */
   private List<String> stringifyValues(int[][] rowsIn) {
-    assert rowsIn.length > 0;
-    int[][] rows = rowsIn.clone();
-    Arrays.sort(rows, new RowComp());
-    List<String> rs = new ArrayList<String>();
-    for(int[] row : rows) {
-      assert row.length > 0;
-      StringBuilder sb = new StringBuilder();
-      for(int value : row) {
-        sb.append(value).append("\t");
-      }
-      sb.setLength(sb.length() - 1);
-      rs.add(sb.toString());
-    }
-    return rs;
-  }
-  private static final class RowComp implements Comparator<int[]> {
-    @Override
-    public int compare(int[] row1, int[] row2) {
-      assert row1 != null && row2 != null && row1.length == row2.length;
-      for(int i = 0; i < row1.length; i++) {
-        int comp = Integer.compare(row1[i], row2[i]);
-        if(comp != 0) {
-          return comp;
-        }
-      }
-      return 0;
-    }
+    return TestTxnCommands2.stringifyValues(rowsIn);
   }
   private String makeValuesClause(int[][] rows) {
-    assert rows.length > 0;
-    StringBuilder sb = new StringBuilder("values");
-    for(int[] row : rows) {
-      assert row.length > 0;
-      if(row.length > 1) {
-        sb.append("(");
-      }
-      for(int value : row) {
-        sb.append(value).append(",");
-      }
-      sb.setLength(sb.length() - 1);//remove trailing comma
-      if(row.length > 1) {
-        sb.append(")");
-      }
-      sb.append(",");
-    }
-    sb.setLength(sb.length() - 1);//remove trailing comma
-    return sb.toString();
+    return TestTxnCommands2.makeValuesClause(rows);
   }
 
   private List<String> runStatementOnDriver(String stmt) throws Exception {
@@ -559,7 +516,6 @@ public class TestTxnCommands {
     throw new RuntimeException("Didn't get expected failure!");
   }
 
-//  @Ignore
   @Test
   public void exchangePartition() throws Exception {
     runStatementOnDriver("create database ex1");
@@ -757,9 +713,9 @@ public class TestTxnCommands {
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
     String query = "merge into " + Table.ACIDTBL +
       " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
-      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
-      "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE " +
-      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " + //updates (2,1) -> (2,0)
+      "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE " +//deletes (4,3)
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";//inserts (11,11)
     runStatementOnDriver(query);
 
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
@@ -910,7 +866,7 @@ public class TestTxnCommands {
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/000001_0"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"transactionid\":0,\"bucketid\":1,\"rowid\":1}\t1\t5"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/000001_0_copy_1"));
-    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"transactionid\":14,\"bucketid\":1,\"rowid\":0}\t1\t17"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"transactionid\":14,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
     Assert.assertTrue(rs.get(3), rs.get(3).endsWith("nonacidorctbl/000001_0_copy_1"));
     //run Compaction
     runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
@@ -927,7 +883,7 @@ public class TestTxnCommands {
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/base_0000014/bucket_00001"));
     Assert.assertTrue(rs.get(2), rs.get(2).startsWith("{\"transactionid\":0,\"bucketid\":1,\"rowid\":1}\t1\t5"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/base_0000014/bucket_00001"));
-    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"transactionid\":14,\"bucketid\":1,\"rowid\":0}\t1\t17"));
+    Assert.assertTrue(rs.get(3), rs.get(3).startsWith("{\"transactionid\":14,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
     Assert.assertTrue(rs.get(3), rs.get(3).endsWith("nonacidorctbl/base_0000014/bucket_00001"));
 
     //make sure they are the same before and after compaction

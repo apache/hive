@@ -29,10 +29,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -48,10 +51,12 @@ import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * A RecordUpdater where the files are stored as ORC.
+ * A note on various record structures: the {@code row} coming in (as in {@link #insert(long, Object)}
+ * for example), is a struct like <RecordIdentifier, f1, ... fn> but what is written to the file
+ * * is <op, otid, writerId, rowid, ctid, <f1, ... fn>> (see {@link #createEventSchema(ObjectInspector)})
+ * So there are OIs here to make the translation.
  */
 public class OrcRecordUpdater implements RecordUpdater {
 
@@ -96,7 +101,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   private final IntWritable bucket = new IntWritable();
   private final LongWritable rowId = new LongWritable();
   private long insertedRows = 0;
-  private long rowIdOffset = 0;
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
@@ -111,6 +115,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   private LongObjectInspector rowIdInspector; // OI for the long row id inside the recordIdentifier
   private LongObjectInspector origTxnInspector; // OI for the original txn inside the record
   // identifer
+  private IntObjectInspector bucketInspector;
 
   static int getOperation(OrcStruct struct) {
     return ((IntWritable) struct.getFieldValue(OPERATION)).get();
@@ -200,7 +205,18 @@ public class OrcRecordUpdater implements RecordUpdater {
       this.acidOperationalProperties =
           AcidUtils.getAcidOperationalProperties(options.getConfiguration());
     }
-    this.bucket.set(options.getBucket());
+    BucketCodec bucketCodec = BucketCodec.V1;
+    if(options.getConfiguration() != null) {
+      //so that we can test "old" files
+      Configuration hc = options.getConfiguration();
+      if(hc.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST.name(), false) ||
+        hc.getBoolean(HiveConf.ConfVars.HIVE_IN_TEZ_TEST.name(), false)) {
+        bucketCodec = BucketCodec.getCodec(
+          hc.getInt(HiveConf.ConfVars.TESTMODE_BUCKET_CODEC_VERSION.name(),
+            BucketCodec.V1.getVersion()));
+      }
+    }
+    this.bucket.set(bucketCodec.encode(options));
     this.path = AcidUtils.createFilename(path, options);
     this.deleteEventWriter = null;
     this.deleteEventPath = null;
@@ -283,41 +299,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   public String toString() {
     return getClass().getName() + "[" + path +"]";
   }
-  /**
-   * To handle multiple INSERT... statements in a single transaction, we want to make sure
-   * to generate unique {@code rowId} for all inserted rows of the transaction.
-   * @return largest rowId created by previous statements (maybe 0)
-   * @throws IOException
-   */
-  private long findRowIdOffsetForInsert() throws IOException {
-    /*
-    * 1. need to know bucket we are writing to
-    * 2. need to know which delta dir it's in
-    * Then,
-    * 1. find the same bucket file in previous (insert) delta dir for this txn
-    *    (Note: in case of split_update, we can ignore the delete_delta dirs)
-    * 2. read the footer and get AcidStats which has insert count
-     * 2.1 if AcidStats.inserts>0 add to the insert count.
-     *  else go to previous delta file
-     *  For example, consider insert/update/insert case...*/
-    if(options.getStatementId() <= 0) {
-      return 0;//there is only 1 statement in this transaction (so far)
-    }
-    long totalInserts = 0;
-    for(int pastStmt = options.getStatementId() - 1; pastStmt >= 0; pastStmt--) {
-      Path matchingBucket = AcidUtils.createFilename(options.getFinalDestination(), options.clone().statementId(pastStmt));
-      if(!fs.exists(matchingBucket)) {
-        continue;
-      }
-      Reader reader = OrcFile.createReader(matchingBucket, OrcFile.readerOptions(options.getConfiguration()));
-      //no close() on Reader?!
-      AcidStats acidStats = OrcAcidUtils.parseAcidStats(reader);
-      if(acidStats.inserts > 0) {
-        totalInserts += acidStats.inserts;
-      }
-    }
-    return totalInserts;
-  }
   // Find the record identifier column (if there) and return a possibly new ObjectInspector that
   // will strain out the record id for the underlying writer.
   private ObjectInspector findRecId(ObjectInspector inspector, int rowIdColNum) {
@@ -338,6 +319,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       originalTxnField = fields.get(0);
       origTxnInspector = (LongObjectInspector)originalTxnField.getFieldObjectInspector();
       bucketField = fields.get(1);
+      bucketInspector = (IntObjectInspector) bucketField.getFieldObjectInspector();
       rowIdField = fields.get(2);
       rowIdInspector = (LongObjectInspector)rowIdField.getFieldObjectInspector();
 
@@ -346,11 +328,11 @@ public class OrcRecordUpdater implements RecordUpdater {
       return newInspector;
     }
   }
-
   private void addSimpleEvent(int operation, long currentTransaction, long rowId, Object row)
       throws IOException {
     this.operation.set(operation);
     this.currentTransaction.set(currentTransaction);
+    Integer currentBucket = null;
     // If this is an insert, originalTransaction should be set to this transaction.  If not,
     // it will be reset by the following if anyway.
     long originalTransaction = currentTransaction;
@@ -359,9 +341,8 @@ public class OrcRecordUpdater implements RecordUpdater {
       originalTransaction = origTxnInspector.get(
           recIdInspector.getStructFieldData(rowIdValue, originalTxnField));
       rowId = rowIdInspector.get(recIdInspector.getStructFieldData(rowIdValue, rowIdField));
-    }
-    else if(operation == INSERT_OPERATION) {
-      rowId += rowIdOffset;
+      currentBucket = setBucket(bucketInspector.get(
+        recIdInspector.getStructFieldData(rowIdValue, bucketField)), operation);
     }
     this.rowId.set(rowId);
     this.originalTransaction.set(originalTransaction);
@@ -372,6 +353,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       writer = OrcFile.createWriter(path, writerOptions);
     }
     writer.addRow(item);
+    restoreBucket(currentBucket, operation);
   }
 
   private void addSplitUpdateEvent(int operation, long currentTransaction, long rowId, Object row)
@@ -388,8 +370,11 @@ public class OrcRecordUpdater implements RecordUpdater {
             recIdInspector.getStructFieldData(rowValue, originalTxnField));
     rowId = rowIdInspector.get(
             recIdInspector.getStructFieldData(rowValue, rowIdField));
+    Integer currentBucket = null;
 
     if (operation == DELETE_OPERATION || operation == UPDATE_OPERATION) {
+      currentBucket = setBucket(bucketInspector.get(
+        recIdInspector.getStructFieldData(rowValue, bucketField)), operation);
       // Initialize a deleteEventWriter if not yet done. (Lazy initialization)
       if (deleteEventWriter == null) {
         // Initialize an indexBuilder for deleteEvents.
@@ -414,6 +399,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       item.setFieldValue(OrcRecordUpdater.ROW, null); // ROW is null for delete events.
       deleteEventIndexBuilder.addKey(DELETE_OPERATION, originalTransaction, bucket.get(), rowId);
       deleteEventWriter.addRow(item);
+      restoreBucket(currentBucket, operation);
     }
 
     if (operation == UPDATE_OPERATION) {
@@ -426,9 +412,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void insert(long currentTransaction, Object row) throws IOException {
     if (this.currentTransaction.get() != currentTransaction) {
       insertedRows = 0;
-      //this method is almost no-op in hcatalog.streaming case since statementId == 0 is
-      //always true in that case
-      rowIdOffset = findRowIdOffsetForInsert();
     }
     if (acidOperationalProperties.isSplitUpdate()) {
       addSplitUpdateEvent(INSERT_OPERATION, currentTransaction, insertedRows++, row);
@@ -442,7 +425,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void update(long currentTransaction, Object row) throws IOException {
     if (this.currentTransaction.get() != currentTransaction) {
       insertedRows = 0;
-      rowIdOffset = findRowIdOffsetForInsert();
     }
     if (acidOperationalProperties.isSplitUpdate()) {
       addSplitUpdateEvent(UPDATE_OPERATION, currentTransaction, -1L, row);
@@ -663,5 +645,16 @@ public class OrcRecordUpdater implements RecordUpdater {
     StructField getRecId() {
       return recId;
     }
+  }
+  private void restoreBucket(Integer currentBucket, int operation) {
+    if(currentBucket != null) {
+      setBucket(currentBucket, operation);
+    }
+  }
+  private int setBucket(int bucketProperty, int operation) {
+    assert operation == UPDATE_OPERATION || operation == DELETE_OPERATION;
+    int currentBucketProperty = bucket.get();
+    bucket.set(bucketProperty);
+    return currentBucketProperty;
   }
 }

@@ -1953,10 +1953,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     if (split.hasBase()) {
       AcidOutputFormat.Options acidIOOptions =
         AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf);
-      if(acidIOOptions.getBucket() < 0) {
+      if(acidIOOptions.getBucketId() < 0) {
         LOG.warn("Can't determine bucket ID for " + split.getPath() + "; ignoring");
       }
-      bucket = acidIOOptions.getBucket();
+      bucket = acidIOOptions.getBucketId();
       if(split.isOriginal()) {
         mergerOptions.copyIndex(acidIOOptions.getCopyNumber()).bucketPath(split.getPath());
       }
@@ -2033,7 +2033,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
       AcidOutputFormat.Options bucketInfo =
         AcidUtils.parseBaseOrDeltaBucketFilename(stat.getPath(), fs.getConf());
-      if(bucketInfo.getBucket() == bucket) {
+      if(bucketInfo.getBucketId() == bucket) {
         return stat.getPath();
       }
     }
@@ -2211,7 +2211,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         AcidOutputFormat.Options opts = AcidUtils.parseBaseOrDeltaBucketFilename
             (child.getFileStatus().getPath(), context.conf);
         opts.writingBase(true);
-        int b = opts.getBucket();
+        int b = opts.getBucketId();
         // If the bucket is in the valid range, mark it as covered.
         // I wish Hive actually enforced bucketing all of the time.
         if (b >= 0 && b < covered.length) {

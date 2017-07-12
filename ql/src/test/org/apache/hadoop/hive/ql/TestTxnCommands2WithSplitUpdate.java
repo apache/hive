@@ -542,45 +542,4 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
   }
-  @Ignore("HIVE-14947")
-  @Test
-  @Override
-  public void testDynamicPartitionsMerge() throws Exception {}
-  @Ignore("HIVE-14947")
-  @Test
-  @Override
-  public void testDynamicPartitionsMerge2() throws Exception {}
-  @Ignore("HIVE-14947")
-  @Test
-  @Override
-  public void testMerge() throws Exception {}
-
-  /**
-   * todo: remove this test once HIVE-14947 is done (parent class has a better version)
-   */
-  @Test
-  @Override
-  public void testMerge2() throws Exception {
-    int[][] baseValsOdd = {{5,5},{11,11}};
-    int[][] baseValsEven = {{2,2},{4,44}};
-    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='odd') " + makeValuesClause(baseValsOdd));
-    runStatementOnDriver("insert into " + Table.NONACIDPART2 + " PARTITION(p2='even') " + makeValuesClause(baseValsEven));
-    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
-    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
-    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(vals), r);
-    String query = "merge into " + Table.ACIDTBL +
-      " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = source.a2 " +
-      "WHEN MATCHED THEN UPDATE set b = source.b2 ";
-    r = runStatementOnDriver(query);
-
-    r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
-    int[][] rExpected = {{2,2},{4,44},{5,5},{7,8}};
-    Assert.assertEquals(stringifyValues(rExpected), r);
-
-  }
-  @Ignore("HIVE-14947")
-  @Test
-  @Override
-  public void testMergeWithPredicate() throws Exception {}
 }

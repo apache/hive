@@ -80,6 +80,13 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   @VisibleForTesting
   public final static class ReaderKey extends RecordIdentifier{
     private long currentTransactionId;
+    /**
+     * This is the value from delta file name which may be different from value encode in 
+     * {@link RecordIdentifier#getBucketProperty()} in case of Update/Delete.
+     * So for Acid 1.0 + multi-stmt txn, if {@code isSameRow() == true}, then it must be an update
+     * or delete event.  For Acid 2.0 + multi-stmt txn, it must be a delete event.
+     * No 2 Insert events from can ever agree on {@link RecordIdentifier}
+     */
     private int statementId;//sort on this descending, like currentTransactionId
 
     public ReaderKey() {
@@ -174,8 +181,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     @Override
     public String toString() {
-      return "{originalTxn: " + getTransactionId() + ", bucket: " +
-          getBucketId() + ", row: " + getRowId() + ", currentTxn: " +
+      return "{originalTxn: " + getTransactionId() + ", " +
+          bucketToString() + ", row: " + getRowId() + ", currentTxn: " +
           currentTransactionId + ", statementId: "+ statementId + "}";
     }
   }
@@ -375,7 +382,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
             AcidOutputFormat.Options bucketOptions =
               AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-            if (bucketOptions.getBucket() != bucket) {
+            if (bucketOptions.getBucketId() != bucket) {
               continue;
             }
             if(haveSeenCurrentFile) {
@@ -426,7 +433,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
             AcidOutputFormat.Options bucketOptions =
               AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-            if (bucketOptions.getBucket() == bucket) {
+            if (bucketOptions.getBucketId() == bucket) {
               numFilesInBucket++;
               if(numFilesInBucket > 1) {
                 isLastFileForThisBucket = false;
@@ -540,7 +547,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     private Reader advanceToNextFile() throws IOException {
       while(nextFileIndex < originalFiles.size()) {
         AcidOutputFormat.Options bucketOptions = AcidUtils.parseBaseOrDeltaBucketFilename(originalFiles.get(nextFileIndex).getFileStatus().getPath(), conf);
-        if (bucketOptions.getBucket() == bucket) {
+        if (bucketOptions.getBucketId() == bucket) {
           break;
         }
         nextFileIndex++;

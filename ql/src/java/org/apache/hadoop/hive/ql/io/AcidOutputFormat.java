@@ -51,7 +51,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private Reporter reporter;
     private long minimumTransactionId;
     private long maximumTransactionId;
-    private int bucket;
+    private int bucketId;
     /**
      * Based on {@link org.apache.hadoop.hive.ql.metadata.Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean)}
      * _copy_N starts with 1.
@@ -176,12 +176,12 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     }
 
     /**
-     * The bucket that is included in this file.
-     * @param bucket the bucket number
+     * The bucketId that is included in this file.
+     * @param bucket the bucketId number
      * @return this
      */
     public Options bucket(int bucket) {
-      this.bucket = bucket;
+      this.bucketId = bucket;
       return this;
     }
 
@@ -293,8 +293,8 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return writingDeleteDelta;
     }
 
-    public int getBucket() {
-      return bucket;
+    public int getBucketId() {
+      return bucketId;
     }
 
     public int getRecordIdColumn() {

@@ -114,25 +114,25 @@ public class TestAcidUtils {
     assertEquals(true, opts.isWritingBase());
     assertEquals(567, opts.getMaximumTransactionId());
     assertEquals(0, opts.getMinimumTransactionId());
-    assertEquals(123, opts.getBucket());
+    assertEquals(123, opts.getBucketId());
     opts = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "delta_000005_000006/bucket_00001"),
         conf);
     assertEquals(false, opts.getOldStyle());
     assertEquals(false, opts.isWritingBase());
     assertEquals(6, opts.getMaximumTransactionId());
     assertEquals(5, opts.getMinimumTransactionId());
-    assertEquals(1, opts.getBucket());
+    assertEquals(1, opts.getBucketId());
     opts = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "delete_delta_000005_000006/bucket_00001"),
         conf);
     assertEquals(false, opts.getOldStyle());
     assertEquals(false, opts.isWritingBase());
     assertEquals(6, opts.getMaximumTransactionId());
     assertEquals(5, opts.getMinimumTransactionId());
-    assertEquals(1, opts.getBucket());
+    assertEquals(1, opts.getBucketId());
     opts = AcidUtils.parseBaseOrDeltaBucketFilename(new Path(dir, "000123_0"), conf);
     assertEquals(true, opts.getOldStyle());
     assertEquals(true, opts.isWritingBase());
-    assertEquals(123, opts.getBucket());
+    assertEquals(123, opts.getBucketId());
     assertEquals(0, opts.getMinimumTransactionId());
     assertEquals(0, opts.getMaximumTransactionId());
 

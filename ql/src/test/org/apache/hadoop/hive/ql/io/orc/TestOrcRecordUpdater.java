@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -143,27 +144,27 @@ public class TestOrcRecordUpdater {
         OrcRecordUpdater.getOperation(row));
     assertEquals(11, OrcRecordUpdater.getCurrentTransaction(row));
     assertEquals(11, OrcRecordUpdater.getOriginalTransaction(row));
-    assertEquals(10, OrcRecordUpdater.getBucket(row));
+    assertEquals(10, getBucketId(row));
     assertEquals(0, OrcRecordUpdater.getRowId(row));
     assertEquals("first",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
     assertEquals(true, rows.hasNext());
     row = (OrcStruct) rows.next(null);
     assertEquals(1, OrcRecordUpdater.getRowId(row));
-    assertEquals(10, OrcRecordUpdater.getBucket(row));
+    assertEquals(10, getBucketId(row));
     assertEquals("second",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
     assertEquals(true, rows.hasNext());
     row = (OrcStruct) rows.next(null);
     assertEquals(2, OrcRecordUpdater.getRowId(row));
-    assertEquals(10, OrcRecordUpdater.getBucket(row));
+    assertEquals(10, getBucketId(row));
     assertEquals("third",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
     assertEquals(true, rows.hasNext());
     row = (OrcStruct) rows.next(null);
     assertEquals(12, OrcRecordUpdater.getCurrentTransaction(row));
     assertEquals(12, OrcRecordUpdater.getOriginalTransaction(row));
-    assertEquals(10, OrcRecordUpdater.getBucket(row));
+    assertEquals(10, getBucketId(row));
     assertEquals(0, OrcRecordUpdater.getRowId(row));
     assertEquals("fourth",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
@@ -184,7 +185,11 @@ public class TestOrcRecordUpdater {
 
     assertEquals(false, fs.exists(sidePath));
   }
-
+  private static int getBucketId(OrcStruct row) {
+    int bucketValue = OrcRecordUpdater.getBucket(row);
+    return
+      BucketCodec.determineVersion(bucketValue).decodeWriterId(bucketValue);
+  }
   @Test
   public void testWriterTblProperties() throws Exception {
     Path root = new Path(workDir, "testWriterTblProperties");

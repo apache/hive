@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -75,7 +76,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -768,8 +768,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // Find the bucket id, and switch buckets if need to
         ObjectInspector rowInspector = bDynParts ? subSetOI : outputObjInspector;
         Object recId = ((StructObjectInspector)rowInspector).getStructFieldData(row, recIdField);
-        int bucketNum =
+        int bucketProperty =
             bucketInspector.get(recIdInspector.getStructFieldData(recId, bucketField));
+        int bucketNum = 
+          BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
         if (fpaths.acidLastBucket != bucketNum) {
           fpaths.acidLastBucket = bucketNum;
           // Switch files

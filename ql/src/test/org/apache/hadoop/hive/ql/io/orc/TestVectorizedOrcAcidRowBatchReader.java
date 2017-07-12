@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
@@ -72,6 +73,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     DummyRow(long val, long rowId, long origTxn, int bucket) {
       field = new LongWritable(val);
+      bucket = BucketCodec.V1.encode(new AcidOutputFormat.Options(null).bucket(bucket));
       ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
 

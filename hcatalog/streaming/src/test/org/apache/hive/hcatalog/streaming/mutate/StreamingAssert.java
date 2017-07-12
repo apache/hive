@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -148,7 +147,7 @@ public class StreamingAssert {
     while (recordReader.next(key, value)) {
       RecordIdentifier recordIdentifier = recordReader.getRecordIdentifier();
       Record record = new Record(new RecordIdentifier(recordIdentifier.getTransactionId(),
-          recordIdentifier.getBucketId(), recordIdentifier.getRowId()), value.toString());
+          recordIdentifier.getBucketProperty(), recordIdentifier.getRowId()), value.toString());
       System.out.println(record);
       records.add(record);
     }

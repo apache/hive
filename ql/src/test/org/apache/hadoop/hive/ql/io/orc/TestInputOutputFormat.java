@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.Context;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitStrategy;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -2445,14 +2444,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(607, split.getLength());
+    assertEquals(648, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(629, split.getLength());
+    assertEquals(674, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -3858,7 +3857,7 @@ public class TestInputOutputFormat {
     OrcStruct struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
-      assertEquals("bucket " + record, 0, id.getBucketId());
+      assertEquals("bucket " + record, 0, id.getBucketProperty());
       assertEquals("trans " + record, 1, id.getTransactionId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());
@@ -3885,7 +3884,7 @@ public class TestInputOutputFormat {
     struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
-      assertEquals("bucket " + record, 0, id.getBucketId());
+      assertEquals("bucket " + record, 0, id.getBucketProperty());
       assertEquals("trans " + record, 1, id.getTransactionId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());

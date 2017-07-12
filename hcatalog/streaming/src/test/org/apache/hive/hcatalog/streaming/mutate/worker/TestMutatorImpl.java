@@ -75,7 +75,7 @@ public class TestMutatorImpl {
   public void testCreatesRecordReader() throws IOException {
     verify(mockOutputFormat).getRecordUpdater(eq(PATH), captureOptions.capture());
     Options options = captureOptions.getValue();
-    assertThat(options.getBucket(), is(BUCKET_ID));
+    assertThat(options.getBucketId(), is(BUCKET_ID));
     assertThat(options.getConfiguration(), is((Configuration) configuration));
     assertThat(options.getInspector(), is(mockObjectInspector));
     assertThat(options.getRecordIdColumn(), is(RECORD_ID_COLUMN));

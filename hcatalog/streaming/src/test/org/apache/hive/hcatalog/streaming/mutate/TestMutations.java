@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hive.hcatalog.streaming.TestStreaming;
 import org.apache.hive.hcatalog.streaming.mutate.StreamingAssert.Factory;
@@ -100,6 +102,10 @@ public class TestMutations {
         .addColumn("id", "int")
         .addColumn("msg", "string")
         .bucketCols(Collections.singletonList("string"));
+  }
+  private static int encodeBucket(int bucketId) {
+    return BucketCodec.V1.encode(
+      new AcidOutputFormat.Options(null).bucket(bucketId));
   }
 
   @Test
@@ -242,7 +248,8 @@ public class TestMutations {
     List<Record> readRecords = streamingAssertions.readRecords();
     assertThat(readRecords.size(), is(1));
     assertThat(readRecords.get(0).getRow(), is("{1, Hello streaming}"));
-    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
 
     assertThat(transaction.getState(), is(COMMITTED));
     client.close();
@@ -299,7 +306,8 @@ public class TestMutations {
     List<Record> readRecords = streamingAssertions.readRecords();
     assertThat(readRecords.size(), is(1));
     assertThat(readRecords.get(0).getRow(), is("{1, Hello streaming}"));
-    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
 
     // EUROPE_UK
     streamingAssertions = assertionFactory.newStreamingAssert(table, EUROPE_UK);
@@ -310,7 +318,8 @@ public class TestMutations {
     readRecords = streamingAssertions.readRecords();
     assertThat(readRecords.size(), is(1));
     assertThat(readRecords.get(0).getRow(), is("{2, Hello streaming}"));
-    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
 
     // EUROPE_FRANCE
     streamingAssertions = assertionFactory.newStreamingAssert(table, EUROPE_FRANCE);
@@ -321,9 +330,11 @@ public class TestMutations {
     readRecords = streamingAssertions.readRecords();
     assertThat(readRecords.size(), is(2));
     assertThat(readRecords.get(0).getRow(), is("{3, Hello streaming}"));
-    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
     assertThat(readRecords.get(1).getRow(), is("{4, Bonjour streaming}"));
-    assertThat(readRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 1L)));
+    assertThat(readRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 1L)));
 
     client.close();
   }
@@ -369,7 +380,8 @@ public class TestMutations {
     List<Record> readRecords = streamingAssertions.readRecords();
     assertThat(readRecords.size(), is(1));
     assertThat(readRecords.get(0).getRow(), is("{1, Hello streaming}"));
-    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(readRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
 
     assertThat(transaction.getState(), is(COMMITTED));
     client.close();
@@ -499,13 +511,15 @@ public class TestMutations {
         "Namaste streaming 3"));
 
     mutateCoordinator.update(ASIA_INDIA, new MutableRecord(2, "UPDATED: Namaste streaming 2", new RecordIdentifier(1L,
-        0, 1L)));
+      encodeBucket(0), 1L)));
     mutateCoordinator.insert(ASIA_INDIA, asiaIndiaRecord3);
-    mutateCoordinator.delete(EUROPE_UK, new MutableRecord(3, "Hello streaming 1", new RecordIdentifier(1L, 0, 0L)));
+    mutateCoordinator.delete(EUROPE_UK, new MutableRecord(3, "Hello streaming 1", new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
     mutateCoordinator.delete(EUROPE_FRANCE,
-        new MutableRecord(5, "Bonjour streaming 1", new RecordIdentifier(1L, 0, 0L)));
+        new MutableRecord(5, "Bonjour streaming 1", new RecordIdentifier(1L,
+          encodeBucket(0), 0L)));
     mutateCoordinator.update(EUROPE_FRANCE, new MutableRecord(6, "UPDATED: Bonjour streaming 2", new RecordIdentifier(
-        1L, 0, 1L)));
+        1L, encodeBucket(0), 1L)));
     mutateCoordinator.close();
 
     mutateTransaction.commit();
@@ -518,11 +532,14 @@ public class TestMutations {
     List<Record> indiaRecords = indiaAssertions.readRecords();
     assertThat(indiaRecords.size(), is(3));
     assertThat(indiaRecords.get(0).getRow(), is("{1, Namaste streaming 1}"));
-    assertThat(indiaRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 0L)));
+    assertThat(indiaRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 0L)));
     assertThat(indiaRecords.get(1).getRow(), is("{2, UPDATED: Namaste streaming 2}"));
-    assertThat(indiaRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 1L)));
+    assertThat(indiaRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 1L)));
     assertThat(indiaRecords.get(2).getRow(), is("{20, Namaste streaming 3}"));
-    assertThat(indiaRecords.get(2).getRecordIdentifier(), is(new RecordIdentifier(2L, 0, 0L)));
+    assertThat(indiaRecords.get(2).getRecordIdentifier(), is(new RecordIdentifier(2L,
+      encodeBucket(0), 0L)));
 
     StreamingAssert ukAssertions = assertionFactory.newStreamingAssert(table, EUROPE_UK);
     ukAssertions.assertMinTransactionId(1L);
@@ -530,7 +547,8 @@ public class TestMutations {
     List<Record> ukRecords = ukAssertions.readRecords();
     assertThat(ukRecords.size(), is(1));
     assertThat(ukRecords.get(0).getRow(), is("{4, Hello streaming 2}"));
-    assertThat(ukRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 1L)));
+    assertThat(ukRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 1L)));
 
     StreamingAssert franceAssertions = assertionFactory.newStreamingAssert(table, EUROPE_FRANCE);
     franceAssertions.assertMinTransactionId(1L);
@@ -538,7 +556,8 @@ public class TestMutations {
     List<Record> franceRecords = franceAssertions.readRecords();
     assertThat(franceRecords.size(), is(1));
     assertThat(franceRecords.get(0).getRow(), is("{6, UPDATED: Bonjour streaming 2}"));
-    assertThat(franceRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L, 0, 1L)));
+    assertThat(franceRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
+      encodeBucket(0), 1L)));
 
     client.close();
   }

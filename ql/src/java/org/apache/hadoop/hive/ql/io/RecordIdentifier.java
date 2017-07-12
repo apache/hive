@@ -89,7 +89,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         return;
       }
       struct[Field.transactionId.ordinal()] = ri.getTransactionId();
-      struct[Field.bucketId.ordinal()] = ri.getBucketId();
+      struct[Field.bucketId.ordinal()] = ri.getBucketProperty();
       struct[Field.rowId.ordinal()] = ri.getRowId();
     }
   }
@@ -142,10 +142,10 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   }
 
   /**
-   * What was the original bucket id for the last row?
-   * @return the bucket id
+   * See {@link BucketCodec} for details
+   * @return the bucket value;
    */
-  public int getBucketId() {
+  public int getBucketProperty() {
     return bucketId;
   }
 
@@ -219,7 +219,16 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public String toString() {
-    return "{originalTxn: " + transactionId + ", bucket: " +
-        bucketId + ", row: " + getRowId() + "}";
+    BucketCodec codec = 
+      BucketCodec.determineVersion(bucketId);
+    String s = "(" + codec.getVersion() + "." + codec.decodeWriterId(bucketId) +
+      "." + codec.decodeStatementId(bucketId) + ")";
+    return "{originalTxn: " + transactionId + ", " + bucketToString() + ", row: " + getRowId() +"}";
+  }
+  protected String bucketToString() {
+    BucketCodec codec =
+      BucketCodec.determineVersion(bucketId);
+    return  "bucket: " + bucketId + "(" + codec.getVersion() + "." +
+      codec.decodeWriterId(bucketId) + "." + codec.decodeStatementId(bucketId) + ")";
   }
 }

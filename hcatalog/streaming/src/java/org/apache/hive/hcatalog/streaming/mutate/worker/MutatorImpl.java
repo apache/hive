@@ -22,6 +22,8 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,20 +33,24 @@ public class MutatorImpl implements Mutator {
 
   private final long transactionId;
   private final Path partitionPath;
-  private final int bucketId;
+  private final int bucketProperty;
   private final Configuration configuration;
   private final int recordIdColumn;
   private final ObjectInspector objectInspector;
   private RecordUpdater updater;
 
+  /**
+   * @param bucketProperty - from existing {@link RecordIdentifier#getBucketProperty()}
+   * @throws IOException
+   */
   public MutatorImpl(Configuration configuration, int recordIdColumn, ObjectInspector objectInspector,
-      AcidOutputFormat<?, ?> outputFormat, long transactionId, Path partitionPath, int bucketId) throws IOException {
+      AcidOutputFormat<?, ?> outputFormat, long transactionId, Path partitionPath, int bucketProperty) throws IOException {
     this.configuration = configuration;
     this.recordIdColumn = recordIdColumn;
     this.objectInspector = objectInspector;
     this.transactionId = transactionId;
     this.partitionPath = partitionPath;
-    this.bucketId = bucketId;
+    this.bucketProperty = bucketProperty;
 
     updater = createRecordUpdater(outputFormat);
   }
@@ -84,10 +90,12 @@ public class MutatorImpl implements Mutator {
   @Override
   public String toString() {
     return "ObjectInspectorMutator [transactionId=" + transactionId + ", partitionPath=" + partitionPath
-        + ", bucketId=" + bucketId + "]";
+        + ", bucketId=" + bucketProperty + "]";
   }
 
   protected RecordUpdater createRecordUpdater(AcidOutputFormat<?, ?> outputFormat) throws IOException {
+    int bucketId = BucketCodec
+      .determineVersion(bucketProperty).decodeWriterId(bucketProperty); 
     return outputFormat.getRecordUpdater(
         partitionPath,
         new AcidOutputFormat.Options(configuration)

@@ -196,7 +196,7 @@ public class AcidUtils {
     String subdir;
     if (options.getOldStyle()) {
       return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
-          options.getBucket()) + "_0");
+          options.getBucketId()) + "_0");
     } else if (options.isWritingBase()) {
       subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
           options.getMaximumTransactionId());
@@ -217,7 +217,7 @@ public class AcidUtils {
                         options.getMaximumTransactionId(),
                         options.getStatementId());
     }
-    return createBucketFile(new Path(directory, subdir), options.getBucket());
+    return createBucketFile(new Path(directory, subdir), options.getBucketId());
   }
 
   /**
