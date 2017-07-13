@@ -1219,7 +1219,7 @@ public class DagUtils {
    * Set up credentials for the base work on secure clusters
    */
   public void addCredentials(BaseWork work, DAG dag) throws IOException {
-    dag.setCredentials(UserGroupInformation.getCurrentUser().getCredentials());
+    dag.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
     if (work instanceof MapWork) {
       addCredentials((MapWork) work, dag);
     } else if (work instanceof ReduceWork) {
