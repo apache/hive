@@ -214,3 +214,13 @@ explain  select * from part where p_size > (select max(p_size) from part group b
 -- same as above, for correlated columns
 explain  select * from part where p_size > (select max(p_size) from part p where p.p_type = part.p_type group by p_type);
 
+-- following queries shouldn't have a join with sq_count_check
+set hive.optimize.remove.sq_count_check = true;
+explain select key, count(*) from src group by key having count(*) >
+    (select count(*) from src s1 group by 4);
+
+explain select key, count(*) from src group by key having count(*) >
+    (select count(*) from src s1 where s1.key = '90' group by s1.key );
+
+set hive.optimize.remove.sq_count_check = false;
+

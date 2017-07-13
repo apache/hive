@@ -54,6 +54,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
@@ -74,75 +76,78 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
  * the rewrite, and the product of the rewrite will be a {@link Correlate}.
  * The Correlate can be removed using {@link RelDecorrelator}.
  */
-public abstract class HiveSubQueryRemoveRule extends RelOptRule{
+public class HiveSubQueryRemoveRule extends RelOptRule{
 
-    public static final HiveSubQueryRemoveRule REL_NODE =
-        new HiveSubQueryRemoveRule(
-            operand(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE,
-                any()),
-            HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter") {
-            public void onMatch(RelOptRuleCall call) {
-                final RelNode relNode = call.rel(0);
-                //TODO: replace HiveSubQRemoveRelBuilder with calcite's once calcite 1.11.0 is released
-                final HiveSubQRemoveRelBuilder builder = new HiveSubQRemoveRelBuilder(null, call.rel(0).getCluster(), null);
+    private HiveConf conf;
 
-                // if subquery is in FILTER
-                if(relNode instanceof Filter) {
-                    final Filter filter = call.rel(0);
-                    final RexSubQuery e =
-                        RexUtil.SubQueryFinder.find(filter.getCondition());
-                    assert e != null;
+    public HiveSubQueryRemoveRule(HiveConf conf) {
+        super(operand(RelNode.class, null, HiveSubQueryFinder.RELNODE_PREDICATE,
+            any()),
+            HiveRelFactories.HIVE_BUILDER, "SubQueryRemoveRule:Filter") ;
+        this.conf = conf;
 
-                    final RelOptUtil.Logic logic =
-                        LogicVisitor.find(RelOptUtil.Logic.TRUE,
-                            ImmutableList.of(filter.getCondition()), e);
-                    builder.push(filter.getInput());
-                    final int fieldCount = builder.peek().getRowType().getFieldCount();
+    }
+    public void onMatch(RelOptRuleCall call) {
+        final RelNode relNode = call.rel(0);
+        //TODO: replace HiveSubQRemoveRelBuilder with calcite's once calcite 1.11.0 is released
+        final HiveSubQRemoveRelBuilder builder = new HiveSubQRemoveRelBuilder(null, call.rel(0).getCluster(), null);
 
-                    assert(filter instanceof HiveFilter);
-                    SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
-                    boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-                    boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
+        // if subquery is in FILTER
+        if(relNode instanceof Filter) {
+            final Filter filter = call.rel(0);
+            final RexSubQuery e =
+                RexUtil.SubQueryFinder.find(filter.getCondition());
+            assert e != null;
 
-                    final RexNode target = apply(e, HiveFilter.getVariablesSet(e), logic,
-                        builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
-                    final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
-                    builder.filter(shuttle.apply(filter.getCondition()));
-                    builder.project(fields(builder, filter.getRowType().getFieldCount()));
-                    call.transformTo(builder.build());
-                }
-                // if subquery is in PROJECT
-                else if(relNode instanceof Project) {
-                    final Project project = call.rel(0);
-                    final RexSubQuery e =
-                        RexUtil.SubQueryFinder.find(project.getProjects());
-                    assert e != null;
+            final RelOptUtil.Logic logic =
+                LogicVisitor.find(RelOptUtil.Logic.TRUE,
+                    ImmutableList.of(filter.getCondition()), e);
+            builder.push(filter.getInput());
+            final int fieldCount = builder.peek().getRowType().getFieldCount();
 
-                    final RelOptUtil.Logic logic =
-                        LogicVisitor.find(RelOptUtil.Logic.TRUE_FALSE_UNKNOWN,
-                            project.getProjects(), e);
-                    builder.push(project.getInput());
-                    final int fieldCount = builder.peek().getRowType().getFieldCount();
+            assert(filter instanceof HiveFilter);
+            SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+            boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+            boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
 
-                    SubqueryConf subqueryConfig = project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
-                    boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-                    boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
+            final RexNode target = apply(e, HiveFilter.getVariablesSet(e), logic,
+                builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+            final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
+            builder.filter(shuttle.apply(filter.getCondition()));
+            builder.project(fields(builder, filter.getRowType().getFieldCount()));
+            call.transformTo(builder.build());
+        }
+        // if subquery is in PROJECT
+        else if(relNode instanceof Project) {
+            final Project project = call.rel(0);
+            final RexSubQuery e =
+                RexUtil.SubQueryFinder.find(project.getProjects());
+            assert e != null;
 
-                    final RexNode target = apply(e, HiveFilter.getVariablesSet(e),
-                        logic, builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
-                    final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
-                    builder.project(shuttle.apply(project.getProjects()),
-                        project.getRowType().getFieldNames());
-                    call.transformTo(builder.build());
-                }
-            }
-        };
+            final RelOptUtil.Logic logic =
+                LogicVisitor.find(RelOptUtil.Logic.TRUE_FALSE_UNKNOWN,
+                    project.getProjects(), e);
+            builder.push(project.getInput());
+            final int fieldCount = builder.peek().getRowType().getFieldCount();
 
-    private HiveSubQueryRemoveRule(RelOptRuleOperand operand,
+            SubqueryConf subqueryConfig = project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+            boolean isCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+            boolean hasNoWindowingAndNoGby = subqueryConfig.getScalarAggWithoutGbyWindowing().contains(e.rel);
+
+            final RexNode target = apply(e, HiveFilter.getVariablesSet(e),
+                logic, builder, 1, fieldCount, isCorrScalarQuery, hasNoWindowingAndNoGby);
+            final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
+            builder.project(shuttle.apply(project.getProjects()),
+                project.getRowType().getFieldNames());
+            call.transformTo(builder.build());
+        }
+    }
+
+    /*private HiveSubQueryRemoveRule(RelOptRuleOperand operand,
                                RelBuilderFactory relBuilderFactory,
                                String description) {
         super(operand, relBuilderFactory, description);
-    }
+    } */
 
     // given a subquery it checks to see what is the aggegate function
     /// if COUNT returns true since COUNT produces 0 on empty result set
@@ -166,264 +171,277 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
     }
 
     protected RexNode apply(RexSubQuery e, Set<CorrelationId> variablesSet,
-                            RelOptUtil.Logic logic,
-                            HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
-                            boolean isCorrScalarAgg,
-                            boolean hasNoWindowingAndNoGby ) {
+        RelOptUtil.Logic logic,
+        HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
+        boolean isCorrScalarAgg,
+        boolean hasNoWindowingAndNoGby ) {
         switch (e.getKind()) {
-            case SCALAR_QUERY:
-                // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
-                // since it is guaranteed to produce at most one row
-                if(!hasNoWindowingAndNoGby) {
-                    builder.push(e.rel);
-                    // returns single row/column
-                    builder.aggregate(builder.groupKey(), builder.count(false, "cnt"));
+        case SCALAR_QUERY:
+            // if scalar query has aggregate and no windowing and no gby avoid adding sq_count_check
+            // since it is guaranteed to produce at most one row
+            if(!hasNoWindowingAndNoGby) {
+                final List<RexNode> parentQueryFields = new ArrayList<>();
+                if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
+                    // we want to have project after join since sq_count_check's count() expression wouldn't
+                    // be needed further up
+                    parentQueryFields.addAll(builder.fields());
+                }
 
-                    SqlFunction countCheck =
-                        new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
-                            InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+                builder.push(e.rel);
+                // returns single row/column
+                builder.aggregate(builder.groupKey(), builder.count(false, "cnt"));
 
-                    // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
-                    //  ends up getting rid of Project since it is not used further up the tree
-                    builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-                        builder.call(countCheck, builder.field("cnt")), builder.literal(1)));
-                    if (!variablesSet.isEmpty()) {
-                        builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                    } else
-                        builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+                SqlFunction countCheck =
+                    new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
 
+                // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
+                //  ends up getting rid of Project since it is not used further up the tree
+                builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                    builder.call(countCheck, builder.field("cnt")), builder.literal(1)));
+                if (!variablesSet.isEmpty()) {
+                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                } else
+                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+
+                if (conf.getBoolVar(ConfVars.HIVE_REMOVE_SQ_COUNT_CHECK)) {
+                    builder.project(parentQueryFields);
+                }
+                else {
                     offset++;
                 }
-                if(isCorrScalarAgg) {
-                    // Transformation :
-                    // Outer Query Left Join (inner query) on correlated predicate and preserve rows only from left side.
-                    builder.push(e.rel);
-                    final List<RexNode> parentQueryFields = new ArrayList<>();
-                    parentQueryFields.addAll(builder.fields());
 
-                    // id is appended since there could be multiple scalar subqueries and FILTER
-                    // is created using field name
-                    String indicator = "alwaysTrue" + e.rel.getId();
-                    parentQueryFields.add(builder.alias(builder.literal(true), indicator));
-                    builder.project(parentQueryFields);
-                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-
-                    final ImmutableList.Builder<RexNode> operands = ImmutableList.builder();
-                    RexNode literal;
-                    if(isAggZeroOnEmpty(e)) {
-                        // since count has a return type of BIG INT we need to make a literal of type big int
-                        // relbuilder's literal doesn't allow this
-                        literal = e.rel.getCluster().getRexBuilder().makeBigintLiteral(new BigDecimal(0));
-                    }
-                    else {
-                        literal = e.rel.getCluster().getRexBuilder().makeNullLiteral(getAggTypeForScalarSub(e));
-                    }
-                    operands.add((builder.isNull(builder.field(indicator))), literal);
-                    operands.add(field(builder, 1, builder.fields().size()-2));
-                    return builder.call(SqlStdOperatorTable.CASE, operands.build());
-                }
-
-                //Transformation is to left join for correlated predicates and inner join otherwise,
-                // but do a count on inner side before that to make sure it generates atmost 1 row.
+            }
+            if(isCorrScalarAgg) {
+                // Transformation :
+                // Outer Query Left Join (inner query) on correlated predicate and preserve rows only from left side.
                 builder.push(e.rel);
+                final List<RexNode> parentQueryFields = new ArrayList<>();
+                parentQueryFields.addAll(builder.fields());
+
+                // id is appended since there could be multiple scalar subqueries and FILTER
+                // is created using field name
+                String indicator = "alwaysTrue" + e.rel.getId();
+                parentQueryFields.add(builder.alias(builder.literal(true), indicator));
+                builder.project(parentQueryFields);
                 builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                return field(builder, inputCount, offset);
 
-            case IN:
-            case EXISTS:
-                // Most general case, where the left and right keys might have nulls, and
-                // caller requires 3-valued logic return.
-                //
-                // select e.deptno, e.deptno in (select deptno from emp)
-                //
-                // becomes
-                //
-                // select e.deptno,
-                //   case
-                //   when ct.c = 0 then false
-                //   when dt.i is not null then true
-                //   when e.deptno is null then null
-                //   when ct.ck < ct.c then null
-                //   else false
-                //   end
-                // from e
-                // left join (
-                //   (select count(*) as c, count(deptno) as ck from emp) as ct
-                //   cross join (select distinct deptno, true as i from emp)) as dt
-                //   on e.deptno = dt.deptno
-                //
-                // If keys are not null we can remove "ct" and simplify to
-                //
-                // select e.deptno,
-                //   case
-                //   when dt.i is not null then true
-                //   else false
-                //   end
-                // from e
-                // left join (select distinct deptno, true as i from emp) as dt
-                //   on e.deptno = dt.deptno
-                //
-                // We could further simplify to
-                //
-                // select e.deptno,
-                //   dt.i is not null
-                // from e
-                // left join (select distinct deptno, true as i from emp) as dt
-                //   on e.deptno = dt.deptno
-                //
-                // but have not yet.
-                //
-                // If the logic is TRUE we can just kill the record if the condition
-                // evaluates to FALSE or UNKNOWN. Thus the query simplifies to an inner
-                // join:
-                //
-                // select e.deptno,
-                //   true
-                // from e
-                // inner join (select distinct deptno from emp) as dt
-                //   on e.deptno = dt.deptno
-                //
-
-                builder.push(e.rel);
-                final List<RexNode> fields = new ArrayList<>();
-                switch (e.getKind()) {
-                    case IN:
-                        fields.addAll(builder.fields());
-                        // Transformation: sq_count_check(count(*), true) FILTER is generated on top
-                        //  of subquery which is then joined (LEFT or INNER) with outer query
-                        //  This transformation is done to add run time check using sq_count_check to
-                        //  throw an error if subquery is producing zero row, since with aggregate this
-                        //  will produce wrong results (because we further rewrite such queries into JOIN)
-                        if(isCorrScalarAgg) {
-                            // returns single row/column
-                            builder.aggregate(builder.groupKey(),
-                                    builder.count(false, "cnt_in"));
-
-                            if (!variablesSet.isEmpty()) {
-                                builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                            } else {
-                                builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
-                            }
-
-                            SqlFunction inCountCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
-                                    InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
-
-                            // we create FILTER (sq_count_check(count()) > 0) instead of PROJECT because RelFieldTrimmer
-                            //  ends up getting rid of Project since it is not used further up the tree
-                            builder.filter(builder.call(SqlStdOperatorTable.GREATER_THAN,
-                                    //true here indicates that sq_count_check is for IN/NOT IN subqueries
-                                    builder.call(inCountCheck, builder.field("cnt_in"), builder.literal(true)),
-                                    builder.literal(0)));
-                            offset =  offset + 1;
-                            builder.push(e.rel);
-                        }
-                }
-
-                // First, the cross join
-                switch (logic) {
-                    case TRUE_FALSE_UNKNOWN:
-                    case UNKNOWN_AS_TRUE:
-                        // Since EXISTS/NOT EXISTS are not affected by presence of
-                        // null keys we do not need to generate count(*), count(c)
-                        if (e.getKind() == SqlKind.EXISTS) {
-                            logic = RelOptUtil.Logic.TRUE_FALSE;
-                            break;
-                        }
-                        builder.aggregate(builder.groupKey(),
-                                builder.count(false, "c"),
-                                builder.aggregateCall(SqlStdOperatorTable.COUNT, false, null, "ck",
-                                        builder.fields()));
-                        builder.as("ct");
-                        if( !variablesSet.isEmpty())
-                        {
-                            //builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
-                            builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                        }
-                        else
-                            builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
-
-                        offset += 2;
-                        builder.push(e.rel);
-                        break;
-                }
-
-                // Now the left join
-                switch (logic) {
-                    case TRUE:
-                        if (fields.isEmpty()) {
-                            builder.project(builder.alias(builder.literal(true), "i" + e.rel.getId()));
-                            builder.aggregate(builder.groupKey(0));
-                        } else {
-                            builder.aggregate(builder.groupKey(fields));
-                        }
-                        break;
-                    default:
-                        fields.add(builder.alias(builder.literal(true), "i" + e.rel.getId()));
-                        builder.project(fields);
-                        builder.distinct();
-                }
-                builder.as("dt");
-                final List<RexNode> conditions = new ArrayList<>();
-                for (Pair<RexNode, RexNode> pair
-                        : Pair.zip(e.getOperands(), builder.fields())) {
-                    conditions.add(
-                            builder.equals(pair.left, RexUtil.shift(pair.right, offset)));
-                }
-                switch (logic) {
-                    case TRUE:
-                        builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet);
-                        return builder.literal(true);
-                }
-                builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
-
-                final List<RexNode> keyIsNulls = new ArrayList<>();
-                for (RexNode operand : e.getOperands()) {
-                    if (operand.getType().isNullable()) {
-                        keyIsNulls.add(builder.isNull(operand));
-                    }
-                }
                 final ImmutableList.Builder<RexNode> operands = ImmutableList.builder();
-                switch (logic) {
-                    case TRUE_FALSE_UNKNOWN:
-                    case UNKNOWN_AS_TRUE:
-                        operands.add(
-                                builder.equals(builder.field("ct", "c"), builder.literal(0)),
-                                builder.literal(false));
-                        //now that we are using LEFT OUTER JOIN to join inner count, count(*)
-                        // with outer table, we wouldn't be able to tell if count is zero
-                        // for inner table since inner join with correlated values will get rid
-                        // of all values where join cond is not true (i.e where actual inner table
-                        // will produce zero result). To  handle this case we need to check both
-                        // count is zero or count is null
-                        operands.add((builder.isNull(builder.field("ct", "c"))), builder.literal(false));
-                        break;
+                RexNode literal;
+                if(isAggZeroOnEmpty(e)) {
+                    // since count has a return type of BIG INT we need to make a literal of type big int
+                    // relbuilder's literal doesn't allow this
+                    literal = e.rel.getCluster().getRexBuilder().makeBigintLiteral(new BigDecimal(0));
                 }
-                operands.add(builder.isNotNull(builder.field("dt", "i" + e.rel.getId())),
-                        builder.literal(true));
-                if (!keyIsNulls.isEmpty()) {
-                    //Calcite creates null literal with Null type here but because HIVE doesn't support null type
-                    // it is appropriately typed boolean
-                    operands.add(builder.or(keyIsNulls), e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN));
-                    // we are creating filter here so should not be returning NULL. Not sure why Calcite return NULL
-                    //operands.add(builder.or(keyIsNulls), builder.literal(false));
+                else {
+                    literal = e.rel.getCluster().getRexBuilder().makeNullLiteral(getAggTypeForScalarSub(e));
                 }
-                RexNode b = builder.literal(true);
-                switch (logic) {
-                    case TRUE_FALSE_UNKNOWN:
-                        b = e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN);
-                        // fall through
-                    case UNKNOWN_AS_TRUE:
-                        operands.add(
-                                builder.call(SqlStdOperatorTable.LESS_THAN,
-                                        builder.field("ct", "ck"), builder.field("ct", "c")),
-                                b);
-                        break;
-                }
-                operands.add(builder.literal(false));
+                operands.add((builder.isNull(builder.field(indicator))), literal);
+                operands.add(field(builder, 1, builder.fields().size()-2));
                 return builder.call(SqlStdOperatorTable.CASE, operands.build());
+            }
 
+            //Transformation is to left join for correlated predicates and inner join otherwise,
+            // but do a count on inner side before that to make sure it generates atmost 1 row.
+            builder.push(e.rel);
+            builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+            return field(builder, inputCount, offset);
+
+        case IN:
+        case EXISTS:
+            // Most general case, where the left and right keys might have nulls, and
+            // caller requires 3-valued logic return.
+            //
+            // select e.deptno, e.deptno in (select deptno from emp)
+            //
+            // becomes
+            //
+            // select e.deptno,
+            //   case
+            //   when ct.c = 0 then false
+            //   when dt.i is not null then true
+            //   when e.deptno is null then null
+            //   when ct.ck < ct.c then null
+            //   else false
+            //   end
+            // from e
+            // left join (
+            //   (select count(*) as c, count(deptno) as ck from emp) as ct
+            //   cross join (select distinct deptno, true as i from emp)) as dt
+            //   on e.deptno = dt.deptno
+            //
+            // If keys are not null we can remove "ct" and simplify to
+            //
+            // select e.deptno,
+            //   case
+            //   when dt.i is not null then true
+            //   else false
+            //   end
+            // from e
+            // left join (select distinct deptno, true as i from emp) as dt
+            //   on e.deptno = dt.deptno
+            //
+            // We could further simplify to
+            //
+            // select e.deptno,
+            //   dt.i is not null
+            // from e
+            // left join (select distinct deptno, true as i from emp) as dt
+            //   on e.deptno = dt.deptno
+            //
+            // but have not yet.
+            //
+            // If the logic is TRUE we can just kill the record if the condition
+            // evaluates to FALSE or UNKNOWN. Thus the query simplifies to an inner
+            // join:
+            //
+            // select e.deptno,
+            //   true
+            // from e
+            // inner join (select distinct deptno from emp) as dt
+            //   on e.deptno = dt.deptno
+            //
+
+            builder.push(e.rel);
+            final List<RexNode> fields = new ArrayList<>();
+            switch (e.getKind()) {
+            case IN:
+                fields.addAll(builder.fields());
+                // Transformation: sq_count_check(count(*), true) FILTER is generated on top
+                //  of subquery which is then joined (LEFT or INNER) with outer query
+                //  This transformation is done to add run time check using sq_count_check to
+                //  throw an error if subquery is producing zero row, since with aggregate this
+                //  will produce wrong results (because we further rewrite such queries into JOIN)
+                if(isCorrScalarAgg) {
+                    // returns single row/column
+                    builder.aggregate(builder.groupKey(),
+                        builder.count(false, "cnt_in"));
+
+                    if (!variablesSet.isEmpty()) {
+                        builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                    } else {
+                        builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+                    }
+
+                    SqlFunction inCountCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+
+                    // we create FILTER (sq_count_check(count()) > 0) instead of PROJECT because RelFieldTrimmer
+                    //  ends up getting rid of Project since it is not used further up the tree
+                    builder.filter(builder.call(SqlStdOperatorTable.GREATER_THAN,
+                        //true here indicates that sq_count_check is for IN/NOT IN subqueries
+                        builder.call(inCountCheck, builder.field("cnt_in"), builder.literal(true)),
+                        builder.literal(0)));
+                    offset =  offset + 1;
+                    builder.push(e.rel);
+                }
+            }
+
+            // First, the cross join
+            switch (logic) {
+            case TRUE_FALSE_UNKNOWN:
+            case UNKNOWN_AS_TRUE:
+                // Since EXISTS/NOT EXISTS are not affected by presence of
+                // null keys we do not need to generate count(*), count(c)
+                if (e.getKind() == SqlKind.EXISTS) {
+                    logic = RelOptUtil.Logic.TRUE_FALSE;
+                    break;
+                }
+                builder.aggregate(builder.groupKey(),
+                    builder.count(false, "c"),
+                    builder.aggregateCall(SqlStdOperatorTable.COUNT, false, null, "ck",
+                        builder.fields()));
+                builder.as("ct");
+                if( !variablesSet.isEmpty())
+                {
+                    //builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                }
+                else
+                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+
+                offset += 2;
+                builder.push(e.rel);
+                break;
+            }
+
+            // Now the left join
+            switch (logic) {
+            case TRUE:
+                if (fields.isEmpty()) {
+                    builder.project(builder.alias(builder.literal(true), "i" + e.rel.getId()));
+                    builder.aggregate(builder.groupKey(0));
+                } else {
+                    builder.aggregate(builder.groupKey(fields));
+                }
+                break;
             default:
-                throw new AssertionError(e.getKind());
+                fields.add(builder.alias(builder.literal(true), "i" + e.rel.getId()));
+                builder.project(fields);
+                builder.distinct();
+            }
+            builder.as("dt");
+            final List<RexNode> conditions = new ArrayList<>();
+            for (Pair<RexNode, RexNode> pair
+                : Pair.zip(e.getOperands(), builder.fields())) {
+                conditions.add(
+                    builder.equals(pair.left, RexUtil.shift(pair.right, offset)));
+            }
+            switch (logic) {
+            case TRUE:
+                builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet);
+                return builder.literal(true);
+            }
+            builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
+
+            final List<RexNode> keyIsNulls = new ArrayList<>();
+            for (RexNode operand : e.getOperands()) {
+                if (operand.getType().isNullable()) {
+                    keyIsNulls.add(builder.isNull(operand));
+                }
+            }
+            final ImmutableList.Builder<RexNode> operands = ImmutableList.builder();
+            switch (logic) {
+            case TRUE_FALSE_UNKNOWN:
+            case UNKNOWN_AS_TRUE:
+                operands.add(
+                    builder.equals(builder.field("ct", "c"), builder.literal(0)),
+                    builder.literal(false));
+                //now that we are using LEFT OUTER JOIN to join inner count, count(*)
+                // with outer table, we wouldn't be able to tell if count is zero
+                // for inner table since inner join with correlated values will get rid
+                // of all values where join cond is not true (i.e where actual inner table
+                // will produce zero result). To  handle this case we need to check both
+                // count is zero or count is null
+                operands.add((builder.isNull(builder.field("ct", "c"))), builder.literal(false));
+                break;
+            }
+            operands.add(builder.isNotNull(builder.field("dt", "i" + e.rel.getId())),
+                builder.literal(true));
+            if (!keyIsNulls.isEmpty()) {
+                //Calcite creates null literal with Null type here but because HIVE doesn't support null type
+                // it is appropriately typed boolean
+                operands.add(builder.or(keyIsNulls), e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN));
+                // we are creating filter here so should not be returning NULL. Not sure why Calcite return NULL
+                //operands.add(builder.or(keyIsNulls), builder.literal(false));
+            }
+            RexNode b = builder.literal(true);
+            switch (logic) {
+            case TRUE_FALSE_UNKNOWN:
+                b = e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN);
+                // fall through
+            case UNKNOWN_AS_TRUE:
+                operands.add(
+                    builder.call(SqlStdOperatorTable.LESS_THAN,
+                        builder.field("ct", "ck"), builder.field("ct", "c")),
+                    b);
+                break;
+            }
+            operands.add(builder.literal(false));
+            return builder.call(SqlStdOperatorTable.CASE, operands.build());
+
+        default:
+            throw new AssertionError(e.getKind());
         }
     }
 
