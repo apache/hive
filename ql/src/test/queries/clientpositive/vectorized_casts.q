@@ -8,7 +8,7 @@ SET hive.vectorized.execution.enabled = true;
 -- Currently, vectorization is not supported in fetch task (hive.fetch.task.conversion=none)
 -- Test type casting in vectorized mode to verify end-to-end functionality.
 
-explain vectorization 
+explain vectorization detail
 select 
 -- to boolean
    cast (ctinyint as boolean)
@@ -57,6 +57,7 @@ select
   ,cast (cdouble as timestamp)
   ,cast (cboolean1 as timestamp)
   ,cast (cbigint * 0 as timestamp)
+  ,cast (cast (ctimestamp1 as date) as timestamp)
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
@@ -131,6 +132,7 @@ select
   ,cast (cdouble as timestamp)
   ,cast (cboolean1 as timestamp)
   ,cast (cbigint * 0 as timestamp)
+  ,cast (cast (ctimestamp1 as date) as timestamp)
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
