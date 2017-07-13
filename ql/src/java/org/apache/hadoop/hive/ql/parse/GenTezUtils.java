@@ -502,6 +502,9 @@ public class GenTezUtils {
   }
 
   public static EdgeType determineEdgeType(BaseWork preceedingWork, BaseWork followingWork, ReduceSinkOperator reduceSinkOperator) {
+    if(reduceSinkOperator.getConf().isForwarding()) {
+      return EdgeType.ONE_TO_ONE_EDGE;
+    }
     if (followingWork instanceof ReduceWork) {
       // Ideally there should be a better way to determine that the followingWork contains
       // a dynamic partitioned hash join, but in some cases (createReduceWork()) it looks like

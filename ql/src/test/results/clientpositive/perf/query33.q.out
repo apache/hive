@@ -150,14 +150,14 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 10 <- Reducer 9 (SIMPLE_EDGE), Union 5 (CONTAINS)
-Reducer 11 <- Map 1 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
+Reducer 11 <- Map 1 (SIMPLE_EDGE), Reducer 17 (ONE_TO_ONE_EDGE)
 Reducer 12 <- Reducer 11 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
 Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 15 <- Map 14 (SIMPLE_EDGE)
 Reducer 16 <- Map 14 (SIMPLE_EDGE)
 Reducer 17 <- Map 14 (SIMPLE_EDGE)
 Reducer 19 <- Map 18 (SIMPLE_EDGE), Map 21 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 15 (ONE_TO_ONE_EDGE)
 Reducer 20 <- Map 26 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
 Reducer 22 <- Map 21 (SIMPLE_EDGE), Map 27 (SIMPLE_EDGE)
 Reducer 23 <- Map 26 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
@@ -167,7 +167,7 @@ Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 6 <- Union 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-Reducer 8 <- Map 1 (SIMPLE_EDGE), Reducer 16 (SIMPLE_EDGE)
+Reducer 8 <- Map 1 (SIMPLE_EDGE), Reducer 16 (ONE_TO_ONE_EDGE)
 Reducer 9 <- Reducer 23 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 
 Stage-0
@@ -252,8 +252,8 @@ Stage-0
                                         predicate:(i_manufact_id is not null and i_item_sk is not null)
                                         TableScan [TS_0] (rows=462000 width=1436)
                                           default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_sk","i_manufact_id"]
-                                <-Reducer 16 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_64]
+                                <-Reducer 16 [ONE_TO_ONE_EDGE]
+                                  FORWARD [RS_64]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_45] (rows=115500 width=1436)
                                       Output:["_col0"],keys:KEY._col0
@@ -291,8 +291,8 @@ Stage-0
                                   SHUFFLE [RS_101]
                                     PartitionCols:_col1
                                      Please refer to the previous Select Operator [SEL_2]
-                                <-Reducer 17 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_102]
+                                <-Reducer 17 [ONE_TO_ONE_EDGE]
+                                  FORWARD [RS_102]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_83] (rows=115500 width=1436)
                                       Output:["_col0"],keys:KEY._col0
@@ -352,8 +352,8 @@ Stage-0
                                   SHUFFLE [RS_26]
                                     PartitionCols:_col1
                                      Please refer to the previous Select Operator [SEL_2]
-                                <-Reducer 15 [SIMPLE_EDGE]
-                                  SHUFFLE [RS_27]
+                                <-Reducer 15 [ONE_TO_ONE_EDGE]
+                                  FORWARD [RS_27]
                                     PartitionCols:_col0
                                     Group By Operator [GBY_8] (rows=115500 width=1436)
                                       Output:["_col0"],keys:KEY._col0

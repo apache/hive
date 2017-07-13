@@ -270,7 +270,11 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
         }
       }
     } else if (mapJoinOp.getConf().isDynamicPartitionHashJoin()) {
-      edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      if (parentRS.getConf().isForwarding()) {
+        edgeType = EdgeType.ONE_TO_ONE_EDGE;
+      } else {
+        edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
+      }
     }
     if (edgeType == EdgeType.CUSTOM_EDGE) {
       // disable auto parallelism for bucket map joins

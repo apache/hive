@@ -28,6 +28,7 @@ public class TezEdgeProperty {
     CONTAINS,
     CUSTOM_EDGE,
     CUSTOM_SIMPLE_EDGE,
+    ONE_TO_ONE_EDGE
   }
 
   private HiveConf hiveConf;
@@ -101,5 +102,9 @@ public class TezEdgeProperty {
 
   public void setSlowStart(boolean slowStart) {
     this.isSlowStart = slowStart;
+  }
+
+  public void setEdgeType(EdgeType type) {
+    this.edgeType = type;
   }
 }

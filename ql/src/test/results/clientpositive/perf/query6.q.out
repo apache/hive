@@ -58,7 +58,7 @@ Reducer 12 <- Reducer 11 (CUSTOM_SIMPLE_EDGE), Reducer 19 (CUSTOM_SIMPLE_EDGE)
 Reducer 13 <- Map 20 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
 Reducer 16 <- Map 15 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
 Reducer 19 <- Map 18 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
 Reducer 3 <- Map 14 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 16 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 13 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
@@ -208,8 +208,8 @@ Stage-0
                                           predicate:(d_date_sk is not null and d_month_seq is not null)
                                           TableScan [TS_0] (rows=73049 width=1119)
                                             default@date_dim,d,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_month_seq"]
-                                  <-Reducer 9 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_56]
+                                  <-Reducer 9 [ONE_TO_ONE_EDGE]
+                                    FORWARD [RS_56]
                                       PartitionCols:_col0
                                       Group By Operator [GBY_8] (rows=9131 width=1119)
                                         Output:["_col0"],keys:KEY._col0

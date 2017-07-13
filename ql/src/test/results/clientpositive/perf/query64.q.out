@@ -251,14 +251,14 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 20 (SIMPLE_EDGE)
 Reducer 21 <- Map 20 (SIMPLE_EDGE), Reducer 43 (SIMPLE_EDGE)
 Reducer 22 <- Map 48 (SIMPLE_EDGE), Reducer 21 (SIMPLE_EDGE)
 Reducer 23 <- Reducer 22 (SIMPLE_EDGE), Reducer 35 (SIMPLE_EDGE)
-Reducer 24 <- Reducer 23 (SIMPLE_EDGE), Reducer 51 (SIMPLE_EDGE)
+Reducer 24 <- Reducer 23 (SIMPLE_EDGE), Reducer 51 (ONE_TO_ONE_EDGE)
 Reducer 25 <- Map 55 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
 Reducer 26 <- Map 39 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
 Reducer 27 <- Map 20 (SIMPLE_EDGE), Reducer 45 (SIMPLE_EDGE)
 Reducer 28 <- Map 48 (SIMPLE_EDGE), Reducer 27 (SIMPLE_EDGE)
 Reducer 29 <- Reducer 28 (SIMPLE_EDGE), Reducer 37 (SIMPLE_EDGE)
 Reducer 3 <- Map 20 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-Reducer 30 <- Reducer 29 (SIMPLE_EDGE), Reducer 53 (SIMPLE_EDGE)
+Reducer 30 <- Reducer 29 (SIMPLE_EDGE), Reducer 53 (ONE_TO_ONE_EDGE)
 Reducer 31 <- Map 55 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE)
 Reducer 32 <- Map 39 (SIMPLE_EDGE), Reducer 31 (SIMPLE_EDGE)
 Reducer 34 <- Map 33 (SIMPLE_EDGE), Map 38 (SIMPLE_EDGE)
@@ -529,8 +529,8 @@ Stage-0
                                                             SHUFFLE [RS_210]
                                                               PartitionCols:_col0
                                                                Please refer to the previous Select Operator [SEL_14]
-                                                  <-Reducer 53 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_216]
+                                                  <-Reducer 53 [ONE_TO_ONE_EDGE]
+                                                    FORWARD [RS_216]
                                                       PartitionCols:_col0
                                                       Select Operator [SEL_202] (rows=52798137 width=135)
                                                         Output:["_col0"]
@@ -681,8 +681,8 @@ Stage-0
                                                             SHUFFLE [RS_82]
                                                               PartitionCols:_col0
                                                                Please refer to the previous Select Operator [SEL_14]
-                                                  <-Reducer 51 [SIMPLE_EDGE]
-                                                    SHUFFLE [RS_88]
+                                                  <-Reducer 51 [ONE_TO_ONE_EDGE]
+                                                    FORWARD [RS_88]
                                                       PartitionCols:_col0
                                                       Select Operator [SEL_74] (rows=52798137 width=135)
                                                         Output:["_col0"]

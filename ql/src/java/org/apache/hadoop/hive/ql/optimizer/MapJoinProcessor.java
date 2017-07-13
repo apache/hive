@@ -1073,8 +1073,11 @@ public class MapJoinProcessor extends Transform {
         ExprNodeDesc expr = colExprMap.get(column.getInternalName());
         int index = ExprNodeDescUtils.indexOf(expr, values);
         if (index >= 0) {
-          colExprMap.put(column.getInternalName(), newValues.get(index));
           schema.set(i, null);
+          if (adjustParentsChildren) {
+            // Since we remove reduce sink parents, replace original expressions
+            colExprMap.put(column.getInternalName(), newValues.get(index));
+          }
         }
       }
     }

@@ -51,7 +51,7 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (ONE_TO_ONE_EDGE), Reducer 8 (ONE_TO_ONE_EDGE)
 Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
@@ -74,8 +74,8 @@ Stage-0
                   Output:["_col0","_col1","_col2"]
                   Merge Join Operator [MERGEJOIN_49] (rows=348477374 width=88)
                     Conds:RS_28._col0, _col1=RS_29._col0, _col1(Outer),Output:["_col0","_col2"]
-                  <-Reducer 3 [SIMPLE_EDGE]
-                    SHUFFLE [RS_28]
+                  <-Reducer 3 [ONE_TO_ONE_EDGE]
+                    FORWARD [RS_28]
                       PartitionCols:_col0, _col1
                       Group By Operator [GBY_12] (rows=316797606 width=88)
                         Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
@@ -104,8 +104,8 @@ Stage-0
                                     predicate:ss_sold_date_sk is not null
                                     TableScan [TS_0] (rows=575995635 width=88)
                                       default@store_sales,store_sales,Tbl:COMPLETE,Col:NONE,Output:["ss_sold_date_sk","ss_item_sk","ss_customer_sk"]
-                  <-Reducer 8 [SIMPLE_EDGE]
-                    SHUFFLE [RS_29]
+                  <-Reducer 8 [ONE_TO_ONE_EDGE]
+                    FORWARD [RS_29]
                       PartitionCols:_col0, _col1
                       Group By Operator [GBY_26] (rows=158394413 width=135)
                         Output:["_col0","_col1"],keys:KEY._col0, KEY._col1

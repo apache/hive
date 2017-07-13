@@ -34,6 +34,8 @@ public class TezJsonParser extends DagJsonParser {
         return "PARTITION_ONLY_SHUFFLE";
       case "CUSTOM_EDGE":
         return "MULTICAST";
+      case "ONE_TO_ONE_EDGE":
+        return "FORWARD";
       default:
         return "UNKNOWN";
     }
