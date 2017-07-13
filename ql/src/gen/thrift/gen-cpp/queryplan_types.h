@@ -94,7 +94,8 @@ struct StageType {
     STATS = 9,
     DEPENDENCY_COLLECTION = 10,
     COLUMNSTATS = 11,
-    REPLDUMP = 12
+    REPL_DUMP = 12,
+    REPL_BOOTSTRAP_LOAD = 13
   };
 };
 

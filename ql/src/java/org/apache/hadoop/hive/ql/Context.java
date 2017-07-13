@@ -561,7 +561,7 @@ public class Context {
 
 
   private static final String MR_PREFIX = "-mr-";
-  private static final String EXT_PREFIX = "-ext-";
+  public static final String EXT_PREFIX = "-ext-";
   private static final String LOCAL_PREFIX = "-local-";
 
   /**

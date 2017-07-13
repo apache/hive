@@ -70,11 +70,7 @@ POSTHOOK: Input: database:test_replload_adminpriv_src
 #### A masked pattern was here ####
 PREHOOK: type: REPLLOAD
 #### A masked pattern was here ####
-PREHOOK: Output: test_replload_adminpriv_tgt1@dummy_tbl
-#### A masked pattern was here ####
 POSTHOOK: type: REPLLOAD
-#### A masked pattern was here ####
-POSTHOOK: Output: test_replload_adminpriv_tgt1@dummy_tbl
 PREHOOK: query: show tables test_replload_adminpriv_tgt1
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
