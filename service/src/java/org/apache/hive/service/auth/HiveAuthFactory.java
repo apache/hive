@@ -145,6 +145,11 @@ public class HiveAuthFactory {
 
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler, ServerMode.HIVESERVER2);
         saslServer.setSecretManager(delegationTokenManager.getSecretManager());
+
+        // set customClass
+        String customClassName = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS);
+
+        saslServer.setClassName(customClassName);
       }
       catch (IOException e) {
         throw new TTransportException("Failed to start token manager", e);
@@ -204,7 +209,7 @@ public class HiveAuthFactory {
   /**
    * Returns the thrift processor factory for HiveServer2 running in binary mode
    * @param service
-   * @return
+   * @return  thrift processor factory
    * @throws LoginException
    */
   public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
@@ -213,6 +218,27 @@ public class HiveAuthFactory {
     } else {
       return PlainSaslHelper.getPlainProcessorFactory(service);
     }
+  }
+
+  /**
+   * Returns an authentication factory for HiveServer2 running
+   * that verifies the ID/PASSWORD using custom class over SSL with Kerberos
+   * @return thrift processor factory
+   * @throws LoginException
+   */
+  public TTransportFactory getAuthPlainTransFactory() throws LoginException {
+    TTransportFactory transportFactory;
+
+    if (isSASLWithKerberizedHadoop()) {
+      try {
+        transportFactory = saslServer.createPlainTransportFactory(getSaslProperties());
+      } catch (TTransportException e) {
+        throw new LoginException(e.getMessage());
+      }
+    } else {
+        throw new LoginException("Unsupported authentication type " + authTypeStr);
+    }
+    return transportFactory;
   }
 
   public String getRemoteUser() {
