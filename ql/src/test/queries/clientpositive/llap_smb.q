@@ -34,20 +34,3 @@ select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q;
 
 
 
-SET hive.llap.io.enabled=false;
-set hive.enforce.sortmergebucketmapjoin=false;
-set hive.optimize.bucketmapjoin=true;
-set hive.optimize.bucketmapjoin.sortedmerge=true;
-set hive.auto.convert.sortmerge.join=true;
-set hive.auto.convert.join=true;
-set hive.auto.convert.join.noconditionaltask.size=10;
-
-explain
-select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q;
-
--- The results are currently incorrect. See HIVE-16985/HIVE-16965
-
-select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q;
-
-DROP TABLE orc_a;
-DROP TABLE orc_b;

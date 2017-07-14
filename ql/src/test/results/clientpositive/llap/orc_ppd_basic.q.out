@@ -1285,7 +1285,6 @@ PREHOOK: query: insert into table tmp_orcppd
                            null, null, null, null, null)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@tmp_orcppd
-Stage-1 LLAP IO COUNTERS:
 PREHOOK: query: drop table if exists tbl_orcppd_1_1
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_orcppd_1_1 as
@@ -1316,7 +1315,6 @@ PREHOOK: query: insert into table tmp_orcppd
                     values(null,  null)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@tmp_orcppd
-Stage-1 LLAP IO COUNTERS:
 PREHOOK: query: drop table if exists tbl_orcppd_2_1
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_orcppd_2_1 as
@@ -1338,12 +1336,10 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
-Stage-1 LLAP IO COUNTERS:
 PREHOOK: query: insert into table tmp_orcppd
                     values(null, null)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@tmp_orcppd
-Stage-1 LLAP IO COUNTERS:
 PREHOOK: query: drop table if exists tbl_orcppd_3_1
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_orcppd_3_1 as
