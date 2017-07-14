@@ -113,6 +113,7 @@ public class Operation2Privilege {
   }
 
   private static Map<HiveOperationType, List<PrivRequirement>> op2Priv;
+  private static List<HiveOperationType> adminPrivOps;
 
   private static SQLPrivTypeGrant[] OWNER_PRIV_AR = arr(SQLPrivTypeGrant.OWNER_PRIV);
   private static SQLPrivTypeGrant[] SEL_NOGRANT_AR = arr(SQLPrivTypeGrant.SELECT_NOGRANT);
@@ -130,6 +131,8 @@ public class Operation2Privilege {
 
 
   static {
+
+    adminPrivOps = new ArrayList<HiveOperationType>();
     op2Priv = new HashMap<HiveOperationType, List<PrivRequirement>>();
 
     op2Priv.put(HiveOperationType.EXPLAIN, PrivRequirement.newIOPrivRequirement
@@ -292,6 +295,21 @@ public class Operation2Privilege {
         new PrivRequirement(arr(SQLPrivTypeGrant.INSERT_NOGRANT, SQLPrivTypeGrant.DELETE_NOGRANT),
             IOType.OUTPUT, null, HivePrivilegeObjectType.TABLE_OR_VIEW),
         new PrivRequirement(OWNER_PRIV_AR, IOType.OUTPUT, null, HivePrivilegeObjectType.DATABASE)));
+
+    // Setting REPL DUMP and REPL LOAD as all requiring ADMIN privileges.
+    // We might wind up loosening this in the future, but right now, we do not want
+    // to do individual object based checks on every object possible, and thus, asking
+    // for a broad privilege such as this is the best route forward. REPL STATUS
+    // should use privileges similar to DESCRIBE DB/TABLE, and so, it asks for no
+    // output privileges, and asks for select-no-grant on input.
+    op2Priv.put(HiveOperationType.REPLDUMP, PrivRequirement.newIOPrivRequirement(
+        ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.REPLLOAD, PrivRequirement.newIOPrivRequirement(
+        ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.REPLSTATUS, PrivRequirement.newIOPrivRequirement(
+        SEL_NOGRANT_AR, null));
+    adminPrivOps.add(HiveOperationType.REPLDUMP);
+    adminPrivOps.add(HiveOperationType.REPLLOAD);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement
@@ -499,6 +517,17 @@ public class Operation2Privilege {
     }
 
     return reqPrivs;
+  }
+
+  /**
+   * Some operations are tagged as requiring admin privileges, ignoring any object that
+   * might be checked on it. This check is run in those cases.
+   *
+   * @param hiveOpType
+   * @return
+   */
+  public static boolean isAdminPrivOperation(HiveOperationType hiveOpType) {
+    return adminPrivOps.contains(hiveOpType);
   }
 
   // for unit tests

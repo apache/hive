@@ -79,10 +79,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(queryState);
   }
 
-  // FIXME : Note that the tableExists flag as used by Auth is kinda a hack and
+  // Note that the tableExists flag as used by Auth is kinda a hack and
   // assumes only 1 table will ever be imported - this assumption is broken by
-  // REPL LOAD. We need to fix this. Maybe by continuing the hack and replacing
-  // by a map, maybe by coming up with a better api for it.
+  // REPL LOAD.
+  //
+  // However, we've not chosen to expand this to a map of tables/etc, since
+  // we have expanded how auth works with REPL DUMP / REPL LOAD to simply
+  // require ADMIN privileges, rather than checking each object, which
+  // quickly becomes untenable, and even more so, costly on memory.
   private boolean tableExists = false;
 
   public boolean existsTable() {
