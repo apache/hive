@@ -34,7 +34,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dec
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-value               	decimal(8,4)        	-12.25              	234.79              	0                   	6                   	                    	                    	                    	                    	from deserializer   
+value               	decimal(8,4)        	-12.25              	234.79              	0                   	10                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec
 PREHOOK: type: DROPTABLE

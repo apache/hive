@@ -351,8 +351,8 @@ select
 from varchar_udf_1;
 
 select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from varchar_udf_1;
 
 explain vectorization detail

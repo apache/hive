@@ -56,7 +56,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -172,7 +172,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -287,7 +287,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 19518 Data size: 156144 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18694 Data size: 149552 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -399,7 +399,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 19518 Data size: 156144 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18694 Data size: 149552 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
                           aggregations: count()
@@ -509,7 +509,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         mode: hash
@@ -615,7 +615,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                       HybridGraceHashJoin: true
                       Group By Operator
                         aggregations: count()

@@ -3277,16 +3277,16 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-alltypesorc	cbigint	3115	4083
+alltypesorc	cbigint	3115	6064
 alltypesorc	cboolean1	3114	NULL
 alltypesorc	cboolean2	3115	NULL
-alltypesorc	cdouble	3114	4264
-alltypesorc	cfloat	3115	117
-alltypesorc	cint	3115	5774
-alltypesorc	csmallint	3114	5529
-alltypesorc	cstring1	3114	7488
-alltypesorc	cstring2	3115	4083
-alltypesorc	ctimestamp1	3115	31
+alltypesorc	cdouble	3114	5569
+alltypesorc	cfloat	3115	131
+alltypesorc	cint	3115	6029
+alltypesorc	csmallint	3114	5594
+alltypesorc	cstring1	3114	6058
+alltypesorc	cstring2	3115	6040
+alltypesorc	ctimestamp1	3115	35
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
@@ -3303,8 +3303,8 @@ cbo_t1	dt=2014	value	2	4
 cbo_t2	dt=2014	c_boolean	2	NULL
 cbo_t2	dt=2014	c_float	2	2
 cbo_t2	dt=2014	c_int	2	2
-cbo_t2	dt=2014	key	2	4
-cbo_t2	dt=2014	value	2	4
+cbo_t2	dt=2014	key	2	5
+cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@version
@@ -3457,7 +3457,7 @@ POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-7488
+6064
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema

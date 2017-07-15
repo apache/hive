@@ -66,7 +66,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:
@@ -248,7 +248,7 @@ STAGE PLANS:
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 25044 Data size: 200352 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
                           Group By Vectorization:

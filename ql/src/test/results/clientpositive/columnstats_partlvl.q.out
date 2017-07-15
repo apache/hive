@@ -52,7 +52,7 @@ STAGE PLANS:
               outputColumnNames: employeeid
               Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16)
+                aggregations: compute_stats(employeeid, 'hll')
                 keys: 2000.0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -62,7 +62,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: 2000.0 (type: double)
                   Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -112,7 +112,7 @@ STAGE PLANS:
               outputColumnNames: employeeid
               Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16)
+                aggregations: compute_stats(employeeid, 'hll')
                 keys: 2000.0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -124,7 +124,7 @@ STAGE PLANS:
                   Map-reduce partition columns: 2000.0 (type: double)
                   Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -254,7 +254,7 @@ STAGE PLANS:
               outputColumnNames: employeeid
               Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16)
+                aggregations: compute_stats(employeeid, 'hll')
                 keys: 4000.0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -264,7 +264,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: 4000.0 (type: double)
                   Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -314,7 +314,7 @@ STAGE PLANS:
               outputColumnNames: employeeid
               Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16)
+                aggregations: compute_stats(employeeid, 'hll')
                 keys: 4000.0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -326,7 +326,7 @@ STAGE PLANS:
                   Map-reduce partition columns: 4000.0 (type: double)
                   Statistics: Num rows: 26 Data size: 105 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -456,7 +456,7 @@ STAGE PLANS:
               outputColumnNames: employeeid, employeename
               Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)
+                aggregations: compute_stats(employeeid, 'hll'), compute_stats(employeename, 'hll')
                 keys: 2000.0 (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
@@ -466,7 +466,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: 2000.0 (type: double)
                   Statistics: Num rows: 1 Data size: 105 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -511,7 +511,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
@@ -520,7 +520,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	1                   	9                   	4.3076923076923075  	6                   	                    	                    	from deserializer   
+employeeName        	string              	                    	                    	1                   	12                  	4.3076923076923075  	6                   	                    	                    	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -543,7 +543,7 @@ STAGE PLANS:
               outputColumnNames: employeeid, employeename, employeesalary
               Statistics: Num rows: 2 Data size: 210 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)
+                aggregations: compute_stats(employeeid, 'hll'), compute_stats(employeename, 'hll')
                 keys: employeesalary (type: double)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
@@ -553,7 +553,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: double)
                   Statistics: Num rows: 2 Data size: 210 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -600,7 +600,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
@@ -609,7 +609,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -632,23 +632,23 @@ STAGE PLANS:
               outputColumnNames: employeeid, employeename
               Statistics: Num rows: 2 Data size: 210 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(employeeid, 16), compute_stats(employeename, 16)
+                aggregations: compute_stats(employeeid, 'hll'), compute_stats(employeename, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 968 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 944 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 968 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 944 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 1 Data size: 972 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 960 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 972 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 960 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -681,7 +681,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	2                   	14                  	                    	                    	                    	                    	from deserializer   
+employeeID          	int                 	16                  	34                  	2                   	12                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
@@ -713,7 +713,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY

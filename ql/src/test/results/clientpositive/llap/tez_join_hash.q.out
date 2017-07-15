@@ -207,7 +207,7 @@ STAGE PLANS:
                         key expressions: _col1 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 21512 Data size: 3829136 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 14944 Data size: 2660032 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -240,16 +240,16 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1, _col2
-                Statistics: Num rows: 19512 Data size: 3473136 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12944 Data size: 2304032 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col2 (type: string), _col1 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 19512 Data size: 3473136 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12944 Data size: 2304032 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
-                    Statistics: Num rows: 21512 Data size: 3829136 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 14944 Data size: 2660032 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 4 
             Execution mode: llap
@@ -261,18 +261,18 @@ STAGE PLANS:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 50261 Data size: 8946458 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 24181 Data size: 4304218 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string), _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 25130 Data size: 4674180 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12090 Data size: 2248740 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
-                    Statistics: Num rows: 25130 Data size: 4674180 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12090 Data size: 2248740 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
         Reducer 5 
             Execution mode: vectorized, llap
@@ -282,14 +282,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 25130 Data size: 4674180 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 12090 Data size: 2248740 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 25130 Data size: 2387350 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12090 Data size: 1148550 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 25130 Data size: 2387350 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 12090 Data size: 1148550 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public abstract class ColumnStatsAggregator {
-  public int numBitVectors;
   public boolean useDensityFunctionForNDVEstimation;
 
   public abstract ColumnStatisticsObj aggregate(String colName, List<String> partNames,

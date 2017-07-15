@@ -50,7 +50,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
 PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat_part
@@ -71,7 +71,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
 PREHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part
@@ -80,7 +80,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	14                  	4.92                	7                   	                    	                    	from deserializer   
+value               	string              	                    	                    	0                   	19                  	4.92                	7                   	                    	                    	from deserializer   
 PREHOOK: query: create table src_stat_string_part(key string, value string) partitioned by (partitionName string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

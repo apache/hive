@@ -15,28 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.common.ndv;
 
-package org.apache.hadoop.hive.ql.udf.generic;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
-public class DecimalNumDistinctValueEstimator extends NumDistinctValueEstimator {
+public interface NumDistinctValueEstimator {
 
-  public DecimalNumDistinctValueEstimator(int numBitVectors) {
-    super(numBitVectors);
-  }
+  static final Logger LOG = LoggerFactory.getLogger(NumDistinctValueEstimator.class.getName());
 
-  public DecimalNumDistinctValueEstimator(String s, int numBitVectors) {
-    super(s, numBitVectors);
-  }
+  public void reset();
 
-  public void addToEstimator(HiveDecimal decimal) {
-    int v = decimal.hashCode();
-    super.addToEstimator(v);
-  }
+  public String serialize();
+  
+  public NumDistinctValueEstimator deserialize(String s);
 
-  public void addToEstimatorPCSA(HiveDecimal decimal) {
-    int v = decimal.hashCode();
-    super.addToEstimatorPCSA(v);
-  }
+  public void addToEstimator(long v);
+
+  public void addToEstimator(double d);
+
+  public void addToEstimator(String s);
+
+  public void addToEstimator(HiveDecimal decimal);
+
+  public void mergeEstimators(NumDistinctValueEstimator o);
+
+  public long estimateNumDistinctValues();
+
+  public int lengthFor(JavaDataModel model);
+
+  public boolean canMerge(NumDistinctValueEstimator o);
+
 }

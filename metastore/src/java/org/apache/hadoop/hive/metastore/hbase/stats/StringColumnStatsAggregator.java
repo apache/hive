@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.metastore.hbase.stats;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -39,7 +40,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator {
     // bitvectors. Only when both of the conditions are true, we merge bit
     // vectors. Otherwise, just use the maximum function.
     boolean doAllPartitionContainStats = partNames.size() == css.size();
-    boolean isNDVBitVectorSet = true;
+    NumDistinctValueEstimator ndvEstimator = null;
     String colType = null;
     for (ColumnStatistics cs : css) {
       if (cs.getStatsObjSize() != 1) {
@@ -53,21 +54,37 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator {
         statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
             .getStatsData().getSetField());
       }
-      if (numBitVectors <= 0 || !cso.getStatsData().getStringStats().isSetBitVectors()
+      if (!cso.getStatsData().getStringStats().isSetBitVectors()
           || cso.getStatsData().getStringStats().getBitVectors().length() == 0) {
-        isNDVBitVectorSet = false;
+        ndvEstimator = null;
         break;
+      } else {
+        // check if all of the bit vectors can merge
+        NumDistinctValueEstimator estimator = NumDistinctValueEstimatorFactory
+            .getNumDistinctValueEstimator(cso.getStatsData().getStringStats().getBitVectors());
+        if (ndvEstimator == null) {
+          ndvEstimator = estimator;
+        } else {
+          if (ndvEstimator.canMerge(estimator)) {
+            continue;
+          } else {
+            ndvEstimator = null;
+            break;
+          }
+        }
       }
     }
+    if (ndvEstimator != null) {
+      ndvEstimator = NumDistinctValueEstimatorFactory.getEmptyNumDistinctValueEstimator(ndvEstimator);
+    }
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
-    if (doAllPartitionContainStats && isNDVBitVectorSet) {
+    if (doAllPartitionContainStats && ndvEstimator!=null) {
       StringColumnStatsData aggregateData = null;
-      NumDistinctValueEstimator ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
       for (ColumnStatistics cs : css) {
         ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
         StringColumnStatsData newData = cso.getStatsData().getStringStats();
-        ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
-            ndvEstimator.getnumBitVectors()));
+        ndvEstimator.mergeEstimators(NumDistinctValueEstimatorFactory
+            .getNumDistinctValueEstimator(newData.getBitVectors()));
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {

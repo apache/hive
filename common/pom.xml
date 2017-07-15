@@ -226,6 +226,11 @@
       <artifactId>dropwizard-metrics-hadoop-metrics2-reporter</artifactId>
       <version>${dropwizard-metrics-hadoop-metrics2-reporter.version}</version>
     </dependency>
+    <dependency>
+      <groupId>javolution</groupId>
+      <artifactId>javolution</artifactId>
+      <version>${javolution.version}</version>
+    </dependency>
   </dependencies>
 
   <profiles>

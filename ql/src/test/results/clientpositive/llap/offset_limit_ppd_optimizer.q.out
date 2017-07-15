@@ -206,12 +206,12 @@ STAGE PLANS:
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: double)
             Execution mode: llap
@@ -224,7 +224,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -303,12 +303,12 @@ STAGE PLANS:
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 36594 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 250 Data size: 42750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 36594 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 42750 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
             Execution mode: llap
@@ -321,7 +321,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -399,12 +399,12 @@ STAGE PLANS:
                       keys: cdouble (type: double)
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5570 Data size: 33272 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: double)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 5570 Data size: 33272 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
             Execution mode: llap
             LLAP IO: all inputs
@@ -415,7 +415,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: double)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 4265 Data size: 25480 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 5570 Data size: 33272 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -514,7 +514,7 @@ STAGE PLANS:
                   keys: _col0 (type: tinyint)
                   mode: complete
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 95 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 128 Data size: 1412 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
                     Offset of rows: 10
@@ -613,7 +613,7 @@ STAGE PLANS:
                   keys: _col0 (type: tinyint)
                   mode: complete
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 95 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 128 Data size: 1412 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
                     Offset of rows: 10
@@ -709,7 +709,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: tinyint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 95 Data size: 1808 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 128 Data size: 2436 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -813,12 +813,12 @@ STAGE PLANS:
                       keys: value (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
             Execution mode: llap
             LLAP IO: no inputs
@@ -830,11 +830,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: double), _col0 (type: string)
                   sort order: ++
-                  Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.3
         Reducer 3 
             Execution mode: llap
@@ -842,7 +842,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: double)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -933,7 +933,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 214 Data size: 21186 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 30591 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -1335,7 +1335,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 10
@@ -1379,7 +1379,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: complete
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19475 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 20
                   Offset of rows: 20

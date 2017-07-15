@@ -60,7 +60,7 @@ public class TestHBaseAggregateStatsNDVUniformDist {
   private HBaseStore store;
   SortedMap<String, Cell> rows = new TreeMap<>();
 
-  // NDV will be 3 for bitVectors[0] and 12 for bitVectors[1] 
+  // NDV will be 3 for bitVectors[0] and 1 for bitVectors[1]
   String bitVectors[] = {
       "{0, 4, 5, 7}{0, 1}{0, 1, 2}{0, 1, 4}{0}{0, 2}{0, 3}{0, 2, 3, 4}{0, 1, 4}{0, 1}{0}{0, 1, 3, 8}{0, 2}{0, 2}{0, 9}{0, 1, 4}",
       "{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}" };
@@ -278,7 +278,7 @@ public class TestHBaseAggregateStatsNDVUniformDist {
         Assert.assertEquals(1010, lcsd.getHighValue(), 0.01);
         Assert.assertEquals(-1010, lcsd.getLowValue(), 0.01);
         Assert.assertEquals(45, lcsd.getNumNulls());
-        Assert.assertEquals(12, lcsd.getNumDVs());
+        Assert.assertEquals(3, lcsd.getNumDVs());
       }
     };
     List<String> partNames = new ArrayList<>();
@@ -422,7 +422,7 @@ public class TestHBaseAggregateStatsNDVUniformDist {
         Assert.assertEquals(1010, lcsd.getHighValue(), 0.01);
         Assert.assertEquals(-1010, lcsd.getLowValue(), 0.01);
         Assert.assertEquals(40, lcsd.getNumNulls());
-        Assert.assertEquals(12, lcsd.getNumDVs());
+        Assert.assertEquals(3, lcsd.getNumDVs());
       }
     };
     List<String> partNames = new ArrayList<>();
@@ -494,7 +494,7 @@ public class TestHBaseAggregateStatsNDVUniformDist {
         Assert.assertEquals(1010, HBaseUtils.getDoubleValue(lcsd.getHighValue()), 0.01);
         Assert.assertEquals(-1010, HBaseUtils.getDoubleValue(lcsd.getLowValue()), 0.01);
         Assert.assertEquals(40, lcsd.getNumNulls());
-        Assert.assertEquals(12, lcsd.getNumDVs());
+        Assert.assertEquals(3, lcsd.getNumDVs());
       }
     };
     List<String> partNames = new ArrayList<>();
@@ -566,7 +566,7 @@ public class TestHBaseAggregateStatsNDVUniformDist {
         Assert.assertEquals(1010, lcsd.getHighValue(), 0.01);
         Assert.assertEquals(-1010, lcsd.getLowValue(), 0.01);
         Assert.assertEquals(40, lcsd.getNumNulls());
-        Assert.assertEquals(12, lcsd.getNumDVs());
+        Assert.assertEquals(3, lcsd.getNumDVs());
       }
     };
     List<String> partNames = new ArrayList<>();

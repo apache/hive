@@ -1640,60 +1640,6 @@ public class StatsUtils {
     }
   }
 
-  public static int getNumBitVectorsForNDVEstimation(HiveConf conf) throws SemanticException {
-    int numBitVectors;
-    float percentageError = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ERROR);
-
-    if (percentageError < 0.0) {
-      throw new SemanticException("hive.stats.ndv.error can't be negative");
-    } else if (percentageError <= 2.4) {
-      numBitVectors = 1024;
-      LOG.info("Lowest error achievable is 2.4% but error requested is " + percentageError + "%");
-      LOG.info("Choosing 1024 bit vectors..");
-    } else if (percentageError <= 3.4 ) {
-      numBitVectors = 1024;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 1024 bit vectors..");
-    } else if (percentageError <= 4.8) {
-      numBitVectors = 512;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 512 bit vectors..");
-     } else if (percentageError <= 6.8) {
-      numBitVectors = 256;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 256 bit vectors..");
-    } else if (percentageError <= 9.7) {
-      numBitVectors = 128;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 128 bit vectors..");
-    } else if (percentageError <= 13.8) {
-      numBitVectors = 64;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 64 bit vectors..");
-    } else if (percentageError <= 19.6) {
-      numBitVectors = 32;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 32 bit vectors..");
-    } else if (percentageError <= 28.2) {
-      numBitVectors = 16;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 16 bit vectors..");
-    } else if (percentageError <= 40.9) {
-      numBitVectors = 8;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 8 bit vectors..");
-    } else if (percentageError <= 61.0) {
-      numBitVectors = 4;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 4 bit vectors..");
-    } else {
-      numBitVectors = 2;
-      LOG.info("Error requested is " + percentageError + "%");
-      LOG.info("Choosing 2 bit vectors..");
-    }
-    return numBitVectors;
-  }
-
   public static boolean hasDiscreteRange(ColStatistics colStat) {
     if (colStat.getRange() != null) {
       TypeInfo colType = TypeInfoUtils.getTypeInfoFromTypeString(colStat.getColumnType());

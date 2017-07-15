@@ -60,23 +60,23 @@ STAGE PLANS:
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -112,16 +112,16 @@ STAGE PLANS:
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -180,13 +180,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -242,23 +242,23 @@ STAGE PLANS:
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
               Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(desturl, 16), compute_stats(visitdate, 16), compute_stats(adrevenue, 16), compute_stats(useragent, 16), compute_stats(ccode, 16), compute_stats(lcode, 16), compute_stats(skeyword, 16), compute_stats(avgtimeonsite, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 1 Data size: 4396 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4288 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4396 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 4288 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5), compute_stats(VALUE._col6), compute_stats(VALUE._col7), compute_stats(VALUE._col8)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 1 Data size: 4404 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4320 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4404 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4320 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -287,7 +287,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
@@ -297,7 +297,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	58                  	                    	                    	                    	                    	from deserializer   
+adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
@@ -307,7 +307,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-avgTimeOnSite       	int                 	1                   	9                   	0                   	11                  	                    	                    	                    	                    	from deserializer   
+avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
@@ -351,23 +351,23 @@ STAGE PLANS:
               outputColumnNames: a, b, c, d, e
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(a, 16), compute_stats(b, 16), compute_stats(c, 16), compute_stats(d, 16), compute_stats(e, 16)
+                aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll'), compute_stats(c, 'hll'), compute_stats(d, 'hll'), compute_stats(e, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 2004 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1968 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 2004 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,counttrues:bigint,countfalses:bigint,countnulls:bigint>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint>)
+                  Statistics: Num rows: 1 Data size: 1968 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,counttrues:bigint,countfalses:bigint,countnulls:bigint>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 2012 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 2012 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -416,7 +416,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
   sourceIP string,
@@ -482,23 +482,23 @@ STAGE PLANS:
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -534,16 +534,16 @@ STAGE PLANS:
               outputColumnNames: sourceip, adrevenue, avgtimeonsite
               Statistics: Num rows: 65 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(avgtimeonsite, 16), compute_stats(adrevenue, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1444 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -602,13 +602,13 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 1452 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -664,23 +664,23 @@ STAGE PLANS:
               outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
               Statistics: Num rows: 9 Data size: 7060 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(sourceip, 16), compute_stats(desturl, 16), compute_stats(visitdate, 16), compute_stats(adrevenue, 16), compute_stats(useragent, 16), compute_stats(ccode, 16), compute_stats(lcode, 16), compute_stats(skeyword, 16), compute_stats(avgtimeonsite, 16)
+                aggregations: compute_stats(sourceip, 'hll'), compute_stats(desturl, 'hll'), compute_stats(visitdate, 'hll'), compute_stats(adrevenue, 'hll'), compute_stats(useragent, 'hll'), compute_stats(ccode, 'hll'), compute_stats(lcode, 'hll'), compute_stats(skeyword, 'hll'), compute_stats(avgtimeonsite, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 1 Data size: 4396 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 4288 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 4396 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string,numbitvectors:int>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 4288 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col5 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col6 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col7 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col8 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4), compute_stats(VALUE._col5), compute_stats(VALUE._col6), compute_stats(VALUE._col7), compute_stats(VALUE._col8)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-          Statistics: Num rows: 1 Data size: 4404 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 4320 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 4404 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 4320 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -709,7 +709,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 PREHOOK: type: DESCTABLE
@@ -719,7 +719,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	58                  	                    	                    	                    	                    	from deserializer   
+adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 PREHOOK: type: DESCTABLE
@@ -729,7 +729,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-avgTimeOnSite       	int                 	1                   	9                   	0                   	11                  	                    	                    	                    	                    	from deserializer   
+avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE

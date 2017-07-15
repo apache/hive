@@ -26,7 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -44,7 +45,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     // check if all the ColumnStatisticsObjs contain stats and all the ndv are
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == css.size();
-    boolean isNDVBitVectorSet = true;
+    NumDistinctValueEstimator ndvEstimator = null;
     String colType = null;
     for (ColumnStatistics cs : css) {
       if (cs.getStatsObjSize() != 1) {
@@ -58,11 +59,29 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
             .getStatsData().getSetField());
       }
-      if (numBitVectors <= 0 || !cso.getStatsData().getDoubleStats().isSetBitVectors()
+      if (!cso.getStatsData().getDoubleStats().isSetBitVectors()
           || cso.getStatsData().getDoubleStats().getBitVectors().length() == 0) {
-        isNDVBitVectorSet = false;
+        ndvEstimator = null;
         break;
+      } else {
+        // check if all of the bit vectors can merge
+        NumDistinctValueEstimator estimator = NumDistinctValueEstimatorFactory
+            .getNumDistinctValueEstimator(cso.getStatsData().getDoubleStats().getBitVectors());
+        if (ndvEstimator == null) {
+          ndvEstimator = estimator;
+        } else {
+          if (ndvEstimator.canMerge(estimator)) {
+            continue;
+          } else {
+            ndvEstimator = null;
+            break;
+          }
+        }
       }
+    }
+    if (ndvEstimator != null) {
+      ndvEstimator = NumDistinctValueEstimatorFactory
+          .getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
     if (doAllPartitionContainStats || css.size() < 2) {
@@ -70,10 +89,6 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       long lowerBound = 0;
       long higherBound = 0;
       double densityAvgSum = 0.0;
-      NumDistinctValueEstimator ndvEstimator = null;
-      if (isNDVBitVectorSet) {
-        ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
-      }
       for (ColumnStatistics cs : css) {
         ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
         DoubleColumnStatsData newData = cso.getStatsData().getDoubleStats();
@@ -82,9 +97,9 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           higherBound += newData.getNumDVs();
           densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
         }
-        if (isNDVBitVectorSet) {
-          ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
-              ndvEstimator.getnumBitVectors()));
+        if (ndvEstimator != null) {
+          ndvEstimator.mergeEstimators(NumDistinctValueEstimatorFactory
+              .getNumDistinctValueEstimator(newData.getBitVectors()));
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
@@ -96,7 +111,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
       }
-      if (isNDVBitVectorSet) {
+      if (ndvEstimator != null) {
         // if all the ColumnStatisticsObjs contain bitvectors, we do not need to
         // use uniform distribution assumption because we can merge bitvectors
         // to get a good estimation.
@@ -132,7 +147,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       // while we scan the css, we also get the densityAvg, lowerbound and
       // higerbound when useDensityFunctionForNDVEstimation is true.
       double densityAvgSum = 0.0;
-      if (!isNDVBitVectorSet) {
+      if (ndvEstimator == null) {
         // if not every partition uses bitvector for ndv, we just fall back to
         // the traditional extrapolation methods.
         for (ColumnStatistics cs : css) {
@@ -148,7 +163,6 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       } else {
         // we first merge all the adjacent bitvectors that we could merge and
         // derive new partition names and index.
-        NumDistinctValueEstimator ndvEstimator = new NumDistinctValueEstimator(numBitVectors);
         StringBuilder pseudoPartName = new StringBuilder();
         double pseudoIndexSum = 0;
         int length = 0;
@@ -176,6 +190,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
               pseudoPartName = new StringBuilder();
               pseudoIndexSum = 0;
               length = 0;
+              ndvEstimator = NumDistinctValueEstimatorFactory.getEmptyNumDistinctValueEstimator(ndvEstimator);
             }
             aggregateData = null;
           }
@@ -192,8 +207,8 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
                 newData.getHighValue()));
             aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           }
-          ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
-              ndvEstimator.getnumBitVectors()));
+          ndvEstimator.mergeEstimators(NumDistinctValueEstimatorFactory
+              .getNumDistinctValueEstimator(newData.getBitVectors()));
         }
         if (length > 0) {
           // we have to set ndv

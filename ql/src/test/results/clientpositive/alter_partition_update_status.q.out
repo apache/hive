@@ -36,7 +36,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_one
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
 PREHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: query: ALTER TABLE src_stat_part_one PARTITION(partitionId=1) UPDATE STATISTICS for column key SET ('numDVs'='11','avgColLen'='2.2')
@@ -88,7 +88,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part_two
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
 PREHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
 POSTHOOK: query: ALTER TABLE src_stat_part_two PARTITION(px=1, py='a') UPDATE STATISTICS for column key SET ('numDVs'='30','maxColLen'='40')

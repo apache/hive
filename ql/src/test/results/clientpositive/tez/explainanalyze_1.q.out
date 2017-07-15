@@ -240,7 +240,7 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_5]
-        Group By Operator [GBY_3] (rows=205/309 width=95)
+        Group By Operator [GBY_3] (rows=309/309 width=95)
           Output:["_col0","_col1"],aggregations:["count(KEY._col0)"],keys:KEY._col0
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_2]
@@ -287,7 +287,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_18] (rows=382/0 width=8)
+            Merge Join Operator [MERGEJOIN_18] (rows=267/0 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -336,7 +336,7 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_18] (rows=399/1019 width=8)
+            Merge Join Operator [MERGEJOIN_18] (rows=267/1019 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -440,9 +440,9 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=1219/1028 width=178)
+        Select Operator [SEL_9] (rows=809/1028 width=178)
           Output:["_col0","_col1"]
-          Merge Join Operator [MERGEJOIN_15] (rows=1219/1028 width=178)
+          Merge Join Operator [MERGEJOIN_15] (rows=809/1028 width=178)
             Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col2"]
           <-Map 1 [SIMPLE_EDGE]
             SHUFFLE [RS_6]

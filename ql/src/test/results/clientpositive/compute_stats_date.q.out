@@ -35,15 +35,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
 #### A masked pattern was here ####
 20
-PREHOOK: query: select compute_stats(fl_date, 16) from tab_date
+PREHOOK: query: select compute_stats(fl_date, 'hll') from tab_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_date
 #### A masked pattern was here ####
-POSTHOOK: query: select compute_stats(fl_date, 16) from tab_date
+POSTHOOK: query: select compute_stats(fl_date, 'hll') from tab_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
 #### A masked pattern was here ####
-{"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":18,"ndvbitvector":"{0, 1, 2, 3, 4, 5}{0, 1, 2, 3}{0}{0, 1, 2, 6}{0, 1, 2, 3}{0, 1, 2, 3}{0, 1, 2}{0, 1, 2, 3}{0, 1, 2, 3}{0, 2}{0, 1, 2, 3, 4}{0, 1, 2, 4, 5}{0, 1, 2, 3}{0, 1, 2, 3, 5}{0, 1, 2, 3, 4, 5}{0, 1, 2, 3, 4}"}
+{"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":19,"ndvbitvector":"SExM4BMTw6qAFv+ogCGC/7ZdgMDTH73K3+4Bgq+jE766tgWAh/xZgIqTVIDhgVDA655SwfXHA4Dy\r\n/Ve//Z0LwMSIToCZ6QOAhZ8Gg8jOEb38rBw=\r\n"}
 PREHOOK: query: explain
 analyze table tab_date compute statistics for columns fl_date
 PREHOOK: type: QUERY
@@ -66,14 +66,14 @@ STAGE PLANS:
               outputColumnNames: fl_date
               Statistics: Num rows: 13 Data size: 778 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: compute_stats(fl_date, 16)
+                aggregations: compute_stats(fl_date, 'hll')
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 572 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 572 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:date,max:date,countnulls:bigint,bitvector:string,numbitvectors:int>)
+                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:date,max:date,countnulls:bigint,bitvector:string>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -111,7 +111,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_date
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-fl_date             	date                	2000-11-20          	2010-10-29          	0                   	18                  	                    	                    	                    	                    	from deserializer   
+fl_date             	date                	2000-11-20          	2010-10-29          	0                   	19                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS

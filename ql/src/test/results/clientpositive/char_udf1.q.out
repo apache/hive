@@ -393,15 +393,15 @@ POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
 PREHOOK: query: select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from char_udf_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 POSTHOOK: query: select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from char_udf_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1

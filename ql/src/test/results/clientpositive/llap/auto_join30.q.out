@@ -67,7 +67,7 @@ STAGE PLANS:
                         outputColumnNames: _col2, _col3
                         input vertices:
                           0 Map 1
-                        Statistics: Num rows: 1219 Data size: 216982 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 809 Data size: 144002 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(hash(_col2,_col3))
                           mode: hash
@@ -167,7 +167,7 @@ STAGE PLANS:
                       outputColumnNames: _col2, _col3
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 1219 Data size: 216982 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 809 Data size: 144002 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(hash(_col2,_col3))
                         mode: hash
@@ -300,7 +300,7 @@ STAGE PLANS:
                       outputColumnNames: _col2, _col3
                       input vertices:
                         0 Map 1
-                      Statistics: Num rows: 1219 Data size: 216982 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 809 Data size: 144002 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(hash(_col2,_col3))
                         mode: hash
@@ -431,7 +431,7 @@ STAGE PLANS:
                         input vertices:
                           0 Map 1
                           2 Map 4
-                        Statistics: Num rows: 2974 Data size: 529372 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1309 Data size: 233002 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(hash(_col2,_col3))
                           mode: hash
@@ -605,7 +605,7 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col2, _col3
-                Statistics: Num rows: 2974 Data size: 529372 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1309 Data size: 233002 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   mode: hash
@@ -758,7 +758,7 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col2, _col3
-                Statistics: Num rows: 2974 Data size: 529372 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1309 Data size: 233002 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   mode: hash
@@ -911,7 +911,7 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col2, _col3
-                Statistics: Num rows: 2974 Data size: 529372 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1309 Data size: 233002 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   mode: hash
@@ -1064,7 +1064,7 @@ STAGE PLANS:
                   1 _col0 (type: string)
                   2 _col0 (type: string)
                 outputColumnNames: _col2, _col3
-                Statistics: Num rows: 2974 Data size: 529372 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1309 Data size: 233002 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2,_col3))
                   mode: hash

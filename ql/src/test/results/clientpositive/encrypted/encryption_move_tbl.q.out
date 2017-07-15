@@ -61,7 +61,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	196                 	                    	                    	                    	                    	from deserializer   
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
 PREHOOK: type: DESCTABLE
@@ -71,7 +71,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	214                 	6.812               	7                   	                    	                    	from deserializer   
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
@@ -94,7 +94,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	196                 	                    	                    	                    	                    	from deserializer   
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
 PREHOOK: type: DESCTABLE
@@ -104,7 +104,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	214                 	6.812               	7                   	                    	                    	from deserializer   
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 PREHOOK: type: ALTERTABLE_RENAME

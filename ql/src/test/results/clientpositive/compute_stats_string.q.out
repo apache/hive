@@ -23,11 +23,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_string
 #### A masked pattern was here ####
 10
-PREHOOK: query: select compute_stats(a, 16) from tab_string
+PREHOOK: query: select compute_stats(a, 'fm', 16) from tab_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_string
 #### A masked pattern was here ####
-POSTHOOK: query: select compute_stats(a, 16) from tab_string
+POSTHOOK: query: select compute_stats(a, 'fm', 16) from tab_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_string
 #### A masked pattern was here ####

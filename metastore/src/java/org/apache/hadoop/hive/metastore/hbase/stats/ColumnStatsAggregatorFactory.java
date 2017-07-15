@@ -34,7 +34,7 @@ public class ColumnStatsAggregatorFactory {
   private ColumnStatsAggregatorFactory() {
   }
 
-  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, int numBitVectors, boolean useDensityFunctionForNDVEstimation) {
+  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, boolean useDensityFunctionForNDVEstimation) {
     ColumnStatsAggregator agg;
     switch (type) {
     case BOOLEAN_STATS:
@@ -58,7 +58,6 @@ public class ColumnStatsAggregatorFactory {
     default:
       throw new RuntimeException("Woh, bad.  Unknown stats type " + type.toString());
     }
-    agg.numBitVectors = numBitVectors;
     agg.useDensityFunctionForNDVEstimation = useDensityFunctionForNDVEstimation;
     return agg;
   }

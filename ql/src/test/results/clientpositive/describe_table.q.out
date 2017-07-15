@@ -212,7 +212,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
@@ -304,7 +304,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE

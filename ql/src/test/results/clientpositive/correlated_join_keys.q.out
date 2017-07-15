@@ -207,7 +207,7 @@ STAGE PLANS:
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
-          Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
             mode: hash

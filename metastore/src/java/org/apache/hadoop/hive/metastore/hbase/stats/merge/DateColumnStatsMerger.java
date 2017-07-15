@@ -19,7 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.hbase.stats.merge;
 
-import org.apache.hadoop.hive.metastore.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
@@ -29,27 +30,32 @@ public class DateColumnStatsMerger extends ColumnStatsMerger {
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
     DateColumnStatsData aggregateData = aggregateColStats.getStatsData().getDateStats();
     DateColumnStatsData newData = newColStats.getStatsData().getDateStats();
-    Date lowValue =
-        aggregateData.getLowValue().compareTo(newData.getLowValue()) < 0 ? aggregateData
-            .getLowValue() : newData.getLowValue();
+    Date lowValue = aggregateData.getLowValue().compareTo(newData.getLowValue()) < 0 ? aggregateData
+        .getLowValue() : newData.getLowValue();
     aggregateData.setLowValue(lowValue);
-    Date highValue =
-        aggregateData.getHighValue().compareTo(newData.getHighValue()) >= 0 ? aggregateData
-            .getHighValue() : newData.getHighValue();
+    Date highValue = aggregateData.getHighValue().compareTo(newData.getHighValue()) >= 0 ? aggregateData
+        .getHighValue() : newData.getHighValue();
     aggregateData.setHighValue(highValue);
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (ndvEstimator == null || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length() == 0
+        || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
     } else {
-      ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(aggregateData.getBitVectors(),
-          ndvEstimator.getnumBitVectors()));
-      ndvEstimator.mergeEstimators(new NumDistinctValueEstimator(newData.getBitVectors(),
-          ndvEstimator.getnumBitVectors()));
-      long ndv = ndvEstimator.estimateNumDistinctValues();
+      NumDistinctValueEstimator oldEst = NumDistinctValueEstimatorFactory
+          .getNumDistinctValueEstimator(aggregateData.getBitVectors());
+      NumDistinctValueEstimator newEst = NumDistinctValueEstimatorFactory
+          .getNumDistinctValueEstimator(newData.getBitVectors());
+      long ndv = -1;
+      if (oldEst.canMerge(newEst)) {
+        oldEst.mergeEstimators(newEst);
+        ndv = oldEst.estimateNumDistinctValues();
+        aggregateData.setBitVectors(oldEst.serialize());
+      } else {
+        ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
+      }
       LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
           + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
       aggregateData.setNumDVs(ndv);
-      aggregateData.setBitVectors(ndvEstimator.serialize().toString());
     }
   }
 }

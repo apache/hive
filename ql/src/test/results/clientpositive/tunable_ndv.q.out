@@ -84,7 +84,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-locid               	int                 	1                   	4                   	0                   	5                   	                    	                    	                    	                    	from deserializer   
+locid               	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d

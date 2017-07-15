@@ -84,7 +84,6 @@ class StatsCache {
         .build(new CacheLoader<StatsCacheKey, AggrStats>() {
           @Override
           public AggrStats load(StatsCacheKey key) throws Exception {
-            int numBitVectors = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
             boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
             HBaseReadWrite hrw = HBaseReadWrite.getInstance();
             AggrStats aggrStats = hrw.getAggregatedStats(key.hashed);
@@ -101,7 +100,7 @@ class StatsCache {
                 if (aggregator == null) {
                   aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css.iterator()
                       .next().getStatsObj().iterator().next().getStatsData().getSetField(),
-                      numBitVectors, useDensityFunctionForNDVEstimation);
+                      useDensityFunctionForNDVEstimation);
                 }
                 ColumnStatisticsObj statsObj = aggregator
                     .aggregate(key.colName, key.partNames, css);

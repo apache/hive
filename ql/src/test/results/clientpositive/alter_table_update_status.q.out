@@ -48,7 +48,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	14                  	1.72                	3                   	                    	                    	from deserializer   
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat UPDATE STATISTICS for column key SET ('numDVs'='1111','avgColLen'='1.111')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
@@ -94,7 +94,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_int
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
-key                 	double              	66.0                	406.0               	10                  	14                  	                    	                    	                    	                    	from deserializer   
+key                 	double              	66.0                	406.0               	10                  	15                  	                    	                    	                    	                    	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE src_stat_int UPDATE STATISTICS for column key SET ('numDVs'='2222','lowValue'='333.22','highValue'='22.22')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS

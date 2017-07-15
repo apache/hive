@@ -108,7 +108,7 @@ STAGE PLANS:
               value expressions: key (type: int), value (type: string)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: compute_stats(VALUE._col0, 16), compute_stats(VALUE._col2, 16)
+          aggregations: compute_stats(VALUE._col0, 'hll'), compute_stats(VALUE._col2, 'hll')
           mode: complete
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 960 Basic stats: COMPLETE Column stats: NONE

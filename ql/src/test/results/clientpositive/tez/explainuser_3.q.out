@@ -41,13 +41,13 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=10 width=101)
+        Select Operator [SEL_7] (rows=10 width=100)
           Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=10 width=101)
+            Select Operator [SEL_5] (rows=10 width=100)
               Output:["_col0","_col1"]
-              TableScan [TS_0] (rows=10 width=101)
+              TableScan [TS_0] (rows=10 width=100)
                 default@acid_vectorized,acid_vectorized, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
 PREHOOK: query: explain select key, value
@@ -213,8 +213,8 @@ Stage-3
               Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_3]
-                Group By Operator [GBY_2] (rows=1 width=984)
-                  Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
+                Group By Operator [GBY_2] (rows=1 width=960)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
                   Select Operator [SEL_1] (rows=500 width=178)
                     Output:["key","value"]
                     TableScan [TS_0] (rows=500 width=178)

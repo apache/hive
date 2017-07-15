@@ -15,38 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.common.ndv;
+
 import java.util.Random;
 
 import javolution.util.FastBitSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
-/*
- * https://en.wikipedia.org/wiki/Flajolet%E2%80%93Martin_algorithm
- * We implement Flajolet–Martin algorithm in this class.
- * The Flajolet–Martin algorithm is an algorithm for approximating the number of distinct elements 
- * in a stream with a single pass and space-consumption which is logarithmic in the maximum number 
- * of possible distinct elements in the stream. The algorithm was introduced by Philippe Flajolet 
- * and G. Nigel Martin in their 1984 paper "Probabilistic Counting Algorithms for Data Base Applications".
- * Later it has been refined in the papers "LogLog counting of large cardinalities" by Marianne Durand 
- * and Philippe Flajolet, and "HyperLogLog: The analysis of a near-optimal cardinality estimation 
- * algorithm" by Philippe Flajolet et al.
- */
+public class FMSketch implements NumDistinctValueEstimator{
 
-/*
- * The algorithm works like this.
- * (1) Set the number of bit vectors, i.e., numBitVectors, based on the precision.
- * (2) For each bit vector, generate hash value of the long value and mod it by 2^bitVectorSize-1. (addToEstimator)
- * (3) Set the index (addToEstimator)
- * (4) Take the average of the index for all the bit vectors and get the estimated NDV (estimateNumDistinctValues).
- */
-public class NumDistinctValueEstimator {
-
-  static final Log LOG = LogFactory.getLog(NumDistinctValueEstimator.class.getName());
+  static final Logger LOG = LoggerFactory.getLogger(FMSketch.class.getName());
 
   /* We want a,b,x to come from a finite field of size 0 to k, where k is a prime number.
    * 2^p - 1 is prime for p = 31. Hence bitvectorSize has to be 31. Pick k to be 2^p -1.
@@ -55,7 +39,6 @@ public class NumDistinctValueEstimator {
    * thus introducing errors in the estimates.
    */
   private static final int BIT_VECTOR_SIZE = 31;
-  private final int numBitVectors;
 
   // Refer to Flajolet-Martin'86 for the value of phi
   private static final double PHI = 0.77351;
@@ -66,10 +49,12 @@ public class NumDistinctValueEstimator {
 
   private final Random aValue;
   private final Random bValue;
+  
+  private int numBitVectors;
 
   /* Create a new distinctValueEstimator
    */
-  public NumDistinctValueEstimator(int numBitVectors) {
+  public FMSketch(int numBitVectors) {
     this.numBitVectors = numBitVectors;
     bitVector = new FastBitSet[numBitVectors];
     for (int i=0; i< numBitVectors; i++) {
@@ -126,9 +111,9 @@ public class NumDistinctValueEstimator {
     }
   }
 
-  public NumDistinctValueEstimator(String s, int numBitVectors) {
+  public FMSketch(String s, int numBitVectors) {
     this.numBitVectors = numBitVectors;
-    FastBitSet bitVectorDeser[] = deserialize(s, numBitVectors);
+    FastBitSet bitVectorDeser[] = genBitSet(s, numBitVectors);
     bitVector = new FastBitSet[numBitVectors];
     for(int i=0; i <numBitVectors; i++) {
        bitVector[i] = new FastBitSet(BIT_VECTOR_SIZE);
@@ -141,6 +126,10 @@ public class NumDistinctValueEstimator {
 
     aValue = null;
     bValue = null;
+  }
+
+  public FMSketch(String s) {
+    this(s, StringUtils.countMatches(s, "{"));
   }
 
   /**
@@ -168,10 +157,8 @@ public class NumDistinctValueEstimator {
     String t = new String();
 
     LOG.debug("NumDistinctValueEstimator");
-    LOG.debug("Number of Vectors:");
-    LOG.debug(numBitVectors);
-    LOG.debug("Vector Size: ");
-    LOG.debug(BIT_VECTOR_SIZE);
+    LOG.debug("Number of Vectors: {}", numBitVectors);
+    LOG.debug("Vector Size: {}", BIT_VECTOR_SIZE);
 
     for (int i=0; i < numBitVectors; i++) {
       t = t + bitVector[i].toString();
@@ -184,19 +171,19 @@ public class NumDistinctValueEstimator {
   /* Serializes a distinctValueEstimator object to Text for transport.
    *
    */
-  public Text serialize() {
+  public String serialize() {
     String s = new String();
     for(int i=0; i < numBitVectors; i++) {
       s = s + (bitVector[i].toString());
     }
-    return new Text(s);
+    return s;
   }
 
   /* Deserializes from string to FastBitSet; Creates a NumDistinctValueEstimator object and
    * returns it.
    */
 
-  private FastBitSet[] deserialize(String s, int numBitVectors) {
+  private FastBitSet[] genBitSet(String s, int numBitVectors) {
     FastBitSet[] b = new FastBitSet[numBitVectors];
     for (int j=0; j < numBitVectors; j++) {
       b[j] = new FastBitSet(BIT_VECTOR_SIZE);
@@ -260,7 +247,18 @@ public class NumDistinctValueEstimator {
   }
 
   private int generateHashForPCSA(long v) {
-    return generateHash(v, 0);
+    int mod = 1 << (BIT_VECTOR_SIZE - 1) - 1;
+    long tempHash = a[0] * v + b[0];
+    tempHash %= mod;
+    int hash = (int) tempHash;
+
+    /* Hash function should map the long value to 0...2^L-1.
+     * Hence hash value has to be non-negative.
+     */
+    if (hash < 0) {
+      hash = hash + mod + 1;
+    }
+    return hash;
   }
 
   public void addToEstimator(long v) {
@@ -323,7 +321,7 @@ public class NumDistinctValueEstimator {
     addToEstimatorPCSA(v);
   }
 
-  public void mergeEstimators(NumDistinctValueEstimator o) {
+  public void mergeEstimators(FMSketch o) {
     // Bitwise OR the bitvector with the bitvector in the agg buffer
     for (int i=0; i<numBitVectors; i++) {
       bitVector[i].or(o.getBitVector(i));
@@ -360,8 +358,57 @@ public class NumDistinctValueEstimator {
     }
 
     avgLeastSigZero =
-        (double)(sumLeastSigZero/(numBitVectors * 1.0)) - (Math.log(PHI)/Math.log(2.0));
+        sumLeastSigZero/(numBitVectors * 1.0) - (Math.log(PHI)/Math.log(2.0));
     numDistinctValues = Math.pow(2.0, avgLeastSigZero);
     return ((long)(numDistinctValues));
+  }
+
+  @InterfaceAudience.LimitedPrivate(value = { "Hive" })
+  static int lengthFor(JavaDataModel model, Integer numVector) {
+    int length = model.object();
+    length += model.primitive1() * 2;       // two int
+    length += model.primitive2();           // one double
+    length += model.lengthForRandom() * 2;  // two Random
+
+    if (numVector == null) {
+      numVector = 16; // HiveConf hive.stats.ndv.error default produces 16 vectors
+    }
+
+    if (numVector > 0) {
+      length += model.array() * 3;                    // three array
+      length += model.primitive1() * numVector * 2;   // two int array
+      length += (model.object() + model.array() + model.primitive1() +
+          model.primitive2()) * numVector;   // bitset array
+    }
+    return length;
+  }
+
+  public int lengthFor(JavaDataModel model) {
+    return lengthFor(model, getnumBitVectors());
+  }
+
+  @Override
+  public NumDistinctValueEstimator deserialize(String s) {
+    return new FMSketch(s);
+  }
+
+  // the caller needs to gurrantee that they are the same type based on numBitVectors
+  @Override
+  public void mergeEstimators(NumDistinctValueEstimator o) {
+    // Bitwise OR the bitvector with the bitvector in the agg buffer
+    for (int i = 0; i < numBitVectors; i++) {
+      bitVector[i].or(((FMSketch) o).getBitVector(i));
+    }
+  }
+
+  @Override
+  public void addToEstimator(String s) {
+    int v = s.hashCode();
+    addToEstimator(v);
+  }
+
+  @Override
+  public boolean canMerge(NumDistinctValueEstimator o) {
+    return o instanceof FMSketch && this.numBitVectors == ((FMSketch) o).numBitVectors;
   }
 }

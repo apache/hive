@@ -47,11 +47,11 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 4 
@@ -94,11 +94,11 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -126,10 +126,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -350,21 +350,21 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -379,11 +379,11 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 120 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80 Data size: 6960 Basic stats: COMPLETE Column stats: COMPLETE
         Union 3 
             Vertex: Union 3
 
@@ -556,11 +556,11 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 6
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
-                          Statistics: Num rows: 72 Data size: 6252 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 52 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
@@ -593,17 +593,17 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 72 Data size: 6252 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 52 Data size: 4512 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
-                Statistics: Num rows: 72 Data size: 6264 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 52 Data size: 4524 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 72 Data size: 6264 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 52 Data size: 4524 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -750,7 +750,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -808,7 +808,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -990,7 +990,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1048,7 +1048,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1230,7 +1230,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1454,7 +1454,7 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 60 Data size: 5220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 40 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
@@ -1857,17 +1857,17 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 5
-                        Statistics: Num rows: 1219 Data size: 106053 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 809 Data size: 70383 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 205 Data size: 17835 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 205 Data size: 17835 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
@@ -1896,17 +1896,17 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         input vertices:
                           1 Map 7
-                        Statistics: Num rows: 1219 Data size: 106053 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 809 Data size: 70383 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string)
                           mode: hash
                           outputColumnNames: _col0
-                          Statistics: Num rows: 205 Data size: 17835 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 205 Data size: 17835 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 6 
