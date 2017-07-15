@@ -58,6 +58,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   protected final long timeout;
   protected final Closeable client;
   private final Closeable socket;
+  private boolean closed = false;
 
   public LlapBaseRecordReader(InputStream in, Schema schema,
       Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
@@ -78,27 +79,31 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   }
 
   @Override
-  public void close() throws IOException {
-    Exception caughtException = null;
-    try {
-      din.close();
-    } catch (Exception err) {
-      LOG.error("Error closing input stream:" + err.getMessage(), err);
-      caughtException = err;
-    }
-    // Don't close the socket - the stream already does that if needed.
+  public synchronized void close() throws IOException {
+    if (!closed) {
+      closed = true;
 
-    if (client != null) {
+      Exception caughtException = null;
       try {
-        client.close();
+        din.close();
       } catch (Exception err) {
-        LOG.error("Error closing client:" + err.getMessage(), err);
-        caughtException = (caughtException == null ? err : caughtException);
+        LOG.error("Error closing input stream:" + err.getMessage(), err);
+        caughtException = err;
       }
-    }
+      // Don't close the socket - the stream already does that if needed.
 
-    if (caughtException != null) {
-      throw new IOException("Exception during close: " + caughtException.getMessage(), caughtException);
+      if (client != null) {
+        try {
+          client.close();
+        } catch (Exception err) {
+          LOG.error("Error closing client:" + err.getMessage(), err);
+          caughtException = (caughtException == null ? err : caughtException);
+        }
+      }
+
+      if (caughtException != null) {
+        throw new IOException("Exception during close: " + caughtException.getMessage(), caughtException);
+      }
     }
   }
 
@@ -156,28 +161,40 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         return false;
       }
     } catch (IOException io) {
-      if (Thread.interrupted()) {
-        // Either we were interrupted by one of:
-        // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
-        // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
-        // Either way we should not try to block trying to read the reader events queue.
-        if (readerEvents.isEmpty()) {
-          // Case 2.
-          throw io;
-        } else {
-          // Case 1. Fail the reader, sending back the error we received from the reader event.
-          ReaderEvent event = getReaderEvent();
-          switch (event.getEventType()) {
-            case ERROR:
-              throw new IOException("Received reader event error: " + event.getMessage(), io);
-            default:
-              throw new IOException("Got reader event type " + event.getEventType()
-                  + ", expected error event", io);
+      try {
+        if (Thread.interrupted()) {
+          // Either we were interrupted by one of:
+          // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
+          // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
+          // Either way we should not try to block trying to read the reader events queue.
+          if (readerEvents.isEmpty()) {
+            // Case 2.
+            throw io;
+          } else {
+            // Case 1. Fail the reader, sending back the error we received from the reader event.
+            ReaderEvent event = getReaderEvent();
+            switch (event.getEventType()) {
+              case ERROR:
+                throw new IOException("Received reader event error: " + event.getMessage(), io);
+              default:
+                throw new IOException("Got reader event type " + event.getEventType()
+                    + ", expected error event", io);
+            }
           }
+        } else {
+          // If we weren't interrupted, just propagate the error
+          throw io;
         }
-      } else {
-        // If we weren't interrupted, just propagate the error
-        throw io;
+      } finally {
+        // The external client handling umbilical responses and the connection to read the incoming
+        // data are not coupled. Calling close() here to make sure an error in one will cause the
+        // other to be closed as well.
+        try {
+          close();
+        } catch (Exception err) {
+          // Don't propagate errors from close() since this will lose the original error above.
+          LOG.error("Closing RecordReader due to error and hit another error during close()", err);
+        }
       }
     }
   }

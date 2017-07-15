@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
@@ -90,6 +91,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.InputInitializerDescriptor;
@@ -368,6 +371,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         queryUser = UserGroupInformation.getCurrentUser().getUserName();
       }
 
+      // Generate umbilical token (applies to all splits)
+      Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(applicationId);
+
       LOG.info("Number of splits: " + (eventList.size() - 1));
       SignedMessage signedSvs = null;
       for (int i = 0; i < eventList.size() - 1; i++) {
@@ -388,7 +394,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
             System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
-            signedSvs.signature);
+            signedSvs.signature, umbilicalToken);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
         // 3. Generate input event.
@@ -403,6 +409,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       return result;
     } catch (Exception e) {
       throw new IOException(e);
+    }
+  }
+
+  private static class JobTokenCreator {
+    private static Token<JobTokenIdentifier> createJobToken(ApplicationId applicationId) {
+      String tokenIdentifier = applicationId.toString();
+      JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(
+          tokenIdentifier));
+      Token<JobTokenIdentifier> sessionToken = new Token<JobTokenIdentifier>(identifier,
+          new JobTokenSecretManager());
+      sessionToken.setService(identifier.getJobId());
+      return sessionToken;
     }
   }
 

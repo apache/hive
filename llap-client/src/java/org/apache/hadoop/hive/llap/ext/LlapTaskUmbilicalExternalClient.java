@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.llap.ext;
 import org.apache.hadoop.io.Writable;
 
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
@@ -59,7 +61,6 @@ import org.apache.hadoop.hive.llap.tezplugins.helpers.LlapTaskUmbilicalServer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.service.AbstractService;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -71,26 +72,62 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class LlapTaskUmbilicalExternalClient extends AbstractService implements Closeable {
+public class LlapTaskUmbilicalExternalClient implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskUmbilicalExternalClient.class);
+
+  private static ScheduledThreadPoolExecutor retryExecutor = new ScheduledThreadPoolExecutor(1);
 
   private final LlapProtocolClientProxy communicator;
   private volatile LlapTaskUmbilicalServer llapTaskUmbilicalServer;
   private final Configuration conf;
-  private final LlapTaskUmbilicalProtocol umbilical;
 
   protected final String tokenIdentifier;
   protected final Token<JobTokenIdentifier> sessionToken;
-
-  private final ConcurrentMap<String, PendingEventData> pendingEvents = new ConcurrentHashMap<>();
-  private final ConcurrentMap<String, TaskHeartbeatInfo> registeredTasks= new ConcurrentHashMap<String, TaskHeartbeatInfo>();
   private LlapTaskUmbilicalExternalResponder responder = null;
-  private final ScheduledThreadPoolExecutor timer;
   private final long connectionTimeout;
   private volatile boolean closed = false;
+  private RequestInfo requestInfo;
+  List<TezEvent> tezEvents;
 
-  private static class TaskHeartbeatInfo {
+  // Using a shared instance of the umbilical server.
+  private static class SharedUmbilicalServer {
+    LlapTaskUmbilicalExternalImpl umbilicalProtocol;
+    LlapTaskUmbilicalServer llapTaskUmbilicalServer;
+
+    private volatile static SharedUmbilicalServer instance;
+    private static final Object lock = new Object();
+
+    static SharedUmbilicalServer getInstance(Configuration conf) {
+      SharedUmbilicalServer value = instance;
+      if (value == null) {
+        synchronized (lock) {
+          if (instance == null) {
+            instance = new SharedUmbilicalServer(conf);
+          }
+          value = instance;
+        }
+      }
+      return value;
+    }
+
+    private SharedUmbilicalServer(Configuration conf) {
+      try {
+        umbilicalProtocol = new LlapTaskUmbilicalExternalImpl(conf);
+        llapTaskUmbilicalServer = new LlapTaskUmbilicalServer(conf, umbilicalProtocol, 1);
+      } catch (Exception err) {
+        throw new ExceptionInInitializerError(err);
+      }
+    }
+  }
+
+  private enum RequestState {
+    PENDING, RUNNING
+  };
+
+  private static class RequestInfo {
+    RequestState state;
+    final SubmitWorkRequestProto request;
     final QueryIdentifierProto queryIdentifierProto;
     final String taskAttemptId;
     final String hostname;
@@ -98,7 +135,10 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     final int port;
     final AtomicLong lastHeartbeat = new AtomicLong();
 
-    public TaskHeartbeatInfo(QueryIdentifierProto queryIdentifierProto, String taskAttemptId, String hostname, int port) {
+    public RequestInfo(SubmitWorkRequestProto request, QueryIdentifierProto queryIdentifierProto,
+        String taskAttemptId, String hostname, int port) {
+      this.state = RequestState.PENDING;
+      this.request = request;
       this.queryIdentifierProto = queryIdentifierProto;
       this.taskAttemptId = taskAttemptId;
       this.hostname = hostname;
@@ -107,26 +147,13 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     }
   }
 
-  private static class PendingEventData {
-    final TaskHeartbeatInfo heartbeatInfo;
-    final List<TezEvent> tezEvents;
-
-    public PendingEventData(TaskHeartbeatInfo heartbeatInfo, List<TezEvent> tezEvents) {
-      this.heartbeatInfo = heartbeatInfo;
-      this.tezEvents = tezEvents;
-    }
-  }
-
   public LlapTaskUmbilicalExternalClient(Configuration conf, String tokenIdentifier,
       Token<JobTokenIdentifier> sessionToken, LlapTaskUmbilicalExternalResponder responder,
       Token<LlapTokenIdentifier> llapToken) {
-    super(LlapTaskUmbilicalExternalClient.class.getName());
     this.conf = conf;
-    this.umbilical = new LlapTaskUmbilicalExternalImpl();
     this.tokenIdentifier = tokenIdentifier;
     this.sessionToken = sessionToken;
     this.responder = responder;
-    this.timer = new ScheduledThreadPoolExecutor(1);
     this.connectionTimeout = 3 * HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     // Add support for configurable threads, however 1 should always be enough.
@@ -134,37 +161,18 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     this.communicator.init(conf);
   }
 
-  @Override
-  public void serviceStart() throws IOException {
-    // If we use a single server for multiple external clients, then consider using more than one handler.
-    int numHandlers = 1;
-    llapTaskUmbilicalServer = new LlapTaskUmbilicalServer(conf, umbilical, numHandlers, tokenIdentifier, sessionToken);
-    communicator.start();
-  }
-
-  @Override
-  public void serviceStop() throws Exception {
-    if (closed) {
-      throw new IllegalStateException("Client has already been closed");
+  private void terminateRequest() {
+    if (closed || requestInfo == null) {
+      LOG.warn("No current request to terminate");
+      return;
     }
-    closed = true;
 
-    // Check if the request is registered - if so we can cancel the request
-    for (Map.Entry<String, TaskHeartbeatInfo> taskEntry : registeredTasks.entrySet()) {
-      terminateRequest(taskEntry.getValue());
-    }
-    registeredTasks.clear();
-
-    scheduleClientForCleanup(this);
-  }
-
-  private void terminateRequest(TaskHeartbeatInfo thi) {
     TerminateFragmentRequestProto.Builder builder = TerminateFragmentRequestProto.newBuilder();
-    builder.setQueryIdentifier(thi.queryIdentifierProto);
-    builder.setFragmentIdentifierString(thi.taskAttemptId);
+    builder.setQueryIdentifier(requestInfo.queryIdentifierProto);
+    builder.setFragmentIdentifierString(requestInfo.taskAttemptId);
 
-    final String taskAttemptId = thi.taskAttemptId;
-    communicator.sendTerminateFragment(builder.build(), thi.hostname, thi.port,
+    final String taskAttemptId = requestInfo.taskAttemptId;
+    communicator.sendTerminateFragment(builder.build(), requestInfo.hostname, requestInfo.port,
         new LlapProtocolClientProxy.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
 
       @Override
@@ -181,16 +189,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     });
   }
 
-  private void doShutdown() throws IOException {
-    llapTaskUmbilicalServer.shutdownServer();
-    timer.shutdown();
-    if (this.communicator != null) {
-      this.communicator.stop();
-    }
-  }
-
   public InetSocketAddress getAddress() {
-    return llapTaskUmbilicalServer.getAddress();
+    return SharedUmbilicalServer.getInstance(conf).llapTaskUmbilicalServer.getAddress();
   }
 
 
@@ -213,151 +213,137 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         vertex.getVertexIndex(), request.getFragmentNumber(), request.getAttemptNumber());
     final String fragmentId = attemptId.toString();
 
-    final TaskHeartbeatInfo thi = new TaskHeartbeatInfo(queryIdentifierProto, fragmentId, llapHost, llapPort);
-    pendingEvents.putIfAbsent(
-        fragmentId, new PendingEventData(thi, Lists.<TezEvent>newArrayList()));
+    this.requestInfo = new RequestInfo(request, queryIdentifierProto, fragmentId, llapHost, llapPort);
 
-    // Setup timer task to check for hearbeat timeouts
-    timer.scheduleAtFixedRate(new HeartbeatCheckTask(),
-        connectionTimeout, connectionTimeout, TimeUnit.MILLISECONDS);
+    this.tezEvents = Lists.<TezEvent>newArrayList();
+    registerClient();
 
     // Send out the actual SubmitWorkRequest
-    communicator.sendSubmitWork(request, llapHost, llapPort,
-        new LlapProtocolClientProxy.ExecuteRequestCallback<SubmitWorkResponseProto>() {
-
-          @Override
-          public void setResponse(SubmitWorkResponseProto response) {
-            if (response.hasSubmissionState()) {
-              if (response.getSubmissionState().equals(SubmissionStateProto.REJECTED)) {
-                String msg = "Fragment: " + fragmentId + " rejected. Server Busy.";
-                LOG.info(msg);
-                if (responder != null) {
-                  Throwable err = new RuntimeException(msg);
-                  responder.submissionFailed(fragmentId, err);
-                }
-                return;
-              }
-            }
-            if (response.hasUniqueNodeId()) {
-              thi.uniqueNodeId = response.getUniqueNodeId();
-            }
-          }
-
-          @Override
-          public void indicateError(Throwable t) {
-            String msg = "Failed to submit: " + fragmentId;
-            LOG.error(msg, t);
-            Throwable err = new RuntimeException(msg, t);
-            responder.submissionFailed(fragmentId, err);
-          }
-        });
+    final LlapTaskUmbilicalExternalClient client = this;
+    communicator.start();
+    submitWork();
   }
 
-  private void updateHeartbeatInfo(String taskAttemptId) {
-    int updateCount = 0;
-
-    PendingEventData pendingEventData = pendingEvents.get(taskAttemptId);
-    if (pendingEventData != null) {
-      pendingEventData.heartbeatInfo.lastHeartbeat.set(System.currentTimeMillis());
-      updateCount++;
-    }
-
-    TaskHeartbeatInfo heartbeatInfo = registeredTasks.get(taskAttemptId);
-    if (heartbeatInfo != null) {
-      heartbeatInfo.lastHeartbeat.set(System.currentTimeMillis());
-      updateCount++;
-    }
-
-    if (updateCount == 0) {
-      LOG.warn("No tasks found for heartbeat from taskAttemptId " + taskAttemptId);
+  private void submitWork() {
+    if (!closed) {
+      communicator.sendSubmitWork(requestInfo.request,
+          requestInfo.hostname, requestInfo.port, new SubmitWorkCallback(this));
     }
   }
 
-  private void updateHeartbeatInfo(
-      String hostname, String uniqueId, int port, TezAttemptArray tasks) {
-    int updateCount = 0;
-    HashSet<TezTaskAttemptID> attempts = new HashSet<>();
-    for (Writable w : tasks.get()) {
-      attempts.add((TezTaskAttemptID)w);
+  // Helper class to submit fragments to LLAP and retry rejected submissions.
+  static class SubmitWorkCallback implements LlapProtocolClientProxy.ExecuteRequestCallback<SubmitWorkResponseProto> {
+    private LlapTaskUmbilicalExternalClient client;
+
+    public SubmitWorkCallback(LlapTaskUmbilicalExternalClient client) {
+      this.client = client;
     }
 
-    String error = "";
-    for (String key : pendingEvents.keySet()) {
-      PendingEventData pendingEventData = pendingEvents.get(key);
-      if (pendingEventData != null) {
-        TaskHeartbeatInfo thi = pendingEventData.heartbeatInfo;
-        String thiUniqueId = thi.uniqueNodeId;
-        if (thi.hostname.equals(hostname) && thi.port == port
-            && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
-          TezTaskAttemptID ta = TezTaskAttemptID.fromString(thi.taskAttemptId);
-          if (attempts.contains(ta)) {
-            thi.lastHeartbeat.set(System.currentTimeMillis());
-            updateCount++;
-          } else {
-            error += (thi.taskAttemptId + ", ");
+    @Override
+    public void setResponse(SubmitWorkResponseProto response) {
+      if (response.hasSubmissionState()) {
+        if (response.getSubmissionState().equals(SubmissionStateProto.REJECTED)) {
+          String fragmentId = this.client.requestInfo.taskAttemptId;
+          String msg = "Fragment: " + fragmentId + " rejected. Server Busy.";
+          LOG.info(msg);
+
+          // Retry rejected requests
+          if (!client.closed) {
+            // Update lastHeartbeat so we don't timeout during the retry
+            client.setLastHeartbeat(System.currentTimeMillis());
+            long retryDelay = HiveConf.getTimeVar(client.conf,
+                HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_SLEEP_BETWEEN_RETRIES_MS,
+                TimeUnit.MILLISECONDS);
+            LOG.info("Queueing fragment for resubmission: " + fragmentId);
+            final SubmitWorkCallback submitter = this;
+            retryExecutor.schedule(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    client.submitWork();
+                  }
+                },
+                retryDelay, TimeUnit.MILLISECONDS);
           }
+          return;
         }
+      }
+      if (response.hasUniqueNodeId()) {
+        client.requestInfo.uniqueNodeId = response.getUniqueNodeId();
       }
     }
 
-    for (String key : registeredTasks.keySet()) {
-      TaskHeartbeatInfo thi = registeredTasks.get(key);
-      if (thi != null) {
-        String thiUniqueId = thi.uniqueNodeId;
-        if (thi.hostname.equals(hostname) && thi.port == port
-            && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
-          TezTaskAttemptID ta = TezTaskAttemptID.fromString(thi.taskAttemptId);
-          if (attempts.contains(ta)) {
-            thi.lastHeartbeat.set(System.currentTimeMillis());
-            updateCount++;
-          } else {
-            error += (thi.taskAttemptId + ", ");
-          }
-        }
-      }
-    }
-    if (!error.isEmpty()) {
-      LOG.info("The tasks we expected to be on the node are not there: " + error);
-    }
-
-    if (updateCount == 0) {
-      LOG.info("No tasks found for heartbeat from hostname " + hostname + ", port " + port);
+    @Override
+    public void indicateError(Throwable t) {
+      String fragmentId = this.client.requestInfo.taskAttemptId;
+      String msg = "Failed to submit: " + fragmentId;
+      LOG.error(msg, t);
+      Throwable err = new RuntimeException(msg, t);
+      client.unregisterClient();
+      client.responder.submissionFailed(fragmentId, err);
     }
   }
 
-  private class HeartbeatCheckTask implements Runnable {
+  @Override
+  public void close() {
+    if (!closed) {
+      terminateRequest();
+      unregisterClient();
+    }
+  }
+
+  private void registerClient() {
+    SharedUmbilicalServer umbilicalServer = SharedUmbilicalServer.getInstance(conf);
+    LlapTaskUmbilicalExternalClient prevVal =
+        umbilicalServer.umbilicalProtocol.registeredClients.putIfAbsent(requestInfo.taskAttemptId, this);
+    if (prevVal != null) {
+      LOG.warn("Unexpected - fragment " + requestInfo.taskAttemptId + " is already registered!");
+    }
+    umbilicalServer.llapTaskUmbilicalServer.addTokenForJob(tokenIdentifier, sessionToken);
+  }
+
+  private void unregisterClient() {
+    if (!closed && requestInfo != null) {
+      communicator.stop();
+      SharedUmbilicalServer umbilicalServer = SharedUmbilicalServer.getInstance(conf);
+      umbilicalServer.umbilicalProtocol.unregisterClient(requestInfo.taskAttemptId);
+      umbilicalServer.llapTaskUmbilicalServer.removeTokenForJob(tokenIdentifier);
+      closed = true;
+    }
+  }
+
+  long getLastHeartbeat() {
+    return this.requestInfo.lastHeartbeat.get();
+  }
+
+  void setLastHeartbeat(long lastHeartbeat) {
+    this.requestInfo.lastHeartbeat.set(lastHeartbeat);
+  }
+
+  // Periodic task to time out submitted tasks that have not been updated with umbilical heartbeat.
+  private static class HeartbeatCheckTask implements Runnable {
+    LlapTaskUmbilicalExternalImpl umbilicalImpl;
+
+    public HeartbeatCheckTask(LlapTaskUmbilicalExternalImpl umbilicalImpl) {
+      this.umbilicalImpl = umbilicalImpl;
+    }
+
     public void run() {
       long currentTime = System.currentTimeMillis();
-      List<String> timedOutTasks = new ArrayList<String>();
+      List<LlapTaskUmbilicalExternalClient> timedOutTasks = new ArrayList<LlapTaskUmbilicalExternalClient>();
 
-      // Check both pending and registered tasks for timeouts
-      for (String key : pendingEvents.keySet()) {
-        PendingEventData pendingEventData = pendingEvents.get(key);
-        if (pendingEventData != null) {
-          if (currentTime - pendingEventData.heartbeatInfo.lastHeartbeat.get() >= connectionTimeout) {
-            timedOutTasks.add(key);
-          }
+      for (Map.Entry<String, LlapTaskUmbilicalExternalClient> entry : umbilicalImpl.registeredClients.entrySet()) {
+        LlapTaskUmbilicalExternalClient client = entry.getValue();
+        if (currentTime - client.getLastHeartbeat() >= client.connectionTimeout) {
+          timedOutTasks.add(client);
         }
       }
-      for (String timedOutTask : timedOutTasks) {
-        LOG.info("Pending taskAttemptId " + timedOutTask + " timed out");
-        responder.heartbeatTimeout(timedOutTask);
-        pendingEvents.remove(timedOutTask);
-      }
 
-      timedOutTasks.clear();
-      for (String key : registeredTasks.keySet()) {
-        TaskHeartbeatInfo heartbeatInfo = registeredTasks.get(key);
-        if (heartbeatInfo != null) {
-          if (currentTime - heartbeatInfo.lastHeartbeat.get() >= connectionTimeout) {
-            timedOutTasks.add(key);
-          }
-        }
-      }
-      for (String timedOutTask : timedOutTasks) {
-        LOG.info("Running taskAttemptId " + timedOutTask + " timed out");
-        responder.heartbeatTimeout(timedOutTask);
-        registeredTasks.remove(timedOutTask);
+      for (LlapTaskUmbilicalExternalClient timedOutTask : timedOutTasks) {
+        String taskAttemptId = timedOutTask.requestInfo.taskAttemptId;
+        LOG.info("Running taskAttemptId " + taskAttemptId + " timed out");
+        timedOutTask.unregisterClient();
+        timedOutTask.responder.heartbeatTimeout(taskAttemptId);
       }
     }
   }
@@ -369,10 +355,19 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     void heartbeatTimeout(String fragmentId);
   }
 
+  private static class LlapTaskUmbilicalExternalImpl implements LlapTaskUmbilicalProtocol {
 
+    final ConcurrentMap<String, LlapTaskUmbilicalExternalClient> registeredClients = new ConcurrentHashMap<>();
+    private final ScheduledThreadPoolExecutor timer;
 
-  // Ideally, the server should be shared across all client sessions running on the same node.
-  private class LlapTaskUmbilicalExternalImpl implements  LlapTaskUmbilicalProtocol {
+    public LlapTaskUmbilicalExternalImpl(Configuration conf) {
+      long taskInterval = HiveConf.getTimeVar(conf,
+          HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+      // Setup timer task to check for hearbeat timeouts
+      this.timer = new ScheduledThreadPoolExecutor(1);
+      timer.scheduleAtFixedRate(new HeartbeatCheckTask(this),
+          taskInterval, taskInterval, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public boolean canCommit(TezTaskAttemptID taskid) throws IOException {
@@ -399,32 +394,25 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
       // Assuming TaskAttemptId and FragmentIdentifierString are the same. Verify this.
       TezTaskAttemptID taskAttemptId = request.getCurrentTaskAttemptID();
       String taskAttemptIdString = taskAttemptId.toString();
-
-      if (closed) {
-        LOG.info("Client has already been closed, but received heartbeat from " + taskAttemptIdString);
-        // Set shouldDie response so the LLAP daemon closes this umbilical connection.
-        response.setShouldDie();
-        return response;
-      }
-
       updateHeartbeatInfo(taskAttemptIdString);
 
       List<TezEvent> tezEvents = null;
-      PendingEventData pendingEventData = pendingEvents.remove(taskAttemptIdString);
-      if (pendingEventData == null) {
-        tezEvents = Collections.emptyList();
-
-        // If this heartbeat was not from a pending event and it's not in our list of registered tasks,
-        if (!registeredTasks.containsKey(taskAttemptIdString)) {
-          LOG.info("Unexpected heartbeat from " + taskAttemptIdString);
-          response.setShouldDie(); // Do any of the other fields need to be set?
-          return response;
-        }
-      } else {
-        tezEvents = pendingEventData.tezEvents;
-        // Tasks removed from the pending list should then be added to the registered list.
-        registeredTasks.put(taskAttemptIdString, pendingEventData.heartbeatInfo);
+      LlapTaskUmbilicalExternalClient client = registeredClients.get(taskAttemptIdString);
+      if (client == null) {
+        // Heartbeat is from a task that we are not currently tracking.
+        LOG.info("Unexpected heartbeat from " + taskAttemptIdString);
+        response.setShouldDie(); // Do any of the other fields need to be set?
+        return response;
       }
+
+      if (client.requestInfo.state == RequestState.PENDING) {
+        client.requestInfo.state = RequestState.RUNNING;
+        tezEvents = client.tezEvents;
+      } else {
+        tezEvents = Collections.emptyList();
+      }
+
+      boolean shouldUnregisterClient = false;
 
       response.setLastRequestId(request.getRequestId());
       // Irrelevant from eventIds. This can be tracked in the AM itself, instead of polluting the task.
@@ -443,11 +431,11 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         switch (eventType) {
           case TASK_ATTEMPT_COMPLETED_EVENT:
             LOG.debug("Task completed event for " + taskAttemptIdString);
-            registeredTasks.remove(taskAttemptIdString);
+            shouldUnregisterClient = true;
             break;
           case TASK_ATTEMPT_FAILED_EVENT:
             LOG.debug("Task failed event for " + taskAttemptIdString);
-            registeredTasks.remove(taskAttemptIdString);
+            shouldUnregisterClient = true;
             break;
           case TASK_STATUS_UPDATE_EVENT:
             // If we want to handle counters
@@ -459,10 +447,14 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         }
       }
 
+      if (shouldUnregisterClient) {
+        client.unregisterClient();
+      }
+
       // Pass the request on to the responder
       try {
-        if (responder != null) {
-          responder.heartbeat(request);
+        if (client.responder != null) {
+          client.responder.heartbeat(request);
         }
       } catch (Exception err) {
         LOG.error("Error during responder execution", err);
@@ -474,6 +466,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     @Override
     public void nodeHeartbeat(
         Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Node heartbeat from " + hostname + ":" + port + ", " + uniqueId);
+      }
       updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port, aw);
       // No need to propagate to this to the responder
     }
@@ -482,14 +477,18 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException {
       String taskAttemptIdString = taskAttemptId.toString();
       LOG.error("Task killed - " + taskAttemptIdString);
-      registeredTasks.remove(taskAttemptIdString);
-
-      try {
-        if (responder != null) {
-          responder.taskKilled(taskAttemptId);
+      LlapTaskUmbilicalExternalClient client = registeredClients.get(taskAttemptIdString);
+      if (client != null) {
+        try {
+          client.unregisterClient();
+          if (client.responder != null) {
+            client.responder.taskKilled(taskAttemptId);
+          }
+        } catch (Exception err) {
+          LOG.error("Error during responder execution", err);
         }
-      } catch (Exception err) {
-        LOG.error("Error during responder execution", err);
+      } else {
+        LOG.info("Received task killed notification for task which is not currently being tracked: " + taskAttemptId);
       }
     }
 
@@ -504,38 +503,60 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
       return ProtocolSignature.getProtocolSignature(this, protocol,
           clientVersion, clientMethodsHash);
     }
-  }
 
-  private static void scheduleClientForCleanup(LlapTaskUmbilicalExternalClient client) {
-    // Add a bit of delay in case the daemon has not closed the umbilical connection yet.
-    clientCleanupExecuter.schedule(new ClientCleanupTask(client), cleanupDelay, TimeUnit.MILLISECONDS);
-  }
-
-  static final ScheduledThreadPoolExecutor clientCleanupExecuter = new ScheduledThreadPoolExecutor(1);
-  static final int cleanupDelay = 2000;
-
-  static class ClientCleanupTask implements Runnable {
-    final LlapTaskUmbilicalExternalClient client;
-
-    public ClientCleanupTask(LlapTaskUmbilicalExternalClient client) {
-      this.client = client;
+    private void unregisterClient(String taskAttemptId) {
+      registeredClients.remove(taskAttemptId);
     }
 
-    @Override
-    public void run() {
-      if (client.llapTaskUmbilicalServer.getNumOpenConnections() == 0) {
-        // No more outstanding connections, ok to close.
-        try {
-          LOG.debug("Closing client");
-          client.doShutdown();
-        } catch (Exception err) {
-          LOG.error("Error cleaning up client", err);
-        }
-      } else {
-        // Reschedule this task for later.
-        LOG.debug("Client still has umbilical connection - rescheduling cleanup.");
-        scheduleClientForCleanup(client);
+    private void updateHeartbeatInfo(String taskAttemptId) {
+      int updateCount = 0;
+
+      LlapTaskUmbilicalExternalClient registeredClient = registeredClients.get(taskAttemptId);
+      if (registeredClient != null) {
+        registeredClient.setLastHeartbeat(System.currentTimeMillis());
+        updateCount++;
       }
+
+      if (updateCount == 0) {
+        LOG.warn("No tasks found for heartbeat from taskAttemptId " + taskAttemptId);
+      }
+    }
+
+    private void updateHeartbeatInfo(
+        String hostname, String uniqueId, int port, TezAttemptArray tasks) {
+      int updateCount = 0;
+      HashSet<TezTaskAttemptID> attempts = new HashSet<>();
+      for (Writable w : tasks.get()) {
+        attempts.add((TezTaskAttemptID)w);
+      }
+
+      String error = "";
+      for (Map.Entry<String, LlapTaskUmbilicalExternalClient> entry : registeredClients.entrySet()) {
+        LlapTaskUmbilicalExternalClient registeredClient = entry.getValue();
+        if (doesClientMatchHeartbeat(registeredClient, hostname, uniqueId, port)) {
+          TezTaskAttemptID ta = TezTaskAttemptID.fromString(registeredClient.requestInfo.taskAttemptId);
+          if (attempts.contains(ta)) {
+            registeredClient.setLastHeartbeat(System.currentTimeMillis());
+            updateCount++;
+          } else {
+            error += (registeredClient.requestInfo.taskAttemptId + ", ");
+          }
+        }
+      }
+      if (!error.isEmpty()) {
+        LOG.info("The tasks we expected to be on the node are not there: " + error);
+      }
+
+      if (updateCount == 0) {
+        LOG.info("No tasks found for heartbeat from hostname " + hostname + ", port " + port);
+      }
+    }
+
+    private static boolean doesClientMatchHeartbeat(LlapTaskUmbilicalExternalClient client,
+        String hostname, String uniqueId, int port) {
+      return (hostname.equals(client.requestInfo.hostname)
+          && port == client.requestInfo.port
+          && uniqueId.equals(client.requestInfo.uniqueNodeId));
     }
   }
 }
