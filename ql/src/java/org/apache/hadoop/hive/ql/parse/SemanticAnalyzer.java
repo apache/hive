@@ -9082,19 +9082,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String source = args.getChild(curIdx++).getText();
     // validate
     if (StringUtils.isNumeric(source)) {
-      throw new SemanticException("User provided bloom filter entries when source alias is expected");
+      throw new SemanticException("User provided bloom filter entries when source alias is "
+          + "expected. source:" + source);
     }
 
     String colName = args.getChild(curIdx++).getText();
     // validate
     if (StringUtils.isNumeric(colName)) {
-      throw new SemanticException("User provided bloom filter entries when column name is expected");
+      throw new SemanticException("User provided bloom filter entries when column name is "
+          + "expected. colName:" + colName);
     }
 
     String target = args.getChild(curIdx++).getText();
     // validate
-    if (StringUtils.isNumeric(colName)) {
-      throw new SemanticException("User provided bloom filter entries when target alias is expected");
+    if (StringUtils.isNumeric(target)) {
+      throw new SemanticException("User provided bloom filter entries when target alias is "
+          + "expected. target: " + target);
     }
 
     Integer number = null;
@@ -9104,6 +9107,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         number = Integer.parseInt(args.getChild(curIdx).getText());
         curIdx++;
       } catch (NumberFormatException e) { // Ignore
+        LOG.warn("Number format exception when parsing " + number, e);
       }
     }
     result.computeIfAbsent(source, value -> new ArrayList<>()).add(new SemiJoinHint(colName, target, number));

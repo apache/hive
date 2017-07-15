@@ -38,4 +38,9 @@ public class SemiJoinHint {
   public Integer getNumEntries() {
     return numEntries != null ? numEntries : -1;
   }
+
+  @Override
+  public String toString() {
+    return "colName=" + colName + ", target=" + target + ", numEntries=" + numEntries;
+  }
 }
