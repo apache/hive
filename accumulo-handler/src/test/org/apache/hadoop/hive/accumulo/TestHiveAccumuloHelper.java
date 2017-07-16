@@ -23,12 +23,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.mapred.AccumuloInputFormat;
+import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.log4j.Logger;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -90,51 +94,163 @@ public class TestHiveAccumuloHelper {
     assertEquals(service, credTokens.iterator().next().getService());
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testISEIsPropagated() throws Exception {
+  @Test
+  public void testInputFormatWithKerberosToken() throws Exception {
+    final JobConf jobConf = new JobConf();
     final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+    final AuthenticationToken authToken = Mockito.mock(AuthenticationToken.class);
+    final Token hadoopToken = Mockito.mock(Token.class);
+    final AccumuloConnectionParameters cnxnParams = Mockito.mock(AccumuloConnectionParameters.class);
+    final Connector connector = Mockito.mock(Connector.class);
 
-    final JobConf jobConf = Mockito.mock(JobConf.class);
-    final Class<?> inputOrOutputFormatClass = AccumuloInputFormat.class;
-    final String zookeepers = "localhost:2181";
-    final String instanceName = "accumulo_instance";
-    final boolean useSasl = false;
+    final String user = "bob";
+    final String instanceName = "accumulo";
+    final String zookeepers = "host1:2181,host2:2181,host3:2181";
+    UserGroupInformation ugi = UserGroupInformation.createUserForTesting(user, new String[0]);
 
-    // Call the real "public" method
-    Mockito.doCallRealMethod().when(helper).setZooKeeperInstance(jobConf, inputOrOutputFormatClass,
-        zookeepers, instanceName, useSasl);
+    // Call the real methods for these
+    Mockito.doCallRealMethod().when(helper).updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateInputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateConfWithAccumuloToken(jobConf, ugi, cnxnParams, true);
 
-    // Mock the private one to throw the ISE
-    Mockito.doThrow(new IllegalStateException()).when(helper).
-        setZooKeeperInstanceWithReflection(jobConf, inputOrOutputFormatClass, zookeepers,
-            instanceName, useSasl);
+    // Return our mocked objects
+    Mockito.when(cnxnParams.getConnector()).thenReturn(connector);
+    Mockito.when(helper.getDelegationToken(connector)).thenReturn(authToken);
+    Mockito.when(helper.getHadoopToken(authToken)).thenReturn(hadoopToken);
 
-    // Should throw an IllegalStateException
-    helper.setZooKeeperInstance(jobConf, inputOrOutputFormatClass, zookeepers, instanceName,
-        useSasl);
+    // Stub AccumuloConnectionParameters actions
+    Mockito.when(cnxnParams.useSasl()).thenReturn(true);
+    Mockito.when(cnxnParams.getAccumuloUserName()).thenReturn(user);
+    Mockito.when(cnxnParams.getAccumuloInstanceName()).thenReturn(instanceName);
+    Mockito.when(cnxnParams.getZooKeepers()).thenReturn(zookeepers);
+
+    // Test the InputFormat execution path
+    //
+    Mockito.when(helper.hasKerberosCredentials(ugi)).thenReturn(true);
+    // Invoke the InputFormat entrypoint
+    helper.updateInputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.verify(helper).setInputFormatConnectorInfo(jobConf, user, authToken);
+    Mockito.verify(helper).mergeTokenIntoJobConf(jobConf, hadoopToken);
+    Mockito.verify(helper).addTokenFromUserToJobConf(ugi, jobConf);
+
+    // Make sure the token made it into the UGI
+    Collection<Token<? extends TokenIdentifier>> tokens = ugi.getTokens();
+    Assert.assertEquals(1, tokens.size());
+    Assert.assertEquals(hadoopToken, tokens.iterator().next());
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testISEIsPropagatedWithReflection() throws Exception {
+  @Test
+  public void testInputFormatWithoutKerberosToken() throws Exception {
+    final JobConf jobConf = new JobConf();
     final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+    final AuthenticationToken authToken = Mockito.mock(AuthenticationToken.class);
+    final Token hadoopToken = Mockito.mock(Token.class);
+    final AccumuloConnectionParameters cnxnParams = Mockito.mock(AccumuloConnectionParameters.class);
+    final Connector connector = Mockito.mock(Connector.class);
 
-    final JobConf jobConf = Mockito.mock(JobConf.class);
-    final Class<?> inputOrOutputFormatClass = AccumuloInputFormat.class;
-    final String zookeepers = "localhost:2181";
-    final String instanceName = "accumulo_instance";
-    final boolean useSasl = false;
+    final String user = "bob";
+    final String instanceName = "accumulo";
+    final String zookeepers = "host1:2181,host2:2181,host3:2181";
+    UserGroupInformation ugi = UserGroupInformation.createUserForTesting(user, new String[0]);
 
-    // Call the real "public" method
-    Mockito.doCallRealMethod().when(helper).setZooKeeperInstance(jobConf, inputOrOutputFormatClass,
-        zookeepers, instanceName, useSasl);
+    // Call the real methods for these
+    Mockito.doCallRealMethod().when(helper).updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateInputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateConfWithAccumuloToken(jobConf, ugi, cnxnParams, true);
 
-    // Mock the private one to throw the IAE
-    Mockito.doThrow(new InvocationTargetException(new IllegalStateException())).when(helper).
-        setZooKeeperInstanceWithReflection(jobConf, inputOrOutputFormatClass, zookeepers,
-            instanceName, useSasl);
+    // Return our mocked objects
+    Mockito.when(cnxnParams.getConnector()).thenReturn(connector);
+    Mockito.when(helper.getDelegationToken(connector)).thenReturn(authToken);
+    Mockito.when(helper.getHadoopToken(authToken)).thenReturn(hadoopToken);
 
-    // Should throw an IllegalStateException
-    helper.setZooKeeperInstance(jobConf, inputOrOutputFormatClass, zookeepers, instanceName,
-        useSasl);
+    // Stub AccumuloConnectionParameters actions
+    Mockito.when(cnxnParams.useSasl()).thenReturn(true);
+    Mockito.when(cnxnParams.getAccumuloUserName()).thenReturn(user);
+    Mockito.when(cnxnParams.getAccumuloInstanceName()).thenReturn(instanceName);
+    Mockito.when(cnxnParams.getZooKeepers()).thenReturn(zookeepers);
+
+    // Verify that when we have no kerberos credentials, we pull the serialized Token
+    Mockito.when(helper.hasKerberosCredentials(ugi)).thenReturn(false);
+    helper.updateInputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.verify(helper).addTokenFromUserToJobConf(ugi, jobConf);
+  }
+
+  @Test
+  public void testOutputFormatSaslConfigurationWithoutKerberosToken() throws Exception {
+    final JobConf jobConf = new JobConf();
+    final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+    final AuthenticationToken authToken = Mockito.mock(AuthenticationToken.class);
+    final Token hadoopToken = Mockito.mock(Token.class);
+    final AccumuloConnectionParameters cnxnParams = Mockito.mock(AccumuloConnectionParameters.class);
+    final Connector connector = Mockito.mock(Connector.class);
+
+    final String user = "bob";
+    final String instanceName = "accumulo";
+    final String zookeepers = "host1:2181,host2:2181,host3:2181";
+    UserGroupInformation ugi = UserGroupInformation.createUserForTesting(user, new String[0]);
+
+    // Call the real methods for these
+    Mockito.doCallRealMethod().when(helper).updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateConfWithAccumuloToken(jobConf, ugi, cnxnParams, false);
+
+    // Return our mocked objects
+    Mockito.when(cnxnParams.getConnector()).thenReturn(connector);
+    Mockito.when(helper.getDelegationToken(connector)).thenReturn(authToken);
+    Mockito.when(helper.getHadoopToken(authToken)).thenReturn(hadoopToken);
+
+    // Stub AccumuloConnectionParameters actions
+    Mockito.when(cnxnParams.useSasl()).thenReturn(true);
+    Mockito.when(cnxnParams.getAccumuloUserName()).thenReturn(user);
+    Mockito.when(cnxnParams.getAccumuloInstanceName()).thenReturn(instanceName);
+    Mockito.when(cnxnParams.getZooKeepers()).thenReturn(zookeepers);
+
+    // Verify that when we have no kerberos credentials, we pull the serialized Token
+    Mockito.when(helper.hasKerberosCredentials(ugi)).thenReturn(false);
+    helper.updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.verify(helper).addTokenFromUserToJobConf(ugi, jobConf);
+  }
+
+  @Test
+  public void testOutputFormatSaslConfigurationWithKerberosToken() throws Exception {
+    final JobConf jobConf = new JobConf();
+    final HiveAccumuloHelper helper = Mockito.mock(HiveAccumuloHelper.class);
+    final AuthenticationToken authToken = Mockito.mock(AuthenticationToken.class);
+    final Token hadoopToken = Mockito.mock(Token.class);
+    final AccumuloConnectionParameters cnxnParams = Mockito.mock(AccumuloConnectionParameters.class);
+    final Connector connector = Mockito.mock(Connector.class);
+
+    final String user = "bob";
+    final String instanceName = "accumulo";
+    final String zookeepers = "host1:2181,host2:2181,host3:2181";
+    UserGroupInformation ugi = UserGroupInformation.createUserForTesting(user, new String[0]);
+
+    // Call the real methods for these
+    Mockito.doCallRealMethod().when(helper).updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.doCallRealMethod().when(helper).updateConfWithAccumuloToken(jobConf, ugi, cnxnParams, false);
+
+    // Return our mocked objects
+    Mockito.when(cnxnParams.getConnector()).thenReturn(connector);
+    Mockito.when(helper.getDelegationToken(connector)).thenReturn(authToken);
+    Mockito.when(helper.getHadoopToken(authToken)).thenReturn(hadoopToken);
+
+    // Stub AccumuloConnectionParameters actions
+    Mockito.when(cnxnParams.useSasl()).thenReturn(true);
+    Mockito.when(cnxnParams.getAccumuloUserName()).thenReturn(user);
+    Mockito.when(cnxnParams.getAccumuloInstanceName()).thenReturn(instanceName);
+    Mockito.when(cnxnParams.getZooKeepers()).thenReturn(zookeepers);
+
+    // We have kerberos credentials
+
+    Mockito.when(helper.hasKerberosCredentials(ugi)).thenReturn(true);
+    // Invoke the OutputFormat entrypoint
+    helper.updateOutputFormatConfWithAccumuloToken(jobConf, ugi, cnxnParams);
+    Mockito.verify(helper).setOutputFormatConnectorInfo(jobConf, user, authToken);
+    Mockito.verify(helper).mergeTokenIntoJobConf(jobConf, hadoopToken);
+    Mockito.verify(helper).addTokenFromUserToJobConf(ugi, jobConf);
+
+    // Make sure the token made it into the UGI
+    Collection<Token<? extends TokenIdentifier>> tokens = ugi.getTokens();
+    Assert.assertEquals(1, tokens.size());
+    Assert.assertEquals(hadoopToken, tokens.iterator().next());
   }
 }
