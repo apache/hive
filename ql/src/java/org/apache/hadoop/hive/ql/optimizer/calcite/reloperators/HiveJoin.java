@@ -158,7 +158,7 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   public MapJoinStreamingRelation getStreamingSide() {
-    RelMetadataQuery mq = RelMetadataQuery.instance();
+    RelMetadataQuery mq = left.getCluster().getMetadataQuery();
     Double leftInputSize = mq.memory(left);
     Double rightInputSize = mq.memory(right);
     if (leftInputSize == null && rightInputSize == null) {
@@ -200,9 +200,10 @@ public class HiveJoin extends Join implements HiveRelNode {
             ImmutableIntList.copyOf(
                     joinPredInfo.getProjsFromRightPartOfJoinKeysInChildSchema()));
 
+    final RelMetadataQuery mq = this.left.getCluster().getMetadataQuery();
     for (int i=0; i<this.getInputs().size(); i++) {
       boolean correctOrderFound = RelCollations.contains(
-          RelMetadataQuery.instance().collations(this.getInputs().get(i)),
+          mq.collations(this.getInputs().get(i)),
           joinKeysInChildren.get(i));
       if (correctOrderFound) {
         sortedInputsBuilder.set(i);

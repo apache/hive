@@ -111,7 +111,7 @@ public class HiveRemoveSqCountCheck extends RelOptRule {
     final int groupCount = aggregate.getGroupCount();
 
     final RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
-    final RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = call.getMetadataQuery();
     final RelOptPredicateList predicates =
         mq.getPulledUpPredicates(aggregate.getInput());
     if (predicates == null) {

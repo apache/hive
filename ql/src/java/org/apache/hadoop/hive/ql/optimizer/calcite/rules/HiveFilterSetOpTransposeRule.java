@@ -107,7 +107,7 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
       RexNode newCondition = condition.accept(new RelOptUtil.RexInputConverter(rexBuilder,
           origFields, input.getRowType().getFieldList(), adjustments));
       if (setOp instanceof Union && setOp.all) {
-        final RelMetadataQuery mq = RelMetadataQuery.instance();
+        final RelMetadataQuery mq = call.getMetadataQuery();
         final RelOptPredicateList predicates = mq.getPulledUpPredicates(input);
         if (predicates != null) {
           ImmutableList.Builder<RexNode> listBuilder = ImmutableList.builder();

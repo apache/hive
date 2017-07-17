@@ -84,7 +84,7 @@ public class HiveSortLimitPullUpConstantsRule extends RelOptRule {
     }
 
     final RexBuilder rexBuilder = sort.getCluster().getRexBuilder();
-    final RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = call.getMetadataQuery();
     final RelOptPredicateList predicates = mq.getPulledUpPredicates(sort.getInput());
     if (predicates == null) {
       return;

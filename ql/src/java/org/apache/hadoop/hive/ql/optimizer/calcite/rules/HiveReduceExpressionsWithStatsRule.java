@@ -82,7 +82,7 @@ public class HiveReduceExpressionsWithStatsRule extends RelOptRule {
     final Filter filter = call.rel(0);
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
-    final RelMetadataQuery metadataProvider = RelMetadataQuery.instance();
+    final RelMetadataQuery metadataProvider = call.getMetadataQuery();
 
     // 1. Recompose filter possibly by pulling out common elements from DNF
     // expressions

@@ -684,7 +684,8 @@ public class HiveCalciteUtil {
     // Note: this is the last step, trying to avoid the expensive call to the metadata provider
     //       if possible
     Set<String> predicatesInSubtree = Sets.newHashSet();
-    for (RexNode pred : RelMetadataQuery.instance().getPulledUpPredicates(inp).pulledUpPredicates) {
+    final RelMetadataQuery mq = inp.getCluster().getMetadataQuery();
+    for (RexNode pred : mq.getPulledUpPredicates(inp).pulledUpPredicates) {
       predicatesInSubtree.add(pred.toString());
       predicatesInSubtree.addAll(Lists.transform(RelOptUtil.conjunctions(pred), REX_STR_FN));
     }
