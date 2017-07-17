@@ -68,6 +68,8 @@ import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.AssertTrue;
+
 /**
  * TODO: this should be merged with TestTxnCommands once that is checked in
  * specifically the tests; the supporting code here is just a clone of TestTxnCommands
@@ -1760,6 +1762,205 @@ public class TestTxnCommands2 {
     r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals(stringifyValues(rExpected), r);
   }
+  /**
+   * Test the scenario when IOW comes in before a MAJOR compaction happens
+   * @throws Exception
+   */
+  @Test
+  public void testInsertOverwrite1() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    // 1. Insert two rows to an ACID table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. INSERT OVERWRITE
+    // Prepare data for the source table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
+    // Insert overwrite ACID table from source table
+    runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " select a,b from " + Table.NONACIDORCTBL);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    boolean sawBase = false;
+    String baseDir = "";
+    int deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        baseDir = dirName;
+        Assert.assertTrue(baseDir.matches("base_.*"));
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    int [][] resultData = new int[][] {{5,6},{7,8}};
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 3. Perform a major compaction. Nothing should change. Both deltas and base dirs should have the same name.
+    // Re-verify directory layout and query result by using the same logic as above
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    sawBase = false;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        Assert.assertTrue(dirName.matches("base_.*"));
+        Assert.assertEquals(baseDir, dirName);
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 4. Run Cleaner. It should remove the 2 delta dirs.
+    runCleaner(hiveConf);
+    // There should be only 1 directory left: base_xxxxxxx.
+    // The delta dirs should have been cleaned up.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
+    Assert.assertEquals(baseDir, status[0].getPath().getName());
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  /**
+   * Test the scenario when IOW comes in after a MAJOR compaction happens
+   * @throws Exception
+   */
+  @Test
+  public void testInsertOverwrite2() throws Exception {
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+
+    // 1. Insert two rows to an ACID table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. Perform a major compaction. There should be an extra base dir now.
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus a base dir in the location
+    Assert.assertEquals(3, status.length);
+    boolean sawBase = false;
+    int deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        sawBase = true;
+        Assert.assertTrue(dirName.matches("base_.*"));
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertTrue(sawBase);
+    // Verify query result
+    int [][] resultData = new int[][] {{1,2},{3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 3. INSERT OVERWRITE
+    // Prepare data for the source table
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
+    // Insert overwrite ACID table from source table
+    runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " select a,b from " + Table.NONACIDORCTBL);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 2 base dirs in the location
+    Assert.assertEquals(4, status.length);
+    int baseCount = 0;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        baseCount++;
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertEquals(2, baseCount);
+    // Verify query result
+    resultData = new int[][] {{5,6},{7,8}};
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 4. Perform another major compaction. Nothing should change. Both deltas and  both base dirs
+    // should have the same name.
+    // Re-verify directory layout and query result by using the same logic as above
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 2 base dirs in the location
+    Assert.assertEquals(4, status.length);
+    baseCount = 0;
+    deltaCount = 0;
+    for (int i = 0; i < status.length; i++) {
+      String dirName = status[i].getPath().getName();
+      if (dirName.matches("delta_.*")) {
+        deltaCount++;
+      } else {
+        Assert.assertTrue(dirName.matches("base_.*"));
+        baseCount++;
+      }
+    }
+    Assert.assertEquals(2, deltaCount);
+    Assert.assertEquals(2, baseCount);
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+
+    // 5. Run Cleaner. It should remove the 2 delta dirs and 1 old base dir.
+    runCleaner(hiveConf);
+    // There should be only 1 directory left: base_xxxxxxx.
+    // The delta dirs should have been cleaned up.
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+        (Table.ACIDTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    Assert.assertEquals(1, status.length);
+    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order

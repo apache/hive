@@ -3424,17 +3424,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       for (FileStatus origBucketStat : origBucketStats) {
         Path origBucketPath = origBucketStat.getPath();
-        moveAcidDeltaFiles(AcidUtils.DELTA_PREFIX, AcidUtils.deltaFileFilter,
+        moveAcidFiles(AcidUtils.DELTA_PREFIX, AcidUtils.deltaFileFilter,
                 fs, dst, origBucketPath, createdDeltaDirs, newFiles);
-        moveAcidDeltaFiles(AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.deleteEventDeltaDirFilter,
+        moveAcidFiles(AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.deleteEventDeltaDirFilter,
                 fs, dst,origBucketPath, createdDeltaDirs, newFiles);
+        moveAcidFiles(AcidUtils.BASE_PREFIX, AcidUtils.baseFileFilter,
+                fs, dst, origBucketPath, createdDeltaDirs, newFiles);
       }
     }
   }
 
-  private static void moveAcidDeltaFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
-                                         Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
-                                         List<Path> newFiles) throws HiveException {
+  private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
+                                    Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
+                                    List<Path> newFiles) throws HiveException {
     LOG.debug("Acid move looking for " + deltaFileType + " files in bucket " + origBucketPath);
 
     FileStatus[] deltaStats = null;

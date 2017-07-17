@@ -420,11 +420,19 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
          Seems much cleaner if each stmt is identified as a particular HiveOperation (which I'd think
          makes sense everywhere).  This however would be problematic for merge...*/
         case DDL_EXCLUSIVE:
-        case INSERT_OVERWRITE:
           compBuilder.setExclusive();
           compBuilder.setOperationType(DataOperationType.NO_TXN);
           break;
-
+        case INSERT_OVERWRITE:
+          t = getTable(output);
+          if (AcidUtils.isAcidTable(t)) {
+            compBuilder.setSemiShared();
+            compBuilder.setOperationType(DataOperationType.UPDATE);
+          } else {
+            compBuilder.setExclusive();
+            compBuilder.setOperationType(DataOperationType.NO_TXN);
+          }
+          break;
         case INSERT:
           assert t != null;
           if(AcidUtils.isAcidTable(t)) {

@@ -340,7 +340,7 @@ public final class HiveFileFormatUtils {
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
         .reporter(reporter)
-        .writingBase(false)
+        .writingBase(conf.getInsertOverwrite())
         .minimumTransactionId(conf.getTransactionId())
         .maximumTransactionId(conf.getTransactionId())
         .bucket(bucket)
