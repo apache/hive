@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
-import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderKey;
 import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.ReaderPair;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -186,25 +185,24 @@ public class TestOrcRawRecordMerger {
     Reader reader = createMockReader();
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
-    ReaderPair pair = new ReaderPair(key, reader, 20, minKey, maxKey,
+    ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, minKey, maxKey,
         new Reader.Options(), 0);
-    pair.advnaceToMinKey();
-    RecordReader recordReader = pair.recordReader;
+    RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(40, key.getRowId());
     assertEquals(120, key.getCurrentTransactionId());
-    assertEquals("third", value(pair.nextRecord));
+    assertEquals("third", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(40, key.getTransactionId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(60, key.getRowId());
     assertEquals(130, key.getCurrentTransactionId());
-    assertEquals("fourth", value(pair.nextRecord));
+    assertEquals("fourth", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
-    assertEquals(null, pair.nextRecord);
+    pair.next(pair.nextRecord());
+    assertEquals(null, pair.nextRecord());
     Mockito.verify(recordReader).close();
   }
 
@@ -213,46 +211,45 @@ public class TestOrcRawRecordMerger {
     ReaderKey key = new ReaderKey();
     Reader reader = createMockReader();
 
-    ReaderPair pair = new ReaderPair(key, reader, 20, null, null,
+    ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
         new Reader.Options(), 0);
-    pair.advnaceToMinKey();
-    RecordReader recordReader = pair.recordReader;
+    RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(20, key.getRowId());
     assertEquals(100, key.getCurrentTransactionId());
-    assertEquals("first", value(pair.nextRecord));
+    assertEquals("first", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(30, key.getRowId());
     assertEquals(110, key.getCurrentTransactionId());
-    assertEquals("second", value(pair.nextRecord));
+    assertEquals("second", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(10, key.getTransactionId());
     assertEquals(20, key.getBucketProperty());
     assertEquals(40, key.getRowId());
     assertEquals(120, key.getCurrentTransactionId());
-    assertEquals("third", value(pair.nextRecord));
+    assertEquals("third", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(40, key.getTransactionId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(60, key.getRowId());
     assertEquals(130, key.getCurrentTransactionId());
-    assertEquals("fourth", value(pair.nextRecord));
+    assertEquals("fourth", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(40, key.getTransactionId());
     assertEquals(50, key.getBucketProperty());
     assertEquals(61, key.getRowId());
     assertEquals(140, key.getCurrentTransactionId());
-    assertEquals("fifth", value(pair.nextRecord));
+    assertEquals("fifth", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
-    assertEquals(null, pair.nextRecord);
+    pair.next(pair.nextRecord());
+    assertEquals(null, pair.nextRecord());
     Mockito.verify(recordReader).close();
   }
 
@@ -296,25 +293,24 @@ public class TestOrcRawRecordMerger {
     Path root = new Path(tmpDir, "testOriginalReaderPair");
     fs.makeQualified(root);
     fs.create(root);
-    ReaderPair pair = new OriginalReaderPair(key, reader, 10, minKey, maxKey,
+    ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, 10, minKey, maxKey,
         new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
-    pair.advnaceToMinKey();
-    RecordReader recordReader = pair.recordReader;
+    RecordReader recordReader = pair.getRecordReader();
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(2, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
-    assertEquals("third", value(pair.nextRecord));
+    assertEquals("third", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
+    pair.next(pair.nextRecord());
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(3, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
-    assertEquals("fourth", value(pair.nextRecord));
+    assertEquals("fourth", value(pair.nextRecord()));
 
-    pair.next(pair.nextRecord);
-    assertEquals(null, pair.nextRecord);
+    pair.next(pair.nextRecord());
+    assertEquals(null, pair.nextRecord());
     Mockito.verify(recordReader).close();
   }
 
@@ -331,46 +327,45 @@ public class TestOrcRawRecordMerger {
     Path root = new Path(tmpDir, "testOriginalReaderPairNoMin");
     fs.makeQualified(root);
     fs.create(root);
-    ReaderPair pair = new OriginalReaderPair(key, reader, 10, null, null,
+    ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, 10, null, null,
         new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReadTxnList());
-    pair.advnaceToMinKey();
-    assertEquals("first", value(pair.nextRecord));
+    assertEquals("first", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(0, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
 
-    pair.next(pair.nextRecord);
-    assertEquals("second", value(pair.nextRecord));
+    pair.next(pair.nextRecord());
+    assertEquals("second", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(1, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
 
-    pair.next(pair.nextRecord);
-    assertEquals("third", value(pair.nextRecord));
+    pair.next(pair.nextRecord());
+    assertEquals("third", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(2, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
 
-    pair.next(pair.nextRecord);
-    assertEquals("fourth", value(pair.nextRecord));
+    pair.next(pair.nextRecord());
+    assertEquals("fourth", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(3, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
 
-    pair.next(pair.nextRecord);
-    assertEquals("fifth", value(pair.nextRecord));
+    pair.next(pair.nextRecord());
+    assertEquals("fifth", value(pair.nextRecord()));
     assertEquals(0, key.getTransactionId());
     assertEquals(10, key.getBucketProperty());
     assertEquals(4, key.getRowId());
     assertEquals(0, key.getCurrentTransactionId());
 
-    pair.next(pair.nextRecord);
-    assertEquals(null, pair.nextRecord);
-    Mockito.verify(pair.recordReader).close();
+    pair.next(pair.nextRecord());
+    assertEquals(null, pair.nextRecord());
+    Mockito.verify(pair.getRecordReader()).close();
   }
 
   @Test
@@ -437,11 +432,11 @@ public class TestOrcRawRecordMerger {
     OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, false, reader,
         false, 10, createMaximalTxnList(),
         new Reader.Options().range(1000, 1000), null, new OrcRawRecordMerger.Options());
-    RecordReader rr = merger.getCurrentReader().recordReader;
+    RecordReader rr = merger.getCurrentReader().getRecordReader();
     assertEquals(0, merger.getOtherReaders().size());
 
-    assertEquals(new RecordIdentifier(10, 20, 30), merger.getMinKey());
-    assertEquals(new RecordIdentifier(40, 50, 60), merger.getMaxKey());
+    assertEquals("" + merger.getMinKey(),new RecordIdentifier(10, 20, 30), merger.getMinKey());
+    assertEquals("" + merger.getMaxKey(), new RecordIdentifier(40, 50, 60), merger.getMaxKey());
     RecordIdentifier id = merger.createKey();
     OrcStruct event = merger.createValue();
 
