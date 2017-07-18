@@ -214,6 +214,40 @@ explain  select * from part where p_size > (select max(p_size) from part group b
 -- same as above, for correlated columns
 explain  select * from part where p_size > (select max(p_size) from part p where p.p_type = part.p_type group by p_type);
 
+-- corr scalar subquery with aggregate, having non-equi corr predicate
+explain select * from part where p_size <>
+    (select count(p_size) from part pp where part.p_type <> pp.p_type);
+select * from part where p_size <>
+    (select count(p_size) from part pp where part.p_type <> pp.p_type);
+
+create table t(i int, j int);
+insert into t values(3,1), (1,1);
+
+-- for t.i=1 inner query will result empty result, making count(*) = 0
+--   therefore where predicate will be true
+explain select * from t where 0 = (select count(*) from t tt where tt.j <> t.i);
+select * from t where 0 = (select count(*) from t tt where tt.j <> t.i);
+
+-- same as above but with avg aggregate, avg(tt.i) will be null therefore
+-- empty result set
+explain select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i);
+select * from t where 0 = (select avg(tt.i) from t tt where tt.j <> t.i);
+
+create table tempty(i int, j int);
+
+-- following query has subquery on empty making count(*) to zero and where predicate
+-- to true for all rows in outer query
+explain select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i);
+select * from t where 0 = (select count(*) from tempty tt where t.i=tt.i);
+
+-- same as above but with min aggregate, since min on empty will return null
+-- making where predicate false for all
+explain select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i);
+select * from t where 0 = (select min(tt.j) from tempty tt where t.i=tt.i);
+
+drop table t;
+drop table tempty;
+
 -- following queries shouldn't have a join with sq_count_check
 set hive.optimize.remove.sq_count_check = true;
 explain select key, count(*) from src group by key having count(*) >

@@ -305,20 +305,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     /*
-     * 1. The only correlation operator we check for is EQUAL; because that is
-     *    the one for which we can do a Algebraic transformation.
-     * 2. For expressions that are not an EQUAL predicate, we treat them as conjuncts
-     *    having only 1 side. These should only contain references to the SubQuery
-     *    table sources.
-     * 3. For expressions that are an EQUAL predicate; we analyze each side and let the
+     *  we analyze each side and let the
      *    left and right exprs in the Conjunct object.
      *
      * @return Conjunct  contains details on the left and right side of the conjunct expression.
      */
     Conjunct analyzeConjunct(ASTNode conjunct) throws SemanticException {
-      int type = conjunct.getType();
 
-      if ( type == HiveParser.EQUAL ) {
+       if(conjunct.getChildCount() == 2) {
         ASTNode left = (ASTNode) conjunct.getChild(0);
         ASTNode right = (ASTNode) conjunct.getChild(1);
         ObjectPair<ExprType,ColumnInfo> leftInfo = analyzeExpr(left);
@@ -620,7 +614,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       // Following is special cases for different type of subqueries which have aggregate and no implicit group by
       // and are correlatd
       // * EXISTS/NOT EXISTS - NOT allowed, throw an error for now. We plan to allow this later
-      // * SCALAR - only allow if it has non equi join predicate. This should return true since later in subquery remove
+      // * SCALAR - This should return true since later in subquery remove
       //              rule we need to know about this case.
       // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
       //        rule we need to know about this case.
@@ -638,11 +632,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           }
         }
         else if(operator.getType() == SubQueryType.SCALAR) {
-            if(hasNonEquiJoinPred) {
-              throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
-                      subQueryAST,
-                      "Scalar subqueries with aggregate cannot have non-equi join predicate"));
-            }
             if(!hasWindowing) {
               subqueryConfig[1] = true;
             }
