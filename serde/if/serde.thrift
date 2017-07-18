@@ -35,7 +35,7 @@ const string SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object"
 const string SERIALIZATION_ENCODING = "serialization.encoding"
 
 const string FIELD_DELIM = "field.delim"
-const string COLLECTION_DELIM = "colelction.delim"
+const string COLLECTION_DELIM = "collection.delim"
 const string LINE_DELIM = "line.delim"
 const string MAPKEY_DELIM = "mapkey.delim"
 const string QUOTE_CHAR = "quote.delim"

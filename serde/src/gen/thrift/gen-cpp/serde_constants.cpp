@@ -35,7 +35,7 @@ serdeConstants::serdeConstants() {
 
   FIELD_DELIM = "field.delim";
 
-  COLLECTION_DELIM = "colelction.delim";
+  COLLECTION_DELIM = "collection.delim";
 
   LINE_DELIM = "line.delim";
 

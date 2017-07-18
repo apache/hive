@@ -86,7 +86,7 @@ Num Buckets:        	-1
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
-	colelction.delim    	,                   
+	collection.delim    	,
 	field.delim         	|                   
 	mapkey.delim        	:                   
 	serialization.format	|                   

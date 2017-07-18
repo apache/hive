@@ -117,7 +117,7 @@ final class Constant extends \Thrift\Type\TConstant {
   }
 
   static protected function init_COLLECTION_DELIM() {
-    return "colelction.delim";
+    return "collection.delim";
   }
 
   static protected function init_LINE_DELIM() {

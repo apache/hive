@@ -31,7 +31,7 @@ SERIALIZATION_ENCODING = %q"serialization.encoding"
 
 FIELD_DELIM = %q"field.delim"
 
-COLLECTION_DELIM = %q"colelction.delim"
+COLLECTION_DELIM = %q"collection.delim"
 
 LINE_DELIM = %q"line.delim"
 

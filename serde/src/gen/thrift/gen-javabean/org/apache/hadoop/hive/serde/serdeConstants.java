@@ -60,7 +60,7 @@ public class serdeConstants {
 
   public static final String FIELD_DELIM = "field.delim";
 
-  public static final String COLLECTION_DELIM = "colelction.delim";
+  public static final String COLLECTION_DELIM = "collection.delim";
 
   public static final String LINE_DELIM = "line.delim";
 
