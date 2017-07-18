@@ -17,7 +17,7 @@ THISSERVICE=orcfiledump
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 orcfiledump () {
-  CLASS=org.apache.orc.tools.FileDump
+  CLASS=org.apache.hive.orc.tools.FileDump
   HIVE_OPTS=''
   execHiveCmd $CLASS "$@"
 }
@@ -34,4 +34,4 @@ orcfiledump_help () {
   echo "  --skip-dump                 Used along with --recover to directly recover files without dumping"
   echo "  --backup-path <new_path>  Specify a backup path to store the corrupted files (default: /tmp)"
   echo "  --help (-h)                 Print help message"
-} 
+}

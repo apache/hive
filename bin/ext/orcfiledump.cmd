@@ -14,7 +14,7 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 
-set CLASS=org.apache.orc.tools.FileDump
+set CLASS=org.apache.hive.orc.tools.FileDump
 set HIVE_OPTS=
 set HADOOP_CLASSPATH=
 
