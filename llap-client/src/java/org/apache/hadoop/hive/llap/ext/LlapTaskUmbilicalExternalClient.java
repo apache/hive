@@ -320,6 +320,18 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
     this.requestInfo.lastHeartbeat.set(lastHeartbeat);
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("LlapTaskUmbilicalExternalClient");
+    if (requestInfo != null) {
+      sb.append("(");
+      sb.append(requestInfo.taskAttemptId);
+      sb.append(")");
+    }
+    return sb.toString();
+  }
+
   // Periodic task to time out submitted tasks that have not been updated with umbilical heartbeat.
   private static class HeartbeatCheckTask implements Runnable {
     LlapTaskUmbilicalExternalImpl umbilicalImpl;

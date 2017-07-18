@@ -198,10 +198,10 @@ public class LlapOutputFormatService {
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
       @SuppressWarnings("rawtypes")
-      LlapRecordWriter writer = new LlapRecordWriter(
+      LlapRecordWriter writer = new LlapRecordWriter(id,
           new ChunkedOutputStream(
               new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites),
-              sendBufferSize));
+              sendBufferSize, id));
       boolean isFailed = true;
       synchronized (lock) {
         if (!writers.containsKey(id)) {

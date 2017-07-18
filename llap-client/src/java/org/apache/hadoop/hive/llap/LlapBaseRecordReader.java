@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap;
 
+import com.google.common.base.Preconditions;
+
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -55,21 +57,19 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   protected Thread readerThread = null;
   protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
-  protected final long timeout;
   protected final Closeable client;
   private final Closeable socket;
   private boolean closed = false;
 
   public LlapBaseRecordReader(InputStream in, Schema schema,
       Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
-    this.cin = new ChunkedInputStream(in);  // Save so we can verify end of stream
+    String clientId = (client == null ? "" : client.toString());
+    this.cin = new ChunkedInputStream(in, clientId);  // Save so we can verify end of stream
     // We need mark support - wrap with BufferedInputStream.
     din = new DataInputStream(new BufferedInputStream(cin));
     this.schema = schema;
     this.clazz = clazz;
     this.readerThread = Thread.currentThread();
-    this.timeout = 3 * HiveConf.getTimeVar(job,
-        HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     this.client = client;
     this.socket = socket;
   }
@@ -273,10 +273,8 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   protected ReaderEvent getReaderEvent() throws IOException {
     try {
-      ReaderEvent event = readerEvents.poll(timeout, TimeUnit.MILLISECONDS);
-      if (event == null) {
-        throw new IOException("Timed out getting readerEvents");
-      }
+      ReaderEvent event = readerEvents.take();
+      Preconditions.checkNotNull(event);
       return event;
     } catch (InterruptedException ie) {
       throw new RuntimeException("Interrupted while getting readerEvents, not expected: " + ie.getMessage(), ie);

@@ -150,8 +150,8 @@ public class TestChunkedInputStream {
       pout = new PipedOutputStream();
       pin = new PipedInputStream(pout);
       if (useChunkedStream) {
-        out = new ChunkedOutputStream(pout, bufferSize);
-        in = new ChunkedInputStream(pin);
+        out = new ChunkedOutputStream(pout, bufferSize, "test");
+        in = new ChunkedInputStream(pin, "test");
       } else {
         // Test behavior with non-chunked streams
         out = new FilterOutputStream(pout);
@@ -209,7 +209,7 @@ public class TestChunkedInputStream {
     chunkedStreams.values = values;
     BasicUsageWriter writer2 = new BasicUsageWriter(chunkedStreams, false, false);
     BasicUsageReader reader2 = new BasicUsageReader(chunkedStreams);
-    runTest(writer2, reader2, nonChunkedStreams);
+    runTest(writer2, reader2, chunkedStreams);
     assertTrue(reader2.allValuesRead);
     assertTrue(((ChunkedInputStream) chunkedStreams.in).isEndOfData());
     assertNull(writer2.getError());
