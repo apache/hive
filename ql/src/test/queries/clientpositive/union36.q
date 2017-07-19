@@ -10,3 +10,4 @@ select (x/sum(x) over()) as y from(select cast(1 as decimal(10,0))  as x from (s
 
 
 
+

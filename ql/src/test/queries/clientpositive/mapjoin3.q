@@ -1,4 +1,7 @@
+
 set hive.auto.convert.join=true;
+
+-- SORT_BEFORE_DIFF
 
 DROP TABLE IF EXISTS test_1; 
 CREATE TABLE test_1 

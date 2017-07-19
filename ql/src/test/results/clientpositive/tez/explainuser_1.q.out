@@ -1996,7 +1996,7 @@ Stage-0
             Select Operator [SEL_1] (rows=500 width=178)
               Output:["_col0","_col1"]
               TableScan [TS_0] (rows=500 width=178)
-                default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"],properties:{"insideView":"TRUE"}
+                default@src_cbo,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
         <-Map 3 [SIMPLE_EDGE]
           SHUFFLE [RS_8]
             PartitionCols:_col0, _col1

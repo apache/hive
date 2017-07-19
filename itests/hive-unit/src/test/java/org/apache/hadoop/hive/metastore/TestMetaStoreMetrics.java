@@ -23,11 +23,17 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests Hive Metastore Metrics.
@@ -35,13 +41,12 @@ import org.junit.Test;
  */
 public class TestMetaStoreMetrics {
 
+  private HiveConf hiveConf;
+  private Driver driver;
+  private CodahaleMetrics metrics;
 
-  private static HiveConf hiveConf;
-  private static Driver driver;
-  private static CodahaleMetrics metrics;
-
-  @BeforeClass
-  public static void before() throws Exception {
+  @Before
+  public void before() throws Exception {
     int port = MetaStoreUtils.findFreePort();
 
     hiveConf = new HiveConf(TestMetaStoreMetrics.class);
@@ -52,7 +57,6 @@ public class TestMetaStoreMetrics {
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-
     MetricsFactory.close();
     MetricsFactory.init(hiveConf);
     metrics = (CodahaleMetrics) MetricsFactory.getInstance();
@@ -65,6 +69,20 @@ public class TestMetaStoreMetrics {
     driver = new Driver(hiveConf);
   }
 
+  void cleanUp() throws CommandNeedRetryException, IOException {
+    driver.run("show databases");
+    List<String> results = new ArrayList<>();
+    driver.getResults(results);
+    for(String db: results) {
+      driver.run("drop database " + db + " cascade");
+    }
+    driver.run("create database default");
+  }
+
+  void resetMetric(String name) throws IOException {
+    long currentValue = metrics.incrementCounter(name, 0);
+    metrics.decrementCounter(name, currentValue);
+  }
 
   @Test
   public void testMethodCounts() throws Exception {
@@ -77,6 +95,11 @@ public class TestMetaStoreMetrics {
 
   @Test
   public void testMetaDataCounts() throws Exception {
+    cleanUp();
+    resetMetric(MetricsConstant.CREATE_TOTAL_DATABASES);
+    resetMetric(MetricsConstant.DELETE_TOTAL_DATABASES);
+    resetMetric(MetricsConstant.DELETE_TOTAL_TABLES);
+    resetMetric(MetricsConstant.DELETE_TOTAL_PARTITIONS);
     //1 databases created
     driver.run("create database testdb1");
 

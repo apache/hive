@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
+// @RunWith(Parameterized.class)
 public class TestMiniSparkOnYarnCliDriver {
 
   static CliAdapter adapter = new CliConfigs.SparkOnYarnCliConfig().getCliAdapter();
@@ -37,7 +37,7 @@ public class TestMiniSparkOnYarnCliDriver {
     this.qfile = qfile;
   }
 
-  @Test
+  // @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }

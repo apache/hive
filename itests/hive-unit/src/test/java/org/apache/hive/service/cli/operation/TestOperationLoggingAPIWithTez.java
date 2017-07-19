@@ -43,8 +43,7 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
       "Executing command",
       "Completed executing command",
       "Semantic Analysis Completed",
-      "Executing on YARN cluster with App id",
-      "Setting Tez DAG access"
+      "Executing on YARN cluster with App id"
     };
     expectedLogsPerformance = new String[]{
       "<PERFLOG method=compile from=org.apache.hadoop.hive.ql.Driver>",

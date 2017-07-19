@@ -54,5 +54,5 @@ POSTHOOK: query: select * from emptyavro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emptyavro
 #### A masked pattern was here ####
-0
 100
+0

@@ -2321,15 +2321,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           Boolean orInSubquery = new Boolean(false);
           Integer subqueryCount = new Integer(0);
           ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
-          if(!topLevelConjunctCheck(clonedSearchCond, subqInfo)){
-          /*
-           *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
-           */
-
-            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                    subQueryAST, "Only SubQuery expressions that are top level conjuncts are allowed"));
-
-          }
 
           QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
                   originalSubQueryAST, ctx);

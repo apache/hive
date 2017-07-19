@@ -326,6 +326,9 @@ public class TestObjectStore {
       for (String role : roles) {
         store.removeRole(role);
       }
+      for (String tokenId: store.getAllTokenIdentifiers()) {
+        store.removeToken(tokenId);
+      }
     } catch (NoSuchObjectException e) {
     }
   }

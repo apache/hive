@@ -76,9 +76,9 @@ POSTHOOK: Input: default@src_null
 #### A masked pattern was here ####
 NULL	NULL
 1	A
-2	B
 2	A
 2	NULL
+2	B
 3	NULL
 PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc
 PREHOOK: type: QUERY
@@ -89,9 +89,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null
 #### A masked pattern was here ####
 3	NULL
-2	B
 2	A
 2	NULL
+2	B
 1	A
 NULL	NULL
 PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc, a asc nulls last
@@ -132,9 +132,9 @@ POSTHOOK: Input: default@src_null
 #### A masked pattern was here ####
 NULL	NULL
 1	A
-2	B
 2	A
 2	NULL
+2	B
 3	NULL
 PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc nulls first
 PREHOOK: type: QUERY
@@ -146,9 +146,9 @@ POSTHOOK: Input: default@src_null
 #### A masked pattern was here ####
 NULL	NULL
 3	NULL
-2	B
 2	A
 2	NULL
+2	B
 1	A
 PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc nulls last, a
 PREHOOK: type: QUERY

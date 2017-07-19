@@ -88,7 +88,7 @@ public class TestHiveMetaStoreStatsMerge extends TestCase {
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
 
-    msc.dropDatabase(dbName, true, true);
+    msc.dropDatabase(dbName, true, true, true);
 
     db.setName(dbName);
 

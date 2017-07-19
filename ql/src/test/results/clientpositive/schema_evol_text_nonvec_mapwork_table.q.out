@@ -1968,14 +1968,14 @@ POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_var
 PREHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string
 POSTHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string
@@ -2010,10 +2010,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	-832222222.000000000000000000	255.0	4957.0	original
-4	847492223.000000000000000000	0.0	20435.0	original
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	-8.3222221E8	255.0	4957.000000000000000000	original
+4	8.4749222E8	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2067,24 +2067,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_string
-            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2105,11 +2105,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
 10	17	90000	754072151	new
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	-832222222.000000000000000000	255.0	4957.0	original
-4	847492223.000000000000000000	0.0	20435.0	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	-8.3222221E8	255.0	4957.000000000000000000	original
+4	8.4749222E8	0.0	20435.000000000000000000	original
 5	30.774	20.31	46114.284799488	new
 6	-66475.561431	52927714	7203778961	new
 7	256	32768	31889	new
@@ -2124,16 +2124,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char
@@ -2168,10 +2168,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	9000000000.000000000000000000	-255.0	4957.0	original
-4	-999999999999.000000000000000000	0.0	20435.0	original
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.9999995E9	-255.0	4957.000000000000000000	original
+4	-1.0E12	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2225,24 +2225,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_char
-            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(50)), c2 (type: char(50)), c3 (type: char(50)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: char(50)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(50)), VALUE._col1 (type: char(50)), VALUE._col2 (type: char(50)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2263,11 +2263,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000                   	753.7028                                          	-3651.672121                                      	original
+1	-2.38667407E10                                    	753.7028                                          	-3651.672121000000000000                          	original
 10	17                                                	90000                                             	754072151                                         	new
-2	-10.300000000000000000                            	-2.0                                              	-29.0764                                          	original
-3	9000000000.000000000000000000                     	-255.0                                            	4957.0                                            	original
-4	-999999999999.000000000000000000                  	0.0                                               	20435.0                                           	original
+2	-10.3                                             	-2.0                                              	-29.076400000000000000                            	original
+3	8.9999995E9                                       	-255.0                                            	4957.000000000000000000                           	original
+4	-1.0E12                                           	0.0                                               	20435.000000000000000000                          	original
 5	30.774                                            	20.31                                             	46114.284799488                                   	new
 6	-66475.561431                                     	52927714                                          	7203778961                                        	new
 7	256                                               	32768                                             	31889                                             	new
@@ -2282,16 +2282,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR truncation
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR truncation
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
@@ -2326,10 +2326,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	832222222.000000000000000000	-255.0	4957.0	original
-4	847492223.000000000000000000	0.0	20435.0	original
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.3222221E8	-255.0	4957.000000000000000000	original
+4	8.4749222E8	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2383,24 +2383,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_char_trunc
-            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: char(7)), c2 (type: char(7)), c3 (type: char(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: char(7)), _col2 (type: char(7)), _col3 (type: char(7)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: char(7)), VALUE._col1 (type: char(7)), VALUE._col2 (type: char(7)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 4 Data size: 215 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 207 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2421,11 +2421,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-238667	753.702	-3651.6	original
+1	-2.3866	753.702	-3651.6	original
 10	17     	90000  	7540721	new
-2	-10.300	-2.0   	-29.076	original
-3	8322222	-255.0 	4957.0 	original
-4	8474922	0.0    	20435.0	original
+2	-10.3  	-2.0   	-29.076	original
+3	8.32222	-255.0 	4957.00	original
+4	8.47492	0.0    	20435.0	original
 5	30.774 	20.31  	46114.2	new
 6	-66475.	5292771	7203778	new
 7	256    	32768  	31889  	new
@@ -2440,14 +2440,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR
 --
 CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR
 --
 CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
@@ -2598,16 +2598,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR truncation
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR truncation
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
@@ -2642,10 +2642,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	9000000000.000000000000000000	-255.0	4957.0	original
-4	-999999999999.000000000000000000	0.0	20435.0	original
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.9999995E9	-255.0	4957.000000000000000000	original
+4	-1.0E12	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2699,24 +2699,24 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: table_change_numeric_group_string_group_floating_varchar_trunc
-            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: varchar(7)), c2 (type: varchar(7)), c3 (type: varchar(7)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
-              Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
-                Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: varchar(7)), _col2 (type: varchar(7)), _col3 (type: varchar(7)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(7)), VALUE._col1 (type: varchar(7)), VALUE._col2 (type: varchar(7)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 4 Data size: 220 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 4 Data size: 203 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2737,11 +2737,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-238667	753.702	-3651.6	original
+1	-2.3866	753.702	-3651.6	original
 10	17	90000	7540721	new
-2	-10.300	-2.0	-29.076	original
-3	9000000	-255.0	4957.0	original
-4	-999999	0.0	20435.0	original
+2	-10.3	-2.0	-29.076	original
+3	8.99999	-255.0	4957.00	original
+4	-1.0E12	0.0	20435.0	original
 5	30.774	20.31	46114.2	new
 6	-66475.	5292771	7203778	new
 7	256	32768	31889	new
@@ -3244,7 +3244,7 @@ PREHOOK: query: ----------------------------------------------------------------
 --
 --
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
 PREHOOK: type: CREATETABLE
@@ -3255,7 +3255,7 @@ POSTHOOK: query: ---------------------------------------------------------------
 --
 --
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
 POSTHOOK: type: CREATETABLE
@@ -3300,12 +3300,12 @@ insert_num	c1	c2	c3	c4	c5	c6	b
 3	NULL	NULL	NULL	NULL	NULL	NULL	original
 4	100	100	100	100	100	100	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
@@ -3357,17 +3357,17 @@ STAGE PLANS:
             alias: table_change_lower_to_higher_numeric_group_tinyint
             Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: insert_num (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), b (type: string)
+              expressions: insert_num (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: float), c5 (type: double), c6 (type: decimal(38,18)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
               Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: decimal(38,18)), _col5 (type: float), _col6 (type: double), _col7 (type: string)
+                value expressions: _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: decimal(38,18)), _col7 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(38,18)), VALUE._col4 (type: float), VALUE._col5 (type: double), VALUE._col6 (type: string)
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: smallint), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: decimal(38,18)), VALUE._col6 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
           Statistics: Num rows: 4 Data size: 118 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -3393,16 +3393,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	c5	c6	b
-1	45	45	45	45.000000000000000000	45.0	45.0	original
-10	17	90000	754072151	95.000000000000000000	20.0	18.0	new
-2	-2	-2	-2	-2.000000000000000000	-2.0	-2.0	original
+1	45	45	45	45.0	45.0	45.000000000000000000	original
+10	17	90000	754072151	95.0	20.0	18.000000000000000000	new
+2	-2	-2	-2	-2.0	-2.0	-2.000000000000000000	original
 3	NULL	NULL	NULL	NULL	NULL	NULL	original
-4	100	100	100	100.000000000000000000	100.0	100.0	original
-5	774	2031	200	12.000000000000000000	99.0	0.0	new
-6	NULL	52927714	7203778961	8.000000000000000000	7.0	6.0	new
-7	256	32768	31889	300.000000000000000000	444.0	506.0	new
-8	5555	40000	-719017797	45.000000000000000000	55.0	65.0	new
-9	100	5000	5443	22.000000000000000000	2.0	-2.0	new
+4	100	100	100	100.0	100.0	100.000000000000000000	original
+5	774	2031	200	12.0	99.0	0.000000000000000000	new
+6	NULL	52927714	7203778961	8.0	7.0	6.000000000000000000	new
+7	256	32768	31889	300.0	444.0	506.000000000000000000	new
+8	5555	40000	-719017797	45.0	55.0	65.000000000000000000	new
+9	100	5000	5443	22.0	2.0	-2.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
@@ -3412,14 +3412,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
 POSTHOOK: type: CREATETABLE
@@ -3463,12 +3463,12 @@ insert_num	c1	c2	c3	c4	c5	b
 3	-5000	-5000	-5000	-5000	-5000	original
 4	100	100	100	100	100	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
@@ -3519,17 +3519,17 @@ STAGE PLANS:
             alias: table_change_lower_to_higher_numeric_group_smallint
             Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: insert_num (type: int), c1 (type: int), c2 (type: bigint), c3 (type: decimal(38,18)), c4 (type: float), c5 (type: double), b (type: string)
+              expressions: insert_num (type: int), c1 (type: int), c2 (type: bigint), c3 (type: float), c4 (type: double), c5 (type: decimal(38,18)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
               Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: decimal(38,18)), _col4 (type: float), _col5 (type: double), _col6 (type: string)
+                value expressions: _col1 (type: int), _col2 (type: bigint), _col3 (type: float), _col4 (type: double), _col5 (type: decimal(38,18)), _col6 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: decimal(38,18)), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: string)
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: float), VALUE._col3 (type: double), VALUE._col4 (type: decimal(38,18)), VALUE._col5 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
           Statistics: Num rows: 4 Data size: 130 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -3555,16 +3555,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	c5	b
-1	2031	2031	2031.000000000000000000	2031.0	2031.0	original
-10	17	90000	754072151.000000000000000000	95.0	20.0	new
-2	-2	-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	100	100	100.000000000000000000	100.0	100.0	original
-5	774	2031	200.000000000000000000	12.0	99.0	new
-6	561431	52927714	7203778961.000000000000000000	8.0	7.0	new
-7	256	32768	31889.000000000000000000	300.0	444.0	new
-8	5555	40000	-719017797.000000000000000000	45.0	55.0	new
-9	100	5000	5443.000000000000000000	22.0	2.0	new
+1	2031	2031	2031.0	2031.0	2031.000000000000000000	original
+10	17	90000	7.5407213E8	95.0	20.000000000000000000	new
+2	-2	-2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	100	100	100.0	100.0	100.000000000000000000	original
+5	774	2031	200.0	12.0	99.000000000000000000	new
+6	561431	52927714	7.2037791E9	8.0	7.000000000000000000	new
+7	256	32768	31889.0	300.0	444.000000000000000000	new
+8	5555	40000	-7.1901779E8	45.0	55.000000000000000000	new
+9	100	5000	5443.0	22.0	2.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
@@ -3574,14 +3574,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
 POSTHOOK: type: CREATETABLE
@@ -3624,12 +3624,12 @@ insert_num	c1	c2	c3	c4	b
 3	-5000	-5000	-5000	-5000	original
 4	52927714	52927714	52927714	52927714	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
@@ -3679,17 +3679,17 @@ STAGE PLANS:
             alias: table_change_lower_to_higher_numeric_group_int
             Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: insert_num (type: int), c1 (type: bigint), c2 (type: decimal(38,18)), c3 (type: float), c4 (type: double), b (type: string)
+              expressions: insert_num (type: int), c1 (type: bigint), c2 (type: float), c3 (type: double), c4 (type: decimal(38,18)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
               Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: bigint), _col2 (type: decimal(38,18)), _col3 (type: float), _col4 (type: double), _col5 (type: string)
+                value expressions: _col1 (type: bigint), _col2 (type: float), _col3 (type: double), _col4 (type: decimal(38,18)), _col5 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(38,18)), VALUE._col2 (type: float), VALUE._col3 (type: double), VALUE._col4 (type: string)
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: decimal(38,18)), VALUE._col4 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Statistics: Num rows: 4 Data size: 132 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -3715,16 +3715,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	b
-1	2031	2031.000000000000000000	2031.0	2031.0	original
-10	17	90000.000000000000000000	7.5407213E8	95.0	new
-2	-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	52927714	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	774	2031.000000000000000000	200.0	12.0	new
-6	561431	52927714.000000000000000000	7.2037791E9	8.0	new
-7	256	32768.000000000000000000	31889.0	300.0	new
-8	5555	40000.000000000000000000	-7.1901779E8	45.0	new
-9	100	5000.000000000000000000	5443.0	22.0	new
+1	2031	2031.0	2031.0	2031.000000000000000000	original
+10	17	90000.0	7.54072151E8	95.000000000000000000	new
+2	-2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	52927714	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	774	2031.0	200.0	12.000000000000000000	new
+6	561431	5.2927712E7	7.203778961E9	8.000000000000000000	new
+7	256	32768.0	31889.0	300.000000000000000000	new
+8	5555	40000.0	-7.19017797E8	45.000000000000000000	new
+9	100	5000.0	5443.0	22.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
@@ -3734,14 +3734,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
@@ -3783,12 +3783,12 @@ insert_num	c1	c2	c3	b
 3	-5000	-5000	-5000	original
 4	52927714	52927714	52927714	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
@@ -3837,17 +3837,17 @@ STAGE PLANS:
             alias: table_change_lower_to_higher_numeric_group_bigint
             Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: insert_num (type: int), c1 (type: decimal(38,18)), c2 (type: float), c3 (type: double), b (type: string)
+              expressions: insert_num (type: int), c1 (type: float), c2 (type: double), c3 (type: decimal(38,18)), b (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4
               Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: int)
                 sort order: +
                 Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col1 (type: decimal(38,18)), _col2 (type: float), _col3 (type: double), _col4 (type: string)
+                value expressions: _col1 (type: float), _col2 (type: double), _col3 (type: decimal(38,18)), _col4 (type: string)
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: string)
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: float), VALUE._col1 (type: double), VALUE._col2 (type: decimal(38,18)), VALUE._col3 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 4 Data size: 127 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -3873,16 +3873,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	7203778961.000000000000000000	7.2037791E9	7.203778961E9	original
-10	17.000000000000000000	90000.0	7.54072151E8	new
-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000.000000000000000000	-5000.0	-5000.0	original
-4	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	774.000000000000000000	2031.0	200.0	new
-6	561431.000000000000000000	5.2927712E7	7.203778961E9	new
-7	256.000000000000000000	32768.0	31889.0	new
-8	5555.000000000000000000	40000.0	-7.19017797E8	new
-9	100.000000000000000000	5000.0	5443.0	new
+1	7.2037791E9	7.203778961E9	7203778961.000000000000000000	original
+10	17.0	90000.0	754072151.000000000000000000	new
+2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000.0	-5000.0	-5000.000000000000000000	original
+4	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	774.0	2031.0	200.000000000000000000	new
+6	561431.0	5.2927714E7	7203778961.000000000000000000	new
+7	256.0	32768.0	31889.000000000000000000	new
+8	5555.0	40000.0	-719017797.000000000000000000	new
+9	100.0	5000.0	5443.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
@@ -3892,47 +3892,47 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (FLOAT, DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (FLOAT, DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (1, -29.0764, -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__49
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (1, -29.0764, -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__49
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	c2	b
 1	-29.0764	-29.0764	original
@@ -3940,16 +3940,16 @@ insert_num	c1	c2	b
 3	-5000.0	-5000.0	original
 4	5.2927712E7	5.2927712E7	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
+alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
+alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (5, '7.74', '22.3', 'new'),
            (6, '56.1431', '90.9', 'new'),
            (7, '2.56', '25.6', 'new'),
@@ -3958,8 +3958,8 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_dec
            (10, '1.7', '17.8888', 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__50
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (5, '7.74', '22.3', 'new'),
            (6, '56.1431', '90.9', 'new'),
            (7, '2.56', '25.6', 'new'),
@@ -3968,17 +3968,17 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_de
            (10, '1.7', '17.8888', 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__50
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -3990,7 +3990,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: table_change_lower_to_higher_numeric_group_decimal
+            alias: table_change_lower_to_higher_numeric_group_float
             Statistics: Num rows: 4 Data size: 116 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: double), c2 (type: decimal(38,18)), b (type: string)
@@ -4020,13 +4020,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	c2	b
 1	-29.0764	-29.076400000000000000	original
@@ -4039,55 +4039,55 @@ insert_num	c1	c2	b
 7	2.56	25.600000000000000000	new
 8	555.5	55.550000000000000000	new
 9	10.0	0.100000000000000000	new
-PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
 PREHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_double(insert_num int, c1 double, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
 POSTHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
+CREATE TABLE table_change_lower_to_higher_numeric_group_double(insert_num int, c1 double, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (1, -29.0764, 'original'),
            (2, 753.7028, 'original'),
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__51
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (1, -29.0764, 'original'),
            (2, 753.7028, 'original'),
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__51
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
 insert_num	c1	b
 1	-29.0764	original
@@ -4095,16 +4095,16 @@ insert_num	c1	b
 3	-5000.0	original
 4	5.2927714E7	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+alter table table_change_lower_to_higher_numeric_group_double replace columns (insert_num int, c1 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+alter table table_change_lower_to_higher_numeric_group_double replace columns (insert_num int, c1 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (5, '774', 'new'),
            (6, '561431', 'new'),
            (7, '256', 'new'),
@@ -4113,8 +4113,8 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_flo
            (10, '17', 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__52
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (5, '774', 'new'),
            (6, '561431', 'new'),
            (7, '256', 'new'),
@@ -4123,16 +4123,16 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_fl
            (10, '17', 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__52
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -4144,7 +4144,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: table_change_lower_to_higher_numeric_group_float
+            alias: table_change_lower_to_higher_numeric_group_double
             Statistics: Num rows: 4 Data size: 78 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: insert_num (type: int), c1 (type: decimal(38,18)), b (type: string)
@@ -4174,13 +4174,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
 insert_num	c1	b
 1	-29.076400000000000000	original
@@ -4193,11 +4193,11 @@ insert_num	c1	b
 7	256.000000000000000000	new
 8	5555.000000000000000000	new
 9	100.000000000000000000	new
-PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_double
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_double
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double

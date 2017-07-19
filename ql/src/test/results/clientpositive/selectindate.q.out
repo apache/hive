@@ -58,8 +58,8 @@ POSTHOOK: query: SELECT * FROM datetest WHERE dValue IN ('2000-03-22','2001-03-2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@datetest
 #### A masked pattern was here ####
-2000-03-22	1
 2001-03-22	2
+2000-03-22	1
 PREHOOK: query: drop table datetest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@datetest

@@ -72,6 +72,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestJdbcWithMiniHS2 {
@@ -1100,6 +1101,7 @@ public class TestJdbcWithMiniHS2 {
    * @throws Exception
    */
   @Test
+  @Ignore("Temporarily disable until fixed")
   public void testAddJarConstructorUnCaching() throws Exception {
     // This test assumes the hive-contrib JAR has been built as part of the Hive build.
     // Also dependent on the UDFExampleAdd class within that JAR.

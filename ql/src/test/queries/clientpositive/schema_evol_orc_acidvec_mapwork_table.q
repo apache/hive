@@ -11,6 +11,7 @@ SET hive.vectorized.execution.enabled=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.default.fileformat=orc;
+set hive.llap.io.enabled=false;
 
 -- SORT_QUERY_RESULTS
 --
@@ -336,7 +337,7 @@ drop table table_change_numeric_group_string_group_multi_ints_varchar_trunc;
 --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table table_change_numeric_group_string_group_floating_string
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -363,9 +364,9 @@ drop table table_change_numeric_group_string_group_floating_string;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table table_change_numeric_group_string_group_floating_char
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -392,9 +393,9 @@ drop table table_change_numeric_group_string_group_floating_char;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR truncation
 
-CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table table_change_numeric_group_string_group_floating_char_trunc
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -421,7 +422,7 @@ drop table table_change_numeric_group_string_group_floating_char_trunc;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR
 --
 CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
@@ -450,9 +451,9 @@ drop table table_change_numeric_group_string_group_floating_varchar;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR truncation
 --
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table table_change_numeric_group_string_group_floating_varchar_trunc
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -577,7 +578,7 @@ drop table table_change_string_group_string_group_varchar;
 --
 --
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
@@ -590,7 +591,7 @@ insert into table table_change_lower_to_higher_numeric_group_tinyint
 select insert_num,c1,c2,c3,c4,c5,c6,b from table_change_lower_to_higher_numeric_group_tinyint order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING);
+alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING);
 
 insert into table table_change_lower_to_higher_numeric_group_tinyint
     values (5, '774', '2031', '200', '12', '99', '0', 'new'),
@@ -606,7 +607,7 @@ drop table table_change_lower_to_higher_numeric_group_tinyint;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
@@ -619,7 +620,7 @@ insert into table table_change_lower_to_higher_numeric_group_smallint
 select insert_num,c1,c2,c3,c4,c5,b from table_change_lower_to_higher_numeric_group_smallint order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING) ;
+alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING) ;
 
 insert into table table_change_lower_to_higher_numeric_group_smallint
     values (5, '774', '2031', '200', '12', '99', 'new'),
@@ -636,7 +637,7 @@ drop table table_change_lower_to_higher_numeric_group_smallint;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
@@ -649,7 +650,7 @@ insert into table table_change_lower_to_higher_numeric_group_int
 select insert_num,c1,c2,c3,c4,b from table_change_lower_to_higher_numeric_group_int order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING) ;
+alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18),  b STRING) ;
 
 insert into table table_change_lower_to_higher_numeric_group_int
     values (5, '774', '2031', '200', '12', 'new'),
@@ -665,7 +666,7 @@ drop table table_change_lower_to_higher_numeric_group_int;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
@@ -678,7 +679,7 @@ insert into table table_change_lower_to_higher_numeric_group_bigint
 select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_bigint order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING) ;
+alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING) ;
 
 insert into table table_change_lower_to_higher_numeric_group_bigint
     values (5, '774', '2031', '200', 'new'),
@@ -694,22 +695,22 @@ drop table table_change_lower_to_higher_numeric_group_bigint;
 
 
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (FLOAT, DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
-insert into table table_change_lower_to_higher_numeric_group_decimal
+insert into table table_change_lower_to_higher_numeric_group_float
     values (1, -29.0764, -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original');
 
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num;
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING) ;
+alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING) ;
 
-insert into table table_change_lower_to_higher_numeric_group_decimal
+insert into table table_change_lower_to_higher_numeric_group_float
     values (5, '7.74', '22.3', 'new'),
            (6, '56.1431', '90.9', 'new'),
            (7, '2.56', '25.6', 'new'),
@@ -717,29 +718,29 @@ insert into table table_change_lower_to_higher_numeric_group_decimal
            (9, '10.0', '0.100', 'new'),
            (10, '1.7', '17.8888', 'new');
 
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num;
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
 
-drop table table_change_lower_to_higher_numeric_group_decimal;
+drop table table_change_lower_to_higher_numeric_group_float;
 
 
 
 --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
 --
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
+CREATE TABLE table_change_lower_to_higher_numeric_group_double(insert_num int, c1 double, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
-insert into table table_change_lower_to_higher_numeric_group_float
+insert into table table_change_lower_to_higher_numeric_group_double
     values (1, -29.0764, 'original'),
            (2, 753.7028, 'original'),
            (3, -5000, 'original'),
            (4, 52927714, 'original');
 
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING) ;
+alter table table_change_lower_to_higher_numeric_group_double replace columns (insert_num int, c1 decimal(38,18), b STRING) ;
 
-insert into table table_change_lower_to_higher_numeric_group_float
+insert into table table_change_lower_to_higher_numeric_group_double
     values (5, '774', 'new'),
            (6, '561431', 'new'),
            (7, '256', 'new'),
@@ -747,9 +748,9 @@ insert into table table_change_lower_to_higher_numeric_group_float
            (9, '100', 'new'),
            (10, '17', 'new');
 
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num;
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num;
 
-drop table table_change_lower_to_higher_numeric_group_float;
+drop table table_change_lower_to_higher_numeric_group_double;
 
 
 

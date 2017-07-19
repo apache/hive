@@ -171,54 +171,6 @@ POSTHOOK: query: show partitions list_bucketing_mul_col
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_mul_col
 ds=2008-04-08/hr=11
-PREHOOK: query: desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='11')
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: query: desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='11')
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_mul_col
-# col_name            	data_type           	comment             
-	 	 
-col1                	string              	                    
-col2                	string              	                    
-col3                	string              	                    
-col4                	string              	                    
-col5                	string              	                    
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-ds                  	string              	                    
-hr                  	string              	                    
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[2008-04-08, 11]    	 
-Database:           	default             	 
-Table:              	list_bucketing_mul_col	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
-	numRows             	500                 
-	rawDataSize         	6312                
-	totalSize           	7094                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.RCFileInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.RCFileOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Stored As SubDirectories:	Yes                 	 
-Skewed Columns:     	[col2, col4]        	 
-Skewed Values:      	[[466, val_466], [287, val_287], [82, val_82]]	 
-#### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[466, val_466]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=466/col4=val_466, [82, val_82]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=82/col4=val_82, [287, val_287]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=287/col4=val_287}	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: explain extended
 select * from list_bucketing_mul_col 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"

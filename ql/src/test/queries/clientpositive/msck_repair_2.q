@@ -1,4 +1,3 @@
-set hive.msck.repair.batch.size=1;
 set hive.msck.path.validation=skip;
 
 DROP TABLE IF EXISTS repairtable;

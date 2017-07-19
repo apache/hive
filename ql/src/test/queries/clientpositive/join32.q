@@ -9,7 +9,7 @@ set hive.auto.convert.join.noconditionaltask.size=10000;
 
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
-EXPLAIN EXTENDED
+EXPLAIN 
 INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 

@@ -382,6 +382,7 @@ public class TestCompactor {
       "SELECT a, b where a >= 2", driver);
     execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
       tblName + " after load:");
+    executeStatementOnDriver("drop table if exists " + tblNameStg, driver);
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);

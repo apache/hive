@@ -140,7 +140,7 @@ STAGE PLANS:
             Path -> Partition:
               nullscan://null/default.test1/part_ds=1_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -231,7 +231,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
-1
+NULL
 PREHOOK: query: explain extended select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(distinct ds) from TEST1
@@ -276,7 +276,7 @@ STAGE PLANS:
             Path -> Partition:
               nullscan://null/default.test1/part_ds=1_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -367,7 +367,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 #### A masked pattern was here ####
-1
+0
 PREHOOK: query: explain extended select count(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select count(ds) from TEST1
@@ -947,7 +947,7 @@ STAGE PLANS:
             Path -> Partition:
               nullscan://null/default.test2/part_ds=1_hr=1_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -992,7 +992,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=1_hr=2_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1037,7 +1037,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=1_hr=3_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1136,7 +1136,6 @@ POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
 #### A masked pattern was here ####
-1	3
 PREHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
@@ -1419,7 +1418,7 @@ STAGE PLANS:
             Path -> Partition:
               nullscan://null/default.test1/part_ds=1_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1463,7 +1462,7 @@ STAGE PLANS:
                   name: default.test1
               nullscan://null/default.test1/part_ds=2_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 2
@@ -1557,7 +1556,7 @@ POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test1@ds=1
 POSTHOOK: Input: default@test1@ds=2
 #### A masked pattern was here ####
-2
+NULL
 PREHOOK: query: select distinct ds from srcpart
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1656,7 +1655,7 @@ STAGE PLANS:
             Path -> Partition:
               nullscan://null/default.test2/part_ds=01_10_10_hr=01_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 01:10:10
@@ -1701,7 +1700,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=01_10_20_hr=02_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 01:10:20
@@ -1746,7 +1745,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=1_hr=1_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1791,7 +1790,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=1_hr=2_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1836,7 +1835,7 @@ STAGE PLANS:
                   name: default.test2
               nullscan://null/default.test2/part_ds=1_hr=3_ 
                 Partition
-                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  input format: org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   partition values:
                     ds 1
@@ -1941,6 +1940,3 @@ POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
 #### A masked pattern was here ####
-01:10:10	1
-01:10:20	1
-1	3

@@ -1,6 +1,8 @@
 set hive.optimize.index.filter=false;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
+-- SORT_QUERY_RESULTS
+
 drop table float_text;
 create table float_text(f float);
 insert into float_text values(74.72);

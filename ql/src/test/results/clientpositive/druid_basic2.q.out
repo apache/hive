@@ -76,9 +76,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -103,9 +100,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":["delta"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -134,9 +128,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-            druid.query.type select
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -165,9 +156,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":["robot"],"limitSpec":{"type":"default"},"filter":{"type":"selector","dimension":"language","value":"en"},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Select Operator
@@ -211,9 +199,6 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             filterExpr: language is not null (type: boolean)
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -236,9 +221,6 @@ STAGE PLANS:
           TableScan
             alias: druid_table_1
             filterExpr: language is not null (type: boolean)
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -396,9 +378,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
             GatherStats: false
             Select Operator
@@ -411,9 +390,6 @@ STAGE PLANS:
                 auto parallelism: false
           TableScan
             alias: druid_table_1
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"selector","dimension":"language","value":"en"},"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
-              druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Reduce Output Operator
@@ -541,7 +517,8 @@ LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -549,25 +526,27 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            properties:
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"day","dimensions":["robot","language"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
-              druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: robot (type: string), __time (type: timestamp), $f3 (type: float), $f4 (type: float)
-              outputColumnNames: _col0, _col1, _col2, _col3
+              expressions: robot (type: string), language (type: string), __time (type: timestamp), added (type: float), delta (type: float)
+              outputColumnNames: robot, language, __time, added, delta
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToInteger(_col0) (type: int), _col2 (type: float)
-                null sort order: az
-                sort order: +-
+              Group By Operator
+                aggregations: max(added), sum(delta)
+                keys: robot (type: string), language (type: string), floor_day(__time) (type: timestamp)
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                tag: -1
-                TopN: 10
-                TopN Hash Memory Usage: 0.1
-                value expressions: _col0 (type: string), _col1 (type: timestamp), _col3 (type: float)
-                auto parallelism: false
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp)
+                  null sort order: aaa
+                  sort order: +++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  tag: -1
+                  value expressions: _col3 (type: float), _col4 (type: double)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -584,8 +563,6 @@ STAGE PLANS:
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
               druid.datasource wikipedia
-              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"day","dimensions":["robot","language"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
-              druid.query.type groupBy
 #### A masked pattern was here ####
               name default.druid_table_1
               numFiles 0
@@ -609,8 +586,6 @@ STAGE PLANS:
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
                 druid.datasource wikipedia
-                druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"day","dimensions":["robot","language"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"delta"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
-                druid.query.type groupBy
 #### A masked pattern was here ####
                 name default.druid_table_1
                 numFiles 0
@@ -629,8 +604,78 @@ STAGE PLANS:
         /druid_table_1 [druid_table_1]
       Needs Tagging: false
       Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0), sum(VALUE._col1)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: timestamp)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: string), _col2 (type: timestamp), _col3 (type: float), _col4 (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    columns _col0,_col1,_col2,_col3
+                    columns.types string,timestamp,float,double
+                    escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            Reduce Output Operator
+              key expressions: UDFToInteger(_col0) (type: int), _col2 (type: float)
+              null sort order: az
+              sort order: +-
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              tag: -1
+              TopN: 10
+              TopN Hash Memory Usage: 0.1
+              value expressions: _col0 (type: string), _col1 (type: timestamp), _col3 (type: double)
+              auto parallelism: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -mr-10004
+            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            properties:
+              columns _col0,_col1,_col2,_col3
+              columns.types string,timestamp,float,double
+              escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns _col0,_col1,_col2,_col3
+                columns.types string,timestamp,float,double
+                escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
         Select Operator
-          expressions: VALUE._col0 (type: string), VALUE._col1 (type: timestamp), KEY.reducesinkkey1 (type: float), VALUE._col2 (type: float)
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: timestamp), KEY.reducesinkkey1 (type: float), VALUE._col2 (type: double)
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Limit
@@ -648,7 +693,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
                     columns _col0,_col1,_col2,_col3
-                    columns.types string:timestamp:float:float
+                    columns.types string:timestamp:float:double
                     escape.delim \
                     hive.serialization.extend.additional.nesting.levels true
                     serialization.escape.crlf true

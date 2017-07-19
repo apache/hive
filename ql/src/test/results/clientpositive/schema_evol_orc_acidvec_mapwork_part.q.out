@@ -1435,16 +1435,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), STRING
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), STRING
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string
@@ -1481,10 +1481,10 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	1	-10.300000000000000000	-2.0	-29.0764	original
-3	1	-832222222.000000000000000000	255.0	4957.0	original
-4	1	847492223.000000000000000000	0.0	20435.0	original
+1	1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	1	-10.3	-2.0	-29.076400000000000000	original
+3	1	-8.3222221E8	255.0	4957.000000000000000000	original
+4	1	8.4749222E8	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1540,11 +1540,11 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string@
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993	753.7028	-3651.672121	original
+1	1	-2.38667407E10	753.7028	-3651.672121	original
 10	1	17	90000	754072151	new
 2	1	-10.3	-2.0	-29.0764	original
-3	1	-832222222	255.0	4957.0	original
-4	1	847492223	0.0	20435.0	original
+3	1	-8.3222221E8	255.0	4957	original
+4	1	8.4749222E8	0.0	20435	original
 5	2	30.774	20.31	46114.284799488	new
 6	2	-66475.561431	52927714	7203778961	new
 7	2	256	32768	31889	new
@@ -1559,16 +1559,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char
@@ -1605,10 +1605,10 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	1	-10.300000000000000000	-2.0	-29.0764	original
-3	1	9000000000.000000000000000000	-255.0	4957.0	original
-4	1	-999999999999.000000000000000000	0.0	20435.0	original
+1	1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	1	-10.3	-2.0	-29.076400000000000000	original
+3	1	8.9999995E9	-255.0	4957.000000000000000000	original
+4	1	-1.0E12	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1664,11 +1664,11 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char@pa
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993                                      	753.7028                                          	-3651.672121                                      	original
+1	1	-2.38667407E10                                    	753.7028                                          	-3651.672121                                      	original
 10	1	17                                                	90000                                             	754072151                                         	new
 2	1	-10.3                                             	-2.0                                              	-29.0764                                          	original
-3	1	9000000000                                        	-255.0                                            	4957.0                                            	original
-4	1	-999999999999                                     	0.0                                               	20435.0                                           	original
+3	1	8.9999995E9                                       	-255.0                                            	4957                                              	original
+4	1	-1.0E12                                           	0.0                                               	20435                                             	original
 5	2	30.774                                            	20.31                                             	46114.284799488                                   	new
 6	2	-66475.561431                                     	52927714                                          	7203778961                                        	new
 7	2	256                                               	32768                                             	31889                                             	new
@@ -1683,16 +1683,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR truncation
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), CHAR truncation
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc
@@ -1729,10 +1729,10 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char_tr
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char_trunc@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	1	-10.300000000000000000	-2.0	-29.0764	original
-3	1	832222222.000000000000000000	-255.0	4957.0	original
-4	1	847492223.000000000000000000	0.0	20435.0	original
+1	1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	1	-10.3	-2.0	-29.076400000000000000	original
+3	1	8.3222221E8	-255.0	4957.000000000000000000	original
+4	1	8.4749222E8	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1788,11 +1788,11 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char_tr
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-238667	753.702	-3651.6	original
+1	1	-2.3866	753.702	-3651.6	original
 10	1	17     	90000  	7540721	new
 2	1	-10.3  	-2.0   	-29.076	original
-3	1	8322222	-255.0 	4957.0 	original
-4	1	8474922	0.0    	20435.0	original
+3	1	8.32222	-255.0 	4957   	original
+4	1	8.47492	0.0    	20435  	original
 5	2	30.774 	20.31  	46114.2	new
 6	2	-66475.	5292771	7203778	new
 7	2	256    	32768  	31889  	new
@@ -1807,14 +1807,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR
 --
 CREATE TABLE part_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR
 --
 CREATE TABLE part_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
@@ -1931,16 +1931,16 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR truncation
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), VARCHAR truncation
 --
-CREATE TABLE part_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc
@@ -1977,10 +1977,10 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	1	-10.300000000000000000	-2.0	-29.0764	original
-3	1	9000000000.000000000000000000	-255.0	4957.0	original
-4	1	-999999999999.000000000000000000	0.0	20435.0	original
+1	1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	1	-10.3	-2.0	-29.076400000000000000	original
+3	1	8.9999995E9	-255.0	4957.000000000000000000	original
+4	1	-1.0E12	0.0	20435.000000000000000000	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2036,11 +2036,11 @@ POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	-238667	753.702	-3651.6	original
+1	1	-2.3866	753.702	-3651.6	original
 10	1	17	90000	7540721	new
 2	1	-10.3	-2.0	-29.076	original
-3	1	9000000	-255.0	4957.0	original
-4	1	-999999	0.0	20435.0	original
+3	1	8.99999	-255.0	4957	original
+4	1	-1.0E12	0.0	20435	original
 5	2	30.774	20.31	46114.2	new
 6	2	-66475.	5292771	7203778	new
 7	2	256	32768	31889	new
@@ -2442,7 +2442,7 @@ PREHOOK: query: ----------------------------------------------------------------
 --
 --
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -2453,7 +2453,7 @@ POSTHOOK: query: ---------------------------------------------------------------
 --
 --
 --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
@@ -2500,12 +2500,12 @@ insert_num	part	c1	c2	c3	c4	c5	c6	b
 3	1	NULL	NULL	NULL	NULL	NULL	NULL	original
 4	1	100	100	100	100	100	100	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint
@@ -2560,16 +2560,16 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint@part=
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	b
-1	1	45	45	45	45.000000000000000000	45.0	45.0	original
-10	1	17	90000	754072151	95.000000000000000000	20.0	18.0	new
-2	1	-2	-2	-2	-2.000000000000000000	-2.0	-2.0	original
+1	1	45	45	45	45.0	45.0	45.000000000000000000	original
+10	1	17	90000	754072151	95.0	20.0	18.000000000000000000	new
+2	1	-2	-2	-2	-2.0	-2.0	-2.000000000000000000	original
 3	1	NULL	NULL	NULL	NULL	NULL	NULL	original
-4	1	100	100	100	100.000000000000000000	100.0	100.0	original
-5	2	774	2031	200	12.000000000000000000	99.0	0.0	new
-6	2	NULL	52927714	7203778961	8.000000000000000000	7.0	6.0	new
-7	2	256	32768	31889	300.000000000000000000	444.0	506.0	new
-8	2	5555	40000	-719017797	45.000000000000000000	55.0	65.0	new
-9	1	100	5000	5443	22.000000000000000000	2.0	-2.0	new
+4	1	100	100	100	100.0	100.0	100.000000000000000000	original
+5	2	774	2031	200	12.0	99.0	0.000000000000000000	new
+6	2	NULL	52927714	7203778961	8.0	7.0	6.000000000000000000	new
+7	2	256	32768	31889	300.0	444.0	506.000000000000000000	new
+8	2	5555	40000	-719017797	45.0	55.0	65.000000000000000000	new
+9	1	100	5000	5443	22.0	2.0	-2.000000000000000000	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint
@@ -2579,14 +2579,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
@@ -2632,12 +2632,12 @@ insert_num	part	c1	c2	c3	c4	c5	b
 3	1	-5000	-5000	-5000	-5000	-5000	original
 4	1	100	100	100	100	100	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint
@@ -2690,16 +2690,16 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint@part
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	b
-1	1	2031	2031	2031.000000000000000000	2031.0	2031.0	original
-10	1	17	90000	754072151.000000000000000000	95.0	20.0	new
-2	1	-2	-2	-2.000000000000000000	-2.0	-2.0	original
-3	1	-5000	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	1	100	100	100.000000000000000000	100.0	100.0	original
-5	2	774	2031	200.000000000000000000	12.0	99.0	new
-6	2	561431	52927714	7203778961.000000000000000000	8.0	7.0	new
-7	2	256	32768	31889.000000000000000000	300.0	444.0	new
-8	2	5555	40000	-719017797.000000000000000000	45.0	55.0	new
-9	1	100	5000	5443.000000000000000000	22.0	2.0	new
+1	1	2031	2031	2031.0	2031.0	2031.000000000000000000	original
+10	1	17	90000	7.5407213E8	95.0	20.000000000000000000	new
+2	1	-2	-2	-2.0	-2.0	-2.000000000000000000	original
+3	1	-5000	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	1	100	100	100.0	100.0	100.000000000000000000	original
+5	2	774	2031	200.0	12.0	99.000000000000000000	new
+6	2	561431	52927714	7.2037791E9	8.0	7.000000000000000000	new
+7	2	256	32768	31889.0	300.0	444.000000000000000000	new
+8	2	5555	40000	-7.1901779E8	45.0	55.000000000000000000	new
+9	1	100	5000	5443.0	22.0	2.000000000000000000	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint
@@ -2709,14 +2709,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_int
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
@@ -2761,12 +2761,12 @@ insert_num	part	c1	c2	c3	c4	b
 3	1	-5000	-5000	-5000	-5000	original
 4	1	52927714	52927714	52927714	52927714	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+alter table part_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18),  b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_int
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_int
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+alter table part_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18),  b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_int
@@ -2817,16 +2817,16 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_int@part=1
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_int@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	b
-1	1	2031	2031.000000000000000000	2031.0	2031.0	original
-10	1	17	90000.000000000000000000	7.5407213E8	95.0	new
-2	1	-2	-2.000000000000000000	-2.0	-2.0	original
-3	1	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	1	52927714	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	2	774	2031.000000000000000000	200.0	12.0	new
-6	2	561431	52927714.000000000000000000	7.2037791E9	8.0	new
-7	2	256	32768.000000000000000000	31889.0	300.0	new
-8	2	5555	40000.000000000000000000	-7.1901779E8	45.0	new
-9	1	100	5000.000000000000000000	5443.0	22.0	new
+1	1	2031	2031.0	2031.0	2031.000000000000000000	original
+10	1	17	90000.0	7.54072151E8	95.000000000000000000	new
+2	1	-2	-2.0	-2.0	-2.000000000000000000	original
+3	1	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	1	52927714	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	2	774	2031.0	200.0	12.000000000000000000	new
+6	2	561431	5.2927712E7	7.203778961E9	8.000000000000000000	new
+7	2	256	32768.0	31889.0	300.000000000000000000	new
+8	2	5555	40000.0	-7.19017797E8	45.000000000000000000	new
+9	1	100	5000.0	5443.0	22.000000000000000000	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_int
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_int
@@ -2836,14 +2836,14 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_int
 PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
+-- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (FLOAT, DOUBLE, DECIMAL)
 --
 CREATE TABLE part_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
@@ -2887,12 +2887,12 @@ insert_num	part	c1	c2	c3	b
 3	1	-5000	-5000	-5000	original
 4	1	52927714	52927714	52927714	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_bigint
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+alter table part_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint
@@ -2941,16 +2941,16 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_bigint@part=1
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_bigint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
-1	1	7203778961.000000000000000000	7.2037791E9	7.203778961E9	original
-10	1	17.000000000000000000	90000.0	7.54072151E8	new
-2	1	-2.000000000000000000	-2.0	-2.0	original
-3	1	-5000.000000000000000000	-5000.0	-5000.0	original
-4	1	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	2	774.000000000000000000	2031.0	200.0	new
-6	2	561431.000000000000000000	5.2927712E7	7.203778961E9	new
-7	2	256.000000000000000000	32768.0	31889.0	new
-8	2	5555.000000000000000000	40000.0	-7.19017797E8	new
-9	1	100.000000000000000000	5000.0	5443.0	new
+1	1	7.2037791E9	7.203778961E9	7203778961.000000000000000000	original
+10	1	17.0	90000.0	754072151.000000000000000000	new
+2	1	-2.0	-2.0	-2.000000000000000000	original
+3	1	-5000.0	-5000.0	-5000.000000000000000000	original
+4	1	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	2	774.0	2031.0	200.000000000000000000	new
+6	2	561431.0	5.2927714E7	7203778961.000000000000000000	new
+7	2	256.0	32768.0	31889.000000000000000000	new
+8	2	5555.0	40000.0	-719017797.000000000000000000	new
+9	1	100.0	5000.0	5443.000000000000000000	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_bigint
@@ -2962,158 +2962,38 @@ POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint
 PREHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
 --
-CREATE TABLE part_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
 --
-CREATE TABLE part_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part=1)
-    values (1, -29.0764, -29.0764, 'original'),
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
+PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
+    values (1, -29.0764,  -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__49
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part=1)
-    values (1, -29.0764, -29.0764, 'original'),
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
+POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
+    values (1, -29.0764,  -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__49
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2	_col3
-PREHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_decimal order by insert_num
-PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-#### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_decimal order by insert_num
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-#### A masked pattern was here ####
-insert_num	part	c1	b
-1	1	-29.0764	original
-2	1	753.7028	original
-3	1	-5000.0	original
-4	1	5.2927712E7	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal, b STRING)
-PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal, b STRING)
-POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part)
-    values (5, '7.74', '22.3', 'new', 2),
-           (6, '56.1431', '90.9', 'new', 2),
-           (7, '2.56', '25.6', 'new', 2),
-           (8, '555.5', '55.55', 'new', 2),
-           (9, '10.0', '0.100', 'new', 1),
-           (10, '1.7', '17.8888', 'new', 1)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__50
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part)
-    values (5, '7.74', '22.3', 'new', 2),
-           (6, '56.1431', '90.9', 'new', 2),
-           (7, '2.56', '25.6', 'new', 2),
-           (8, '555.5', '55.55', 'new', 2),
-           (9, '10.0', '0.100', 'new', 1),
-           (10, '1.7', '17.8888', 'new', 1)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__50
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=2
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=2).b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=2).c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2	_col3	_col4
-PREHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_decimal order by insert_num
-PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=2
-#### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_decimal order by insert_num
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=1
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal@part=2
-#### A masked pattern was here ####
-insert_num	part	c1	b
-1	1	-29.0764	original
-10	1	1.7	new
-2	1	753.7028	original
-3	1	-5000.0	original
-4	1	5.2927712E7	original
-5	2	7.74	new
-6	2	56.1431	new
-7	2	2.56	new
-8	2	555.5	new
-9	1	10.0	new
-PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
---
-CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
---
-CREATE TABLE part_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING) PARTITIONED BY(part INT) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
-    values (1, -29.0764, 'original'),
-           (2, 753.7028, 'original'),
-           (3, -5000, 'original'),
-           (4, 52927714, 'original')
-PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__51
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
-    values (1, -29.0764, 'original'),
-           (2, 753.7028, 'original'),
-           (3, -5000, 'original'),
-           (4, 52927714, 'original')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__51
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+_col0	_col1	_col2	_col3
 PREHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_float
@@ -3128,45 +3008,47 @@ insert_num	part	c1	b
 1	1	-29.0764	original
 2	1	753.7028	original
 3	1	-5000.0	original
-4	1	5.2927714E7	original
+4	1	5.2927712E7	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, c2 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_float
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+alter table part_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 DOUBLE, c2 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_float
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
 PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part)
-    values (5, '774', 'new', 2),
-           (6, '561431', 'new', 2),
-           (7, '256', 'new', 2),
-           (8, '5555', 'new', 2),
-           (9, '100', 'new', 1),
-           (10, '17',  'new', 1)
+    values (5, '774', '774', 'new', 2),
+           (6, '561431', '561431', 'new', 2),
+           (7, '256', '256', 'new', 2),
+           (8, '5555', '5555', 'new', 2),
+           (9, '100', '100', 'new', 1),
+           (10, '17', '17', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__52
+PREHOOK: Input: default@values__tmp__table__50
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part)
-    values (5, '774', 'new', 2),
-           (6, '561431', 'new', 2),
-           (7, '256', 'new', 2),
-           (8, '5555', 'new', 2),
-           (9, '100', 'new', 1),
-           (10, '17',  'new', 1)
+    values (5, '774', '774', 'new', 2),
+           (6, '561431', '561431', 'new', 2),
+           (7, '256', '256', 'new', 2),
+           (8, '5555', '5555', 'new', 2),
+           (9, '100', '100', 'new', 1),
+           (10, '17', '17', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__52
+POSTHOOK: Input: default@values__tmp__table__50
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=2
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-_col0	_col1	_col2	_col3
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+_col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select insert_num,part,c1,b from part_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_float
@@ -3180,16 +3062,16 @@ POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_float@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	b
-1	1	-29.076400000000000000	original
-10	1	17.000000000000000000	new
-2	1	753.702800000000000000	original
-3	1	-5000.000000000000000000	original
-4	1	52927714.000000000000000000	original
-5	2	774.000000000000000000	new
-6	2	561431.000000000000000000	new
-7	2	256.000000000000000000	new
-8	2	5555.000000000000000000	new
-9	1	100.000000000000000000	new
+1	1	-29.0764	original
+10	1	17.0	new
+2	1	753.7028	original
+3	1	-5000.0	original
+4	1	5.2927712E7	original
+5	2	774.0	new
+6	2	561431.0	new
+7	2	256.0	new
+8	2	5555.0	new
+9	1	100.0	new
 PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_float
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_float
@@ -3220,7 +3102,7 @@ PREHOOK: query: insert into table partitioned_update_1 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__53
+PREHOOK: Input: default@values__tmp__table__51
 PREHOOK: Output: default@partitioned_update_1@part=1
 POSTHOOK: query: insert into table partitioned_update_1 partition(part=1)
     values (1, 1, 'original'),
@@ -3228,11 +3110,11 @@ POSTHOOK: query: insert into table partitioned_update_1 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__53
+POSTHOOK: Input: default@values__tmp__table__51
 POSTHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_update_1 add columns(c int, d string)
@@ -3250,7 +3132,7 @@ PREHOOK: query: insert into table partitioned_update_1 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__54
+PREHOOK: Input: default@values__tmp__table__52
 PREHOOK: Output: default@partitioned_update_1@part=2
 POSTHOOK: query: insert into table partitioned_update_1 partition(part=2)
     values (5, 1, 'new', 10, 'ten'),
@@ -3258,31 +3140,31 @@ POSTHOOK: query: insert into table partitioned_update_1 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__54
+POSTHOOK: Input: default@values__tmp__table__52
 POSTHOOK: Output: default@partitioned_update_1@part=2
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: insert into table partitioned_update_1 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__55
+PREHOOK: Input: default@values__tmp__table__53
 PREHOOK: Output: default@partitioned_update_1@part=1
 POSTHOOK: query: insert into table partitioned_update_1 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__55
+POSTHOOK: Input: default@values__tmp__table__53
 POSTHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c EXPRESSION [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__53)values__tmp__table__53.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
 PREHOOK: type: QUERY
@@ -3369,7 +3251,7 @@ PREHOOK: query: insert into table partitioned_delete_1 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__56
+PREHOOK: Input: default@values__tmp__table__54
 PREHOOK: Output: default@partitioned_delete_1@part=1
 POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1)
     values (1, 1, 'original'),
@@ -3377,11 +3259,11 @@ POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__56
+POSTHOOK: Input: default@values__tmp__table__54
 POSTHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__54)values__tmp__table__54.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_delete_1 add columns(c int, d string)
@@ -3399,7 +3281,7 @@ PREHOOK: query: insert into table partitioned_delete_1 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__57
+PREHOOK: Input: default@values__tmp__table__55
 PREHOOK: Output: default@partitioned_delete_1@part=2
 POSTHOOK: query: insert into table partitioned_delete_1 partition(part=2)
     values (5, 1, 'new', 10, 'ten'),
@@ -3407,31 +3289,31 @@ POSTHOOK: query: insert into table partitioned_delete_1 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__57
+POSTHOOK: Input: default@values__tmp__table__55
 POSTHOOK: Output: default@partitioned_delete_1@part=2
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).b SIMPLE [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).b SIMPLE [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__55)values__tmp__table__55.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: insert into table partitioned_delete_1 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__58
+PREHOOK: Input: default@values__tmp__table__56
 PREHOOK: Output: default@partitioned_delete_1@part=1
 POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__58
+POSTHOOK: Input: default@values__tmp__table__56
 POSTHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c EXPRESSION [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__56)values__tmp__table__56.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select part,a,b,c,d from partitioned_delete_1
 PREHOOK: type: QUERY
@@ -3513,7 +3395,7 @@ PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__59
+PREHOOK: Input: default@values__tmp__table__57
 PREHOOK: Output: default@partitioned_delete_2@part=1
 POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)
     values (1, 1, 'original'),
@@ -3521,11 +3403,11 @@ POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__59
+POSTHOOK: Input: default@values__tmp__table__57
 POSTHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a EXPRESSION [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a EXPRESSION [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__57)values__tmp__table__57.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_delete_2 add columns(c int, d string)
@@ -3543,7 +3425,7 @@ PREHOOK: query: insert into table partitioned_delete_2 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__60
+PREHOOK: Input: default@values__tmp__table__58
 PREHOOK: Output: default@partitioned_delete_2@part=2
 POSTHOOK: query: insert into table partitioned_delete_2 partition(part=2)
     values (5, 1, 'new', 10, 'ten'),
@@ -3551,31 +3433,31 @@ POSTHOOK: query: insert into table partitioned_delete_2 partition(part=2)
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__60
+POSTHOOK: Input: default@values__tmp__table__58
 POSTHOOK: Output: default@partitioned_delete_2@part=2
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).a EXPRESSION [(values__tmp__table__60)values__tmp__table__60.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).b SIMPLE [(values__tmp__table__60)values__tmp__table__60.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c EXPRESSION [(values__tmp__table__60)values__tmp__table__60.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(values__tmp__table__60)values__tmp__table__60.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__60)values__tmp__table__60.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).a EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).b SIMPLE [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num EXPRESSION [(values__tmp__table__58)values__tmp__table__58.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__61
+PREHOOK: Input: default@values__tmp__table__59
 PREHOOK: Output: default@partitioned_delete_2@part=1
 POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)
      values (9, 5, 'new', 100, 'hundred'),
             (10, 6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__61
+POSTHOOK: Input: default@values__tmp__table__59
 POSTHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a EXPRESSION [(values__tmp__table__61)values__tmp__table__61.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE [(values__tmp__table__61)values__tmp__table__61.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c EXPRESSION [(values__tmp__table__61)values__tmp__table__61.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(values__tmp__table__61)values__tmp__table__61.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__61)values__tmp__table__61.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a EXPRESSION [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c EXPRESSION [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__59)values__tmp__table__59.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
 PREHOOK: type: QUERY

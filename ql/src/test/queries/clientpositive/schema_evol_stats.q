@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.exec.schema.evolution=true;
+set hive.llap.io.enabled=false;
 
 CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE;
 

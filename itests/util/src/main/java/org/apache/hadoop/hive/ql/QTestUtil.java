@@ -1650,8 +1650,7 @@ public class QTestUtil {
       ".*at com\\.sun\\.proxy.*",
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",
-      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
-      "(s3.?|swift|wasb.?):\\/\\/[\\w\\.\\/-]*"
+      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*"
   });
 
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {

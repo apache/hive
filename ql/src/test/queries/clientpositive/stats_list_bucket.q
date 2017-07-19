@@ -19,7 +19,7 @@ stored as rcfile;
 insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
   select key, value from src;
 
-desc formatted stats_list_bucket partition (ds = '2008-04-08',  hr = '11');
+desc stats_list_bucket partition (ds = '2008-04-08',  hr = '11');
 
 -- Also try non-partitioned table with list bucketing.
 -- Stats should show the same number of rows.
@@ -35,7 +35,7 @@ stored as rcfile;
 insert overwrite table stats_list_bucket_1
   select key, value from src;
 
-desc formatted stats_list_bucket_1;
+desc stats_list_bucket_1;
 
 drop table stats_list_bucket;
 drop table stats_list_bucket_1;

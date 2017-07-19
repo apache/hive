@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(Parameterized.class)
+// @RunWith(Parameterized.class)
 public class TestSparkCliDriver {
 
   static CliAdapter adapter = new CliConfigs.SparkCliConfig().getCliAdapter();
@@ -37,7 +37,7 @@ public class TestSparkCliDriver {
     this.qfile = qfile;
   }
 
-  @Test
+  // @Test
   public void testCliDriver() throws Exception {
     adapter.runTest(name, qfile);
   }

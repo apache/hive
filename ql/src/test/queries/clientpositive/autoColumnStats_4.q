@@ -1,3 +1,4 @@
+set hive.compute.query.using.stats=true;
 set hive.stats.column.autogather=true;
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
@@ -11,10 +12,11 @@ explain insert into table acid_dtt select cint, cast(cstring1 as varchar(128)) f
 
 insert into table acid_dtt select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint is not null order by cint limit 10;
 
-desc formatted acid_dtt;
+alter table acid_dtt update statistics set('numRows'='430', 'rawDataSize'='1722');
+explain select max(a) from acid_dtt;
 
 delete from acid_dtt where b = '0ruyd6Y50JpdGRf6HqD' or b = '2uLyD28144vklju213J1mr';
 
-desc formatted acid_dtt;
+explain select max(a) from acid_dtt;
 
 

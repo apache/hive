@@ -25,7 +25,6 @@ select 1, key, 1, value, 1 from src;
 
 -- check DML result
 show partitions list_bucketing_mul_col;
-desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='2013-01-23+18:00:99');	
 
 set hive.optimize.listbucketing=true;
 explain extended

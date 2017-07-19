@@ -85,7 +85,7 @@ public class TestHiveMetaStoreWithEnvironmentContext extends TestCase {
     SessionState.start(new CliSessionState(hiveConf));
     msc = new HiveMetaStoreClient(hiveConf);
 
-    msc.dropDatabase(dbName, true, true);
+    msc.dropDatabase(dbName, true, true, true);
 
     Map<String, String> envProperties = new HashMap<String, String>();
     envProperties.put("hadoop.job.ugi", "test_user");

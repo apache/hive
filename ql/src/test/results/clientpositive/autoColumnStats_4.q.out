@@ -178,42 +178,62 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@acid_dtt
 POSTHOOK: Lineage: acid_dtt.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acid_dtt.b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: desc formatted acid_dtt
-PREHOOK: type: DESCTABLE
+PREHOOK: query: alter table acid_dtt update statistics set('numRows'='430', 'rawDataSize'='1722')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: Input: default@acid_dtt
-POSTHOOK: query: desc formatted acid_dtt
-POSTHOOK: type: DESCTABLE
+PREHOOK: Output: default@acid_dtt
+POSTHOOK: query: alter table acid_dtt update statistics set('numRows'='430', 'rawDataSize'='1722')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: Input: default@acid_dtt
-# col_name            	data_type           	comment             
-	 	 
-a                   	int                 	                    
-b                   	varchar(128)        	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
-	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	1714                
-	transactional       	true                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	2                   	 
-Bucket Columns:     	[a]                 	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
+POSTHOOK: Output: default@acid_dtt
+PREHOOK: query: explain select max(a) from acid_dtt
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(a) from acid_dtt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid_dtt
+            Statistics: Num rows: 430 Data size: 1722 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: a (type: int)
+              outputColumnNames: a
+              Statistics: Num rows: 430 Data size: 1722 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(a)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: delete from acid_dtt where b = '0ruyd6Y50JpdGRf6HqD' or b = '2uLyD28144vklju213J1mr'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dtt
@@ -222,38 +242,51 @@ POSTHOOK: query: delete from acid_dtt where b = '0ruyd6Y50JpdGRf6HqD' or b = '2u
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dtt
 POSTHOOK: Output: default@acid_dtt
-PREHOOK: query: desc formatted acid_dtt
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@acid_dtt
-POSTHOOK: query: desc formatted acid_dtt
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@acid_dtt
-# col_name            	data_type           	comment             
-	 	 
-a                   	int                 	                    
-b                   	varchar(128)        	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	numFiles            	4                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	2719                
-	transactional       	true                
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	2                   	 
-Bucket Columns:     	[a]                 	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
+PREHOOK: query: explain select max(a) from acid_dtt
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select max(a) from acid_dtt
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: acid_dtt
+            Statistics: Num rows: 430 Data size: 1722 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: a (type: int)
+              outputColumnNames: a
+              Statistics: Num rows: 430 Data size: 1722 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: max(a)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: max(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
