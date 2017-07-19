@@ -2383,62 +2383,79 @@ public final class Utilities {
 
   public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
     List<TezTask> tezTasks = new ArrayList<TezTask>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getTezTasks(tasks, tezTasks);
+      getTezTasks(tasks, tezTasks, visited);
     }
     return tezTasks;
   }
 
-  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks) {
+  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks,
+      Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof TezTask && !tezTasks.contains(task)) {
         tezTasks.add((TezTask) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getTezTasks(task.getDependentTasks(), tezTasks);
+        getTezTasks(task.getDependentTasks(), tezTasks, visited);
       }
+      visited.add(task);
     }
   }
 
   public static List<SparkTask> getSparkTasks(List<Task<? extends Serializable>> tasks) {
     List<SparkTask> sparkTasks = new ArrayList<SparkTask>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getSparkTasks(tasks, sparkTasks);
+      getSparkTasks(tasks, sparkTasks, visited);
     }
     return sparkTasks;
   }
 
   private static void getSparkTasks(List<Task<? extends Serializable>> tasks,
-    List<SparkTask> sparkTasks) {
+    List<SparkTask> sparkTasks, Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof SparkTask && !sparkTasks.contains(task)) {
         sparkTasks.add((SparkTask) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getSparkTasks(task.getDependentTasks(), sparkTasks);
+        getSparkTasks(task.getDependentTasks(), sparkTasks, visited);
       }
+      visited.add(task);
     }
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
     List<ExecDriver> mrTasks = new ArrayList<ExecDriver>();
+    Set<Task<? extends Serializable>> visited = new HashSet<Task<? extends Serializable>>();
     if (tasks != null) {
-      getMRTasks(tasks, mrTasks);
+      getMRTasks(tasks, mrTasks, visited);
     }
     return mrTasks;
   }
 
-  private static void getMRTasks(List<Task<? extends Serializable>> tasks, List<ExecDriver> mrTasks) {
+  private static void getMRTasks(List<Task<? extends Serializable>> tasks, List<ExecDriver> mrTasks,
+      Set<Task<? extends Serializable>> visited) {
     for (Task<? extends Serializable> task : tasks) {
+      if (visited.contains(task)) {
+        continue;
+      }
       if (task instanceof ExecDriver && !mrTasks.contains(task)) {
         mrTasks.add((ExecDriver) task);
       }
 
       if (task.getDependentTasks() != null) {
-        getMRTasks(task.getDependentTasks(), mrTasks);
+        getMRTasks(task.getDependentTasks(), mrTasks, visited);
       }
+      visited.add(task);
     }
   }
 
