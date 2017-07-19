@@ -1878,6 +1878,17 @@ public class Driver implements CommandProcessor {
             invokeFailureHooks(perfLogger, hookContext,
               errorMessage + Strings.nullToEmpty(tsk.getDiagnosticsMessage()), result.getTaskError());
             SQLState = "08S01";
+
+            // 08S01 (Communication error) is the default sql state.  Override the sqlstate
+            // based on the ErrorMsg set in HiveException.
+            if (result.getTaskError() instanceof HiveException) {
+              ErrorMsg errorMsg = ((HiveException) result.getTaskError()).
+                  getCanonicalErrorMsg();
+              if (errorMsg != ErrorMsg.GENERIC_ERROR) {
+                SQLState = errorMsg.getSQLState();
+              }
+            }
+
             console.printError(errorMessage);
             driverCxt.shutdown();
             // in case we decided to run everything in local mode, restore the

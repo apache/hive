@@ -29,6 +29,12 @@ public class HiveException extends Exception {
    * Standard predefined message with error code and possibly SQL State, etc.
    */
   private ErrorMsg canonicalErrorMsg = ErrorMsg.GENERIC_ERROR;
+
+  /**
+   * Error Messages returned from remote exception (eg. hadoop error)
+   */
+  private String remoteErrorMsg;
+
   public HiveException() {
     super();
   }
@@ -46,27 +52,40 @@ public class HiveException extends Exception {
   }
 
   public HiveException(ErrorMsg message, String... msgArgs) {
-    this(null, message, msgArgs);
+    this(null, null, message, msgArgs);
+  }
+
+  public HiveException(Throwable cause, ErrorMsg errorMsg, String... msgArgs) {
+    this(cause, null, errorMsg, msgArgs);
+  }
+
+  public HiveException(Throwable cause, ErrorMsg errorMsg) {
+    this(cause, null, errorMsg, new String[0]);
+  }
+
+  public HiveException(ErrorMsg errorMsg) {
+    this(null, null, errorMsg, new String[0]);
   }
 
   /**
    * This is the recommended constructor to use since it helps use
-   * canonical messages throughout.  
+   * canonical messages throughout and propagate remote errors.
+   *
    * @param errorMsg Canonical error message
    * @param msgArgs message arguments if message is parametrized; must be {@code null} is message takes no arguments
    */
-  public HiveException(Throwable cause, ErrorMsg errorMsg, String... msgArgs) {
+  public HiveException(Throwable cause, String remErrMsg, ErrorMsg errorMsg, String... msgArgs) {
     super(errorMsg.format(msgArgs), cause);
     canonicalErrorMsg = errorMsg;
+    remoteErrorMsg = remErrMsg;
+  }
 
-  }
-  public HiveException(Throwable cause, ErrorMsg errorMsg) {
-    this(cause, errorMsg, new String[0]);
-  }
   /**
    * @return {@link ErrorMsg#GENERIC_ERROR} by default
    */
   public ErrorMsg getCanonicalErrorMsg() {
     return canonicalErrorMsg;
   }
+
+  public String getRemoteErrorMsg() { return remoteErrorMsg; }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +26,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.security.AccessControlException;
 
 /**
  * List of all error messages.
@@ -495,6 +500,15 @@ public enum ErrorMsg {
    */
   OP_NOT_ALLOWED_IN_TXN(20007, "Operation {0} is not allowed in a transaction ({1},queryId={2}).", true),
   OP_NOT_ALLOWED_WITHOUT_TXN(20008, "Operation {0} is not allowed without an active transaction", true),
+  ACCESS_DENIED(20009, "Access denied: {0}", "42000", true),
+  QUOTA_EXCEEDED(20010, "Quota exceeded: {0}", "64000", true),
+  UNRESOLVED_PATH(20011, "Unresolved path: {0}", "64000", true),
+  FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
+  WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
+
+  // An exception from runtime that will show the full stack to client
+  UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
+
   //========================== 30000 range starts here ========================//
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
@@ -577,6 +591,20 @@ public enum ErrorMsg {
         }
       }
     }
+  }
+
+  /**
+   * Given a remote runtime exception, returns the ErrorMsg object associated with it.
+   * @param e An exception
+   * @return ErrorMsg
+   */
+  public static ErrorMsg getErrorMsg(Exception e) {
+    if (e instanceof AccessControlException) return ACCESS_DENIED;
+    if (e instanceof NSQuotaExceededException) return QUOTA_EXCEEDED;
+    if (e instanceof DSQuotaExceededException) return QUOTA_EXCEEDED;
+    if (e instanceof UnresolvedPathException) return UNRESOLVED_PATH;
+    if (e instanceof FileNotFoundException) return FILE_NOT_FOUND;
+    return UNRESOLVED_RT_EXCEPTION;
   }
 
   /**

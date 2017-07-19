@@ -19,5 +19,4 @@ LIMIT 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@max_parts
-Failed with exception Number of dynamic partitions created is 49, which is more than 10. To solve this try to set hive.exec.max.dynamic.partitions to at least 49.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask. Number of dynamic partitions created is 49, which is more than 10. To solve this try to set hive.exec.max.dynamic.partitions to at least 49.
