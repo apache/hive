@@ -79,7 +79,7 @@ public class Optimizer {
     if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
         || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
         || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
-      transformations.add(new Generator());
+      transformations.add(new Generator(postExecHooks));
     }
 
     // Try to transform OR predicates in Filter into simpler IN clauses first
