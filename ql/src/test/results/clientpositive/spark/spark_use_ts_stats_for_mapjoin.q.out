@@ -568,7 +568,7 @@ POSTHOOK: Input: default@c
 POSTHOOK: Input: default@d
 POSTHOOK: Input: default@e
 #### A masked pattern was here ####
-c2	d2	d2
-a2	b2	d2
 a1	b1	d1
+a2	b2	d2
 c1	d1	d1
+c2	d2	d2

@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
 set hive.spark.use.ts.stats.for.mapjoin=true;
 set hive.auto.convert.join.noconditionaltask.size=4000;
+-- SORT_QUERY_RESULTS
 
 EXPLAIN
 SELECT src1.key, src2.value
