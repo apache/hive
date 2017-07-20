@@ -1,0 +1,161 @@
+PREHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: CREATE TABLE orc_create_staging (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_create_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_create_staging
+PREHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>,
+  val INT
+) STORED AS ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="1000", "orc.compress.size"="10000")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: CREATE TABLE orc_create_complex (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>,
+  val INT
+) STORED AS ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="1000", "orc.compress.size"="10000")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_create_complex
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT str,mp,lst,strct,0 FROM orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex SELECT str,mp,lst,strct,0 FROM orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.val SIMPLE []
+PREHOOK: query: INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,strct,0 FROM orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,strct,0 FROM orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.val SIMPLE []
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: select sum(hash(*)) from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+953053114
+PREHOOK: query: ALTER TABLE orc_create_complex CONCATENATE
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@orc_create_complex
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: ALTER TABLE orc_create_complex CONCATENATE
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Output: default@orc_create_complex
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: select sum(hash(*)) from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+953053114
+PREHOOK: query: ALTER TABLE orc_create_complex
+CHANGE COLUMN strct strct STRUCT<A:STRING,B:STRING,C:STRING>
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@orc_create_complex
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: ALTER TABLE orc_create_complex
+CHANGE COLUMN strct strct STRUCT<A:STRING,B:STRING,C:STRING>
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Output: default@orc_create_complex
+PREHOOK: query: INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_staging
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Output: default@orc_create_complex
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct EXPRESSION [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.val SIMPLE []
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: select sum(hash(*)) from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+4334574594
+PREHOOK: query: ALTER TABLE orc_create_complex CONCATENATE
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@orc_create_complex
+PREHOOK: Output: default@orc_create_complex
+POSTHOOK: query: ALTER TABLE orc_create_complex CONCATENATE
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Output: default@orc_create_complex
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: select sum(hash(*)) from orc_create_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(hash(*)) from orc_create_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_complex
+#### A masked pattern was here ####
+4334574594

@@ -102,9 +102,10 @@ public class OrcFileStripeMergeRecordReader implements
         keyWrapper.setInputPath(path);
         keyWrapper.setCompression(reader.getCompressionKind());
         keyWrapper.setCompressBufferSize(reader.getCompressionSize());
-        keyWrapper.setVersion(reader.getFileVersion());
+        keyWrapper.setFileVersion(reader.getFileVersion());
+        keyWrapper.setWriterVersion(reader.getWriterVersion());
         keyWrapper.setRowIndexStride(reader.getRowIndexStride());
-        keyWrapper.setTypes(reader.getTypes());
+        keyWrapper.setFileSchema(reader.getSchema());
       } else {
         stripeIdx++;
         continue;
