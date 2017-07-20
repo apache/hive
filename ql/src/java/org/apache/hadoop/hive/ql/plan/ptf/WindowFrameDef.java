@@ -78,6 +78,6 @@ public class WindowFrameDef {
 
   @Override
   public String toString() {
-    return start + "~" + end;
+    return windowType + " " + start + "~" + end;
   }
 }

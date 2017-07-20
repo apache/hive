@@ -579,7 +579,7 @@ public class VectorizedBatchUtil {
     return typeInfoList.toArray(new TypeInfo[0]);
   }
 
-  static ColumnVector cloneColumnVector(ColumnVector source
+  public static ColumnVector makeLikeColumnVector(ColumnVector source
                                         ) throws HiveException{
     if (source instanceof LongColumnVector) {
       return new LongColumnVector(((LongColumnVector) source).vector.length);
@@ -598,31 +598,78 @@ public class VectorizedBatchUtil {
       return new IntervalDayTimeColumnVector(((IntervalDayTimeColumnVector) source).getLength());
     } else if (source instanceof ListColumnVector) {
       ListColumnVector src = (ListColumnVector) source;
-      ColumnVector child = cloneColumnVector(src.child);
+      ColumnVector child = makeLikeColumnVector(src.child);
       return new ListColumnVector(src.offsets.length, child);
     } else if (source instanceof MapColumnVector) {
       MapColumnVector src = (MapColumnVector) source;
-      ColumnVector keys = cloneColumnVector(src.keys);
-      ColumnVector values = cloneColumnVector(src.values);
+      ColumnVector keys = makeLikeColumnVector(src.keys);
+      ColumnVector values = makeLikeColumnVector(src.values);
       return new MapColumnVector(src.offsets.length, keys, values);
     } else if (source instanceof StructColumnVector) {
       StructColumnVector src = (StructColumnVector) source;
       ColumnVector[] copy = new ColumnVector[src.fields.length];
       for(int i=0; i < copy.length; ++i) {
-        copy[i] = cloneColumnVector(src.fields[i]);
+        copy[i] = makeLikeColumnVector(src.fields[i]);
       }
       return new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, copy);
     } else if (source instanceof UnionColumnVector) {
       UnionColumnVector src = (UnionColumnVector) source;
       ColumnVector[] copy = new ColumnVector[src.fields.length];
       for(int i=0; i < copy.length; ++i) {
-        copy[i] = cloneColumnVector(src.fields[i]);
+        copy[i] = makeLikeColumnVector(src.fields[i]);
       }
       return new UnionColumnVector(src.tags.length, copy);
     } else
       throw new HiveException("Column vector class " +
           source.getClass().getName() +
           " is not supported!");
+  }
+
+  public static void swapColumnVector(
+      VectorizedRowBatch batch1, int batch1ColumnNum,
+      VectorizedRowBatch batch2, int batch2ColumnNum) {
+    ColumnVector colVector1 = batch1.cols[batch1ColumnNum];
+    batch1.cols[batch1ColumnNum] = batch2.cols[batch2ColumnNum];
+    batch2.cols[batch2ColumnNum] = colVector1;
+  }
+
+  public static void copyRepeatingColumn(VectorizedRowBatch sourceBatch, int sourceColumnNum,
+      VectorizedRowBatch targetBatch, int targetColumnNum, boolean setByValue) {
+    ColumnVector sourceColVector = sourceBatch.cols[sourceColumnNum];
+    ColumnVector targetColVector = targetBatch.cols[targetColumnNum];
+
+    targetColVector.isRepeating = true;
+
+    if (!sourceColVector.noNulls) {
+      targetColVector.noNulls = false;
+      targetColVector.isNull[0] = true;
+      return;
+    }
+
+    if (sourceColVector instanceof LongColumnVector) {
+      ((LongColumnVector) targetColVector).vector[0] = ((LongColumnVector) sourceColVector).vector[0];
+    } else if (sourceColVector instanceof DoubleColumnVector) {
+      ((DoubleColumnVector) targetColVector).vector[0] = ((DoubleColumnVector) sourceColVector).vector[0];
+    } else if (sourceColVector instanceof BytesColumnVector) {
+      BytesColumnVector bytesColVector = (BytesColumnVector) sourceColVector;
+      byte[] bytes = bytesColVector.vector[0];
+      final int start = bytesColVector.start[0];
+      final int length = bytesColVector.length[0];
+      if (setByValue) {
+        ((BytesColumnVector) targetColVector).setVal(0, bytes, start, length);
+      } else {
+        ((BytesColumnVector) targetColVector).setRef(0, bytes, start, length);
+      }
+    } else if (sourceColVector instanceof DecimalColumnVector) {
+      ((DecimalColumnVector) targetColVector).set(0, ((DecimalColumnVector) sourceColVector).vector[0]);
+    } else if (sourceColVector instanceof TimestampColumnVector) {
+      ((TimestampColumnVector) targetColVector).set(0, ((TimestampColumnVector) sourceColVector).asScratchTimestamp(0));
+    } else if (sourceColVector instanceof IntervalDayTimeColumnVector) {
+      ((IntervalDayTimeColumnVector) targetColVector).set(0, ((IntervalDayTimeColumnVector) sourceColVector).asScratchIntervalDayTime(0));
+    } else {
+      throw new RuntimeException("Column vector class " + sourceColVector.getClass().getName() +
+          " is not supported!");
+    }
   }
 
   /**
@@ -635,7 +682,7 @@ public class VectorizedBatchUtil {
     VectorizedRowBatch newBatch = new VectorizedRowBatch(batch.numCols);
     for (int i = 0; i < batch.numCols; i++) {
       if (batch.cols[i] != null) {
-        newBatch.cols[i] = cloneColumnVector(batch.cols[i]);
+        newBatch.cols[i] = makeLikeColumnVector(batch.cols[i]);
         newBatch.cols[i].init();
       }
     }

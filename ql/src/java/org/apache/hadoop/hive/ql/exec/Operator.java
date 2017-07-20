@@ -637,6 +637,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     defaultEndGroup();
   }
 
+  // Tell the operator the status of the next key-grouped VectorizedRowBatch that will be delivered
+  // to the process method.  E.g. by reduce-shuffle.  These semantics are needed by PTF so it can
+  // efficiently add computed values to the last batch of a group key.
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    // Do nothing.
+  }
+
   // an blocking operator (e.g. GroupByOperator and JoinOperator) can
   // override this method to forward its outputs
   public void flush() throws HiveException {

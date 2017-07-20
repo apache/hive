@@ -2839,6 +2839,10 @@ public class HiveConf extends Configuration {
         "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were choosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
+    HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", false,
+        "This flag should be set to true to enable vectorized mode of the PTF of query execution.\n" +
+        "The default value is false."),
+
     HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED("hive.vectorized.complex.types.enabled", true,
         "This flag should be set to true to enable vectorization\n" +
         "of expressions with complex types.\n" +

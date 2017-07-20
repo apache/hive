@@ -1725,7 +1725,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 15 Data size: 3173 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: first_value_window_0 is not null (type: boolean)

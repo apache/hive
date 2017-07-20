@@ -999,7 +999,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: lag
                         window function: GenericUDAFLagEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Select Operator

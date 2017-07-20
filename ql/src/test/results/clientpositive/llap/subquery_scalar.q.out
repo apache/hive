@@ -1036,7 +1036,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: first_value_window_0 (type: int)
@@ -1104,7 +1104,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 9620 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: first_value_window_0 (type: int)

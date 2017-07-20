@@ -61,12 +61,14 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLeftSemiString
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkEmptyKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkObjectHashOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
@@ -96,6 +98,7 @@ import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -103,6 +106,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -113,10 +117,14 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.VectorAppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
+import org.apache.hadoop.hive.ql.plan.VectorPTFDesc;
+import org.apache.hadoop.hive.ql.plan.VectorPTFInfo;
+import org.apache.hadoop.hive.ql.plan.VectorPTFDesc.SupportedFunctionType;
 import org.apache.hadoop.hive.ql.plan.VectorTableScanDesc;
 import org.apache.hadoop.hive.ql.plan.VectorizationCondition;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
@@ -150,6 +158,13 @@ import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
@@ -191,6 +206,8 @@ import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
+import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
@@ -263,6 +280,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean useVectorDeserialize;
   private boolean useRowDeserialize;
   private boolean isReduceVectorizationEnabled;
+  private boolean isPtfVectorizationEnabled;
   private boolean isVectorizationComplexTypesEnabled;
   private boolean isVectorizationGroupByComplexTypesEnabled;
 
@@ -1670,7 +1688,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     @Override
-    protected int getInputColumnIndex(String name) {
+    public int getInputColumnIndex(String name) {
       return 0;
     }
 
@@ -1708,6 +1726,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     isReduceVectorizationEnabled =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCE_ENABLED);
+    isPtfVectorizationEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_PTF_ENABLED);
 
     isVectorizationComplexTypesEnabled =
         HiveConf.getBoolVar(hiveConf,
@@ -1835,6 +1856,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       case HASHTABLESINK:
         ret = op instanceof SparkHashTableSinkOperator &&
             validateSparkHashTableSinkOperator((SparkHashTableSinkOperator) op);
+        break;
+      case PTF:
+        ret = validatePTFOperator((PTFOperator) op);
         break;
       default:
         setOperatorNotSupported(op);
@@ -2095,6 +2119,171 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateFileSinkOperator(FileSinkOperator op) {
    return true;
+  }
+
+  /*
+   * Determine recursively if the PTF LEAD or LAG function is being used in an expression.
+   */
+  private boolean containsLeadLag(ExprNodeDesc exprNodeDesc) {
+    if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) exprNodeDesc;
+      GenericUDF genFuncClass = genericFuncDesc.getGenericUDF();
+      if (genFuncClass instanceof GenericUDFLag ||
+          genFuncClass instanceof GenericUDFLead) {
+        return true;
+      }
+      return containsLeadLag(genericFuncDesc.getChildren());
+    } else {
+      // ExprNodeColumnDesc, ExprNodeConstantDesc, ExprNodeDynamicValueDesc, etc do not have
+      // LEAD/LAG inside.
+      return false;
+    }
+  }
+
+  private boolean containsLeadLag(List<ExprNodeDesc> exprNodeDescList) {
+    for (ExprNodeDesc exprNodeDesc : exprNodeDescList) {
+      if (containsLeadLag(exprNodeDesc)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean validatePTFOperator(PTFOperator op) {
+
+    if (!isPtfVectorizationEnabled) {
+      setNodeIssue("Vectorization of PTF is not enabled (" +
+          HiveConf.ConfVars.HIVE_VECTORIZATION_PTF_ENABLED.varname + " IS false)");
+      return false;
+    }
+    PTFDesc ptfDesc = (PTFDesc) op.getConf();
+    boolean isMapSide = ptfDesc.isMapSide();
+    if (isMapSide) {
+      setOperatorIssue("PTF Mapper not supported");
+      return false;
+    }
+    boolean forNoop = ptfDesc.forNoop();
+    if (forNoop) {
+      setOperatorIssue("NOOP not supported");
+      return false;
+    }
+    boolean forWindowing = ptfDesc.forWindowing();
+    if (!forWindowing) {
+      setOperatorIssue("Windowing required");
+      return false;
+    }
+    PartitionedTableFunctionDef funcDef = ptfDesc.getFuncDef();
+    boolean isWindowTableFunctionDef = (funcDef instanceof WindowTableFunctionDef);
+    if (!isWindowTableFunctionDef) {
+      setOperatorIssue("Must be a WindowTableFunctionDef");
+      return false;
+    }
+
+    // We collect information in VectorPTFDesc that doesn't need the VectorizationContext.
+    // We use this information for validation.  Later when creating the vector operator
+    // we create an additional object VectorPTFInfo.
+
+    VectorPTFDesc vectorPTFDesc = null;
+    try {
+      vectorPTFDesc = createVectorPTFDesc(op, ptfDesc);
+    } catch (HiveException e) {
+      setOperatorIssue("exception: " + VectorizationContext.getStackTraceAsSingleLine(e));
+      return false;
+    }
+    ptfDesc.setVectorDesc(vectorPTFDesc);
+
+    // Output columns ok?
+    String[] outputColumnNames = vectorPTFDesc.getOutputColumnNames();
+    TypeInfo[] outputTypeInfos = vectorPTFDesc.getOutputTypeInfos();
+    final int outputCount = outputColumnNames.length;
+    for (int i = 0; i < outputCount; i++) {
+      String typeName = outputTypeInfos[i].getTypeName();
+      boolean ret = validateDataType(typeName, VectorExpressionDescriptor.Mode.PROJECTION, /* allowComplex */ false);
+      if (!ret) {
+        setExpressionIssue("PTF Output Columns", "Data type " + typeName + " of column " + outputColumnNames[i] + " not supported");
+        return false;
+      }
+    }
+
+    boolean isPartitionOrderBy = vectorPTFDesc.getIsPartitionOrderBy();
+    String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
+    final int count = evaluatorFunctionNames.length;
+    WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
+    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
+
+    for (int i = 0; i < count; i++) {
+      String functionName = evaluatorFunctionNames[i];
+      SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
+      if (supportedFunctionType == null) {
+        setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
+        return false;
+      }
+      WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
+      if (!windowFrameDef.isStartUnbounded()) {
+        setOperatorIssue(functionName + " only UNBOUNDED start frame is supported");
+        return false;
+      }
+      switch (windowFrameDef.getWindowType()) {
+      case RANGE:
+        if (!windowFrameDef.getEnd().isCurrentRow()) {
+          setOperatorIssue(functionName + " only CURRENT ROW end frame is supported for RANGE");
+          return false;
+        }
+        break;
+      case ROWS:
+        if (!windowFrameDef.isEndUnbounded()) {
+          setOperatorIssue(functionName + " UNBOUNDED end frame is not supported for ROWS window type");
+          return false;
+        }
+        break;
+      default:
+        throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
+      }
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      if (exprNodeDescList != null && exprNodeDescList.size() > 1) {
+        setOperatorIssue("More than 1 argument expression of aggregation function " + functionName);
+        return false;
+      }
+      if (exprNodeDescList != null) {
+        ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
+   
+        if (containsLeadLag(exprNodeDesc)) {
+          setOperatorIssue("lead and lag function not supported in argument expression of aggregation function " + functionName);
+          return false;
+        }
+
+        if (supportedFunctionType != SupportedFunctionType.COUNT &&
+            supportedFunctionType != SupportedFunctionType.DENSE_RANK &&
+            supportedFunctionType != SupportedFunctionType.RANK) {
+
+          // COUNT, DENSE_RANK, and RANK do not care about column types.  The rest do.
+          TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
+          Category category = typeInfo.getCategory();
+          boolean isSupportedType;
+          if (category != Category.PRIMITIVE) {
+            isSupportedType = false;
+          } else {
+            ColumnVector.Type colVecType =
+                VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+            switch (colVecType) {
+            case LONG:
+            case DOUBLE:
+            case DECIMAL:
+              isSupportedType = true;
+              break;
+            default:
+              isSupportedType = false;
+              break;
+            }
+          }
+          if (!isSupportedType) {
+            setOperatorIssue(typeInfo.getTypeName() + " data type not supported in argument expression of aggregation function " + functionName);
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs, String expressionTitle) {
@@ -3447,6 +3636,331 @@ public class Vectorizer implements PhysicalPlanResolver {
         selectOp.getCompilationOpContext(), selectDesc, vContext);
   }
 
+  private static void fillInPTFEvaluators(
+      List<WindowFunctionDef> windowsFunctions,
+      String[] evaluatorFunctionNames,
+      WindowFrameDef[] evaluatorWindowFrameDefs,
+      List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) throws HiveException {
+    final int functionCount = windowsFunctions.size();
+    for (int i = 0; i < functionCount; i++) {
+      WindowFunctionDef winFunc = windowsFunctions.get(i);
+      evaluatorFunctionNames[i] = winFunc.getName();
+      evaluatorWindowFrameDefs[i] = winFunc.getWindowFrame();
+
+      List<PTFExpressionDef> args = winFunc.getArgs();
+      if (args != null) {
+
+        List<ExprNodeDesc> exprNodeDescList = new ArrayList<ExprNodeDesc>();
+        for (PTFExpressionDef arg : args) {
+          exprNodeDescList.add(arg.getExprNode());
+        }
+
+        evaluatorInputExprNodeDescLists[i] = exprNodeDescList;
+      }
+    }
+  }
+
+  private static ExprNodeDesc[] getPartitionExprNodeDescs(List<PTFExpressionDef> partitionExpressions) {
+    final int size = partitionExpressions.size();
+    ExprNodeDesc[] exprNodeDescs = new ExprNodeDesc[size];
+    for (int i = 0; i < size; i++) {
+      exprNodeDescs[i] = partitionExpressions.get(i).getExprNode();
+    }
+    return exprNodeDescs;
+  }
+
+  private static ExprNodeDesc[] getOrderExprNodeDescs(List<OrderExpressionDef> orderExpressions) {
+    final int size = orderExpressions.size();
+    ExprNodeDesc[] exprNodeDescs = new ExprNodeDesc[size];
+    for (int i = 0; i < size; i++) {
+      exprNodeDescs[i] = orderExpressions.get(i).getExprNode();
+    }
+    return exprNodeDescs;
+  }
+
+  /*
+   * Create the VectorPTFDesc data that is used during validation and that doesn't rely on
+   * VectorizationContext to lookup column names, etc.
+   */
+  private static VectorPTFDesc createVectorPTFDesc(Operator<? extends OperatorDesc> ptfOp,
+      PTFDesc ptfDesc) throws HiveException {
+
+    PartitionedTableFunctionDef funcDef = ptfDesc.getFuncDef();
+
+    WindowTableFunctionDef windowTableFunctionDef = (WindowTableFunctionDef) funcDef;
+    List<WindowFunctionDef> windowsFunctions = windowTableFunctionDef.getWindowFunctions();
+    final int functionCount = windowsFunctions.size();
+
+    ArrayList<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
+    final int outputSize = outputSignature.size();
+
+    /*
+     * Output columns.
+     */
+    String[] outputColumnNames = new String[outputSize];
+    TypeInfo[] outputTypeInfos = new TypeInfo[outputSize];
+    for (int i = 0; i < functionCount; i++) {
+      ColumnInfo colInfo = outputSignature.get(i);
+      TypeInfo typeInfo = colInfo.getType();
+      outputColumnNames[i] = colInfo.getInternalName();
+      outputTypeInfos[i] = typeInfo;
+    }
+    for (int i = functionCount; i < outputSize; i++) {
+      ColumnInfo colInfo = outputSignature.get(i);
+      outputColumnNames[i] = colInfo.getInternalName();
+      outputTypeInfos[i] = colInfo.getType();
+    }
+
+    List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
+    final int partitionKeyCount = partitionExpressions.size();
+    ExprNodeDesc[] partitionExprNodeDescs = getPartitionExprNodeDescs(partitionExpressions);
+
+    List<OrderExpressionDef> orderExpressions = funcDef.getOrder().getExpressions();
+    final int orderKeyCount = orderExpressions.size();
+    ExprNodeDesc[] orderExprNodeDescs = getOrderExprNodeDescs(orderExpressions);
+
+    // When there are PARTITION and ORDER BY clauses, will have different partition expressions.
+    // Otherwise, only order by expressions.
+    boolean isPartitionOrderBy = false;
+
+    if (partitionKeyCount != orderKeyCount) {
+      // Obviously different expressions.
+      isPartitionOrderBy = true;
+    } else {
+      // Check each ExprNodeDesc.
+      for (int i = 0; i < partitionKeyCount; i++) {
+        final ExprNodeDescEqualityWrapper partitionExprEqualityWrapper =
+            new ExprNodeDesc.ExprNodeDescEqualityWrapper(partitionExprNodeDescs[i]);
+        final ExprNodeDescEqualityWrapper orderExprEqualityWrapper =
+            new ExprNodeDesc.ExprNodeDescEqualityWrapper(orderExprNodeDescs[i]);
+        if (!partitionExprEqualityWrapper.equals(orderExprEqualityWrapper)) {
+          isPartitionOrderBy = true;
+          break;
+        }
+      }
+    }
+
+    String[] evaluatorFunctionNames = new String[functionCount];
+    WindowFrameDef[] evaluatorWindowFrameDefs = new WindowFrameDef[functionCount];
+    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = (List<ExprNodeDesc>[]) new List<?>[functionCount];
+
+    fillInPTFEvaluators(
+        windowsFunctions,
+        evaluatorFunctionNames,
+        evaluatorWindowFrameDefs,
+        evaluatorInputExprNodeDescLists);
+
+    VectorPTFDesc vectorPTFDesc = new VectorPTFDesc();
+
+    vectorPTFDesc.setIsPartitionOrderBy(isPartitionOrderBy);
+
+    vectorPTFDesc.setOrderExprNodeDescs(orderExprNodeDescs);
+    vectorPTFDesc.setPartitionExprNodeDescs(partitionExprNodeDescs);
+
+    vectorPTFDesc.setEvaluatorFunctionNames(evaluatorFunctionNames);
+    vectorPTFDesc.setEvaluatorWindowFrameDefs(evaluatorWindowFrameDefs);
+    vectorPTFDesc.setEvaluatorInputExprNodeDescLists(evaluatorInputExprNodeDescLists);
+
+    vectorPTFDesc.setOutputColumnNames(outputColumnNames);
+    vectorPTFDesc.setOutputTypeInfos(outputTypeInfos);
+
+    return vectorPTFDesc;
+  }
+
+  private static void determineKeyAndNonKeyInputColumnMap(int[] outputColumnMap,
+      boolean isPartitionOrderBy, int[] orderColumnMap, int[] partitionColumnMap,
+      int evaluatorCount, ArrayList<Integer> keyInputColumns,
+      ArrayList<Integer> nonKeyInputColumns) {
+
+    final int outputSize = outputColumnMap.length;
+    final int orderKeyCount = orderColumnMap.length;
+    final int partitionKeyCount = (isPartitionOrderBy ? partitionColumnMap.length : 0);
+    for (int i = evaluatorCount; i < outputSize; i++) {
+      final int nonEvalColumnNum = outputColumnMap[i];
+      boolean isKey = false;
+      for (int o = 0; o < orderKeyCount; o++) {
+        if (nonEvalColumnNum == orderColumnMap[o]) {
+          isKey = true;
+          break;
+        }
+      }
+      if (!isKey && isPartitionOrderBy) {
+        for (int p = 0; p < partitionKeyCount; p++) {
+          if (nonEvalColumnNum == partitionColumnMap[p]) {
+            isKey = true;
+            break;
+          }
+        }
+      }
+      if (isKey) {
+        keyInputColumns.add(nonEvalColumnNum);
+      } else {
+        nonKeyInputColumns.add(nonEvalColumnNum);
+      }
+    }
+  }
+
+  /*
+   * Create the additional vectorization PTF information needed by the VectorPTFOperator during
+   * execution.
+   */
+  private static VectorPTFInfo createVectorPTFInfo(Operator<? extends OperatorDesc> ptfOp,
+      PTFDesc ptfDesc, VectorizationContext vContext) throws HiveException {
+
+    PartitionedTableFunctionDef funcDef = ptfDesc.getFuncDef();
+
+    ArrayList<ColumnInfo> outputSignature = ptfOp.getSchema().getSignature();
+    final int outputSize = outputSignature.size();
+
+    VectorPTFDesc vectorPTFDesc = (VectorPTFDesc) ptfDesc.getVectorDesc();
+
+    boolean isPartitionOrderBy = vectorPTFDesc.getIsPartitionOrderBy();
+    ExprNodeDesc[] orderExprNodeDescs = vectorPTFDesc.getOrderExprNodeDescs();
+    ExprNodeDesc[] partitionExprNodeDescs = vectorPTFDesc.getPartitionExprNodeDescs();
+    String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
+
+    final int evaluatorCount = evaluatorFunctionNames.length;
+    WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
+    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
+
+    /*
+     * Output columns.
+     */
+    int[] outputColumnMap = new int[outputSize];
+    for (int i = 0; i < evaluatorCount; i++) {
+      ColumnInfo colInfo = outputSignature.get(i);
+      TypeInfo typeInfo = colInfo.getType();
+      final int outputColumnNum;
+        outputColumnNum = vContext.allocateScratchColumn(typeInfo);
+      outputColumnMap[i] = outputColumnNum;
+    }
+    for (int i = evaluatorCount; i < outputSize; i++) {
+      ColumnInfo colInfo = outputSignature.get(i);
+      outputColumnMap[i] = vContext.getInputColumnIndex(colInfo.getInternalName());
+    }
+
+    /*
+     * Partition and order by.
+     */
+
+    int[] partitionColumnMap;
+    Type[] partitionColumnVectorTypes;
+    VectorExpression[] partitionExpressions;
+
+    if (!isPartitionOrderBy) {
+      partitionColumnMap = null;
+      partitionColumnVectorTypes = null;
+      partitionExpressions = null;
+    } else {
+      final int partitionKeyCount = partitionExprNodeDescs.length;
+      partitionColumnMap = new int[partitionKeyCount];
+      partitionColumnVectorTypes = new Type[partitionKeyCount];
+      partitionExpressions = new VectorExpression[partitionKeyCount];
+
+      for (int i = 0; i < partitionKeyCount; i++) {
+        VectorExpression partitionExpression = vContext.getVectorExpression(partitionExprNodeDescs[i]);
+        String typeName = partitionExpression.getOutputType();
+        typeName = VectorizationContext.mapTypeNameSynonyms(typeName);
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+        Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+        partitionColumnVectorTypes[i] = columnVectorType;
+        partitionColumnMap[i] = partitionExpression.getOutputColumn();
+        partitionExpressions[i] = partitionExpression;
+      }
+    }
+
+    final int orderKeyCount = orderExprNodeDescs.length;
+    int[] orderColumnMap = new int[orderKeyCount];
+    Type[] orderColumnVectorTypes = new Type[orderKeyCount];
+    VectorExpression[] orderExpressions = new VectorExpression[orderKeyCount];
+    for (int i = 0; i < orderKeyCount; i++) {
+      VectorExpression orderExpression = vContext.getVectorExpression(orderExprNodeDescs[i]);
+      String typeName = orderExpression.getOutputType();
+      typeName = VectorizationContext.mapTypeNameSynonyms(typeName);
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+      orderColumnVectorTypes[i] = columnVectorType;
+      orderColumnMap[i] = orderExpression.getOutputColumn();
+      orderExpressions[i] = orderExpression;
+    }
+
+    ArrayList<Integer> keyInputColumns = new ArrayList<Integer>();
+    ArrayList<Integer> nonKeyInputColumns = new ArrayList<Integer>();
+    determineKeyAndNonKeyInputColumnMap(outputColumnMap, isPartitionOrderBy, orderColumnMap,
+        partitionColumnMap, evaluatorCount, keyInputColumns, nonKeyInputColumns);
+    int[] keyInputColumnMap = ArrayUtils.toPrimitive(keyInputColumns.toArray(new Integer[0]));
+    int[] nonKeyInputColumnMap = ArrayUtils.toPrimitive(nonKeyInputColumns.toArray(new Integer[0]));
+
+    VectorExpression[] evaluatorInputExpressions = new VectorExpression[evaluatorCount];
+    Type[] evaluatorInputColumnVectorTypes = new Type[evaluatorCount];
+    for (int i = 0; i < evaluatorCount; i++) {
+      String functionName = evaluatorFunctionNames[i];
+      WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
+      SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
+
+      List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
+      VectorExpression inputVectorExpression;
+      final Type columnVectorType;
+      if (exprNodeDescList != null) {
+
+        // Validation has limited evaluatorInputExprNodeDescLists to size 1.
+        ExprNodeDesc exprNodeDesc = exprNodeDescList.get(0);
+
+        // Determine input vector expression using the VectorizationContext.
+        inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+
+        TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
+        PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+        columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+      } else {
+        inputVectorExpression =  null;
+        columnVectorType = ColumnVector.Type.NONE;
+      }
+
+      evaluatorInputExpressions[i] = inputVectorExpression;
+      evaluatorInputColumnVectorTypes[i] = columnVectorType;
+    }
+
+    VectorPTFInfo vectorPTFInfo = new VectorPTFInfo();
+
+    vectorPTFInfo.setOutputColumnMap(outputColumnMap);
+
+    vectorPTFInfo.setPartitionColumnMap(partitionColumnMap);
+    vectorPTFInfo.setPartitionColumnVectorTypes(partitionColumnVectorTypes);
+    vectorPTFInfo.setPartitionExpressions(partitionExpressions);
+
+    vectorPTFInfo.setOrderColumnMap(orderColumnMap);
+    vectorPTFInfo.setOrderColumnVectorTypes(orderColumnVectorTypes);
+    vectorPTFInfo.setOrderExpressions(orderExpressions);
+
+    vectorPTFInfo.setEvaluatorInputExpressions(evaluatorInputExpressions);
+    vectorPTFInfo.setEvaluatorInputColumnVectorTypes(evaluatorInputColumnVectorTypes);
+
+    vectorPTFInfo.setKeyInputColumnMap(keyInputColumnMap);
+    vectorPTFInfo.setNonKeyInputColumnMap(nonKeyInputColumnMap);
+
+    return vectorPTFInfo;
+  }
+
+  /*
+   * NOTE: The VectorPTFDesc has already been allocated and populated.
+   */
+  public static Operator<? extends OperatorDesc> vectorizePTFOperator(
+      Operator<? extends OperatorDesc> ptfOp, VectorizationContext vContext)
+          throws HiveException {
+    PTFDesc ptfDesc = (PTFDesc) ptfOp.getConf();
+
+    VectorPTFDesc vectorPTFDesc = (VectorPTFDesc) ptfDesc.getVectorDesc();
+
+    VectorPTFInfo vectorPTFInfo = createVectorPTFInfo(ptfOp, ptfDesc, vContext);
+
+    vectorPTFDesc.setVectorPTFInfo(vectorPTFInfo);
+
+    Class<? extends Operator<?>> opClass = VectorPTFOperator.class;
+    return OperatorFactory.getVectorOperator(
+        opClass, ptfOp.getCompilationOpContext(), ptfOp.getConf(), vContext);
+  }
+
   public Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
       VectorizationContext vContext, boolean isTezOrSpark, VectorTaskColumnInfo vectorTaskColumnInfo)
           throws HiveException {
@@ -3478,7 +3992,7 @@ public class Vectorizer implements PhysicalPlanResolver {
               } else {
                 opClass = VectorMapJoinOuterFilteredOperator.class;
               }
-  
+
               vectorOp = OperatorFactory.getVectorOperator(
                   opClass, op.getCompilationOpContext(), op.getConf(), vContext);
               isNative = false;
@@ -3620,6 +4134,10 @@ public class Vectorizer implements PhysicalPlanResolver {
               op.getCompilationOpContext(), eventDesc, vContext);
           isNative = true;
         }
+        break;
+      case PTF:
+        vectorOp = vectorizePTFOperator(op, vContext);
+        isNative = true;
         break;
       case HASHTABLESINK:
         {

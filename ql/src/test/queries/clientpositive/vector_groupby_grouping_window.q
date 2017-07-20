@@ -1,6 +1,7 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reduce.enabled=true;
+set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 set hive.cli.print.header=true;
 

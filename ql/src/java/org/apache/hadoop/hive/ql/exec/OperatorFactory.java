@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -138,6 +140,7 @@ public final class OperatorFactory {
     vectorOpvec.put(FileSinkDesc.class, VectorFileSinkOperator.class);
     vectorOpvec.put(FilterDesc.class, VectorFilterOperator.class);
     vectorOpvec.put(LimitDesc.class, VectorLimitOperator.class);
+    vectorOpvec.put(PTFDesc.class, VectorPTFOperator.class);
     vectorOpvec.put(SparkHashTableSinkDesc.class, VectorSparkHashTableSinkOperator.class);
   }
 

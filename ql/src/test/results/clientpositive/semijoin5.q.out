@@ -172,7 +172,7 @@ STAGE PLANS:
                         arguments: -973
                         name: LEAD
                         window function: GenericUDAFLeadEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -219,7 +219,7 @@ STAGE PLANS:
                         arguments: 62
                         name: sum
                         window function: GenericUDAFSumLong
-                        window frame: PRECEDING(MAX)~FOLLOWING(48)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(48)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: COALESCE(498,_col0,524) (type: int), (_col8 + UDFToInteger(_col6)) (type: int), floor(_col4) (type: bigint), COALESCE(sum_window_1,704) (type: bigint)

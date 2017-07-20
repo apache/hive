@@ -110,6 +110,14 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
         outputFieldNames, objectInspectors);
   }
 
+  // Must send on to VectorPTFOperator...
+  @Override
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setNextVectorBatchGroupStatus(isLastGroupBatch);
+    }
+  }
+
   @Override
   public void process(Object row, int tag) throws HiveException {
 

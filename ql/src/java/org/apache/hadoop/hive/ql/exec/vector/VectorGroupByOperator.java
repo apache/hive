@@ -148,8 +148,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    */
   private static interface IProcessingMode {
     public void initialize(Configuration hconf) throws HiveException;
-    public void startGroup() throws HiveException;
-    public void endGroup() throws HiveException;
+    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException;
     public void processBatch(VectorizedRowBatch batch) throws HiveException;
     public void close(boolean aborted) throws HiveException;
   }
@@ -159,14 +158,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    */
   private abstract class ProcessingModeBase implements IProcessingMode {
 
-    // Overridden and used in sorted reduce group batch processing mode.
+    // Overridden and used in ProcessingModeReduceMergePartial mode.
     @Override
-    public void startGroup() throws HiveException {
-      // Do nothing.
-    }
-    @Override
-    public void endGroup() throws HiveException {
-      // Do nothing.
+    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+      // Some Spark plans cause Hash and other modes to get this.  So, ignore it.
     }
 
     protected abstract void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
@@ -255,6 +250,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     public void initialize(Configuration hconf) throws HiveException {
       aggregationBuffers =  allocateAggregationBuffer();
       LOG.info("using global aggregation processing mode");
+    }
+
+    @Override
+    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+      // Do nothing.
     }
 
     @Override
@@ -682,6 +682,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     }
 
     @Override
+    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+      // Do nothing.
+    }
+
+    @Override
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
 
@@ -770,8 +775,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
    */
   private class ProcessingModeReduceMergePartial extends ProcessingModeBase {
 
-    private boolean inGroup;
     private boolean first;
+    private boolean isLastGroupBatch;
 
     /**
      * The group vector key helper.
@@ -790,7 +795,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
 
     @Override
     public void initialize(Configuration hconf) throws HiveException {
-      inGroup = false;
+      isLastGroupBatch = true;
 
       // We do not include the dummy grouping set column in the output.  So we pass outputKeyLength
       // instead of keyExpressions.length
@@ -802,24 +807,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
     }
 
     @Override
-    public void startGroup() throws HiveException {
-      inGroup = true;
-      first = true;
-    }
-
-    @Override
-    public void endGroup() throws HiveException {
-      if (inGroup && !first) {
-        writeGroupRow(groupAggregators, buffer);
-        groupAggregators.reset();
+    public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+      if (this.isLastGroupBatch) {
+        // Previous batch was the last of a group of batches.  Remember the next is the first batch
+        // of a new group of batches.
+        first = true;
       }
-      inGroup = false;
+      this.isLastGroupBatch = isLastGroupBatch;
     }
 
     @Override
     public void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,
         boolean[] currentGroupingSetsOverrideIsNulls) throws HiveException {
-      assert(inGroup);
       if (first) {
         // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
         first = false;
@@ -836,11 +835,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       for (int i = 0; i < aggregators.length; ++i) {
         aggregators[i].aggregateInput(groupAggregators.getAggregationBuffer(i), batch);
       }
+
+      if (isLastGroupBatch) {
+        writeGroupRow(groupAggregators, buffer);
+        groupAggregators.reset();
+      }
     }
 
     @Override
     public void close(boolean aborted) throws HiveException {
-      if (!aborted && inGroup && !first) {
+      if (!aborted && !first && !isLastGroupBatch) {
         writeGroupRow(groupAggregators, buffer);
       }
     }
@@ -1013,21 +1017,26 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
   }
 
   @Override
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    processingMode.setNextVectorBatchGroupStatus(isLastGroupBatch);
+  }
+
+  @Override
   public void startGroup() throws HiveException {
-    processingMode.startGroup();
 
     // We do not call startGroup on operators below because we are batching rows in
     // an output batch and the semantics will not work.
     // super.startGroup();
+    throw new HiveException("Unexpected startGroup");
   }
 
   @Override
   public void endGroup() throws HiveException {
-    processingMode.endGroup();
 
     // We do not call endGroup on operators below because we are batching rows in
     // an output batch and the semantics will not work.
     // super.endGroup();
+    throw new HiveException("Unexpected startGroup");
   }
 
   @Override

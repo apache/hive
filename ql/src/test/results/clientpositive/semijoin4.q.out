@@ -175,7 +175,7 @@ STAGE PLANS:
                         arguments: -973
                         name: LEAD
                         window function: GenericUDAFLeadEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             Select Operator

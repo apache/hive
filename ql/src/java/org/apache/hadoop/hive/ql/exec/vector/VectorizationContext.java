@@ -432,7 +432,7 @@ public class VectorizationContext {
     return udfsNeedingImplicitDecimalCast.contains(udfClass);
   }
 
-  protected int getInputColumnIndex(String name) throws HiveException {
+  public int getInputColumnIndex(String name) throws HiveException {
     if (name == null) {
       throw new HiveException("Null column name");
     }
@@ -464,7 +464,7 @@ public class VectorizationContext {
 
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
 
-    int allocateOutputColumn(TypeInfo typeInfo) throws HiveException {
+    int allocateOutputColumn(TypeInfo typeInfo) {
         if (initialOutputCol < 0) {
           // This is a test calling.
           return 0;
@@ -525,7 +525,7 @@ public class VectorizationContext {
     }
   }
 
-  public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
+  public int allocateScratchColumn(TypeInfo typeInfo) {
     return ocm.allocateOutputColumn(typeInfo);
   }
 
@@ -2672,8 +2672,7 @@ public class VectorizationContext {
     }
   }
 
-  static String getScratchName(TypeInfo typeInfo) throws HiveException {
-
+  static String getScratchName(TypeInfo typeInfo) {
     // For now, leave DECIMAL precision/scale in the name so DecimalColumnVector scratch columns
     // don't need their precision/scale adjusted...
     if (typeInfo.getCategory() == Category.PRIMITIVE &&

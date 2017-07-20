@@ -720,7 +720,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

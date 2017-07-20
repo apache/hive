@@ -442,12 +442,12 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           // Flush current group batch as last batch of group.
           if (batch.size > 0) {
 
+            // Indicate last batch of current group.
+            reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ true);
+
             // Forward; reset key and value columns.
             forwardBatch(/* resetValueColumnsOnly */ false);
-            reducer.endGroup();
           }
-
-          reducer.startGroup();
 
           // Deserialize group key into vector row columns.
           byte[] keyBytes = keyWritable.getBytes();
@@ -474,6 +474,9 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         // Can we add to current batch?
         if (batch.size >= batch.getMaxSize() ||
             batch.size > 0 && batchBytes >= BATCH_BYTES) {
+
+          // We have a row for current group, so we indicate not the last batch.
+          reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ false);
 
           // Batch is full or using too much space.
           forwardBatch(/* resetValueColumnsOnly */ true);
@@ -581,10 +584,13 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     try {
       if (vectorized) {
         if (batch.size > 0) {
-          forwardBatch(/* resetValueColumnsOnly */ false);
+
           if (handleGroupKey) {
-            reducer.endGroup();
+            // Indicate last batch of current group.
+            reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ true);
           }
+
+          forwardBatch(/* resetValueColumnsOnly */ false);
         }
       } else {
         if (groupKey != null) {

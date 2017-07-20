@@ -369,20 +369,6 @@ public class ReduceRecordSource implements RecordSource {
       BytesWritable keyWritable = (BytesWritable) reader.getCurrentKey();
       valueWritables = reader.getCurrentValues();
 
-      // Check if this is a new group or same group
-      if (handleGroupKey && !keyWritable.equals(this.groupKey)) {
-        // If a operator wants to do some work at the beginning of a group
-        if (groupKey == null) { // the first group
-          this.groupKey = new BytesWritable();
-        } else {
-          // If a operator wants to do some work at the end of a group
-          reducer.endGroup();
-        }
-
-        groupKey.set(keyWritable.getBytes(), 0, keyWritable.getLength());
-        reducer.startGroup();
-      }
-
       processVectorGroup(keyWritable, valueWritables, tag);
       return true;
     } catch (Throwable e) {
@@ -398,15 +384,20 @@ public class ReduceRecordSource implements RecordSource {
   }
 
   /**
+   * 
+   * @param keyWritable
    * @param values
-   * @return true if it is not done and can take more inputs
+   * @param tag
+   * @throws HiveException
+   * @throws IOException
    */
   private void processVectorGroup(BytesWritable keyWritable,
           Iterable<Object> values, byte tag) throws HiveException, IOException {
 
+    Preconditions.checkState(batch.size == 0);
+
     // Deserialize key into vector row columns.
-    // Since we referencing byte column vector byte arrays by reference, we don't need
-    // a data buffer.
+    //
     byte[] keyBytes = keyWritable.getBytes();
     int keyLength = keyWritable.getLength();
 
@@ -432,6 +423,24 @@ public class ReduceRecordSource implements RecordSource {
     int batchBytes = keyBytes.length;
     try {
       for (Object value : values) {
+        if (rowIdx >= maxSize ||
+            (rowIdx > 0 && batchBytes >= BATCH_BYTES)) {
+
+          // Batch is full AND we have at least 1 more row...
+          batch.size = rowIdx;
+          if (handleGroupKey) {
+            reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ false);
+          }
+          reducer.process(batch, tag);
+
+          // Reset just the value columns and value buffer.
+          for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
+            // Note that reset also resets the data buffer for bytes column vectors.
+            batch.cols[i].reset();
+          }
+          rowIdx = 0;
+          batchBytes = keyBytes.length;
+        }
         if (valueLazyBinaryDeserializeToRow != null) {
           // Deserialize value into vector row columns.
           BytesWritable valueWritable = (BytesWritable) value;
@@ -443,24 +452,13 @@ public class ReduceRecordSource implements RecordSource {
           valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);
         }
         rowIdx++;
-        if (rowIdx >= maxSize || batchBytes >= BATCH_BYTES) {
-
-          // Batch is full.
-          batch.size = rowIdx;
-          reducer.process(batch, tag);
-
-          // Reset just the value columns and value buffer.
-          for (int i = firstValueColumnOffset; i < batch.numCols; i++) {
-            // Note that reset also resets the data buffer for bytes column vectors.
-            batch.cols[i].reset();
-          }
-          rowIdx = 0;
-          batchBytes = 0;
-        }
       }
       if (rowIdx > 0) {
         // Flush final partial batch.
-        VectorizedBatchUtil.setBatchSize(batch, rowIdx);
+        batch.size = rowIdx;
+        if (handleGroupKey) {
+          reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ true);
+        }
         reducer.process(batch, tag);
       }
       batch.reset();
