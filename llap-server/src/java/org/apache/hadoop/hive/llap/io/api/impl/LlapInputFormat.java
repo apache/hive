@@ -190,8 +190,10 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
         }
       }
     }
+    // UNDONE: Virtual column support?
     return new VectorizedRowBatchCtx(colNames.toArray(new String[colNames.size()]),
-        colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount, new String[0]);
+        colTypes.toArray(new TypeInfo[colTypes.size()]), null, partitionColumnCount,
+        new VirtualColumn[0], new String[0]);
   }
 
   static TableScanOperator findTsOp(MapWork mapWork) throws HiveException {

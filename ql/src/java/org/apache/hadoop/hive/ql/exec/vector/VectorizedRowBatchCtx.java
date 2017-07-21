@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -78,6 +79,8 @@ public class VectorizedRowBatchCtx {
   private int[] dataColumnNums;
   private int dataColumnCount;
   private int partitionColumnCount;
+  private int virtualColumnCount;
+  private VirtualColumn[] neededVirtualColumns;
 
   private String[] scratchColumnTypeNames;
 
@@ -88,14 +91,17 @@ public class VectorizedRowBatchCtx {
   }
 
   public VectorizedRowBatchCtx(String[] rowColumnNames, TypeInfo[] rowColumnTypeInfos,
-      int[] dataColumnNums, int partitionColumnCount, String[] scratchColumnTypeNames) {
+      int[] dataColumnNums, int partitionColumnCount, VirtualColumn[] neededVirtualColumns,
+      String[] scratchColumnTypeNames) {
     this.rowColumnNames = rowColumnNames;
     this.rowColumnTypeInfos = rowColumnTypeInfos;
     this.dataColumnNums = dataColumnNums;
     this.partitionColumnCount = partitionColumnCount;
+    this.neededVirtualColumns = neededVirtualColumns;
+    this.virtualColumnCount = neededVirtualColumns.length;
     this.scratchColumnTypeNames = scratchColumnTypeNames;
 
-    dataColumnCount = rowColumnTypeInfos.length - partitionColumnCount;
+    dataColumnCount = rowColumnTypeInfos.length - partitionColumnCount - virtualColumnCount;
   }
 
   public String[] getRowColumnNames() {
@@ -118,6 +124,14 @@ public class VectorizedRowBatchCtx {
     return partitionColumnCount;
   }
 
+  public int getVirtualColumnCount() {
+    return virtualColumnCount;
+  }
+
+  public VirtualColumn[] getNeededVirtualColumns() {
+    return neededVirtualColumns;
+  }
+
   public String[] getScratchColumnTypeNames() {
     return scratchColumnTypeNames;
   }
@@ -138,6 +152,8 @@ public class VectorizedRowBatchCtx {
     rowColumnTypeInfos = VectorizedBatchUtil.typeInfosFromStructObjectInspector(structObjectInspector);
     dataColumnNums = null;
     partitionColumnCount = 0;
+    virtualColumnCount = 0;
+    neededVirtualColumns = new VirtualColumn[0];
     dataColumnCount = rowColumnTypeInfos.length;
 
     // Scratch column information.
@@ -204,13 +220,14 @@ public class VectorizedRowBatchCtx {
    */
   public VectorizedRowBatch createVectorizedRowBatch()
   {
-    final int dataAndPartColumnCount = rowColumnTypeInfos.length;
-    final int totalColumnCount = dataAndPartColumnCount + scratchColumnTypeNames.length;
+    final int nonScratchColumnCount = rowColumnTypeInfos.length;
+    final int totalColumnCount =
+        nonScratchColumnCount + scratchColumnTypeNames.length;
     VectorizedRowBatch result = new VectorizedRowBatch(totalColumnCount);
 
     if (dataColumnNums == null) {
         // All data and partition columns.
-      for (int i = 0; i < dataAndPartColumnCount; i++) {
+      for (int i = 0; i < nonScratchColumnCount; i++) {
         TypeInfo typeInfo = rowColumnTypeInfos[i];
         result.cols[i] = VectorizedBatchUtil.createColumnVector(typeInfo);
       }
@@ -218,24 +235,30 @@ public class VectorizedRowBatchCtx {
       // Create only needed/included columns data columns.
       for (int i = 0; i < dataColumnNums.length; i++) {
         int columnNum = dataColumnNums[i];
-        Preconditions.checkState(columnNum < dataAndPartColumnCount);
+        Preconditions.checkState(columnNum < nonScratchColumnCount);
         TypeInfo typeInfo = rowColumnTypeInfos[columnNum];
         result.cols[columnNum] = VectorizedBatchUtil.createColumnVector(typeInfo);
       }
-      // Always create partition columns.
-      final int endColumnNum = dataColumnCount + partitionColumnCount;
-      for (int partitionColumnNum = dataColumnCount; partitionColumnNum < endColumnNum; partitionColumnNum++) {
+      // Always create partition and virtual columns.
+      final int partitionEndColumnNum = dataColumnCount + partitionColumnCount;
+      for (int partitionColumnNum = dataColumnCount; partitionColumnNum < partitionEndColumnNum; partitionColumnNum++) {
         TypeInfo typeInfo = rowColumnTypeInfos[partitionColumnNum];
         result.cols[partitionColumnNum] = VectorizedBatchUtil.createColumnVector(typeInfo);
+      }
+      final int virtualEndColumnNum = partitionEndColumnNum + virtualColumnCount;
+      for (int virtualColumnNum = partitionEndColumnNum; virtualColumnNum < virtualEndColumnNum; virtualColumnNum++) {
+        TypeInfo typeInfo = rowColumnTypeInfos[virtualColumnNum];
+        result.cols[virtualColumnNum] = VectorizedBatchUtil.createColumnVector(typeInfo);
       }
     }
 
     for (int i = 0; i < scratchColumnTypeNames.length; i++) {
       String typeName = scratchColumnTypeNames[i];
-      result.cols[rowColumnTypeInfos.length + i] =
+      result.cols[nonScratchColumnCount + i] =
           VectorizedBatchUtil.createColumnVector(typeName);
     }
 
+    // UNDONE: Also remember virtualColumnCount...
     result.setPartitionInfo(dataColumnCount, partitionColumnCount);
 
     result.reset();

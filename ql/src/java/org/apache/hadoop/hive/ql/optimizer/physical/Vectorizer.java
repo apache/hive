@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.HiveVectorAdaptorUsageMode;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
@@ -229,6 +230,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.base.Preconditions;
 
 public class Vectorizer implements PhysicalPlanResolver {
@@ -274,6 +276,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private Set<String> supportedAggregationUdfs = new HashSet<String>();
 
+  // The set of virtual columns that vectorized readers *MAY* support.
+  public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns =
+      ImmutableSet.of(VirtualColumn.ROWID);
+
   private HiveConf hiveConf;
 
   private boolean useVectorizedInputFileFormat;
@@ -283,6 +289,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean isPtfVectorizationEnabled;
   private boolean isVectorizationComplexTypesEnabled;
   private boolean isVectorizationGroupByComplexTypesEnabled;
+  private boolean isVectorizedRowIdentifierEnabled;
 
   private boolean isSchemaEvolution;
 
@@ -315,6 +322,9 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private long vectorizedVertexNum = -1;
+
+  private Set<VirtualColumn> availableVectorizedVirtualColumnSet = null;
+  private Set<VirtualColumn> neededVirtualColumnSet = null;
 
   public Vectorizer() {
 
@@ -453,6 +463,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<Integer> dataColumnNums;
 
     int partitionColumnCount;
+    List<VirtualColumn> availableVirtualColumnList;
+    List<VirtualColumn> neededVirtualColumnList;
     boolean useVectorizedInputFileFormat;
 
     boolean groupByVectorOutput;
@@ -488,6 +500,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     public void setPartitionColumnCount(int partitionColumnCount) {
       this.partitionColumnCount = partitionColumnCount;
     }
+    public void setAvailableVirtualColumnList(List<VirtualColumn> availableVirtualColumnList) {
+      this.availableVirtualColumnList = availableVirtualColumnList;
+    }
+    public void setNeededVirtualColumnList(List<VirtualColumn> neededVirtualColumnList) {
+      this.neededVirtualColumnList = neededVirtualColumnList;
+    }
     public void setScratchTypeNameArray(String[] scratchTypeNameArray) {
       this.scratchTypeNameArray = scratchTypeNameArray;
     }
@@ -522,6 +540,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     public void transferToBaseWork(BaseWork baseWork) {
 
+      final int virtualColumnCount;
+      VirtualColumn[] neededVirtualColumns;
+      if (neededVirtualColumnList != null && neededVirtualColumnList.size() > 0) {
+        virtualColumnCount = neededVirtualColumnList.size();
+        neededVirtualColumns = neededVirtualColumnList.toArray(new VirtualColumn[0]);
+      } else {
+        virtualColumnCount = 0;
+        neededVirtualColumns = new VirtualColumn[0];
+      }
+
       String[] allColumnNameArray = allColumnNames.toArray(new String[0]);
       TypeInfo[] allTypeInfoArray = allTypeInfos.toArray(new TypeInfo[0]);
       int[] dataColumnNumsArray;
@@ -537,6 +565,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             allTypeInfoArray,
             dataColumnNumsArray,
             partitionColumnCount,
+            neededVirtualColumns,
             scratchTypeNameArray);
       baseWork.setVectorizedRowBatchCtx(vectorizedRowBatchCtx);
 
@@ -687,20 +716,41 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     private void getTableScanOperatorSchemaInfo(TableScanOperator tableScanOperator,
-        List<String> logicalColumnNameList, List<TypeInfo> logicalTypeInfoList) {
+        List<String> logicalColumnNameList, List<TypeInfo> logicalTypeInfoList,
+        List<VirtualColumn> availableVirtualColumnList) {
 
-      // Add all non-virtual columns to make a vectorization context for
+      // Add all columns to make a vectorization context for
       // the TableScan operator.
       RowSchema rowSchema = tableScanOperator.getSchema();
       for (ColumnInfo c : rowSchema.getSignature()) {
-        // Validation will later exclude vectorization of virtual columns usage (HIVE-5560).
-        if (!isVirtualColumn(c)) {
-          String columnName = c.getInternalName();
-          String typeName = c.getTypeName();
-          TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
 
+        // Validation will later exclude vectorization of virtual columns usage if necessary.
+        String columnName = c.getInternalName();
+
+        // Turns out partition columns get marked as virtual in ColumnInfo, so we need to
+        // check the VirtualColumn directly.
+        VirtualColumn virtualColumn = VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(columnName);
+        if (virtualColumn == null) {
           logicalColumnNameList.add(columnName);
-          logicalTypeInfoList.add(typeInfo);
+          logicalTypeInfoList.add(TypeInfoUtils.getTypeInfoFromTypeString(c.getTypeName()));
+        } else {
+
+          // The planner gives us a subset virtual columns available for this table scan.
+          //    AND
+          // We only support some virtual columns in vectorization.
+          //
+          // So, create the intersection.  Note these are available vectorizable virtual columns.
+          // Later we remember which virtual columns were *actually used* in the query so
+          // just those will be included in the Map VectorizedRowBatchCtx that has the
+          // information for creating the Map VectorizedRowBatch.
+          //
+          if (!vectorizableVirtualColumns.contains(virtualColumn)) {
+            continue;
+          }
+          if (virtualColumn == VirtualColumn.ROWID && !isVectorizedRowIdentifierEnabled) {
+            continue;
+          }
+          availableVirtualColumnList.add(virtualColumn);
         }
       }
     }
@@ -893,14 +943,19 @@ public class Vectorizer implements PhysicalPlanResolver {
       boolean isAcidTable = tableScanOperator.getConf().isAcidTable();
 
       // These names/types are the data columns plus partition columns.
-      final List<String> allColumnNameList = new ArrayList<String>();
-      final List<TypeInfo> allTypeInfoList = new ArrayList<TypeInfo>();
+      final List<String> dataAndPartColumnNameList = new ArrayList<String>();
+      final List<TypeInfo> dataAndPartTypeInfoList = new ArrayList<TypeInfo>();
 
-      getTableScanOperatorSchemaInfo(tableScanOperator, allColumnNameList, allTypeInfoList);
+      final List<VirtualColumn> availableVirtualColumnList = new ArrayList<VirtualColumn>();
+
+      getTableScanOperatorSchemaInfo(
+          tableScanOperator,
+          dataAndPartColumnNameList, dataAndPartTypeInfoList,
+          availableVirtualColumnList);
 
       final List<Integer> dataColumnNums = new ArrayList<Integer>();
 
-      final int allColumnCount = allColumnNameList.size();
+      final int dataAndPartColumnCount = dataAndPartColumnNameList.size();
 
       /*
        * Validate input formats of all the partitions can be vectorized.
@@ -956,17 +1011,17 @@ public class Vectorizer implements PhysicalPlanResolver {
           LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
           if (partSpec != null && partSpec.size() > 0) {
             partitionColumnCount = partSpec.size();
-            dataColumnCount = allColumnCount - partitionColumnCount;
+            dataColumnCount = dataAndPartColumnCount - partitionColumnCount;
           } else {
             partitionColumnCount = 0;
-            dataColumnCount = allColumnCount;
+            dataColumnCount = dataAndPartColumnCount;
           }
 
-          determineDataColumnNums(tableScanOperator, allColumnNameList, dataColumnCount,
+          determineDataColumnNums(tableScanOperator, dataAndPartColumnNameList, dataColumnCount,
               dataColumnNums);
 
-          tableDataColumnList = allColumnNameList.subList(0, dataColumnCount);
-          tableDataTypeInfoList = allTypeInfoList.subList(0, dataColumnCount);
+          tableDataColumnList = dataAndPartColumnNameList.subList(0, dataColumnCount);
+          tableDataTypeInfoList = dataAndPartTypeInfoList.subList(0, dataColumnCount);
 
           isFirst = false;
         }
@@ -1038,10 +1093,14 @@ public class Vectorizer implements PhysicalPlanResolver {
         vectorPartDesc.setDataTypeInfos(nextDataTypeInfoList);
       }
 
-      vectorTaskColumnInfo.setAllColumnNames(allColumnNameList);
-      vectorTaskColumnInfo.setAllTypeInfos(allTypeInfoList);
+      // For now, we don't know which virtual columns are going to be included.  We'll add them
+      // later...
+      vectorTaskColumnInfo.setAllColumnNames(dataAndPartColumnNameList);
+      vectorTaskColumnInfo.setAllTypeInfos(dataAndPartTypeInfoList);
+
       vectorTaskColumnInfo.setDataColumnNums(dataColumnNums);
       vectorTaskColumnInfo.setPartitionColumnCount(partitionColumnCount);
+      vectorTaskColumnInfo.setAvailableVirtualColumnList(availableVirtualColumnList);
       vectorTaskColumnInfo.setUseVectorizedInputFileFormat(useVectorizedInputFileFormat);
 
       // Always set these so EXPLAIN can see.
@@ -1082,6 +1141,14 @@ public class Vectorizer implements PhysicalPlanResolver {
         return false;
       }
 
+      // Set global member indicating which virtual columns are possible to be used by
+      // the Map vertex.
+      availableVectorizedVirtualColumnSet = new HashSet<VirtualColumn>();
+      availableVectorizedVirtualColumnSet.addAll(vectorTaskColumnInfo.availableVirtualColumnList);
+
+      // And, use set to remember which virtual columns were actually referenced.
+      neededVirtualColumnSet = new HashSet<VirtualColumn>();
+
       // Now we are enabled and any issues found from here on out are considered
       // not vectorized issues.
       mapWork.setVectorizationEnabled(true);
@@ -1104,6 +1171,21 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
       }
+
+      List<VirtualColumn> neededVirtualColumnList = new ArrayList<VirtualColumn>();
+      if (!neededVirtualColumnSet.isEmpty()) {
+
+        // Create needed in same order.
+        for (VirtualColumn virtualColumn : vectorTaskColumnInfo.availableVirtualColumnList) {
+          if (neededVirtualColumnSet.contains(virtualColumn)) {
+            neededVirtualColumnList.add(virtualColumn);
+            vectorTaskColumnInfo.allColumnNames.add(virtualColumn.getName());
+            vectorTaskColumnInfo.allTypeInfos.add(virtualColumn.getTypeInfo());
+          }
+        }
+      }
+
+      vectorTaskColumnInfo.setNeededVirtualColumnList(neededVirtualColumnList);
       vectorTaskColumnInfo.setNonVectorizedOps(vnp.getNonVectorizedOps());
       return true;
     }
@@ -1737,6 +1819,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_COMPLEX_TYPES_ENABLED);
 
+    isVectorizedRowIdentifierEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_ROW_IDENTIFIER_ENABLED);
+
     isSchemaEvolution =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
@@ -2328,10 +2414,24 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorExpressionDescriptor.Mode mode, boolean allowComplex) {
     if (desc instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc c = (ExprNodeColumnDesc) desc;
-      // Currently, we do not support vectorized virtual columns (see HIVE-5570).
-      if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(c.getColumn())) {
-        setExpressionIssue(expressionTitle, "Virtual columns not supported (" + c.getColumn() + ")");
-        return false;
+      String columnName = c.getColumn();
+
+      if (availableVectorizedVirtualColumnSet != null) {
+
+        // For Map, check for virtual columns.
+        VirtualColumn virtualColumn = VirtualColumn.VIRTUAL_COLUMN_NAME_MAP.get(columnName);
+        if (virtualColumn != null) {
+
+          // We support some virtual columns in vectorization for this table scan.
+
+          if (!availableVectorizedVirtualColumnSet.contains(virtualColumn)) {
+            setExpressionIssue(expressionTitle, "Virtual column " + columnName + " is not supported");
+            return false;
+          }
+
+          // Remember we used this one in the query.
+          neededVirtualColumnSet.add(virtualColumn);
+        }
       }
     }
     String typeName = desc.getTypeInfo().getTypeName();
@@ -4180,28 +4280,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     return vectorOp;
   }
 
-  private boolean isVirtualColumn(ColumnInfo column) {
-
-    // Not using method column.getIsVirtualCol() because partitioning columns are also
-    // treated as virtual columns in ColumnInfo.
-    if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(column.getInternalName())) {
-        return true;
-    }
-    return false;
-  }
-
   public void debugDisplayAllMaps(BaseWork work) {
 
     VectorizedRowBatchCtx vectorizedRowBatchCtx = work.getVectorizedRowBatchCtx();
 
     String[] allColumnNames = vectorizedRowBatchCtx.getRowColumnNames();
-    Object columnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
+    TypeInfo[] columnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
     int partitionColumnCount = vectorizedRowBatchCtx.getPartitionColumnCount();
+    int virtualColumnCount = vectorizedRowBatchCtx.getVirtualColumnCount();
     String[] scratchColumnTypeNames =vectorizedRowBatchCtx.getScratchColumnTypeNames();
 
-    LOG.debug("debugDisplayAllMaps allColumnNames " + Arrays.toString(allColumnNames));
-    LOG.debug("debugDisplayAllMaps columnTypeInfos " + Arrays.deepToString((Object[]) columnTypeInfos));
+    LOG.debug("debugDisplayAllMaps rowColumnNames " + Arrays.toString(allColumnNames));
+    LOG.debug("debugDisplayAllMaps rowColumnTypeInfos " + Arrays.toString(columnTypeInfos));
     LOG.debug("debugDisplayAllMaps partitionColumnCount " + partitionColumnCount);
+    LOG.debug("debugDisplayAllMaps virtualColumnCount " + virtualColumnCount);
     LOG.debug("debugDisplayAllMaps scratchColumnTypeNames " + Arrays.toString(scratchColumnTypeNames));
   }
 }
