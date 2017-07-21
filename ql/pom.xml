@@ -364,11 +364,6 @@
       <version>${datanucleus-core.version}</version>
     </dependency>
     <dependency>
-      <groupId>javolution</groupId>
-      <artifactId>javolution</artifactId>
-      <version>${javolution.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
       <version>${calcite.version}</version>
