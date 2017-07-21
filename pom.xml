@@ -1153,48 +1153,50 @@
         </configuration>
       </plugin>
       <plugin>
-	<groupId>org.apache.rat</groupId>
-	<artifactId>apache-rat-plugin</artifactId>
-	<version>0.10</version>
-	<configuration>
-	  <excludes>
-	    <exclude>binary-package-licenses/**</exclude>
-	    <exclude>data/**</exclude>
-	    <exclude>conf/**</exclude>
-	    <exclude>checkstyle/**</exclude>
-	    <exclude>bin/**</exclude>
-	    <exclude>itests/**</exclude>
-	    <exclude>docs/**</exclude>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.10</version>
+        <configuration>
+          <excludes>
+            <exclude>binary-package-licenses/**</exclude>
+            <exclude>data/**</exclude>
+            <exclude>conf/**</exclude>
+            <exclude>checkstyle/**</exclude>
+            <exclude>bin/**</exclude>
+            <exclude>itests/**</exclude>
+            <exclude>docs/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
-	    <exclude>**/*.txt</exclude>
-	    <exclude>**/*.log</exclude>
-	    <exclude>**/*.arcconfig</exclude>
-	    <exclude>**/package-info.java</exclude>
-	    <exclude>**/*.properties</exclude>
-	    <exclude>**/*.q</exclude>
-	    <exclude>**/*.q.out</exclude>
-	    <exclude>**/*.xml</exclude>
-	    <exclude>**/gen/**</exclude>
-	    <exclude>**/scripts/**</exclude>
-	    <exclude>**/resources/**</exclude>
-	    <exclude>**/*.rc</exclude>
-	    <exclude>**/*.rcfile</exclude>
-	    <exclude>**/*.qv</exclude>
-	    <exclude>**/*.out</exclude>
-	    <exclude>**/RecordTestObj.java</exclude>
-	    <exclude>**/*.m</exclude>
-	    <exclude>**/gen-java/**</exclude>
-	    <exclude>**/testdata/**</exclude>
-	    <exclude>**/ptest2/*.md</exclude>
-	    <exclude>**/test/org/apache/hadoop/hive/hbase/avro/**</exclude>
-	    <exclude>**/avro_test.avpr</exclude>
-	    <exclude>**/xmlReport.pl</exclude>
-	    <exclude>**/*.html</exclude>
-	    <exclude>**/sit</exclude>
-      <exclude>**/test/queries/**/*.sql</exclude>
-	  </excludes>
-	</configuration>
+            <exclude>**/*.txt</exclude>
+            <exclude>**/*.log</exclude>
+            <exclude>**/*.arcconfig</exclude>
+            <exclude>**/package-info.java</exclude>
+            <exclude>**/*.properties</exclude>
+            <exclude>**/*.q</exclude>
+            <exclude>**/*.q.out</exclude>
+            <exclude>**/*.xml</exclude>
+            <exclude>**/gen/**</exclude>
+            <exclude>**/scripts/**</exclude>
+            <exclude>**/target/**</exclude>
+            <exclude>**/resources/**</exclude>
+            <exclude>**/*.rc</exclude>
+            <exclude>**/*.rcfile</exclude>
+            <exclude>**/*.qv</exclude>
+            <exclude>**/*.out</exclude>
+            <exclude>**/RecordTestObj.java</exclude>
+            <exclude>**/*.m</exclude>
+            <exclude>**/gen-java/**</exclude>
+            <exclude>**/testdata/**</exclude>
+            <exclude>**/ptest2/*.md</exclude>
+            <exclude>**/test/org/apache/hadoop/hive/hbase/avro/**</exclude>
+            <exclude>**/avro_test.avpr</exclude>
+            <exclude>**/xmlReport.pl</exclude>
+            <exclude>**/*.html</exclude>
+            <exclude>**/sit</exclude>
+            <exclude>**/mapred/testHCatMapReduceOutput/**</exclude>
+            <exclude>**/test/queries/**/*.sql</exclude>
+          </excludes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jamon</groupId>
@@ -1381,9 +1383,9 @@
     <profile>
       <id>spark-test</id>
       <activation>
-	<property>
+        <property>
           <name>!skipSparkTests</name>
-	</property>
+        </property>
       </activation>
       <properties>
         <skip.spark.files>
