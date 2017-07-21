@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.orc.OrcStruct;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -125,6 +126,9 @@ public class VectorMapOperator extends AbstractMapOperator {
   private transient int dataColumnCount;
   private transient int partitionColumnCount;
   private transient Object[] partitionValues;
+  private transient int virtualColumnCount;
+  private transient boolean hasRowIdentifier;
+  private transient int rowIdentifierColumnNum;
 
   private transient boolean[] dataColumnsToIncludeTruncated;
 
@@ -504,6 +508,19 @@ public class VectorMapOperator extends AbstractMapOperator {
     dataColumnCount = batchContext.getDataColumnCount();
     partitionColumnCount = batchContext.getPartitionColumnCount();
     partitionValues = new Object[partitionColumnCount];
+    virtualColumnCount = batchContext.getVirtualColumnCount();
+    rowIdentifierColumnNum = -1;
+    if (virtualColumnCount > 0) {
+      final int firstVirtualColumnNum = dataColumnCount + partitionColumnCount;
+      VirtualColumn[] neededVirtualColumns = batchContext.getNeededVirtualColumns();
+      hasRowIdentifier = (neededVirtualColumns[0] == VirtualColumn.ROWID);
+      if (hasRowIdentifier) {
+        rowIdentifierColumnNum = firstVirtualColumnNum;
+      }
+    } else {
+      hasRowIdentifier = false;
+    }
+    
 
     dataColumnNums = batchContext.getDataColumnNums();
     Preconditions.checkState(dataColumnNums != null);
@@ -601,6 +618,13 @@ public class VectorMapOperator extends AbstractMapOperator {
         currentVectorPartContext.partName);
   }
 
+  private void setRowIdentiferToNull(VectorizedRowBatch batch) {
+    ColumnVector rowIdentifierColVector = batch.cols[rowIdentifierColumnNum];
+    rowIdentifierColVector.isNull[0] = true;
+    rowIdentifierColVector.noNulls = false;
+    rowIdentifierColVector.isRepeating = true;
+  }
+
   /*
    * Setup the context for reading from the next partition file.
    */
@@ -695,6 +719,12 @@ public class VectorMapOperator extends AbstractMapOperator {
         batchContext.addPartitionColsToBatch(deserializerBatch, partitionValues);
       }
 
+      if (hasRowIdentifier) {
+
+        // No ACID in code path -- set ROW__ID to NULL.
+        setRowIdentiferToNull(deserializerBatch);
+      }
+
       /*
        * Set or clear the rest of the reading variables based on {vector|row} deserialization.
        */
@@ -778,7 +808,16 @@ public class VectorMapOperator extends AbstractMapOperator {
            */
           batchCounter++;
           if (value != null) {
-            numRows += ((VectorizedRowBatch) value).size;
+            VectorizedRowBatch batch = (VectorizedRowBatch) value;
+            numRows += batch.size;
+            if (hasRowIdentifier) {
+
+              // UNDONE: Pass ROW__ID STRUCT column through IO Context to get filled in by ACID reader
+              // UNDONE: Or, perhaps tell it to do it before calling us, ...
+              // UNDONE: For now, set column to NULL.
+
+              setRowIdentiferToNull(batch);
+            }
           }
           oneRootOperator.process(value, 0);
           if (oneRootOperator.getDone()) {

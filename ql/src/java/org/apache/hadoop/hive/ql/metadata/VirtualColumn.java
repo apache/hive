@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.conf.Configuration;
@@ -63,6 +66,17 @@ public enum VirtualColumn {
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName());
+
+  public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
+       new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();
+
+  private static Map<String, VirtualColumn> getColumnNameMap() {
+    Map<String, VirtualColumn> map = new HashMap<String, VirtualColumn>();
+    for (VirtualColumn virtualColumn : values()) {
+      map.put(virtualColumn.name, virtualColumn);
+    }
+    return map;
+  }
 
   private final String name;
   private final TypeInfo typeInfo;
