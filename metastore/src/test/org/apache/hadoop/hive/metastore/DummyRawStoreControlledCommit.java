@@ -98,6 +98,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public boolean isActiveTransaction() {
+    return false;
+  }
+
   // All remaining functions simply delegate to objectStore
 
   @Override

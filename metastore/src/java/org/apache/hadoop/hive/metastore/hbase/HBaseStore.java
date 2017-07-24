@@ -140,6 +140,11 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
+  public boolean isActiveTransaction() {
+    return txnNestLevel != 0;
+  }
+
+  @Override
   public void rollbackTransaction() {
     txnNestLevel = 0;
     LOG.debug("Rolling back HBase transaction");

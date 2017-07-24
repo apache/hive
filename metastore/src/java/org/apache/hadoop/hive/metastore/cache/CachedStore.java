@@ -533,6 +533,11 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public boolean isActiveTransaction() {
+    return rawStore.isActiveTransaction();
+  }
+
+  @Override
   public void rollbackTransaction() {
     rawStore.rollbackTransaction();
   }

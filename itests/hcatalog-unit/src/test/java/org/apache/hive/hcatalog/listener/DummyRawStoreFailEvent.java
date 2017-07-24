@@ -96,6 +96,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public boolean isActiveTransaction() {
+    return false;
+  }
+
+  @Override
   public Configuration getConf() {
     return objectStore.getConf();
   }
