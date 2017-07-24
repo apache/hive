@@ -246,7 +246,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
-	totalSize           	271                 
+	totalSize           	269                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
