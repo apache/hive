@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.hcatalog.listener;
+package org.apache.hadoop.hive.metastore;
 
 /**
  * Keeps a list of reserved keys used by Hive listeners when updating the ListenerEvent
@@ -30,4 +30,12 @@ public class MetaStoreEventListenerConstants {
    *                                   across other MetaStoreEventListener implementations.
    */
   public static final String DB_NOTIFICATION_EVENT_ID_KEY_NAME = "DB_NOTIFICATION_EVENT_ID_KEY_NAME";
+
+  /*
+   * HiveMetaStore keys reserved for updating ListenerEvent parameters.
+   *
+   * HIVE_METASTORE_TRANSACTION_ACTIVE This key is used to check if a listener event is run inside a current
+   *                                   transaction. A boolean value is used for active (true) or no active (false).
+   */
+  public static final String HIVE_METASTORE_TRANSACTION_ACTIVE = "HIVE_METASTORE_TRANSACTION_ACTIVE";
 }
