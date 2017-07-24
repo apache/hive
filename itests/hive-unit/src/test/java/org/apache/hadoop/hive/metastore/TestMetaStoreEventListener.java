@@ -81,6 +81,8 @@ public class TestMetaStoreEventListener extends TestCase {
   private static final String dbName = "hive2038";
   private static final String tblName = "tmptbl";
   private static final String renamed = "tmptbl2";
+  private static final String metaConfKey = "hive.metastore.partition.name.whitelist.pattern";
+  private static final String metaConfVal = "";
 
   @Override
   protected void setUp() throws Exception {
@@ -93,9 +95,11 @@ public class TestMetaStoreEventListener extends TestCase {
         DummyPreListener.class.getName());
 
     int port = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
-
     hiveConf = new HiveConf(this.getClass());
+
+    hiveConf.setVar(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
+    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -454,5 +458,67 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals("hive.metastore.try.direct.sql", event.getKey());
     assertEquals("true", event.getOldValue());
     assertEquals("false", event.getNewValue());
+  }
+
+  public void testMetaConfNotifyListenersClosingClient() throws Exception {
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    closingClient.setMetaConf(metaConfKey, "[test pattern modified]");
+    ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    assertEquals(event.getOldValue(), metaConfVal);
+    assertEquals(event.getNewValue(), "[test pattern modified]");
+    closingClient.close();
+
+    Thread.sleep(5 * 1000);
+
+    event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    assertEquals(event.getOldValue(), "[test pattern modified]");
+    assertEquals(event.getNewValue(), metaConfVal);
+  }
+
+  public void testMetaConfNotifyListenersNonClosingClient() throws Exception {
+    HiveMetaStoreClient nonClosingClient = new HiveMetaStoreClient(hiveConf, null);
+    nonClosingClient.setMetaConf(metaConfKey, "[test pattern modified]");
+    ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    assertEquals(event.getOldValue(), metaConfVal);
+    assertEquals(event.getNewValue(), "[test pattern modified]");
+    // This should also trigger meta listener notification via TServerEventHandler#deleteContext
+    nonClosingClient.getTTransport().close();
+
+    Thread.sleep(5 * 1000);
+
+    event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    assertEquals(event.getOldValue(), "[test pattern modified]");
+    assertEquals(event.getNewValue(), metaConfVal);
+  }
+
+  public void testMetaConfDuplicateNotification() throws Exception {
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    closingClient.setMetaConf(metaConfKey, metaConfVal);
+    int beforeCloseNotificationEventCounts = DummyListener.notifyList.size();
+    closingClient.close();
+
+    Thread.sleep(5 * 1000);
+
+    int afterCloseNotificationEventCounts = DummyListener.notifyList.size();
+    // Setting key to same value, should not trigger configChange event during shutdown
+    assertEquals(beforeCloseNotificationEventCounts, afterCloseNotificationEventCounts);
+  }
+
+  public void testMetaConfSameHandler() throws Exception {
+    HiveMetaStoreClient closingClient = new HiveMetaStoreClient(hiveConf, null);
+    closingClient.setMetaConf(metaConfKey, "[test pattern modified]");
+    ConfigChangeEvent event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    int beforeCloseNotificationEventCounts = DummyListener.notifyList.size();
+    HiveMetaStore.HMSHandler beforeHandler = event.getHandler();
+    closingClient.close();
+
+    Thread.sleep(5 * 1000);
+    event = (ConfigChangeEvent) DummyListener.getLastEvent();
+    int afterCloseNotificationEventCounts = DummyListener.notifyList.size();
+    HiveMetaStore.HMSHandler afterHandler = event.getHandler();
+    // Meta-conf cleanup should trigger an event to listener
+    assertNotSame(beforeCloseNotificationEventCounts, afterCloseNotificationEventCounts);
+    // Both the handlers should be same
+    assertEquals(beforeHandler, afterHandler);
   }
 }
