@@ -1781,6 +1781,16 @@ public class Hive {
           // In that case, we want to retry with alterPartition.
           LOG.debug("Caught AlreadyExistsException, trying to alter partition instead");
           setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
+        } catch (Exception e) {
+          try {
+            final FileSystem newPathFileSystem = newPartPath.getFileSystem(this.getConf());
+            boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+            final FileStatus status = newPathFileSystem.getFileStatus(newPartPath);
+            Hive.trashFiles(newPathFileSystem, new FileStatus[] {status}, this.getConf(), isAutoPurge);
+          } catch (IOException io) {
+            LOG.error("Could not delete partition directory contents after failed partition creation: ", io);
+          }
+          throw e;
         }
       } else {
         setStatsPropAndAlterPartition(hasFollowingStatsTask, tbl, newTPart);
