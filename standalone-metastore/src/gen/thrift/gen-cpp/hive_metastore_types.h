@@ -380,6 +380,10 @@ class NotificationEventResponse;
 
 class CurrentNotificationEventId;
 
+class NotificationEventsCountRequest;
+
+class NotificationEventsCount;
+
 class InsertEventRequestData;
 
 class FireEventRequestData;
@@ -6994,6 +6998,91 @@ class CurrentNotificationEventId {
 void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEventId& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class NotificationEventsCountRequest {
+ public:
+
+  NotificationEventsCountRequest(const NotificationEventsCountRequest&);
+  NotificationEventsCountRequest& operator=(const NotificationEventsCountRequest&);
+  NotificationEventsCountRequest() : fromEventId(0), dbName() {
+  }
+
+  virtual ~NotificationEventsCountRequest() throw();
+  int64_t fromEventId;
+  std::string dbName;
+
+  void __set_fromEventId(const int64_t val);
+
+  void __set_dbName(const std::string& val);
+
+  bool operator == (const NotificationEventsCountRequest & rhs) const
+  {
+    if (!(fromEventId == rhs.fromEventId))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    return true;
+  }
+  bool operator != (const NotificationEventsCountRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NotificationEventsCountRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(NotificationEventsCountRequest &a, NotificationEventsCountRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCountRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class NotificationEventsCount {
+ public:
+
+  NotificationEventsCount(const NotificationEventsCount&);
+  NotificationEventsCount& operator=(const NotificationEventsCount&);
+  NotificationEventsCount() : eventsCount(0) {
+  }
+
+  virtual ~NotificationEventsCount() throw();
+  int64_t eventsCount;
+
+  void __set_eventsCount(const int64_t val);
+
+  bool operator == (const NotificationEventsCount & rhs) const
+  {
+    if (!(eventsCount == rhs.eventsCount))
+      return false;
+    return true;
+  }
+  bool operator != (const NotificationEventsCount &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const NotificationEventsCount & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(NotificationEventsCount &a, NotificationEventsCount &b);
+
+inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCount& obj)
 {
   obj.printTo(out);
   return out;

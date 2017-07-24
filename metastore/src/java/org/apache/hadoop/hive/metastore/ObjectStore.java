@@ -99,6 +99,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCount;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -8330,6 +8332,27 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
       return new CurrentNotificationEventId(id);
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public NotificationEventsCount getNotificationEventsCount(NotificationEventsCountRequest rqst) {
+    Long result = 0L;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      long fromEventId = rqst.getFromEventId();
+      String inputDbName = rqst.getDbName();
+      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName()
+                + " where eventId > fromEventId && dbName == inputDbName";
+      query = pm.newQuery(queryStr);
+      query.declareParameters("java.lang.Long fromEventId, java.lang.String inputDbName");
+      result = (Long) query.execute(fromEventId, inputDbName);
+      commited = commitTransaction();
+      return new NotificationEventsCount(result.longValue());
     } finally {
       rollbackAndCleanup(commited, query);
     }

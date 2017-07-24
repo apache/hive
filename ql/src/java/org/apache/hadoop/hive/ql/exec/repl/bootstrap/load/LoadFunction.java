@@ -41,6 +41,7 @@ public class LoadFunction {
   private Context context;
   private final FunctionEvent event;
   private final String dbNameToLoadIn;
+  private String functionName;
   private final TaskTracker tracker;
 
   public LoadFunction(Context context, FunctionEvent event, String dbNameToLoadIn,
@@ -49,6 +50,10 @@ public class LoadFunction {
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
+  }
+
+  public String functionName() {
+    return functionName;
   }
 
   public TaskTracker tasks() throws IOException, SemanticException {
@@ -63,6 +68,7 @@ public class LoadFunction {
               dbNameToLoadIn, null, fromPath.toString(), null, null, context.hiveConf,
               context.hiveDb, null, LOG)
       );
+      this.functionName = handler.getFunctionName();
       tasks.forEach(tracker::addTask);
       return tracker;
     } catch (Exception e) {

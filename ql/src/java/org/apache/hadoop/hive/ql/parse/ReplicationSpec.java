@@ -207,13 +207,6 @@ public class ReplicationSpec {
     };
   }
 
-  private static String getLastReplicatedStateFromParameters(Map<String, String> m) {
-    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
-      return m.get(KEY.CURR_STATE_ID.toString());
-    }
-    return null;
-  }
-
   private void init(ASTNode node){
     // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
     isInReplicationScope = true;
@@ -223,6 +216,13 @@ public class ReplicationSpec {
         isMetadataOnly= true;
       }
     }
+  }
+
+  public static String getLastReplicatedStateFromParameters(Map<String, String> m) {
+    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
+      return m.get(KEY.CURR_STATE_ID.toString());
+    }
+    return null;
   }
 
   /**

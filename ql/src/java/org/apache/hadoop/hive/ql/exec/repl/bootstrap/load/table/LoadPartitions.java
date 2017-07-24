@@ -98,6 +98,10 @@ public class LoadPartitions {
     }
   }
 
+  public ImportTableDesc tableDesc() {
+    return tableDesc;
+  }
+
   public TaskTracker tasks() throws SemanticException {
     try {
       /*
@@ -149,9 +153,11 @@ public class LoadPartitions {
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       AddPartitionDesc addPartitionDesc = iterator.next();
       tracker.addTask(addSinglePartition(table, addPartitionDesc));
-      ReplicationState currentReplicationState =
-          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
-      updateReplicationState(currentReplicationState);
+      if (iterator.hasNext()) {
+        ReplicationState currentReplicationState =
+                new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
+        updateReplicationState(currentReplicationState);
+      }
     }
     return tracker;
   }
@@ -236,13 +242,16 @@ public class LoadPartitions {
     boolean encounteredTheLastReplicatedPartition = (lastPartitionReplicated == null);
     ReplicationSpec replicationSpec = event.replicationSpec();
     LOG.debug("table partitioned");
-    for (AddPartitionDesc addPartitionDesc : event.partitionDescriptions(tableDesc)) {
+
+    Iterator<AddPartitionDesc> iterator = event.partitionDescriptions(tableDesc).iterator();
+    while (iterator.hasNext()) {
       /*
       encounteredTheLastReplicatedPartition will be set, when we break creation of partition tasks
       for a table, as we have reached the limit of number of tasks we should create for execution.
       in this case on the next run we have to iterate over the partitions desc to reach the last replicated
       partition so that we can start replicating partitions after that.
        */
+      AddPartitionDesc addPartitionDesc = iterator.next();
       if (encounteredTheLastReplicatedPartition && tracker.canAddMoreTasks()) {
         Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
         Partition ptn;
@@ -257,7 +266,7 @@ public class LoadPartitions {
           if (replicationSpec.allowReplacementInto(ptn.getParameters())) {
             if (replicationSpec.isMetadataOnly()) {
               tracker.addTask(alterSinglePartition(addPartitionDesc, replicationSpec, ptn));
-              if (!tracker.canAddMoreTasks()) {
+              if (iterator.hasNext() && !tracker.canAddMoreTasks()) {
                 tracker.setReplicationState(
                     new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc)
                     )

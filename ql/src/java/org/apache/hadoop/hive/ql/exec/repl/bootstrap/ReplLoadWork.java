@@ -38,7 +38,7 @@ public class ReplLoadWork implements Serializable {
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
       String tableNameToLoadIn) throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
-    this.iterator = new BootstrapEventsIterator(dumpDirectory, hiveConf);
+    this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;
   }
 
@@ -61,7 +61,6 @@ public class ReplLoadWork implements Serializable {
 
   DatabaseEvent databaseEvent(HiveConf hiveConf) {
     DatabaseEvent databaseEvent = state.toEvent(hiveConf);
-    state = null;
     return databaseEvent;
   }
 
