@@ -93,6 +93,8 @@ public interface RawStore extends Configurable {
   @CanNotRetry
   public abstract boolean commitTransaction();
 
+  public boolean isActiveTransaction();
+
   /**
    * Rolls back the current transaction if it is active
    */
