@@ -2900,7 +2900,7 @@ public class HiveConf extends Configuration {
     LLAP_IO_TRACE_SIZE("hive.llap.io.trace.size", "2Mb",
         new SizeValidator(0L, true, (long)Integer.MAX_VALUE, false),
         "The buffer size for a per-fragment LLAP debug trace. 0 to disable."),
-    LLAP_IO_TRACE_ALWAYS_DUMP("hive.llap.io.trace.always.dump", true, // TODO#
+    LLAP_IO_TRACE_ALWAYS_DUMP("hive.llap.io.trace.always.dump", false,
         "Whether to always dump the LLAP IO trace (if enabled); the default is on error."),
     LLAP_IO_NONVECTOR_WRAPPER_ENABLED("hive.llap.io.nonvector.wrapper.enabled", true,
         "Whether the LLAP IO layer is enabled for non-vectorized queries that read inputs\n" +
