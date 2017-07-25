@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,7 +50,7 @@ public class TestFilterHooks {
   public static class DummyMetaStoreFilterHookImpl extends DefaultMetaStoreFilterHookImpl {
     public static boolean blockResults = false;
 
-    public DummyMetaStoreFilterHookImpl(HiveConf conf) {
+    public DummyMetaStoreFilterHookImpl(Configuration conf) {
       super(conf);
     }
 

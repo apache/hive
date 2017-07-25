@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
  */
 public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
 
-  public DefaultMetaStoreFilterHookImpl(HiveConf conf) {
+  public DefaultMetaStoreFilterHookImpl(Configuration conf) {
   }
 
   @Override

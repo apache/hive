@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -35,8 +35,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
  * plugins on hiveserver2 to filter metadata results, especially in case of
  * non-impersonation mode where the metastore doesn't know the end user's identity.
  */
-@LimitedPrivate(value = { "Apache Sentry (Incubating)" })
-@Evolving
+@InterfaceAudience.LimitedPrivate(value = {"Apache Sentry (Incubating)" })
+@InterfaceStability.Evolving
 public interface MetaStoreFilterHook {
 
   /**
