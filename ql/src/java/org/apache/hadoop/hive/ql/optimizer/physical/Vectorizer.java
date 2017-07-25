@@ -151,7 +151,7 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.OperatorVariation;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorDeserializeType;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
@@ -2808,7 +2808,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     HashTableImplementationType hashTableImplementationType = HashTableImplementationType.NONE;
     HashTableKind hashTableKind = HashTableKind.NONE;
     HashTableKeyType hashTableKeyType = HashTableKeyType.NONE;
-    OperatorVariation operatorVariation = OperatorVariation.NONE;
+    VectorMapJoinVariation vectorMapJoinVariation = VectorMapJoinVariation.NONE;
 
     if (vectorDesc.getIsFastHashTableEnabled()) {
       hashTableImplementationType = HashTableImplementationType.FAST;
@@ -2866,20 +2866,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     switch (joinType) {
     case JoinDesc.INNER_JOIN:
       if (!isInnerBigOnly) {
-        operatorVariation = OperatorVariation.INNER;
+        vectorMapJoinVariation = VectorMapJoinVariation.INNER;
         hashTableKind = HashTableKind.HASH_MAP;
       } else {
-        operatorVariation = OperatorVariation.INNER_BIG_ONLY;
+        vectorMapJoinVariation = VectorMapJoinVariation.INNER_BIG_ONLY;
         hashTableKind = HashTableKind.HASH_MULTISET;
       }
       break;
     case JoinDesc.LEFT_OUTER_JOIN:
     case JoinDesc.RIGHT_OUTER_JOIN:
-      operatorVariation = OperatorVariation.OUTER;
+      vectorMapJoinVariation = VectorMapJoinVariation.OUTER;
       hashTableKind = HashTableKind.HASH_MAP;
       break;
     case JoinDesc.LEFT_SEMI_JOIN:
-      operatorVariation = OperatorVariation.LEFT_SEMI;
+      vectorMapJoinVariation = VectorMapJoinVariation.LEFT_SEMI;
       hashTableKind = HashTableKind.HASH_SET;
       break;
     default:
@@ -2894,7 +2894,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     case SHORT:
     case INT:
     case LONG:
-      switch (operatorVariation) {
+      switch (vectorMapJoinVariation) {
       case INNER:
         opClass = VectorMapJoinInnerLongOperator.class;
         break;
@@ -2908,11 +2908,11 @@ public class Vectorizer implements PhysicalPlanResolver {
         opClass = VectorMapJoinOuterLongOperator.class;
         break;
       default:
-        throw new HiveException("Unknown operator variation " + operatorVariation);
+        throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
       }
       break;
     case STRING:
-      switch (operatorVariation) {
+      switch (vectorMapJoinVariation) {
       case INNER:
         opClass = VectorMapJoinInnerStringOperator.class;
         break;
@@ -2926,11 +2926,11 @@ public class Vectorizer implements PhysicalPlanResolver {
         opClass = VectorMapJoinOuterStringOperator.class;
         break;
       default:
-        throw new HiveException("Unknown operator variation " + operatorVariation);
+        throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
       }
       break;
     case MULTI_KEY:
-      switch (operatorVariation) {
+      switch (vectorMapJoinVariation) {
       case INNER:
         opClass = VectorMapJoinInnerMultiKeyOperator.class;
         break;
@@ -2944,7 +2944,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         opClass = VectorMapJoinOuterMultiKeyOperator.class;
         break;
       default:
-        throw new HiveException("Unknown operator variation " + operatorVariation);
+        throw new HiveException("Unknown operator variation " + vectorMapJoinVariation);
       }
       break;
     default:
@@ -2957,7 +2957,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setHashTableImplementationType(hashTableImplementationType);
     vectorDesc.setHashTableKind(hashTableKind);
     vectorDesc.setHashTableKeyType(hashTableKeyType);
-    vectorDesc.setOperatorVariation(operatorVariation);
+    vectorDesc.setVectorMapJoinVariation(vectorMapJoinVariation);
     vectorDesc.setMinMaxEnabled(minMaxEnabled);
     vectorDesc.setVectorMapJoinInfo(vectorMapJoinInfo);
 

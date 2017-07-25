@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.OperatorVariation;
+import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -404,7 +404,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     public MapJoinOperatorExplainVectorization(MapJoinDesc mapJoinDesc, VectorDesc vectorDesc) {
       // VectorMapJoinOperator is not native vectorized.
-      super(vectorDesc, ((VectorMapJoinDesc) vectorDesc).hashTableImplementationType() != HashTableImplementationType.NONE);
+      super(vectorDesc, ((VectorMapJoinDesc) vectorDesc).getHashTableImplementationType() != HashTableImplementationType.NONE);
       this.mapJoinDesc = mapJoinDesc;
       vectorMapJoinDesc = (VectorMapJoinDesc) vectorDesc;
       vectorMapJoinInfo = vectorMapJoinDesc.getVectorMapJoinInfo();
@@ -539,7 +539,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
     @Explain(vectorization = Vectorization.DETAIL, displayName = "bigTableOuterKeyMapping", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public List<String> getBigTableOuterKey() {
-      if (!isNative || vectorMapJoinDesc.operatorVariation() != OperatorVariation.OUTER) {
+      if (!isNative || vectorMapJoinDesc.getVectorMapJoinVariation() != VectorMapJoinVariation.OUTER) {
         return null;
       }
       return columnMappingToStringList(vectorMapJoinInfo.getBigTableOuterKeyMapping());

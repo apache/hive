@@ -70,6 +70,8 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import com.esotericsoftware.kryo.KryoException;
 
 /**
@@ -99,6 +101,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
                                                                           // spilled small tables
   protected HybridHashTableContainer firstSmallTable; // The first small table;
                                                       // Only this table has spilled big table rows
+
+  protected transient boolean isTestingNoHashTableLoad;
 
   /** Kryo ctor. */
   protected MapJoinOperator() {
@@ -164,6 +168,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     firstSmallTable = null;
 
     generateMapMetaData();
+
+    isTestingNoHashTableLoad = HiveConf.getBoolVar(hconf,
+        HiveConf.ConfVars.HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD);
+    if (isTestingNoHashTableLoad) {
+      return;
+    }
 
     final ExecMapperContext mapContext = getExecContext();
     final MapredContext mrContext = MapredContext.get();
@@ -237,6 +247,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       this.getExecContext().setLastInputPath(null);
       this.getExecContext().setCurrentInputPath(null);
     }
+  }
+
+  @VisibleForTesting
+  public void setTestMapJoinTableContainer(int posSmallTable,
+      MapJoinTableContainer testMapJoinTableContainer,
+      MapJoinTableContainerSerDe mapJoinTableContainerSerDe) {
+    mapJoinTables[posSmallTable] = testMapJoinTableContainer;
+    mapJoinTableSerdes[posSmallTable] = mapJoinTableContainerSerDe;
   }
 
   @Override
