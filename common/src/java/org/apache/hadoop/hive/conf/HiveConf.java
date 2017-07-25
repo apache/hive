@@ -161,19 +161,25 @@ public class HiveConf extends Configuration {
       result = checkConfigFile(new File(confPath, name));
       if (result == null) {
         String homePath = System.getenv("HIVE_HOME");
-        String nameInConf = "conf" + File.pathSeparator + name;
+        String nameInConf = "conf" + File.separator + name;
         result = checkConfigFile(new File(homePath, nameInConf));
         if (result == null) {
           URI jarUri = null;
           try {
-            jarUri = HiveConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+            // Handle both file:// and jar:<url>!{entry} in the case of shaded hive libs
+            URL sourceUrl = HiveConf.class.getProtectionDomain().getCodeSource().getLocation();
+            jarUri = sourceUrl.getProtocol().equalsIgnoreCase("jar") ? new URI(sourceUrl.getPath()) : sourceUrl.toURI();
           } catch (Throwable e) {
             if (l4j.isInfoEnabled()) {
               l4j.info("Cannot get jar URI", e);
             }
             System.err.println("Cannot get jar URI: " + e.getMessage());
           }
-          result = checkConfigFile(new File(new File(jarUri).getParentFile(), nameInConf));
+          // From the jar file, the parent is /lib folder
+          File parent = new File(jarUri).getParentFile();
+          if (parent != null) {
+            result = checkConfigFile(new File(parent.getParentFile(), nameInConf));
+          }
         }
       }
     }
