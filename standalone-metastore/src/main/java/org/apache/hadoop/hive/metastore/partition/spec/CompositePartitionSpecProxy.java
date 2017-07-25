@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.partition.spec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -48,7 +46,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     else {
       dbName = partitionSpecs.get(0).getDbName();
       tableName = partitionSpecs.get(0).getTableName();
-      this.partitionSpecProxies = new ArrayList<PartitionSpecProxy>(partitionSpecs.size());
+      this.partitionSpecProxies = new ArrayList<>(partitionSpecs.size());
       for (PartitionSpec partitionSpec : partitionSpecs) {
         PartitionSpecProxy partitionSpecProxy = Factory.get(partitionSpec);
         this.partitionSpecProxies.add(partitionSpecProxy);
@@ -63,7 +61,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     this.dbName = dbName;
     this.tableName = tableName;
     this.partitionSpecs = partitionSpecs;
-    this.partitionSpecProxies = new ArrayList<PartitionSpecProxy>(partitionSpecs.size());
+    this.partitionSpecProxies = new ArrayList<>(partitionSpecs.size());
     for (PartitionSpec partitionSpec : partitionSpecs) {
       this.partitionSpecProxies.add(PartitionSpecProxy.Factory.get(partitionSpec));
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,57 +121,57 @@ public abstract class PartitionSpecProxy {
   /**
    * Iterator to iterate over Partitions corresponding to a PartitionSpec.
    */
-  public static interface PartitionIterator extends java.util.Iterator<Partition> {
+  public interface PartitionIterator extends java.util.Iterator<Partition> {
 
     /**
      * Getter for the Partition "pointed to" by the iterator.
      * Like next(), but without advancing the iterator.
      * @return The "current" partition object.
      */
-    public Partition getCurrent();
+    Partition getCurrent();
 
     /**
      * Getter for the name of the DB.
      * @return Name of the DB.
      */
-    public String getDbName();
+    String getDbName();
 
     /**
      * Getter for the name of the table.
      * @return Name of the table.
      */
-    public String getTableName();
+    String getTableName();
 
     /**
      * Getter for the Partition parameters.
      * @return Key-value map for Partition-level parameters.
      */
-    public Map<String, String> getParameters();
+    Map<String, String> getParameters();
 
     /**
      * Setter for Partition parameters.
      * @param parameters Key-value map fo Partition-level parameters.
      */
-    public void setParameters(Map<String, String> parameters);
+    void setParameters(Map<String, String> parameters);
 
     /**
      * Insert an individual parameter to a Partition's parameter-set.
      * @param key
      * @param value
      */
-    public void putToParameters(String key, String value);
+    void putToParameters(String key, String value);
 
     /**
      * Getter for Partition-location.
      * @return Partition's location.
      */
-    public String getLocation();
+    String getLocation();
 
     /**
      * Setter for creation-time of a Partition.
      * @param time Timestamp indicating the time of creation of the Partition.
      */
-    public void setCreateTime(long time);
+    void setCreateTime(long time);
 
   } // class PartitionIterator;
 
