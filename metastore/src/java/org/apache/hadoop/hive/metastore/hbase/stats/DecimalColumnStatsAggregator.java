@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.metastore.hbase.stats;
+package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,9 +35,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.hbase.HBaseUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(DecimalColumnStatsAggregator.class);
 
   @Override
   public ColumnStatisticsObj aggregate(String colName, List<String> partNames,
@@ -47,6 +51,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
     // check if all the ColumnStatisticsObjs contain stats and all the ndv are
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == css.size();
+    LOG.debug("doAllPartitionContainStats for " + colName + " is " + doAllPartitionContainStats);
     NumDistinctValueEstimator ndvEstimator = null;
     String colType = null;
     for (ColumnStatistics cs : css) {
@@ -85,6 +90,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
       ndvEstimator = NumDistinctValueEstimatorFactory
           .getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
+    LOG.debug("all of the bit vectors can merge for " + colName + " is " + (ndvEstimator != null));
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
     if (doAllPartitionContainStats || css.size() < 2) {
       DecimalColumnStatsData aggregateData = null;
@@ -94,12 +100,10 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
       for (ColumnStatistics cs : css) {
         ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
         DecimalColumnStatsData newData = cso.getStatsData().getDecimalStats();
-        if (useDensityFunctionForNDVEstimation) {
-          lowerBound = Math.max(lowerBound, newData.getNumDVs());
-          higherBound += newData.getNumDVs();
-          densityAvgSum += (HBaseUtils.getDoubleValue(newData.getHighValue()) - HBaseUtils
-              .getDoubleValue(newData.getLowValue())) / newData.getNumDVs();
-        }
+        lowerBound = Math.max(lowerBound, newData.getNumDVs());
+        higherBound += newData.getNumDVs();
+        densityAvgSum += (HBaseUtils.getDoubleValue(newData.getHighValue()) - HBaseUtils
+            .getDoubleValue(newData.getLowValue())) / newData.getNumDVs();
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(NumDistinctValueEstimatorFactory
               .getNumDistinctValueEstimator(newData.getBitVectors()));
@@ -129,28 +133,27 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         // to get a good estimation.
         aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
       } else {
+        long estimation;
         if (useDensityFunctionForNDVEstimation) {
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
-          long estimation = (long) ((HBaseUtils.getDoubleValue(aggregateData.getHighValue()) - HBaseUtils
+          estimation = (long) ((HBaseUtils.getDoubleValue(aggregateData.getHighValue()) - HBaseUtils
               .getDoubleValue(aggregateData.getLowValue())) / densityAvg);
           if (estimation < lowerBound) {
-            aggregateData.setNumDVs(lowerBound);
+            estimation = lowerBound;
           } else if (estimation > higherBound) {
-            aggregateData.setNumDVs(higherBound);
-          } else {
-            aggregateData.setNumDVs(estimation);
+            estimation = higherBound;
           }
         } else {
-          // Without useDensityFunctionForNDVEstimation, we just use the
-          // default one, which is the max of all the partitions and it is
-          // already done.
+          estimation = (long) (lowerBound + (higherBound - lowerBound) * ndvTuner);
         }
+        aggregateData.setNumDVs(estimation);
       }
       columnStatisticsData.setDecimalStats(aggregateData);
     } else {
       // we need extrapolation
+      LOG.debug("start extrapolation for " + colName);
       Map<String, Integer> indexMap = new HashMap<String, Integer>();
       for (int index = 0; index < partNames.size(); index++) {
         indexMap.put(partNames.get(index), index);
@@ -251,6 +254,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
     statsObj.setStatsData(columnStatisticsData);
+    LOG.debug("Ndv estimatation for " + colName + " is "
+        + columnStatisticsData.getDecimalStats().getNumDVs());
     return statsObj;
   }
 

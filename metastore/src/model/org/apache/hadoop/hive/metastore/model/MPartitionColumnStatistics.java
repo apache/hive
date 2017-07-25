@@ -48,6 +48,7 @@ public class MPartitionColumnStatistics {
   private String decimalHighValue;
   private Long numNulls;
   private Long numDVs;
+  private byte[] bitVector;
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -166,31 +167,35 @@ public class MPartitionColumnStatistics {
     this.numNulls = numNulls;
   }
 
-  public void setLongStats(Long numNulls, Long numNDVs, Long lowValue, Long highValue) {
+  public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
+    this.bitVector = bitVector;
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
 
-  public void setDoubleStats(Long numNulls, Long numNDVs, Double lowValue, Double highValue) {
+  public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, Double lowValue, Double highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
+    this.bitVector = bitVector;
     this.doubleLowValue = lowValue;
     this.doubleHighValue = highValue;
   }
 
   public void setDecimalStats(
-      Long numNulls, Long numNDVs, String lowValue, String highValue) {
+      Long numNulls, Long numNDVs, byte[] bitVector, String lowValue, String highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
+    this.bitVector = bitVector;
     this.decimalLowValue = lowValue;
     this.decimalHighValue = highValue;
   }
 
-  public void setStringStats(Long numNulls, Long numNDVs, Long maxColLen, Double avgColLen) {
+  public void setStringStats(Long numNulls, Long numNDVs, byte[] bitVector, Long maxColLen, Double avgColLen) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
+    this.bitVector = bitVector;
     this.maxColLen = maxColLen;
     this.avgColLen = avgColLen;
   }
@@ -201,9 +206,10 @@ public class MPartitionColumnStatistics {
     this.avgColLen = avgColLen;
   }
 
-  public void setDateStats(Long numNulls, Long numNDVs, Long lowValue, Long highValue) {
+  public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
+    this.bitVector = bitVector;
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
@@ -254,5 +260,13 @@ public class MPartitionColumnStatistics {
 
   public void setDecimalHighValue(String decimalHighValue) {
     this.decimalHighValue = decimalHighValue;
+  }
+
+  public byte[] getBitVector() {
+    return bitVector;
+  }
+
+  public void setBitVector(byte[] bitVector) {
+    this.bitVector = bitVector;
   }
 }

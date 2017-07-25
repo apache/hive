@@ -377,9 +377,10 @@ PREHOOK: Input: default@stats_null_part
 POSTHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_null_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-a                   	double              	1.0                 	1.0                 	1                   	1                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+a                   	double              	1.0                 	1.0                 	1                   	1                   	                    	                    	                    	                    	SExM4AEBwaDRtwU=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null

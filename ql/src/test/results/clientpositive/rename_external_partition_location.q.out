@@ -162,18 +162,20 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	SExM4AYGxdOOGLy91N8BwJKLAcGuwk7AqvwN/4Sz5AE=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	SExM4AYGwZXdyQGC2MSsAcCIiJQBvtSupwHDnsmSAr36nzs=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@ex_table
@@ -310,15 +312,17 @@ PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	9                   	0                   	6                   	                    	                    	                    	                    	SExM4AYGxdOOGLy91N8BwJKLAcGuwk7AqvwN/4Sz5AE=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ex_table
 POSTHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ex_table
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	6                   	5.0                 	5                   	                    	                    	SExM4AYGwZXdyQGC2MSsAcCIiJQBvtSupwHDnsmSAr36nzs=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 

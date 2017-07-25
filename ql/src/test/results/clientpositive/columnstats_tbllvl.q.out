@@ -285,30 +285,39 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	SExM4Dc3gddnwYLHAsC19xX/4qoLgdjABMSO/kb8t5ELgsyUGb2kwBPAigWA2YICwJDHAsD9qkjA	 
+ptZKwJKdAcHjohi/yjvCzEu+h8IWwYngGsHl7i6+zboChK7WC7z2kQTAmKEZweOqB/+K7zPE+LIH	 	 	 	 	 	 	 	 	 	 	 
+/JOmGcDr9BjBqsQIwKOPCv/cvwHB1bMW/7jgFICW5gaAuv4IgICNCIOopRq+0IMD/8nJLsDrlwKA	 	 	 	 	 	 	 	 	 	 	 
+vN4lhfvmCv/49gf8n6kBwLKKBID89gfA/Y4kgKjeNMCAgRHAmYwFxI7hE4H09wf8x+4K	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	SExM4Dc3gb3HC8Lswyq+hbYCgOOKIoHH7AKA4u4D/73OA4DH6QnA8ZIbhaSXBv/e/xf9jo4JgJ2b	 
+Av/htwrBsJ4ZwZugD//O6wbB6qcFvoW+E4DW+wyA8/gCgK6GD4HIuhD/pccFgIXqAsCl/wyAv+QK	 	 	 	 	 	 	 	 	 	 	 
+wNq4HYLrrB++s5sIgOWzPoSMlA/83cMVwdy8PYCjhwL/3LIWxOm7JPye8w/A/O0VwNjgBIDOiRHA	 	 	 	 	 	 	 	 	 	 	 
+86ELwJ/+AYCr1QzA7YUQgO2gEcDZEIDK6EPAo+kOg4HxCv3ZkSmBrLlRgd6IA/6lwROAlYAL	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	SExM4AkJwZn6L4TaxBi8u6xigOL3TMCSiwHBrsJOwKr8Df+Es+QBgPyEtwI=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
    b double,
@@ -414,10 +423,14 @@ PREHOOK: Input: default@uservisits_web_text_none
 POSTHOOK: query: describe formatted default.UserVisits_web_text_none destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	SExM4Dc3gddnwYLHAsC19xX/4qoLgdjABMSO/kb8t5ELgsyUGb2kwBPAigWA2YICwJDHAsD9qkjA	 
+ptZKwJKdAcHjohi/yjvCzEu+h8IWwYngGsHl7i6+zboChK7WC7z2kQTAmKEZweOqB/+K7zPE+LIH	 	 	 	 	 	 	 	 	 	 	 
+/JOmGcDr9BjBqsQIwKOPCv/cvwHB1bMW/7jgFICW5gaAuv4IgICNCIOopRq+0IMD/8nJLsDrlwKA	 	 	 	 	 	 	 	 	 	 	 
+vN4lhfvmCv/49gf8n6kBwLKKBID89gfA/Y4kgKjeNMCAgRHAmYwFxI7hE4H09wf8x+4K	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
   sourceIP string,
   destURL string,
@@ -707,30 +720,39 @@ PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db destURL
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+destURL             	string              	                    	                    	0                   	55                  	48.945454545454545  	96                  	                    	                    	SExM4Dc3gddnwYLHAsC19xX/4qoLgdjABMSO/kb8t5ELgsyUGb2kwBPAigWA2YICwJDHAsD9qkjA	 
+ptZKwJKdAcHjohi/yjvCzEu+h8IWwYngGsHl7i6+zboChK7WC7z2kQTAmKEZweOqB/+K7zPE+LIH	 	 	 	 	 	 	 	 	 	 	 
+/JOmGcDr9BjBqsQIwKOPCv/cvwHB1bMW/7jgFICW5gaAuv4IgICNCIOopRq+0IMD/8nJLsDrlwKA	 	 	 	 	 	 	 	 	 	 	 
+vN4lhfvmCv/49gf8n6kBwLKKBID89gfA/Y4kgKjeNMCAgRHAmYwFxI7hE4H09wf8x+4K	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	SExM4Dc3gb3HC8Lswyq+hbYCgOOKIoHH7AKA4u4D/73OA4DH6QnA8ZIbhaSXBv/e/xf9jo4JgJ2b	 
+Av/htwrBsJ4ZwZugD//O6wbB6qcFvoW+E4DW+wyA8/gCgK6GD4HIuhD/pccFgIXqAsCl/wyAv+QK	 	 	 	 	 	 	 	 	 	 	 
+wNq4HYLrrB++s5sIgOWzPoSMlA/83cMVwdy8PYCjhwL/3LIWxOm7JPye8w/A/O0VwNjgBIDOiRHA	 	 	 	 	 	 	 	 	 	 	 
+86ELwJ/+AYCr1QzA7YUQgO2gEcDZEIDK6EPAo+kOg4HxCv3ZkSmBrLlRgd6IA/6lwROAlYAL	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
 POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: dummydb@uservisits_in_dummy_db
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	SExM4AkJwZn6L4TaxBi8u6xigOL3TMCSiwHBrsJOwKr8Df+Es+QBgPyEtwI=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db

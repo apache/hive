@@ -65,9 +65,9 @@ PREHOOK: Input: default@p
 POSTHOOK: query: desc formatted p partition (c=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@p
-# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 
-	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 
+# col_name            	data_type           	comment             	 	 	 	 	 	 	 	 	 
+	 	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	from deserializer   	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted p partition (c=1)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@p

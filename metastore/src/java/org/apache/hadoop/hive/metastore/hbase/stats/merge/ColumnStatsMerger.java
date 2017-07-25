@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.metastore.hbase.stats.merge;
+package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.slf4j.Logger;

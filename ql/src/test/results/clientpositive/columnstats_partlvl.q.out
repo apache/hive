@@ -509,18 +509,20 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	1                   	12                  	4.3076923076923075  	6                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	1                   	12                  	4.3076923076923075  	6                   	                    	                    	SExM4AwMhN+NPL2pzAqA8p0tgKf/ZoCU0AnAwotPw4/Z2AG9tL50wLuAhgHAmduBAcG66mL//JYR	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -598,18 +600,20 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
@@ -679,10 +683,11 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted Employee_Part employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	2                   	12                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	2                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dummydb
@@ -711,10 +716,11 @@ PREHOOK: Input: default@employee_part
 POSTHOOK: query: describe formatted default.Employee_Part partition (employeeSalary=2000.0) employeeID
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee_part

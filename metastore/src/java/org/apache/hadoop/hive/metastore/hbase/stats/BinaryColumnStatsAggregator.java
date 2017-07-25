@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.metastore.hbase.stats;
+package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
 import java.util.List;
 

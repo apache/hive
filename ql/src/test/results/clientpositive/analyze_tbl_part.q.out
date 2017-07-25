@@ -48,9 +48,11 @@ PREHOOK: Input: default@src_stat_part
 POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	SExM4BAQgaTbFYDg/BOBktRrv6WcHMDErSCAotAegLu2HIHRunr/p8hhwLbpSsD22ZgBgdS9KMHV	 
+myn/wfcugOGjfsCYzA0=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stat_part
@@ -69,18 +71,22 @@ PREHOOK: Input: default@src_stat_part
 POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1) key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	16                  	1.72                	3                   	                    	                    	SExM4BAQgaTbFYDg/BOBktRrv6WcHMDErSCAotAegLu2HIHRunr/p8hhwLbpSsD22ZgBgdS9KMHV	 
+myn/wfcugOGjfsCYzA0=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_stat_part
 POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2) value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_stat_part
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	19                  	4.92                	7                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	19                  	4.92                	7                   	                    	                    	SExM4BMTgaTbFcCikRTAp44YwK72BIGdshzAtN4dgfC7Ab6ikDTAz6JGgejDCP+AlzSA84UvwYTL	 
+Wr+ivynA6+uCAsDjm8kBgri1Ab++nA+/vawa	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create table src_stat_string_part(key string, value string) partitioned by (partitionName string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

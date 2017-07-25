@@ -7193,11 +7193,13 @@ public class ObjectStore implements RawStore, Configurable {
   protected ColumnStatistics getTableColumnStatisticsInternal(
       String dbName, String tableName, final List<String> colNames, boolean allowSql,
       boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetStatHelper(HiveStringUtils.normalizeIdentifier(dbName),
         HiveStringUtils.normalizeIdentifier(tableName), allowSql, allowJdo) {
       @Override
       protected ColumnStatistics getSqlResult(GetHelper<ColumnStatistics> ctx) throws MetaException {
-        return directSql.getTableStats(dbName, tblName, colNames);
+        return directSql.getTableStats(dbName, tblName, colNames, enableBitVector);
       }
       @Override
       protected ColumnStatistics getJdoResult(
@@ -7215,7 +7217,7 @@ public class ObjectStore implements RawStore, Configurable {
           if (desc.getLastAnalyzed() > mStat.getLastAnalyzed()) {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
-          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat));
+          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector));
           Deadline.checkTimeout();
         }
         return new ColumnStatistics(desc, statObjs);
@@ -7236,11 +7238,13 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
       String dbName, String tableName, final List<String> partNames, final List<String> colNames,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetListHelper<ColumnStatistics>(dbName, tableName, allowSql, allowJdo) {
       @Override
       protected List<ColumnStatistics> getSqlResult(
           GetHelper<List<ColumnStatistics>> ctx) throws MetaException {
-        return directSql.getPartitionStats(dbName, tblName, partNames, colNames);
+        return directSql.getPartitionStats(dbName, tblName, partNames, colNames, enableBitVector);
       }
       @Override
       protected List<ColumnStatistics> getJdoResult(
@@ -7268,7 +7272,7 @@ public class ObjectStore implements RawStore, Configurable {
               csd = StatObjectConverter.getPartitionColumnStatisticsDesc(mStatsObj);
               curList = new ArrayList<ColumnStatisticsObj>(colNames.size());
             }
-            curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj));
+            curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector));
             lastPartName = partName;
             Deadline.checkTimeout();
           }
@@ -7288,12 +7292,14 @@ public class ObjectStore implements RawStore, Configurable {
         HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
     final double ndvTuner = HiveConf.getFloatVar(getConf(),
         HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetHelper<AggrStats>(dbName, tblName, true, false) {
       @Override
       protected AggrStats getSqlResult(GetHelper<AggrStats> ctx)
           throws MetaException {
         return directSql.aggrColStatsForPartitions(dbName, tblName, partNames,
-            colNames, useDensityFunctionForNDVEstimation, ndvTuner);
+            colNames, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector);
       }
       @Override
       protected AggrStats getJdoResult(GetHelper<AggrStats> ctx)
@@ -7313,11 +7319,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetHelper<Map<String, List<ColumnStatisticsObj>>>(dbName, tableName, true, false) {
       @Override
       protected Map<String, List<ColumnStatisticsObj>> getSqlResult(
           GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException {
-        return directSql.getColStatsForTablePartitions(dbName, tblName);
+        return directSql.getColStatsForTablePartitions(dbName, tblName, enableBitVector);
       }
 
       @Override

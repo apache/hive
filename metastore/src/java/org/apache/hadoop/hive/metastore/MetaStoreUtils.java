@@ -71,8 +71,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMerger;
-import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFactory;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1936,13 +1938,54 @@ public class MetaStoreUtils {
     }
     return metaException;
   }
-  
+
   public static List<String> getColumnNames(List<FieldSchema> schema) {
     List<String> cols = new ArrayList<>(schema.size());
     for (FieldSchema fs : schema) {
       cols.add(fs.getName());
     }
     return cols;
+  }
+
+  // given a list of partStats, this function will give you an aggr stats
+  public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
+      String dbName, String tableName, List<String> partNames, List<String> colNames,
+      boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+      throws MetaException {
+    // 1. group by the stats by colNames
+    // map the colName to List<ColumnStatistics>
+    Map<String, List<ColumnStatistics>> map = new HashMap<>();
+    for (ColumnStatistics css : partStats) {
+      List<ColumnStatisticsObj> objs = css.getStatsObj();
+      for (ColumnStatisticsObj obj : objs) {
+        List<ColumnStatisticsObj> singleObj = new ArrayList<>();
+        singleObj.add(obj);
+        ColumnStatistics singleCS = new ColumnStatistics(css.getStatsDesc(), singleObj);
+        if (!map.containsKey(obj.getColName())) {
+          map.put(obj.getColName(), new ArrayList<ColumnStatistics>());
+        }
+        map.get(obj.getColName()).add(singleCS);
+      }
+    }
+    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,areAllPartsFound,useDensityFunctionForNDVEstimation, ndvTuner);
+  }
+
+  public static List<ColumnStatisticsObj> aggrPartitionStats(
+      Map<String, List<ColumnStatistics>> map, String dbName, String tableName,
+      List<String> partNames, List<String> colNames, boolean areAllPartsFound,
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
+    List<ColumnStatisticsObj> colStats = new ArrayList<>();
+    // 2. aggr stats for each colName
+    // TODO: thread pool can be used to speed up the process
+    for (Entry<String, List<ColumnStatistics>> entry : map.entrySet()) {
+      List<ColumnStatistics> css = entry.getValue();
+      ColumnStatsAggregator aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css
+          .iterator().next().getStatsObj().iterator().next().getStatsData().getSetField(),
+          useDensityFunctionForNDVEstimation, ndvTuner);
+      ColumnStatisticsObj statsObj = aggregator.aggregate(entry.getKey(), partNames, css);
+      colStats.add(statsObj);
+    }
+    return colStats;
   }
 
 }

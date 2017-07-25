@@ -296,14 +296,14 @@ Stage-3
               Reducer 2
               File Output Operator [FS_8]
                 table:{"name:":"default.acid_uami"}
-                Select Operator [SEL_4] (rows=8/2 width=302)
+                Select Operator [SEL_4] (rows=4/2 width=302)
                   Output:["_col0","_col1","_col2","_col3"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_3]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=8/2 width=302)
+                    Select Operator [SEL_2] (rows=4/2 width=302)
                       Output:["_col0","_col1","_col3"]
-                      Filter Operator [FIL_9] (rows=8/2 width=226)
+                      Filter Operator [FIL_9] (rows=4/2 width=226)
                         predicate:((de = 109.23) or (de = 119.23))
                         TableScan [TS_0] (rows=8/4 width=226)
                           default@acid_uami,acid_uami, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["i","de","vc"]

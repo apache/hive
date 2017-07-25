@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregator;
-import org.apache.hadoop.hive.metastore.hbase.stats.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -84,7 +84,10 @@ class StatsCache {
         .build(new CacheLoader<StatsCacheKey, AggrStats>() {
           @Override
           public AggrStats load(StatsCacheKey key) throws Exception {
-            boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
+            boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(conf,
+                HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
+            double ndvTuner = HiveConf.getFloatVar(conf,
+                HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
             HBaseReadWrite hrw = HBaseReadWrite.getInstance();
             AggrStats aggrStats = hrw.getAggregatedStats(key.hashed);
             if (aggrStats == null) {
@@ -100,7 +103,7 @@ class StatsCache {
                 if (aggregator == null) {
                   aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css.iterator()
                       .next().getStatsObj().iterator().next().getStatsData().getSetField(),
-                      useDensityFunctionForNDVEstimation);
+                      useDensityFunctionForNDVEstimation, ndvTuner);
                 }
                 ColumnStatisticsObj statsObj = aggregator
                     .aggregate(key.colName, key.partNames, css);

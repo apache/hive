@@ -31,4 +31,4 @@ POSTHOOK: query: select compute_stats(a, 'fm', 16) from tab_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_string
 #### A masked pattern was here ####
-{"columntype":"String","maxlength":11,"avglength":3.9,"countnulls":0,"numdistinctvalues":7,"ndvbitvector":"{0, 1, 2, 3}{0, 1}{0, 1, 3}{0, 2}{0, 1, 2, 3}{0, 1, 3}{0, 1, 2, 3}{0, 1, 3}{0, 1}{0, 1}{0, 1, 2, 4}{0, 1, 4}{0, 2, 4}{0, 1, 2, 3}{0, 1, 2}{0, 1, 2}"}
+{"columntype":"String","maxlength":11,"avglength":3.9,"countnulls":0,"numdistinctvalues":7,"ndvbitvector":"Rk0QAA8AAAADAAAACwAAAAUAAAAPAAAACwAAAA8AAAALAAAAAwAAAAMAAAAXAAAAEwAAABUAAAAP\r\nAAAABwAAAAcAAAA=\r\n"}

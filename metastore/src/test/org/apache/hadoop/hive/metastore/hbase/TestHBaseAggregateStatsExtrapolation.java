@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -62,8 +63,7 @@ public class TestHBaseAggregateStatsExtrapolation {
   SortedMap<String, Cell> rows = new TreeMap<>();
 
   // NDV will be 3 for the bitVectors
-  String bitVectors = "{0, 4, 5, 7}{0, 1}{0, 1, 2}{0, 1, 4}{0}{0, 2}{0, 3}{0, 2, 3, 4}{0, 1, 4}{0, 1}{0}{0, 1, 3, 8}{0, 2}{0, 2}{0, 9}{0, 1, 4}";
-
+  String bitVectors = null;
   @Before
   public void before() throws IOException {
     MockitoAnnotations.initMocks(this);
@@ -71,6 +71,11 @@ public class TestHBaseAggregateStatsExtrapolation {
     conf.setBoolean(HBaseReadWrite.NO_CACHE_CONF, true);
     store = MockUtils.init(conf, htable, rows);
     store.backdoor().getStatsCache().resetCounters();
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    hll.addLong(2);
+    hll.addLong(3);
+    bitVectors = hll.serialize();
   }
 
   private static interface Checker {
@@ -395,7 +400,7 @@ public class TestHBaseAggregateStatsExtrapolation {
       dcsd.setHighValue(1000 + i);
       dcsd.setLowValue(-1000 - i);
       dcsd.setNumNulls(i);
-      dcsd.setNumDVs(10 * i);
+      dcsd.setNumDVs(i == 0 ? 1 : 10 * i);
       data.setLongStats(dcsd);
       obj.setStatsData(data);
       cs.addToStatsObj(obj);

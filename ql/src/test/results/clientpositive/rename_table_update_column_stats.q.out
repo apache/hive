@@ -57,30 +57,33 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	SExM4AoKwtK/OYCi1Bu/sMcRx9SoWfnl+S+BsIeDAb/T4wfChbuXAf+34EDBsoy/AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	SExM4AoKge76QcHLqCHAtN4dv5LMNcG35k7A+Oe9Af+Nq6wCgoTFpgG+39Yigri1AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	SExM4AEBgeL8+wM=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
@@ -96,30 +99,33 @@ PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	SExM4AoKwtK/OYCi1Bu/sMcRx9SoWfnl+S+BsIeDAb/T4wfChbuXAf+34EDBsoy/AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	SExM4AoKge76QcHLqCHAtN4dv5LMNcG35k7A+Oe9Af+Nq6wCgoTFpgG+39Yigri1AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb2.testtable2 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	SExM4AEBgeL8+wM=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -203,30 +209,33 @@ PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	SExM4AoKwtK/OYCi1Bu/sMcRx9SoWfnl+S+BsIeDAb/T4wfChbuXAf+34EDBsoy/AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	SExM4AoKge76QcHLqCHAtN4dv5LMNcG35k7A+Oe9Af+Nq6wCgoTFpgG+39Yigri1AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
 POSTHOOK: query: describe formatted statsdb1.testtable1 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb1@testtable1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	SExM4AEBgeL8+wM=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
@@ -242,30 +251,33 @@ PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col1                	int                 	27                  	484                 	0                   	10                  	                    	                    	                    	                    	SExM4AoKwtK/OYCi1Bu/sMcRx9SoWfnl+S+BsIeDAb/T4wfChbuXAf+34EDBsoy/AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col2                	string              	                    	                    	0                   	10                  	6.7                 	7                   	                    	                    	SExM4AoKge76QcHLqCHAtN4dv5LMNcG35k7A+Oe9Af+Nq6wCgoTFpgG+39Yigri1AQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted statsdb2.testtable2 col3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb2@testtable2
 POSTHOOK: query: describe formatted statsdb2.testtable2 col3
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: statsdb2@testtable2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+col3                	string              	                    	                    	0                   	1                   	4.0                 	4                   	                    	                    	SExM4AEBgeL8+wM=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

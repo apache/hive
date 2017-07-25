@@ -1,0 +1,229 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.metastore;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class TestOldSchema {
+  private ObjectStore store = null;
+
+  private static final Logger LOG = LoggerFactory.getLogger(TestOldSchema.class.getName());
+
+  public static class MockPartitionExpressionProxy implements PartitionExpressionProxy {
+    @Override
+    public String convertExprToFilter(byte[] expr) throws MetaException {
+      return null;
+    }
+
+    @Override
+    public boolean filterPartitionsByExpr(List<String> partColumnNames,
+        List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
+        List<String> partitionNames) throws MetaException {
+      return false;
+    }
+
+    @Override
+    public FileMetadataExprType getMetadataType(String inputFormat) {
+      return null;
+    }
+
+    @Override
+    public SearchArgument createSarg(byte[] expr) {
+      return null;
+    }
+
+    @Override
+    public FileFormatProxy getFileFormatProxy(FileMetadataExprType type) {
+      return null;
+    }
+  }
+
+  String bitVectors[] = new String[2];
+
+  @Before
+  public void setUp() throws Exception {
+    HiveConf conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS,
+        MockPartitionExpressionProxy.class.getName());
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR, false);
+
+    store = new ObjectStore();
+    store.setConf(conf);
+    dropAllStoreObjects(store);
+
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    bitVectors[1] = hll.serialize();
+    hll = HyperLogLog.builder().build();
+    hll.addLong(2);
+    hll.addLong(3);
+    hll.addLong(3);
+    hll.addLong(4);
+    bitVectors[0] = hll.serialize();
+  }
+
+  @After
+  public void tearDown() {
+  }
+
+  /**
+   * Tests partition operations
+   * 
+   * @throws Exception
+   */
+  @Test
+  public void testPartitionOps() throws Exception {
+    String dbName = "default";
+    String tableName = "snp";
+    Database db1 = new Database(dbName, "description", "locationurl", null);
+    store.createDatabase(db1);
+    long now = System.currentTimeMillis();
+    List<FieldSchema> cols = new ArrayList<>();
+    cols.add(new FieldSchema("col1", "long", "nocomment"));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
+        serde, null, null, Collections.<String, String> emptyMap());
+    List<FieldSchema> partCols = new ArrayList<>();
+    partCols.add(new FieldSchema("ds", "string", ""));
+    Table table = new Table(tableName, dbName, "me", (int) now, (int) now, 0, sd, partCols,
+        Collections.<String, String> emptyMap(), null, null, null);
+    store.createTable(table);
+
+    Deadline.startTimer("getPartition");
+    for (int i = 0; i < 10; i++) {
+      List<String> partVal = new ArrayList<>();
+      partVal.add(String.valueOf(i));
+      StorageDescriptor psd = new StorageDescriptor(sd);
+      psd.setLocation("file:/tmp/default/hit/ds=" + partVal);
+      Partition part = new Partition(partVal, dbName, tableName, (int) now, (int) now, psd,
+          Collections.<String, String> emptyMap());
+      store.addPartition(part);
+      ColumnStatistics cs = new ColumnStatistics();
+      ColumnStatisticsDesc desc = new ColumnStatisticsDesc(false, dbName, tableName);
+      desc.setLastAnalyzed(now);
+      desc.setPartName("ds=" + String.valueOf(i));
+      cs.setStatsDesc(desc);
+      ColumnStatisticsObj obj = new ColumnStatisticsObj();
+      obj.setColName("col1");
+      obj.setColType("bigint");
+      ColumnStatisticsData data = new ColumnStatisticsData();
+      LongColumnStatsData dcsd = new LongColumnStatsData();
+      dcsd.setHighValue(1000 + i);
+      dcsd.setLowValue(-1000 - i);
+      dcsd.setNumNulls(i);
+      dcsd.setNumDVs(10 * i + 1);
+      dcsd.setBitVectors(bitVectors[0]);
+      data.setLongStats(dcsd);
+      obj.setStatsData(data);
+      cs.addToStatsObj(obj);
+      store.updatePartitionColumnStatistics(cs, partVal);
+
+    }
+
+    Checker statChecker = new Checker() {
+      @Override
+      public void checkStats(AggrStats aggrStats) throws Exception {
+        Assert.assertEquals(10, aggrStats.getPartsFound());
+        Assert.assertEquals(1, aggrStats.getColStatsSize());
+        ColumnStatisticsObj cso = aggrStats.getColStats().get(0);
+        Assert.assertEquals("col1", cso.getColName());
+        Assert.assertEquals("bigint", cso.getColType());
+        LongColumnStatsData lcsd = cso.getStatsData().getLongStats();
+        Assert.assertEquals(1009, lcsd.getHighValue(), 0.01);
+        Assert.assertEquals(-1009, lcsd.getLowValue(), 0.01);
+        Assert.assertEquals(45, lcsd.getNumNulls());
+        Assert.assertEquals(91, lcsd.getNumDVs());
+      }
+    };
+    List<String> partNames = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      partNames.add("ds=" + i);
+    }
+    AggrStats aggrStats = store.get_aggr_stats_for(dbName, tableName, partNames,
+        Arrays.asList("col1"));
+    statChecker.checkStats(aggrStats);
+
+  }
+
+  private static interface Checker {
+    void checkStats(AggrStats aggrStats) throws Exception;
+  }
+
+  public static void dropAllStoreObjects(RawStore store) throws MetaException,
+      InvalidObjectException, InvalidInputException {
+    try {
+      Deadline.registerIfNot(100000);
+      Deadline.startTimer("getPartition");
+      List<String> dbs = store.getAllDatabases();
+      for (int i = 0; i < dbs.size(); i++) {
+        String db = dbs.get(i);
+        List<String> tbls = store.getAllTables(db);
+        for (String tbl : tbls) {
+          List<Partition> parts = store.getPartitions(db, tbl, 100);
+          for (Partition part : parts) {
+            store.dropPartition(db, tbl, part.getValues());
+          }
+          store.dropTable(db, tbl);
+        }
+        store.dropDatabase(db);
+      }
+    } catch (NoSuchObjectException e) {
+    }
+  }
+
+}

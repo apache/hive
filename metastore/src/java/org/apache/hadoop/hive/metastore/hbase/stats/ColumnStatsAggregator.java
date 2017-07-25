@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.metastore.hbase.stats;
+package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public abstract class ColumnStatsAggregator {
   public boolean useDensityFunctionForNDVEstimation;
-
+  public double ndvTuner;
   public abstract ColumnStatisticsObj aggregate(String colName, List<String> partNames,
       List<ColumnStatistics> css) throws MetaException;
 }

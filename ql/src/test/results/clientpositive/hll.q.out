@@ -1,3 +1,88 @@
+PREHOOK: query: create table n(key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@n
+POSTHOOK: query: create table n(key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@n
+PREHOOK: query: insert overwrite table n select null from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@n
+POSTHOOK: query: insert overwrite table n select null from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@n
+POSTHOOK: Lineage: n.key EXPRESSION []
+PREHOOK: query: explain analyze table n compute statistics for columns
+PREHOOK: type: QUERY
+POSTHOOK: query: explain analyze table n compute statistics for columns
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: n
+            Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int)
+              outputColumnNames: key
+              Statistics: Num rows: 500 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: compute_stats(key, 'hll')
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-1
+    Column Stats Work
+      Column Stats Desc:
+          Columns: key
+          Column Types: int
+          Table: default.n
+
+PREHOOK: query: analyze table n compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@n
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table n compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@n
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted n key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@n
+POSTHOOK: query: desc formatted n key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@n
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	0                   	500                 	1                   	                    	                    	                    	                    	SExM4AEA	 
+          	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create table i(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -78,10 +163,31 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	SExM4LUCtQKN6yH2ofgFwu2cAvzblwLAqoIDwf6+AcDkmgT/i5kBxOPKA72MowGA5fAbg4LgAr2L	 
+vQH/+x+A0gOA0fsBgefUBb+gkhPB+03A7aUCg+BdwKUTvbaQA4LIeL7O3QTCo6IDvbuRAsCRFoGb	 	 	 	 	 	 	 	 	 	 	 
+YL/lO4LfuQK+4acBgLePCsHvrQHD43u87s4EwP0QwJJtyL23ArjLvQPCz7wG/5yDC7/N4AKCxMcO	 	 	 	 	 	 	 	 	 	 	 
+vvCNA4HI4wP/6rEDgIIJwaZOv+cwgaevAf+GzQHA14ICwPz+BcDb+gKAhg+H7RS67okB/5HHAoOo	 	 	 	 	 	 	 	 	 	 	 
+Nb2V2wWA6fAIwJSODsCT9gGAiY8Bg/xI/bq4CoDXkgHAyvYGgOduwJKLAYKbvgH+2bQBwNCWBoK7	 	 	 	 	 	 	 	 	 	 	 
+Gb+fmQO/6J8Bgb89/9fzAsCPywLAp/wHgbJeg/z8Ar25kQGA4P0Dv/OUA4CgoQaBpL4EwDuC+m69	 	 	 	 	 	 	 	 	 	 	 
+yDWA/BLApYELxMEv/I1LgYWwBMbTlAP56cMEgZssgeiCAb+kowHBvf0CgYHSAf3g0QaBi9sC/9yi	 	 	 	 	 	 	 	 	 	 	 
+AoDbIYHllQnAhAGBqJkFvrBKgZmZDIKEogG9slWC7qgF/q5DwM30DoKHRcCN7wO+ir0DwLOtAcDy	 	 	 	 	 	 	 	 	 	 	 
+8wKB4L0Dv/HEA4adpAOAqxr6kkyA14EIwbkUgIihCIGfcoCODr/z5wKAs/QBw7JvvLnQBMHmsgL/	 	 	 	 	 	 	 	 	 	 	 
+1UTAy5gCgbHaAf+UpgOAjO0HwcRQhOePAYChCruLvQaBtSj/osUBwoK1AYGn+Qm9kLcDgLSoAYCQ	 	 	 	 	 	 	 	 	 	 	 
+2QeAv54FwoIavsJ2wYYL/9jbAoCTjgGBjDX/ztkBgPF8gtNC/r2PAoGgUcHDcb+LqAe/laoBwsOe	 	 	 	 	 	 	 	 	 	 	 
+A8D6EsDQkAT+0tcGgIRzgIqQAYCT+gXB7wv/jvQMw4miBr3LvgTA0YYBgKCTCIHyxQHBtPcCvts+	 	 	 	 	 	 	 	 	 	 	 
+we3HAsD/9gG/zaEDgMiqA8H6iQHAniPCiIQB/bucAYDykQGCodED/o+VAsa89gO6pqAHwKvqAYGu	 	 	 	 	 	 	 	 	 	 	 
+9QO/0bgPwLiEAcH7lwHA4v4FgMUrwe9k/v9ggaI5wbniAr7lOYP3tAH9vmXBxscCwPDuAYCkFoPc	 	 	 	 	 	 	 	 	 	 	 
+6QaCoOUH/MSUAr/4gwmAw4wIv/rBAsCH2QGEl1n86qQBgOWcEoLOsgb+k74EhNjFAbyX2QHAi4MB	 	 	 	 	 	 	 	 	 	 	 
+gJiCAYHyiwnAvYgC/5LkB4HnoQLA46QU/6+SBsGv6QHBut4Evo/iA8KzFL7b0AKAwJkJwZSRAb+g	 	 	 	 	 	 	 	 	 	 	 
+4gHBux+B/58F/+D2Av/5tgKAmieA4MsBwrvkBMDIBb77GoCqnwjA3PkBgPOTCMD9e8P8tgK91poD	 	 	 	 	 	 	 	 	 	 	 
+gIGeAcH3nQKAhqIEv6LdA4DK2AKClCm+mc4BxoVo+rCiAoDfoAKAtPoFwdCUAsHtpwH+j8QBwYWl	 	 	 	 	 	 	 	 	 	 	 
+Ab+00gOAy9gMgfHAA7/hvwTAqCeCsUq/yUj/t9wCxYPOArvNrQTAq5ADwJrZCcKbX764IcHS1QKA	 	 	 	 	 	 	 	 	 	 	 
+t+kLwtSlC/3wyweAl2bAhKEDwLXQCYDXhQXBpeICgcpm//3nBoDmGMG7lwH/y+YI//XaAYHTlQKA	 	 	 	 	 	 	 	 	 	 	 
+4gPA7aoC/6mKCIDZpgLDoEQ=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -121,10 +227,31 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	double              	0.0                 	498.0               	0                   	309                 	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	double              	0.0                 	498.0               	0                   	309                 	                    	                    	                    	                    	SExM4LUCtQLB60iBzkW/t98FgZmoAoClIL/zvgGA98wFwZxDgNEev/fQAoTVmQS8tMUCgIfzAsap	 
+7wL7vdICwMCHAv/a2gGAj+MJwMSpBsHPLcGehw++nboDgY6bAb+Z3Q2CycMBvtO0A8DE9QOCh+sE	 	 	 	 	 	 	 	 	 	 	 
+v4/3AoHde7++1QKB1ZUFvvHBAYCumwGAm4sBwOjEAoD4LsDB1APA0rEEwo6RAb665QaCysQBvua+	 	 	 	 	 	 	 	 	 	 	 
+BMGxF8C4qASAqtwLhZqTAbqmvAHChlWBuNsJ/fzNAoCjiwSA7f0BgMHaBIDtjQ3B9zLCwa0F/8ba	 	 	 	 	 	 	 	 	 	 	 
+AYPTogK7xaMGgNT7BIOAQr7ZogH//r4Bwb88xcts+7xwv97zAYPPhAG+mJkBgeabAb6jFcDZmgmA	 	 	 	 	 	 	 	 	 	 	 
+wWiB6NQG/6y2AcDn7QLB2OMBv7PADMK6K7+obMCrqwrBnPUE/qNQwaacDsCm9gG/wdUCwauuAf/I	 	 	 	 	 	 	 	 	 	 	 
+yQGCgtkB/r+qAcAgwNvzD8C0GoTuwAS87xqAx7wJwc+QAYDolQL/164BwJ+VA8K4Hf/DjwG//ecB	 	 	 	 	 	 	 	 	 	 	 
+wNTFEMCugwLA3CyBopEBv4fdAoOhSb6DjQPDjm79gI0B//ixBoCFA4HvpwGAx4sC/7KuD4DKGoPk	 	 	 	 	 	 	 	 	 	 	 
+qwH9g8YBwI95wMCYAsD0lAHAhViGgt0F+7hQv4bMAsCKEICDmQHE06oD/J1FgJBfgOapA8PJlQf9	 	 	 	 	 	 	 	 	 	 	 
+itwEwM2GC4P8pgi997EDgP2aAsCzhgTAj5ADw5HBA77hdb/IL8LNxQT+zzOA4aQBgf+gBf/SWMDl	 	 	 	 	 	 	 	 	 	 	 
+iAWF/r4BgPwD/KhS/5M+wIP+AcBkgPCBA4CxjAGAwgHEgFz/9vYLvZuZA8CHqgPDjJwBvddOwJua	 	 	 	 	 	 	 	 	 	 	 
+BMCpUYKEvgS+pVaA9PoEg6osvZ1Gga/IAv/9wQLA94EDwOwigO1tgfadAcO4f7yA/ATAq94BwP2X	 	 	 	 	 	 	 	 	 	 	 
+A4CahgLA64ECwOzUCoPq5wP9s5cBwNkJgISgAcCN7gLB0bMFgOyLCMDTlA7Bzm2/rYoBgbv8Av+G	 	 	 	 	 	 	 	 	 	 	 
+esGE3gKAuSu+8YwFxK+9BICqLv70iAq/z1vB2oQDv790gZOXA8DxhQi+3r0Ewe2+AsGpfL7JtgGB	 	 	 	 	 	 	 	 	 	 	 
+sdgHgt+IAb3riwKA/xqAx4YBwM6BBMD24QeE/sgEvM3RAsD/4QHA9KUBg9/PBr7xxgaB0aUD//aC	 	 	 	 	 	 	 	 	 	 	 
+A8D0gxSB19wEvtOyCcDBmQGC9q4BvqHgCYDEbMGnaoHK2QT/j5kDv+w7gutQgP3zC/6+kgSAsh3B	 	 	 	 	 	 	 	 	 	 	 
+xkC/ybsCgYq4Ab+iS8LN2wK/3dUEgMGICMHQ9wK+ucQCgJvyAofd9Ai5wzbC3LcFwrjwAf78jgq+	 	 	 	 	 	 	 	 	 	 	 
+xiPBgzO/0myEya8E/OKkAsHYPcHfqQP/ndwCwNH/BcOngAG8/d8Egd5S/+khgr+zEICIJ4bv0AH4	 	 	 	 	 	 	 	 	 	 	 
+isQCgN6lAsTolwO88EDA56UEwsSgDf7U4gHDpUa9570DweyNAb/LyQfA/PwGga7MA8Db7QGBpYEB	 	 	 	 	 	 	 	 	 	 	 
+vqNhwNSNBMCL3AHBqzu/gGXAweUCgIqDAoCBdYLHyAbAaL/rgAWA9e4RgMwTv76yAoDZDcHd1wGA	 	 	 	 	 	 	 	 	 	 	 
+tucFgd6SE8DhBr+JUQ==	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -164,10 +291,31 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	decimal(10,0)       	0                   	498                 	0                   	309                 	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	decimal(10,0)       	0                   	498                 	0                   	309                 	                    	                    	                    	                    	SExM4LUCtQLB60iBzkW/t98FgZmoAoClIL/zvgGA98wFwZxDgNEev/fQAoTVmQS8tMUCgIfzAsap	 
+7wL7vdICwMCHAv/a2gGAj+MJwMSpBsHPLcGehw++nboDgY6bAb+Z3Q2CycMBvtO0A8DE9QOCh+sE	 	 	 	 	 	 	 	 	 	 	 
+v4/3AoHde7++1QKB1ZUFvvHBAYCumwGAm4sBwOjEAoD4LsDB1APA0rEEwo6RAb665QaCysQBvua+	 	 	 	 	 	 	 	 	 	 	 
+BMGxF8C4qASAqtwLhZqTAbqmvAHChlWBuNsJ/fzNAoCjiwSA7f0BgMHaBIDtjQ3B9zLCwa0F/8ba	 	 	 	 	 	 	 	 	 	 	 
+AYPTogK7xaMGgNT7BIOAQr7ZogH//r4Bwb88xcts+7xwv97zAYPPhAG+mJkBgeabAb6jFcDZmgmA	 	 	 	 	 	 	 	 	 	 	 
+wWiB6NQG/6y2AcDn7QLB2OMBv7PADMK6K7+obMCrqwrBnPUE/qNQwaacDsCm9gG/wdUCwauuAf/I	 	 	 	 	 	 	 	 	 	 	 
+yQGCgtkB/r+qAcAgwNvzD8C0GoTuwAS87xqAx7wJwc+QAYDolQL/164BwJ+VA8K4Hf/DjwG//ecB	 	 	 	 	 	 	 	 	 	 	 
+wNTFEMCugwLA3CyBopEBv4fdAoOhSb6DjQPDjm79gI0B//ixBoCFA4HvpwGAx4sC/7KuD4DKGoPk	 	 	 	 	 	 	 	 	 	 	 
+qwH9g8YBwI95wMCYAsD0lAHAhViGgt0F+7hQv4bMAsCKEICDmQHE06oD/J1FgJBfgOapA8PJlQf9	 	 	 	 	 	 	 	 	 	 	 
+itwEwM2GC4P8pgi997EDgP2aAsCzhgTAj5ADw5HBA77hdb/IL8LNxQT+zzOA4aQBgf+gBf/SWMDl	 	 	 	 	 	 	 	 	 	 	 
+iAWF/r4BgPwD/KhS/5M+wIP+AcBkgPCBA4CxjAGAwgHEgFz/9vYLvZuZA8CHqgPDjJwBvddOwJua	 	 	 	 	 	 	 	 	 	 	 
+BMCpUYKEvgS+pVaA9PoEg6osvZ1Gga/IAv/9wQLA94EDwOwigO1tgfadAcO4f7yA/ATAq94BwP2X	 	 	 	 	 	 	 	 	 	 	 
+A4CahgLA64ECwOzUCoPq5wP9s5cBwNkJgISgAcCN7gLB0bMFgOyLCMDTlA7Bzm2/rYoBgbv8Av+G	 	 	 	 	 	 	 	 	 	 	 
+esGE3gKAuSu+8YwFxK+9BICqLv70iAq/z1vB2oQDv790gZOXA8DxhQi+3r0Ewe2+AsGpfL7JtgGB	 	 	 	 	 	 	 	 	 	 	 
+sdgHgt+IAb3riwKA/xqAx4YBwM6BBMD24QeE/sgEvM3RAsD/4QHA9KUBg9/PBr7xxgaB0aUD//aC	 	 	 	 	 	 	 	 	 	 	 
+A8D0gxSB19wEvtOyCcDBmQGC9q4BvqHgCYDEbMGnaoHK2QT/j5kDv+w7gutQgP3zC/6+kgSAsh3B	 	 	 	 	 	 	 	 	 	 	 
+xkC/ybsCgYq4Ab+iS8LN2wK/3dUEgMGICMHQ9wK+ucQCgJvyAofd9Ai5wzbC3LcFwrjwAf78jgq+	 	 	 	 	 	 	 	 	 	 	 
+xiPBgzO/0myEya8E/OKkAsHYPcHfqQP/ndwCwNH/BcOngAG8/d8Egd5S/+khgr+zEICIJ4bv0AH4	 	 	 	 	 	 	 	 	 	 	 
+isQCgN6lAsTolwO88EDA56UEwsSgDf7U4gHDpUa9570DweyNAb/LyQfA/PwGga7MA8Db7QGBpYEB	 	 	 	 	 	 	 	 	 	 	 
+vqNhwNSNBMCL3AHBqzu/gGXAweUCgIqDAoCBdYLHyAbAaL/rgAWA9e4RgMwTv76yAoDZDcHd1wGA	 	 	 	 	 	 	 	 	 	 	 
+tucFgd6SE8DhBr+JUQ==	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i
@@ -233,7 +381,8 @@ PREHOOK: Input: default@i
 POSTHOOK: query: desc formatted i key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	date                	2012-03-17          	2013-08-17          	0                   	4                   	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	date                	2012-03-17          	2013-08-17          	0                   	4                   	                    	                    	                    	                    	SExM4AQEgZ3gM4Gdw13A3/qtA4L855QD	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

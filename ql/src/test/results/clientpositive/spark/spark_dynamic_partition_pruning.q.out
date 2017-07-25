@@ -3700,7 +3700,7 @@ STAGE PLANS:
                           partition key expr: ds
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           target column name: ds
-                          target work: Map 1
+                          target work: Map 4
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3714,7 +3714,7 @@ STAGE PLANS:
                           partition key expr: ds
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           target column name: ds
-                          target work: Map 4
+                          target work: Map 1
         Reducer 13 
             Reduce Operator Tree:
               Group By Operator
@@ -3743,7 +3743,7 @@ STAGE PLANS:
                           partition key expr: ds
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           target column name: ds
-                          target work: Map 1
+                          target work: Map 4
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -3757,7 +3757,7 @@ STAGE PLANS:
                           partition key expr: ds
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                           target column name: ds
-                          target work: Map 4
+                          target work: Map 1
 
   Stage: Stage-1
     Spark

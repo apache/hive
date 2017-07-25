@@ -695,38 +695,40 @@ public final class MetaDataFormatUtils {
         ColumnStatisticsData csd = cso.getStatsData();
         if (csd.isSetBinaryStats()) {
           BinaryColumnStatsData bcsd = csd.getBinaryStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", bcsd.getAvgColLen(),
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", bcsd.getAvgColLen(),
               bcsd.getMaxColLen(), "", "");
         } else if (csd.isSetStringStats()) {
           StringColumnStatsData scsd = csd.getStringStats();
           appendColumnStats(tableInfo, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
-              scsd.getAvgColLen(), scsd.getMaxColLen(), "", "");
+              scsd.getBitVectors() == null ? "" : scsd.getBitVectors(), scsd.getAvgColLen(),
+              scsd.getMaxColLen(), "", "");
         } else if (csd.isSetBooleanStats()) {
           BooleanColumnStatsData bcsd = csd.getBooleanStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "",
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "", "",
               bcsd.getNumTrues(), bcsd.getNumFalses());
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
           appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()),
               convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
+              dcsd.getBitVectors() == null ? "" : dcsd.getBitVectors(),
               "", "", "", "");
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
           appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
-              dcsd.getNumDVs(), "", "", "", "");
+              dcsd.getNumDVs(), dcsd.getBitVectors() == null ? "" : dcsd.getBitVectors(), "", "", "", "");
         } else if (csd.isSetLongStats()) {
           LongColumnStatsData lcsd = csd.getLongStats();
           appendColumnStats(tableInfo, lcsd.getLowValue(), lcsd.getHighValue(), lcsd.getNumNulls(),
-              lcsd.getNumDVs(), "", "", "", "");
+              lcsd.getNumDVs(), lcsd.getBitVectors() == null ? "" : lcsd.getBitVectors(), "", "", "", "");
         } else if (csd.isSetDateStats()) {
           DateColumnStatsData dcsd = csd.getDateStats();
           appendColumnStats(tableInfo,
               convertToString(dcsd.getLowValue()),
               convertToString(dcsd.getHighValue()),
-              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
+              dcsd.getNumNulls(), dcsd.getNumDVs(), dcsd.getBitVectors() == null ? "" : dcsd.getBitVectors(), "", "", "", "");
         }
       } else {
-        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "");
+        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "", "");
       }
     }
 
@@ -779,7 +781,7 @@ public final class MetaDataFormatUtils {
   }
 
   private static void appendColumnStats(StringBuilder sb, Object min, Object max, Object numNulls,
-      Object ndv, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
+      Object ndv, Object bitVector, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
     sb.append(String.format("%-" + ALIGNMENT + "s", min)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", max)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numNulls)).append(FIELD_DELIM);
@@ -788,6 +790,7 @@ public final class MetaDataFormatUtils {
     sb.append(String.format("%-" + ALIGNMENT + "s", maxColLen)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numTrues)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numFalses)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", bitVector)).append(FIELD_DELIM);
   }
 
   private static void appendColumnStatsNoFormatting(StringBuilder sb, Object min,

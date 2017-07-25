@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.cache;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,8 +81,8 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMerger;
-import org.apache.hadoop.hive.metastore.hbase.stats.merge.ColumnStatsMergerFactory;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
+import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerFactory;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -92,6 +93,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 
 // TODO filter->expr
 // TODO functionCache
@@ -1562,27 +1564,37 @@ public class CachedStore implements RawStore, Configurable {
 
   private ColumnStatisticsObj mergeColStatsForPartitions(String dbName, String tblName,
       List<String> partNames, String colName) throws MetaException {
-    ColumnStatisticsObj colStats = null;
+    final boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
+    final double ndvTuner = HiveConf.getFloatVar(getConf(),
+        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
+    Map<String, List<ColumnStatistics>> map = new HashMap<>();
+    List<ColumnStatistics> list = new ArrayList<>();
+    boolean areAllPartsFound = true;
     for (String partName : partNames) {
-      String colStatsCacheKey =
-          CacheUtils.buildKey(dbName, tblName, partNameToVals(partName), colName);
-      ColumnStatisticsObj colStatsForPart =
-          SharedCache.getCachedPartitionColStats(colStatsCacheKey);
-      if (colStatsForPart == null) {
-        // we don't have stats for all the partitions
-        // logic for extrapolation hasn't been added to CacheStore
-        // So stop now, and lets fallback to underlying RawStore
-        return null;
-      }
-      if (colStats == null) {
-        colStats = colStatsForPart;
+      String colStatsCacheKey = CacheUtils.buildKey(dbName, tblName, partNameToVals(partName),
+          colName);
+      List<ColumnStatisticsObj> singleObj = new ArrayList<>();
+      ColumnStatisticsObj colStatsForPart = SharedCache
+          .getCachedPartitionColStats(colStatsCacheKey);
+      if (colStatsForPart != null) {
+        singleObj.add(colStatsForPart);
+        ColumnStatisticsDesc css = new ColumnStatisticsDesc(false, dbName, tblName);
+        css.setPartName(partName);
+        list.add(new ColumnStatistics(css, singleObj));
       } else {
-        ColumnStatsMerger merger =
-            ColumnStatsMergerFactory.getColumnStatsMerger(colStats, colStatsForPart);
-        merger.merge(colStats, colStatsForPart);
+        areAllPartsFound = false;
       }
     }
-    return colStats;
+    map.put(colName, list);
+    List<String> colNames = new ArrayList<>();
+    colNames.add(colName);
+    // Note that enableBitVector does not apply here because ColumnStatisticsObj
+    // itself will tell whether
+    // bitvector is null or not and aggr logic can automatically apply.
+    return MetaStoreUtils
+        .aggrPartitionStats(map, dbName, tblName, partNames, colNames, areAllPartsFound,
+            useDensityFunctionForNDVEstimation, ndvTuner).iterator().next();
   }
 
   @Override

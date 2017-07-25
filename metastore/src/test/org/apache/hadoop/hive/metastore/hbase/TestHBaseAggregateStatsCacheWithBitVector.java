@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -115,7 +116,11 @@ public class TestHBaseAggregateStatsCacheWithBitVector {
     dcsd.setLowValue(-20.1234213423);
     dcsd.setNumNulls(30);
     dcsd.setNumDVs(12342);
-    dcsd.setBitVectors("{0, 4, 5, 7}{0, 1}{0, 1, 2}{0, 1, 4}{0}{0, 2}{0, 3}{0, 2, 3, 4}{0, 1, 4}{0, 1}{0}{0, 1, 3, 8}{0, 2}{0, 2}{0, 9}{0, 1, 4}");
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addDouble(1);
+    hll.addDouble(2);
+    hll.addDouble(3);
+    dcsd.setBitVectors(hll.serialize());
     data.setDoubleStats(dcsd);
     obj.setStatsData(data);
     cs.addToStatsObj(obj);
@@ -135,7 +140,11 @@ public class TestHBaseAggregateStatsCacheWithBitVector {
     dcsd.setLowValue(-20.1234213423);
     dcsd.setNumNulls(30);
     dcsd.setNumDVs(12342);
-    dcsd.setBitVectors("{0, 1}{0, 1}{1, 2, 4}{0, 1, 2}{0, 1, 2}{0, 2}{0, 1, 3, 4}{0, 1}{0, 1}{3, 4, 6}{2}{0, 1}{0, 3}{0}{0, 1}{0, 1, 4}");
+    hll = HyperLogLog.builder().build();
+    hll.addDouble(3);
+    hll.addDouble(4);
+    hll.addDouble(5);
+    dcsd.setBitVectors(hll.serialize());
     data.setDoubleStats(dcsd);
     obj.setStatsData(data);
     cs.addToStatsObj(obj);

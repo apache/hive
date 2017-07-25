@@ -31,4 +31,4 @@ POSTHOOK: query: select compute_stats(a, 'fm', 18) from tab_decimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_decimal
 #### A masked pattern was here ####
-{"columntype":"Decimal","min":-87.2,"max":123456789012345678901234567890.123,"countnulls":2,"numdistinctvalues":13,"ndvbitvector":"{0, 1, 2, 3, 4}{0, 1, 2, 3, 5}{0, 1, 2, 3}{0, 1, 2}{0, 1, 2}{0, 1, 2, 3, 5}{0, 1, 3}{0, 1, 2, 4}{0, 1, 2, 3, 5}{0, 1, 2, 3}{0, 1, 2}{0, 1}{0, 1, 2}{0, 1, 2, 3}{0, 1, 2, 6, 8}{0, 1, 2, 3}{0, 1, 2}{0, 1, 4, 5}"}
+{"columntype":"Decimal","min":-87.2,"max":123456789012345678901234567890.123,"countnulls":2,"numdistinctvalues":13,"ndvbitvector":"Rk0SAB8AAAAvAAAADwAAAAcAAAAHAAAALwAAAAsAAAAXAAAALwAAAA8AAAAHAAAAAwAAAAcAAAAP\r\nAAAARwEAAA8AAAAHAAAAMwAAAA==\r\n"}

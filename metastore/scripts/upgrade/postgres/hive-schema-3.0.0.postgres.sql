@@ -534,6 +534,7 @@ CREATE TABLE "PART_COL_STATS" (
  "BIG_DECIMAL_HIGH_VALUE" character varying(4000) DEFAULT NULL::character varying,
  "NUM_NULLS" bigint NOT NULL,
  "NUM_DISTINCTS" bigint,
+ "BIT_VECTOR" bytea,
  "AVG_COL_LEN" double precision,
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,

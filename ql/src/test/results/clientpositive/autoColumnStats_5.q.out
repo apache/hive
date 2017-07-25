@@ -192,10 +192,11 @@ PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	from deserializer   
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	SExM4AQExfO+SLy7rGKA4vdMwPD8wQI=	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
@@ -434,10 +435,11 @@ PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=2) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	from deserializer   
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	SExM4AQEguSTlQGB4f34Ab/okIMC/4XTfQ==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
@@ -626,17 +628,19 @@ PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=1) a
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	6                   	0                   	4                   	                    	                    	                    	                    	from deserializer   
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	1                   	6                   	0                   	6                   	                    	                    	                    	                    	SExM4AYGwZn6L4TaxBi8u6xigOL3TMCSiwGA3vHAAg==	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted partitioned1 partition(part=1) c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partitioned1
 POSTHOOK: query: desc formatted partitioned1 partition(part=1) c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partitioned1
-col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	from deserializer   
+col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	SExM4AICweD/2gaAj/YU	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 

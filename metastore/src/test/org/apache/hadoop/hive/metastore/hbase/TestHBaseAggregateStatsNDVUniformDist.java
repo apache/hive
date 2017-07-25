@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -61,9 +62,8 @@ public class TestHBaseAggregateStatsNDVUniformDist {
   SortedMap<String, Cell> rows = new TreeMap<>();
 
   // NDV will be 3 for bitVectors[0] and 1 for bitVectors[1]
-  String bitVectors[] = {
-      "{0, 4, 5, 7}{0, 1}{0, 1, 2}{0, 1, 4}{0}{0, 2}{0, 3}{0, 2, 3, 4}{0, 1, 4}{0, 1}{0}{0, 1, 3, 8}{0, 2}{0, 2}{0, 9}{0, 1, 4}",
-      "{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}{1, 2}" };
+  String bitVectors[] = new String[2];
+    
 
   @Before
   public void before() throws IOException {
@@ -73,6 +73,15 @@ public class TestHBaseAggregateStatsNDVUniformDist {
     conf.setBoolean(HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION.varname, true);
     store = MockUtils.init(conf, htable, rows);
     store.backdoor().getStatsCache().resetCounters();
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    bitVectors[1] = hll.serialize();
+    hll = HyperLogLog.builder().build();
+    hll.addLong(2);
+    hll.addLong(3);
+    hll.addLong(3);
+    hll.addLong(4);
+    bitVectors[0] = hll.serialize();
   }
 
   private static interface Checker {

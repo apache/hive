@@ -123,20 +123,62 @@ PREHOOK: Input: default@a
 POSTHOOK: query: describe formatted a key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
+wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
+wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
+mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
+CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
+ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
+iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
+BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
+w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
+CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
+wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
+yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
+gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
+3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
+CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
+2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
++MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
+z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
+A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
+1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
+BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
+wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
+wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
+mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
+CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
+ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
+iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
+BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
+w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
+CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
+wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
+yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
+gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
+3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
+CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
+2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
++MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
+z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
+A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
+1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
+BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: from src
 insert overwrite table a select *
 insert into table b select *
@@ -231,20 +273,62 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
+wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
+wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
+mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
+CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
+ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
+iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
+BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
+w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
+CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
+wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
+yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
+gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
+3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
+CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
+2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
++MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
+z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
+A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
+1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
+BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
+A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
+r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
+gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
+wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
+gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
+xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
+sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
+wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
+gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
+BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
+nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
+v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
+/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
+ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
+fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
+tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
+KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
+sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
+zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
+A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -261,20 +345,62 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	10                  	309                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	10                  	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
+wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
+wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
+mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
+CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
+ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
+iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
+BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
+w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
+CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
+wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
+yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
+gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
+3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
+CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
+2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
++MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
+z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
+A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
+1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
+BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	309                 	6.812               	7                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	10                  	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
+A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
+r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
+gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
+wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
+gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
+xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
+sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
+wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
+gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
+BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
+nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
+v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
+/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
+ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
+fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
+tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
+KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
+sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
+zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
+A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -291,20 +417,63 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	20                  	309                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	20                  	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
+wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
+wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
+mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
+CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
+ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
+iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
+BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
+w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
+CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
+wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
+yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
+gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
+3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
+CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
+2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
++MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
+z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
+A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
+1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
+BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	309                 	8.0                 	8                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	10                  	319                 	8.0                 	8                   	                    	                    	SExM4L8CvwLM7SyB+xL1r/4Gw751wOABvMEcgclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoLguAL+	 
+63GCtK0Dv6qTA/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCd	 	 	 	 	 	 	 	 	 	 	 
+mAGBuSGAhBmFr5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KX	 	 	 	 	 	 	 	 	 	 	 
+Av61xQGBgpcBgIo6geaBAf6ArwyBkDD/tkWBqNID/6ilBoDahwbA1fICwcKtBL+I0QHC28MFvvLE	 	 	 	 	 	 	 	 	 	 	 
+BYC8f4CF8wHCw8AD/tPRAcD+BsK12AKA7scDwcuXAoC1Bf3auAXApKAGgMn3BICZ0QWA/IgCgOL4	 	 	 	 	 	 	 	 	 	 	 
+BsC+EoCLhALB56oD/6G7AoDumAKCmFW+1UrAkdgCwIyYAcH0lAKA9zzD/+ECgMMTvOC6AsCg0gHA	 	 	 	 	 	 	 	 	 	 	 
+2i7B+5ACv7v2AoC39AGB+scBgNXPAYOysQH91nH/vaYCgOF/hbHjA72W/AG+zLUGgNHlA8DlIoCi	 	 	 	 	 	 	 	 	 	 	 
+DcGVLr/hyQTAlg6CwjX/5ooB/++nA4CU7wOA7qUHwpq3BP/F1AK/jkSBwMANv8TlBMKclQb/s60F	 	 	 	 	 	 	 	 	 	 	 
+/7SYAcOZ0QO/t50G/oKmAsCP+wLAhXWB/bMGv/DkA8DiZsLx0AL+vckDgtRM/sG5AoCJ4AOB8twG	 	 	 	 	 	 	 	 	 	 	 
+v+i4AYCzY4CIpQbAl/YKgZDRBr/TmgaA2iOAlNkGgJaTBMC3gQrHms8DuZmpAoHmQIH19wKAtPAH	 	 	 	 	 	 	 	 	 	 	 
+/o7yBMDG9hLA5pEBgMWAA8D42wKBybwGgLSMBIHd6wL+gOAFgZy+BcO14gLAqgr8xkyChcIBwKXi	 	 	 	 	 	 	 	 	 	 	 
+A7+ber/dUoGzzgGBj2SAx7IEv/NHwKWcAsKw4gL+za0B/8mxAsCZYID5qQKCurYD//CUC7/bqwTC	 	 	 	 	 	 	 	 	 	 	 
+3USAqf8D/96OAb+ylgzA4qcKgeqxAcDugwK/ragGgOCEBoDygQKA9KQHgO/6AcH7IcCpDr/FFYGb	 	 	 	 	 	 	 	 	 	 	 
+0QGE9oUBvL2OA7/VyAyAr2nAy6IDwLn8BoD9/wPCyI4DgKINgN6bBL/NcMPFfr7HhQrCnJYG/ufw	 	 	 	 	 	 	 	 	 	 	 
+Af6VrgfC8FK/ruoCv524AcDcrwSC8osD/v7KA8D+eYC5A4W+3g27v7gDw9cb/ZlugaEXwrr4Bv7o	 	 	 	 	 	 	 	 	 	 	 
+iwmB3oAB/5qLAf+pXISEHv6j/gX+s7QBgIx9wLWpA4C65gGBxsoBwPLkAf/C7QGBrpQCv97XA8Ge	 	 	 	 	 	 	 	 	 	 	 
+xwK/1L4FgMqPA8H8kAGAl5cGgKMBgdPyAv61XoHpE7/0YYHVpQfFwLEB+queAoCUhwOEtckCve9X	 	 	 	 	 	 	 	 	 	 	 
+/8bkBMGKpAOBwaQBwOKNBL6CwQmBz4UDgM8pgomLAf2GrAHCkkL+wc0BgdK0CYHgigm+x6cGgdhH	 	 	 	 	 	 	 	 	 	 	 
+v/SpB4Gl3gzB2m/+mdUIgY2kAv+5P8DmngeAyIAFgNkGgrBG/raEAsKdyQWAqogEvq7iBIavsAH6	 	 	 	 	 	 	 	 	 	 	 
++kHByq8O/8TAAcTfzQf87TuCuLUBv/eKAYCX+AG/hdgBws2sA8GtgQK+r5MF/7uUBcGH1gLA1YEC	 	 	 	 	 	 	 	 	 	 	 
+goGcCf2WF8Dc7QKC9/wC/riiAcHXngPDmI8BgaCJCLzEpgP/hReD5z2+mu4CgNQXwOCTBsDm9QG/	 	 	 	 	 	 	 	 	 	 	 
+lh4=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table src_multi2

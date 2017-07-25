@@ -321,8 +321,8 @@ POSTHOOK: Input: default@orc_a@y=2001/q=8
 POSTHOOK: Input: default@orc_a@y=2001/q=9
 POSTHOOK: Input: default@orc_b
 #### A masked pattern was here ####
-2000	5	52
-2001	5	139630
+2001	4	139630
+2001	7	52
 PREHOOK: query: DROP TABLE orc_a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_a

@@ -109,10 +109,12 @@ PREHOOK: Input: default@tab_date
 POSTHOOK: query: describe formatted tab_date fl_date
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_date
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-fl_date             	date                	2000-11-20          	2010-10-29          	0                   	19                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+fl_date             	date                	2000-11-20          	2010-10-29          	0                   	19                  	                    	                    	                    	                    	SExM4BMTw6qAFv+ogCGC/7ZdgMDTH73K3+4Bgq+jE766tgWAh/xZgIqTVIDhgVDA655SwfXHA4Dy	 
+/Ve//Z0LwMSIToCZ6QOAhZ8Gg8jOEb38rBw=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
@@ -123,7 +125,9 @@ PREHOOK: Input: default@tab_date
 POSTHOOK: query: describe formatted tab_date fl_date
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tab_date
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-fl_date             	date                	1970-01-01          	2015-01-01          	0                   	19                  	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+fl_date             	date                	1970-01-01          	2015-01-01          	0                   	19                  	                    	                    	                    	                    	SExM4BMTw6qAFv+ogCGC/7ZdgMDTH73K3+4Bgq+jE766tgWAh/xZgIqTVIDhgVDA655SwfXHA4Dy	 
+/Ve//Z0LwMSIToCZ6QOAhZ8Gg8jOEb38rBw=	 	 	 	 	 	 	 	 	 	 	 
+	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

@@ -48,10 +48,10 @@ PREHOOK: Input: default@space
 POSTHOOK: query: desc formatted space ` left`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@space
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
- left               	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+ left               	string              	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into space values ("1", "2", "3")
 PREHOOK: type: QUERY
 PREHOOK: Output: default@space
@@ -67,10 +67,11 @@ PREHOOK: Input: default@space
 POSTHOOK: query: desc formatted space ` left`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@space
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
- left               	string              	                    	                    	0                   	1                   	1.0                 	1                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+ left               	string              	                    	                    	0                   	1                   	1.0                 	1                   	                    	                    	SExM4AEBxbi8+AQ=	 
+  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: select * from space
 PREHOOK: type: QUERY
 PREHOOK: Input: default@space

@@ -17,13 +17,14 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.metastore.hbase.stats;
+package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
@@ -34,7 +35,8 @@ public class ColumnStatsAggregatorFactory {
   private ColumnStatsAggregatorFactory() {
   }
 
-  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type, boolean useDensityFunctionForNDVEstimation) {
+  public static ColumnStatsAggregator getColumnStatsAggregator(_Fields type,
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner) {
     ColumnStatsAggregator agg;
     switch (type) {
     case BOOLEAN_STATS:
@@ -42,6 +44,9 @@ public class ColumnStatsAggregatorFactory {
       break;
     case LONG_STATS:
       agg = new LongColumnStatsAggregator();
+      break;
+    case DATE_STATS:
+      agg = new DateColumnStatsAggregator();
       break;
     case DOUBLE_STATS:
       agg = new DoubleColumnStatsAggregator();
@@ -59,6 +64,7 @@ public class ColumnStatsAggregatorFactory {
       throw new RuntimeException("Woh, bad.  Unknown stats type " + type.toString());
     }
     agg.useDensityFunctionForNDVEstimation = useDensityFunctionForNDVEstimation;
+    agg.ndvTuner = ndvTuner;
     return agg;
   }
 
@@ -74,6 +80,10 @@ public class ColumnStatsAggregatorFactory {
 
     case LONG_STATS:
       csd.setLongStats(new LongColumnStatsData());
+      break;
+
+    case DATE_STATS:
+      csd.setDateStats(new DateColumnStatsData());
       break;
 
     case DOUBLE_STATS:

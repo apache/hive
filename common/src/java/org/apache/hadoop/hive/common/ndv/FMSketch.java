@@ -15,22 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common.ndv;
+package org.apache.hadoop.hive.common.ndv.fm;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Random;
 
 import javolution.util.FastBitSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 public class FMSketch implements NumDistinctValueEstimator{
 
   static final Logger LOG = LoggerFactory.getLogger(FMSketch.class.getName());
+  public static final byte[] MAGIC = new byte[] { 'F', 'M' };
 
   /* We want a,b,x to come from a finite field of size 0 to k, where k is a prime number.
    * 2^p - 1 is prime for p = 31. Hence bitvectorSize has to be 31. Pick k to be 2^p -1.
@@ -38,7 +44,7 @@ public class FMSketch implements NumDistinctValueEstimator{
    * independent. As a consequence, the hash values will not distribute uniformly from 0 to 2^p-1
    * thus introducing errors in the estimates.
    */
-  private static final int BIT_VECTOR_SIZE = 31;
+  public static final int BIT_VECTOR_SIZE = 31;
 
   // Refer to Flajolet-Martin'86 for the value of phi
   private static final double PHI = 0.77351;
@@ -111,27 +117,6 @@ public class FMSketch implements NumDistinctValueEstimator{
     }
   }
 
-  public FMSketch(String s, int numBitVectors) {
-    this.numBitVectors = numBitVectors;
-    FastBitSet bitVectorDeser[] = genBitSet(s, numBitVectors);
-    bitVector = new FastBitSet[numBitVectors];
-    for(int i=0; i <numBitVectors; i++) {
-       bitVector[i] = new FastBitSet(BIT_VECTOR_SIZE);
-       bitVector[i].clear();
-       bitVector[i].or(bitVectorDeser[i]);
-    }
-
-    a = null;
-    b = null;
-
-    aValue = null;
-    bValue = null;
-  }
-
-  public FMSketch(String s) {
-    this(s, StringUtils.countMatches(s, "{"));
-  }
-
   /**
    * Resets a distinctValueEstimator object to its original state.
    */
@@ -143,6 +128,10 @@ public class FMSketch implements NumDistinctValueEstimator{
 
   public FastBitSet getBitVector(int index) {
     return bitVector[index];
+  }
+
+  public FastBitSet setBitVector(FastBitSet fastBitSet, int index) {
+    return bitVector[index] = fastBitSet;
   }
 
   public int getnumBitVectors() {
@@ -168,67 +157,30 @@ public class FMSketch implements NumDistinctValueEstimator{
     LOG.debug(t);
   }
 
-  /* Serializes a distinctValueEstimator object to Text for transport.
-   *
-   */
+  @Override
   public String serialize() {
-    String s = new String();
-    for(int i=0; i < numBitVectors; i++) {
-      s = s + (bitVector[i].toString());
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    // write bytes to bos ...
+    try {
+      FMSketchUtils.serializeFM(bos, this);
+      String result = Base64.encodeBase64String(bos.toByteArray());
+      bos.close();
+      return result;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    return s;
   }
 
-  /* Deserializes from string to FastBitSet; Creates a NumDistinctValueEstimator object and
-   * returns it.
-   */
-
-  private FastBitSet[] genBitSet(String s, int numBitVectors) {
-    FastBitSet[] b = new FastBitSet[numBitVectors];
-    for (int j=0; j < numBitVectors; j++) {
-      b[j] = new FastBitSet(BIT_VECTOR_SIZE);
-      b[j].clear();
+  @Override
+  public NumDistinctValueEstimator deserialize(String s) {
+    InputStream is = new ByteArrayInputStream(Base64.decodeBase64(s));
+    try {
+      NumDistinctValueEstimator n = FMSketchUtils.deserializeFM(is);
+      is.close();
+      return n;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
-    int vectorIndex =0;
-
-    /* Parse input string to obtain the indexes that are set in the bitvector.
-     * When a toString() is called on a FastBitSet object to serialize it, the serialization
-     * adds { and } to the beginning and end of the return String.
-     * Skip "{", "}", ",", " " in the input string.
-     */
-    for(int i=1; i < s.length()-1;) {
-      char c = s.charAt(i);
-      i = i + 1;
-
-      // Move on to the next bit vector
-      if (c == '}') {
-         vectorIndex = vectorIndex + 1;
-      }
-
-      // Encountered a numeric value; Extract out the entire number
-      if (c >= '0' && c <= '9') {
-        String t = new String();
-        t = t + c;
-        c = s.charAt(i);
-        i = i + 1;
-
-        while (c != ',' && c!= '}') {
-          t = t + c;
-          c = s.charAt(i);
-          i = i + 1;
-        }
-
-        int bitIndex = Integer.parseInt(t);
-        assert(bitIndex >= 0);
-        assert(vectorIndex < numBitVectors);
-        b[vectorIndex].set(bitIndex);
-        if (c == '}') {
-          vectorIndex =  vectorIndex + 1;
-        }
-      }
-    }
-    return b;
   }
 
   private int generateHash(long v, int hashNum) {
@@ -385,11 +337,6 @@ public class FMSketch implements NumDistinctValueEstimator{
 
   public int lengthFor(JavaDataModel model) {
     return lengthFor(model, getnumBitVectors());
-  }
-
-  @Override
-  public NumDistinctValueEstimator deserialize(String s) {
-    return new FMSketch(s);
   }
 
   // the caller needs to gurrantee that they are the same type based on numBitVectors

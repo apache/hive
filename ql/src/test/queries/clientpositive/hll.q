@@ -1,5 +1,16 @@
 set hive.mapred.mode=nonstrict;
 
+create table n(key int);
+
+insert overwrite table n select null from src;
+
+explain analyze table n compute statistics for columns;
+
+analyze table n compute statistics for columns;
+
+desc formatted n key;
+
+
 create table i(key int);
 
 insert overwrite table i select key from src;
