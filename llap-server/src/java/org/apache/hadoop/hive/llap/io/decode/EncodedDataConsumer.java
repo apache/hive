@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.TypeDescription;
 

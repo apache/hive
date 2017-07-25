@@ -24,7 +24,9 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -43,6 +46,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.OrcConf;
 
@@ -55,10 +59,14 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   private boolean _skipCorrupt; // TODO: get rid of this
   private LlapDaemonCacheMetrics cacheMetrics;
   private LlapDaemonIOMetrics ioMetrics;
+  // TODO: if using in multiple places, e.g. SerDe cache, pass this in.
+  // TODO: should this rather use a threadlocal for NUMA affinity?
+  private final FixedSizedObjectPool<IoTrace> tracePool;
 
   public OrcColumnVectorProducer(OrcMetadataCache metadataCache,
       LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
-      Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics) {
+      Configuration conf, LlapDaemonCacheMetrics cacheMetrics, LlapDaemonIOMetrics ioMetrics,
+      FixedSizedObjectPool<IoTrace> tracePool) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
 
     this.metadataCache = metadataCache;
@@ -68,6 +76,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this._skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
+    this.tracePool = tracePool;
   }
 
   @Override
@@ -81,8 +90,8 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
         _skipCorrupt, counters, ioMetrics);
     OrcEncodedDataReader reader = new OrcEncodedDataReader(
         lowLevelCache, bufferManager, metadataCache, conf, job, split, columnIds, sarg,
-        columnNames, edc, counters, readerSchema);
-    edc.init(reader, reader);
+        columnNames, edc, counters, readerSchema, tracePool);
+    edc.init(reader, reader, reader.getTrace());
     return edc;
   }
 }

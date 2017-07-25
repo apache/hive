@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
@@ -44,6 +46,7 @@ import org.apache.orc.impl.PositionProvider;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.SettableTreeReader;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
@@ -68,6 +71,7 @@ public class OrcEncodedDataConsumer
   private final QueryFragmentCounters counters;
   private boolean[] includedColumns;
   private SchemaEvolution evolution;
+  private IoTrace trace;
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
@@ -152,6 +156,7 @@ public class OrcEncodedDataConsumer
             // When we populate column vectors we skip over the root struct.
             cvb.cols[idx] = createColumn(schema.getChildren().get(columnMapping[idx]), batchSize);
           }
+          trace.logTreeReaderNextVector(idx);
           cvb.cols[idx].ensureSize(batchSize, false);
           reader.nextVector(cvb.cols[idx], null, batchSize);
         }
@@ -224,6 +229,7 @@ public class OrcEncodedDataConsumer
     PositionProvider[] pps = createPositionProviders(columnReaders, batchKey, stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
+      // TODO: we could/should trace seek destinations; pps needs a "peek" method
       columnReaders[i].seek(pps);
     }
   }
@@ -312,5 +318,11 @@ public class OrcEncodedDataConsumer
 
   public SchemaEvolution getSchemaEvolution() {
     return evolution;
+  }
+
+  public void init(ConsumerFeedback<OrcEncodedColumnBatch> upstreamFeedback,
+      Callable<Void> readCallable, IoTrace trace) {
+    super.init(upstreamFeedback, readCallable);
+    this.trace = trace;
   }
 }
