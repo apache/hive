@@ -61,10 +61,12 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hive.common.util.FixedSizedObjectPool;
 
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -183,10 +185,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
     // TODO: this should depends on input format and be in a map, or something.
+    FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
     this.orcCvp = new OrcColumnVectorProducer(
-        metadataCache, cache, bufferManager, conf, cacheMetrics, ioMetrics);
+        metadataCache, cache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool);
     this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
-        serdeCache, bufferManager, conf, cacheMetrics, ioMetrics) : null;
+        serdeCache, bufferManager, conf, cacheMetrics, ioMetrics, tracePool) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();

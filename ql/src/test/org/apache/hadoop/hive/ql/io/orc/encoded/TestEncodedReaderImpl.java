@@ -37,18 +37,20 @@ public class TestEncodedReaderImpl {
     BufferChunk bc = new BufferChunk(one, 0);
     int[] result = new int[3];
     List<IncompleteCb> l = new ArrayList<>();
-    BufferChunk rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    IoTrace trace = new IoTrace(0, false);
+    BufferChunk rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(
+        bc, 0l, result, l, true, trace);
     assertNull(rv);
     one.position(0);
     bc.insertAfter(new BufferChunk(two, 1));
     Arrays.fill(result, -1);
-    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true, trace);
     assertNull(rv);
     one.position(0);
     two.position(0);
     bc.insertAfter(new BufferChunk(two, 1)).insertAfter(new BufferChunk(three, 2));
     Arrays.fill(result, -1);
-    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true, trace);
     assertNotNull(rv);
     for (int i = 0; i < result.length; ++i) {
       assertEquals(i + 1, result[i]);
@@ -56,19 +58,19 @@ public class TestEncodedReaderImpl {
     one.position(0);
     bc.insertAfter(new BufferChunk(twoThree, 1));
     Arrays.fill(result, -1);
-    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true, trace);
     assertNotNull(rv);
     for (int i = 0; i < result.length; ++i) {
       assertEquals(i + 1, result[i]);
     }
     bc = new BufferChunk(oneTwo, 0);
     Arrays.fill(result, -1);
-    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true, trace);
     assertNull(rv);
     three.position(0);
     bc.insertAfter(new BufferChunk(three, 2));
     Arrays.fill(result, -1);
-    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true);
+    rv = EncodedReaderImpl.readLengthBytesFromSmallBuffers(bc, 0l, result, l, true, trace);
     assertNotNull(rv);
     for (int i = 0; i < result.length; ++i) {
       assertEquals(i + 1, result[i]);
