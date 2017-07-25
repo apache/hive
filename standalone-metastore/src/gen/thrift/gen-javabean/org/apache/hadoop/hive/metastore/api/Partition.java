@@ -186,14 +186,14 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   {
     this();
     this.values = values;
-    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
-    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+    this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(dbName);
+    this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(tableName);
     this.createTime = createTime;
     setCreateTimeIsSet(true);
     this.lastAccessTime = lastAccessTime;
     setLastAccessTimeIsSet(true);
     this.sd = sd;
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(parameters);
   }
 
   /**
@@ -206,10 +206,10 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
       this.values = __this__values;
     }
     if (other.isSetDbName()) {
-      this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(other.dbName);
+      this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.dbName);
     }
     if (other.isSetTableName()) {
-      this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(other.tableName);
+      this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.tableName);
     }
     this.createTime = other.createTime;
     this.lastAccessTime = other.lastAccessTime;
@@ -286,7 +286,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setDbName(String dbName) {
-    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
+    this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(dbName);
   }
 
   public void unsetDbName() {
@@ -309,7 +309,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setTableName(String tableName) {
-    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+    this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(tableName);
   }
 
   public void unsetTableName() {
@@ -410,7 +410,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(parameters);
   }
 
   public void unsetParameters() {

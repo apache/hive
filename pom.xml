@@ -1263,7 +1263,7 @@
                     <mkdir dir="${thrift.gen.dir}"/>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift" />
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift" />
                       </path>
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
