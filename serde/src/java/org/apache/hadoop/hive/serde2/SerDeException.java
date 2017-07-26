@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * Generic exception class for SerDes.
  * 
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class SerDeException extends Exception {
   private static final long serialVersionUID = 1L;
 

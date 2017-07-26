@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
@@ -29,6 +31,8 @@ import org.apache.hadoop.io.Writable;
  * new methods can be added in the underlying interface, Serializer, and only implementations
  * that need those methods overwrite it.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class AbstractSerializer implements Serializer {
 
   /**

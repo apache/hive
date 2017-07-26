@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class SerDeStats {
 
   /**

@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * ObjectInspector helps us to look into the internal structure of a complex
  * object.
@@ -35,6 +38,8 @@ package org.apache.hadoop.hive.serde2.objectinspector;
  * also makes sure hashCode() and equals() methods of java.lang.Object directly
  * works for ObjectInspector as well.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface ObjectInspector extends Cloneable {
 
   /**

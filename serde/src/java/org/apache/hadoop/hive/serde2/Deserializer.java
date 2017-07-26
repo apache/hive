@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
@@ -34,6 +36,8 @@ import org.apache.hadoop.io.Writable;
  * All deserializers should extend the abstract class AbstractDeserializer.
  * The interface is necessary for SerDes to be able to implement both Serializer and Deserializer.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface Deserializer {
 
   /**
