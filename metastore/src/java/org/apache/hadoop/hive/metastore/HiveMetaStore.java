@@ -1342,12 +1342,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new InvalidObjectException(tbl.getTableName()
             + " is not a valid object name");
       }
-      String validate = MetaStoreUtils.validateTblColumns(tbl.getSd().getCols());
+      String validate = MetaStoreUtils.validateTblColumns(tbl.getSd().getCols(), hiveConf);
       if (validate != null) {
         throw new InvalidObjectException("Invalid column " + validate);
       }
       if (tbl.getPartitionKeys() != null) {
-        validate = MetaStoreUtils.validateTblColumns(tbl.getPartitionKeys());
+        validate = MetaStoreUtils.validateTblColumns(tbl.getPartitionKeys(), hiveConf);
         if (validate != null) {
           throw new InvalidObjectException("Invalid partition column " + validate);
         }

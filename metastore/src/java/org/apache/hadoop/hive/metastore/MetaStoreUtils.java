@@ -550,12 +550,12 @@ public class MetaStoreUtils {
     return true;
   }
 
-  static public String validateTblColumns(List<FieldSchema> cols) {
+  static public String validateTblColumns(List<FieldSchema> cols, Configuration conf) {
     for (FieldSchema fieldSchema : cols) {
       if (!validateColumnName(fieldSchema.getName())) {
         return "name: " + fieldSchema.getName();
       }
-      String typeError = validateColumnType(fieldSchema.getType());
+      String typeError = validateColumnType(fieldSchema.getType(), conf);
       if (typeError != null) {
         return typeError;
       }
@@ -632,8 +632,6 @@ public class MetaStoreUtils {
     return false;
   }
 
-  public static final int MAX_MS_TYPENAME_LENGTH = 2000; // 4000/2, for an unlikely unicode case
-
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
   /**
    * validate column type
@@ -642,10 +640,12 @@ public class MetaStoreUtils {
    * @param name
    * @return
    */
-  static public String validateColumnType(String type) {
+  static public String validateColumnType(String type, Configuration conf) {
     if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
-    if (type.length() > MAX_MS_TYPENAME_LENGTH) {
-      return "type name is too long: " + type;
+    int maxLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_MAX_TYPENAME_LENGTH);
+    if (type.length() > maxLen) {
+      return "type name length " + type.length() + " exceeds max allowed length " + maxLen
+        + ", type " + type;
     }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
