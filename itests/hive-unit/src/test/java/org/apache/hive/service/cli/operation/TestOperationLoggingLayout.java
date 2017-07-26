@@ -18,11 +18,15 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -30,6 +34,13 @@ import org.apache.hive.service.cli.FetchType;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
+import org.apache.logging.log4j.core.config.AppenderControl;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -95,11 +106,52 @@ public class TestOperationLoggingLayout {
     RowSet rowSetLog = client.fetchResults(operationHandle, FetchOrientation.FETCH_FIRST, 1000,
         FetchType.LOG);
     Iterator<Object[]> iter = rowSetLog.iterator();
+    String queryId = null;
     // non-verbose pattern is %-5p : %m%n. Look for " : "
     while (iter.hasNext()) {
       String row = iter.next()[0].toString();
       Assert.assertEquals(true, row.matches("^.*(FATAL|ERROR|WARN|INFO|DEBUG|TRACE).*$"));
+
+      // look for a row like "INFO  : Query ID = asherman_20170718154720_17c7d18b-36e6-4b35-a8e2-f50847db58ae"
+      String queryIdLoggingProbe = "INFO  : Query ID = ";
+      int index = row.indexOf(queryIdLoggingProbe);
+      if (index >= 0) {
+        queryId = row.substring(queryIdLoggingProbe.length()).trim();
+      }
     }
+    Assert.assertNotNull("Could not find query id, perhaps a logging message changed", queryId);
+
+    checkAppenderState("before operation close ", LogDivertAppender.QUERY_ROUTING_APPENDER, queryId, false);
+    checkAppenderState("before operation close ", LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId, false);
+    client.closeOperation(operationHandle);
+    checkAppenderState("after operation close ", LogDivertAppender.QUERY_ROUTING_APPENDER, queryId, true);
+    checkAppenderState("after operation close ", LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId, true);
+
+  }
+
+  /**
+   * assert that the appender for the given queryId is in the expected state
+   * @param msg a diagnostic
+   * @param routingAppenderName name of the RoutingAppender
+   * @param queryId the query id to use as a key
+   * @param expectedStopped the expected stop state
+   */
+  private void checkAppenderState(String msg, String routingAppenderName, String queryId,
+      boolean expectedStopped) throws NoSuchFieldException, IllegalAccessException {
+    LoggerContext context = (LoggerContext) LogManager.getContext(false);
+    Configuration configuration = context.getConfiguration();
+    LoggerConfig loggerConfig = configuration.getRootLogger();
+    Map<String, Appender> appendersMap = loggerConfig.getAppenders();
+    RoutingAppender routingAppender = (RoutingAppender) appendersMap.get(routingAppenderName);
+    Assert.assertNotNull(msg + "could not find routingAppender " + routingAppenderName, routingAppender);
+    Field defaultsField = RoutingAppender.class.getDeclaredField("appenders");
+    defaultsField.setAccessible(true);
+    ConcurrentHashMap appenders = (ConcurrentHashMap) defaultsField.get(routingAppender);
+    AppenderControl appenderControl = (AppenderControl) appenders.get(queryId);
+    Assert.assertNotNull(msg + "could not find AppenderControl for query id " + queryId, appenderControl);
+    Appender appender = appenderControl.getAppender();
+    Assert.assertNotNull(msg + "could not find Appender for query id " + queryId + " from AppenderControl " + appenderControl, appender);
+    Assert.assertEquals(msg + "Appender for query is in unexpected state", expectedStopped, appender.isStopped());
   }
 
   private SessionHandle setupSession() throws Exception {

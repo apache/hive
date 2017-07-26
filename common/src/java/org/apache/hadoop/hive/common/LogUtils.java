@@ -19,13 +19,22 @@
 package org.apache.hadoop.hive.common;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
+import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
 import org.apache.logging.log4j.spi.DefaultThreadContextMap;
 import org.slf4j.Logger;
@@ -222,4 +231,36 @@ public class LogUtils {
   public static void unregisterLoggingContext() {
     MDC.clear();
   }
+
+  /**
+   * Stop the subordinate appender for the operation log so it will not leak a file descriptor.
+   * @param routingAppenderName the name of the RoutingAppender
+   * @param queryId the id of the query that is closing
+   */
+  public static void stopQueryAppender(String routingAppenderName, String queryId) {
+    LoggerContext context = (LoggerContext) LogManager.getContext(false);
+    org.apache.logging.log4j.core.config.Configuration configuration = context.getConfiguration();
+    LoggerConfig loggerConfig = configuration.getRootLogger();
+    Map<String, Appender> appenders = loggerConfig.getAppenders();
+    RoutingAppender routingAppender = (RoutingAppender) appenders.get(routingAppenderName);
+    // routingAppender can be null if it has not been registered
+    if (routingAppender != null) {
+      // The appender is configured to use ${ctx:queryId} by registerRoutingAppender()
+      try {
+        Class<? extends RoutingAppender> clazz = routingAppender.getClass();
+        Method method = clazz.getDeclaredMethod("getControl", String.class, LogEvent.class);
+        method.setAccessible(true);
+        AppenderControl control = (AppenderControl) method.invoke(routingAppender, queryId, null);
+        Appender subordinateAppender = control.getAppender();
+        if (!subordinateAppender.isStopped()) {
+          // this will cause the subordinate appender to close its output stream.
+          subordinateAppender.stop();
+        }
+      } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+          IllegalArgumentException | InvocationTargetException e) {
+        l4j.warn("Unable to close the operation log appender for query id " + queryId, e);
+      }
+    }
+  }
+
 }

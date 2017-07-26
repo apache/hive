@@ -18,7 +18,6 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,8 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -264,6 +265,10 @@ public abstract class Operation {
       } else {
         operationLog.close();
       }
+      // stop the appenders for the operation log
+      String queryId = queryState.getQueryId();
+      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
   }
 
