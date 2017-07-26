@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Parallelized extends Parameterized {
   private static class ThreadPoolScheduler implements RunnerScheduler {
+    private static final String DEFAULT_TIMEOUT = "10";
     private ExecutorService executor;
 
     public ThreadPoolScheduler() {
@@ -45,7 +46,9 @@ public class Parallelized extends Parameterized {
     public void finished() {
       executor.shutdown();
       try {
-        executor.awaitTermination(10, TimeUnit.MINUTES);
+        String timeoutProp = System.getProperty("junit.parallel.timeout", DEFAULT_TIMEOUT);
+        long timeout = Long.parseLong(timeoutProp);
+        executor.awaitTermination(timeout, TimeUnit.MINUTES);
       } catch (InterruptedException exc) {
         throw new RuntimeException(exc);
       }
