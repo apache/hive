@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -72,4 +72,4 @@ public enum DatabaseProduct {
   public static boolean hasJoinOperationOrderBug(DatabaseProduct dbType) {
     return dbType == DERBY || dbType == ORACLE;
   }
-};
+}
