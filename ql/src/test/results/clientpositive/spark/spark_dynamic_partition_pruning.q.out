@@ -4978,44 +4978,11 @@ POSTHOOK: query: EXPLAIN select count(*) from srcpart_date left join srcpart on 
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date
-                  filterExpr: (date = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
-                            target work: Map 3
-
-  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -5101,44 +5068,11 @@ POSTHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_da
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date
-                  filterExpr: (date = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
-                            target work: Map 1
-
-  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:

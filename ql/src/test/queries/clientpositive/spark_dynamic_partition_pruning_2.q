@@ -116,3 +116,19 @@ SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar';
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
 SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar';
+
+set hive.spark.dynamic.partition.pruning.max.data.size=10000;
+-- Dynamic partition pruning will be removed as data size exceeds the limit;
+-- and for self join on partitioning column, it should not fail (HIVE-10559).
+explain
+select count(*)
+from srcpart s1,
+     srcpart s2
+where s1.ds = s2.ds
+;
+
+select count(*)
+from srcpart s1,
+     srcpart s2
+where s1.ds = s2.ds
+;
