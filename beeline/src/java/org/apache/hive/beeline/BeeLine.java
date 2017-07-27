@@ -1159,7 +1159,6 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(fileStream);
-      output("");   // dummy new line
     }
   }
 
