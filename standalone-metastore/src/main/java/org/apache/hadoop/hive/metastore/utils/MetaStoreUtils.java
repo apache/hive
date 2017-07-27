@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,38 +6,36 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.metastore.utils;
 
-package org.apache.hadoop.hive.metastore;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Define a set of APIs that may vary in different environments
- */
-public interface MetaStoreFS {
+public class MetaStoreUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
   /**
-   * delete a directory
+   * Catches exceptions that can't be handled and bundles them to MetaException
    *
-   * @param f
-   * @param ifPurge
-   * @param recursive
-   * @return true on success
-   * @throws MetaException
+   * @param e exception to wrap.
+   * @throws MetaException wrapper for the exception
    */
-  public boolean deleteDir(FileSystem fs, Path f, boolean recursive,
-      boolean ifPurge, Configuration conf) throws MetaException;
+  public static void logAndThrowMetaException(Exception e) throws MetaException {
+    String exInfo = "Got exception: " + e.getClass().getName() + " "
+        + e.getMessage();
+    LOG.error(exInfo, e);
+    LOG.error("Converting exception to MetaException");
+    throw new MetaException(exInfo);
+  }
 
 }
