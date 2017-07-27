@@ -593,6 +593,55 @@ public abstract class TestHiveMetaStore extends TestCase {
     assertEquals(" should have returned 50 partitions", maxParts, partitions.size());
   }
 
+  public void testAlterTableCascade() throws Throwable {
+    // create a table with multiple partitions
+    String dbName = "compdb";
+    String tblName = "comptbl";
+    String typeName = "Person";
+
+    cleanUp(dbName, tblName, typeName);
+
+    List<List<String>> values = new ArrayList<List<String>>();
+    values.add(makeVals("2008-07-01 14:13:12", "14"));
+    values.add(makeVals("2008-07-01 14:13:12", "15"));
+    values.add(makeVals("2008-07-02 14:13:12", "15"));
+    values.add(makeVals("2008-07-03 14:13:12", "151"));
+
+    createMultiPartitionTableSchema(dbName, tblName, typeName, values);
+    Table tbl = client.getTable(dbName, tblName);
+    List<FieldSchema> cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col", serdeConstants.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with cascade option
+    client.alter_table(dbName, tblName, tbl, true);
+    //
+    Table tbl2 = client.getTable(dbName, tblName);
+    Assert.assertEquals("Unexpected number of cols", 3, tbl2.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col", tbl2.getSd().getCols().get(2).getName());
+    //get a partition
+    List<String> pvalues = new ArrayList<>(2);
+    pvalues.add("2008-07-01 14:13:12");
+    pvalues.add("14");
+    Partition partition = client.getPartition(dbName, tblName, pvalues);
+    Assert.assertEquals("Unexpected number of cols", 3, partition.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col", partition.getSd().getCols().get(2).getName());
+
+    //add another column
+    cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col2", serdeConstants.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with no cascade option
+    client.alter_table(dbName, tblName, tbl, false);
+    tbl2 = client.getTable(dbName, tblName);
+    Assert.assertEquals("Unexpected number of cols", 4, tbl2.getSd().getCols().size());
+    Assert.assertEquals("Unexpected column name", "new_col2", tbl2.getSd().getCols().get(3).getName());
+    //get partition, this partition should not have the newly added column since cascade option
+    //was false
+    partition = client.getPartition(dbName, tblName, pvalues);
+    Assert.assertEquals("Unexpected number of cols", 3, partition.getSd().getCols().size());  
+  }
+
+
   public void testListPartitionNames() throws Throwable {
     // create a table with multiple partitions
     String dbName = "compdb";
