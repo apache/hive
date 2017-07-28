@@ -32,9 +32,9 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
-import org.apache.hive.common.util.HiveVersionInfo;
 
 import com.google.common.collect.ImmutableMap;
+import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 
 
 public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
@@ -160,7 +160,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
 
   @Override
   public String getHiveSchemaVersion() {
-    String hiveVersion = HiveVersionInfo.getShortVersion();
+    String hiveVersion = MetastoreVersionInfo.getShortVersion();
     return getEquivalentVersion(hiveVersion);
   }
 
