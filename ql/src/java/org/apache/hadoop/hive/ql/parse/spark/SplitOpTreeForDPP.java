@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.spark;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -140,7 +140,7 @@ public class SplitOpTreeForDPP implements NodeProcessor {
     }
 
     //Find all pruningSinkSet in new roots
-    Set<Operator<?>> sinkSet = new HashSet<>();
+    Set<Operator<?>> sinkSet = new LinkedHashSet<>();
     for (Operator<?> root : newRoots) {
       SparkUtilities.collectOp(sinkSet, root, SparkPartitionPruningSinkOperator.class);
     }
