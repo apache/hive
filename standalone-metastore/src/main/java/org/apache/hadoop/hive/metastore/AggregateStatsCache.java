@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hive.common.util.BloomFilter;
 
@@ -51,9 +52,9 @@ public class AggregateStatsCache {
   // Current nodes in the cache
   private final AtomicInteger currentNodes = new AtomicInteger(0);
   // Run the cleaner thread when the cache is maxFull% full
-  private final float maxFull;
+  private final double maxFull;
   // Run the cleaner thread until cache is cleanUntil% occupied
-  private final float cleanUntil;
+  private final double cleanUntil;
   // Nodes go stale after this
   private final long timeToLiveMs;
   // Max time when waiting for write locks on node list
@@ -63,9 +64,9 @@ public class AggregateStatsCache {
   // Maximum number of paritions aggregated per cache node
   private final int maxPartsPerCacheNode;
   // Bloom filter false positive probability
-  private final float falsePositiveProbability;
+  private final double falsePositiveProbability;
   // Max tolerable variance for matches
-  private final float maxVariance;
+  private final double maxVariance;
   // Used to determine if cleaner thread is already running
   private boolean isCleaning = false;
   private final AtomicLong cacheHits = new AtomicLong(0);
@@ -74,8 +75,8 @@ public class AggregateStatsCache {
   int numRemovedTTL = 0, numRemovedLRU = 0;
 
   private AggregateStatsCache(int maxCacheNodes, int maxPartsPerCacheNode, long timeToLiveMs,
-      float falsePositiveProbability, float maxVariance, long maxWriterWaitTime,
-      long maxReaderWaitTime, float maxFull, float cleanUntil) {
+      double falsePositiveProbability, double maxVariance, long maxWriterWaitTime,
+      long maxReaderWaitTime, double maxFull, double cleanUntil) {
     this.maxCacheNodes = maxCacheNodes;
     this.maxPartsPerCacheNode = maxPartsPerCacheNode;
     this.timeToLiveMs = timeToLiveMs;
@@ -85,40 +86,33 @@ public class AggregateStatsCache {
     this.maxReaderWaitTime = maxReaderWaitTime;
     this.maxFull = maxFull;
     this.cleanUntil = cleanUntil;
-    this.cacheStore = new ConcurrentHashMap<Key, AggrColStatsList>();
+    this.cacheStore = new ConcurrentHashMap<>();
   }
 
   public static synchronized AggregateStatsCache getInstance(Configuration conf) {
     if (self == null) {
       int maxCacheNodes =
-          HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE);
+          MetastoreConf.getIntVar(conf, ConfVars.AGGREGATE_STATS_CACHE_SIZE);
       // The number of partitions aggregated per cache node
       // If the number of partitions requested is > this value, we'll fetch directly from Metastore
       int maxPartitionsPerCacheNode =
-          HiveConf
-              .getIntVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS);
-      long timeToLiveMs =
-          HiveConf.getTimeVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL,
+          MetastoreConf.getIntVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_PARTITIONS);
+      long timeToLiveMs = MetastoreConf.getTimeVar(conf, ConfVars.AGGREGATE_STATS_CACHE_TTL,
               TimeUnit.SECONDS)*1000;
       // False positives probability we are ready to tolerate for the underlying bloom filter
-      float falsePositiveProbability =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP);
+      double falsePositiveProbability =
+          MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_FPP);
       // Maximum tolerable variance in number of partitions between cached node and our request
-      float maxVariance =
-          HiveConf
-              .getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE);
-      long maxWriterWaitTime =
-          HiveConf.getTimeVar(conf,
-              HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
-              TimeUnit.MILLISECONDS);
-      long maxReaderWaitTime =
-          HiveConf.getTimeVar(conf,
-              HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
-              TimeUnit.MILLISECONDS);
-      float maxFull =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL);
-      float cleanUntil =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL);
+      double maxVariance =
+          MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_VARIANCE);
+      long maxWriterWaitTime = MetastoreConf.getTimeVar(conf,
+              ConfVars.AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT, TimeUnit.MILLISECONDS);
+      long maxReaderWaitTime = MetastoreConf.getTimeVar(conf,
+              ConfVars.AGGREGATE_STATS_CACHE_MAX_READER_WAIT, TimeUnit.MILLISECONDS);
+      double maxFull =
+          MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL);
+      double cleanUntil =
+          MetastoreConf.getDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL);
       self =
           new AggregateStatsCache(maxCacheNodes, maxPartitionsPerCacheNode, timeToLiveMs,
               falsePositiveProbability, maxVariance, maxWriterWaitTime, maxReaderWaitTime, maxFull,
@@ -143,7 +137,7 @@ public class AggregateStatsCache {
     return maxPartsPerCacheNode;
   }
 
-  public float getFalsePositiveProbability() {
+  public double getFalsePositiveProbability() {
     return falsePositiveProbability;
   }
 
@@ -216,7 +210,7 @@ public class AggregateStatsCache {
     // Hits, misses tracked for a candidate node
     MatchStats matchStats;
     // MatchStats for each candidate
-    Map<AggrColStats, MatchStats> candidateMatchStats = new HashMap<AggrColStats, MatchStats>();
+    Map<AggrColStats, MatchStats> candidateMatchStats = new HashMap<>();
     // The final match we intend to return
     AggrColStats bestMatch = null;
     // To compare among potentially multiple matches
@@ -294,7 +288,7 @@ public class AggregateStatsCache {
     AggrColStats node = new AggrColStats(numPartsCached, bloomFilter, colStats);
     AggrColStatsList nodeList;
     AggrColStatsList newNodeList = new AggrColStatsList();
-    newNodeList.nodes = new ArrayList<AggrColStats>();
+    newNodeList.nodes = new ArrayList<>();
     nodeList = cacheStore.putIfAbsent(key, newNodeList);
     if (nodeList == null) {
       nodeList = newNodeList;
@@ -507,7 +501,7 @@ public class AggregateStatsCache {
 
   static class AggrColStatsList {
     // TODO: figure out a better data structure for node list(?)
-    private List<AggrColStats> nodes = new ArrayList<AggrColStats>();
+    private List<AggrColStats> nodes = new ArrayList<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     // Read lock for get operation
     private final Lock readLock = lock.readLock();
