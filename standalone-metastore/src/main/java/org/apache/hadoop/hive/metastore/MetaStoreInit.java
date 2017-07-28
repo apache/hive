@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -51,7 +52,7 @@ public class MetaStoreInit {
    *         configuration
    * @throws MetaException
    */
-  static boolean updateConnectionURL(HiveConf originalConf, Configuration activeConf,
+  static boolean updateConnectionURL(Configuration originalConf, Configuration activeConf,
     String badUrl, MetaStoreInitData updateData)
       throws MetaException {
     String connectUrl = null;
@@ -74,26 +75,23 @@ public class MetaStoreInit {
     if (connectUrl != null && !connectUrl.equals(currentUrl)) {
       LOG.error(
           String.format("Overriding %s with %s",
-              HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(),
+              MetastoreConf.ConfVars.CONNECTURLKEY.toString(),
               connectUrl));
-      activeConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(),
-          connectUrl);
+      MetastoreConf.setVar(activeConf, ConfVars.CONNECTURLKEY, connectUrl);
       return true;
     }
     return false;
   }
 
   static String getConnectionURL(Configuration conf) {
-    return conf.get(
-        HiveConf.ConfVars.METASTORECONNECTURLKEY.toString(), "");
+    return MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY, "");
   }
 
   // Multiple threads could try to initialize at the same time.
-  synchronized private static void initConnectionUrlHook(HiveConf hiveConf,
+  synchronized private static void initConnectionUrlHook(Configuration conf,
     MetaStoreInitData updateData) throws ClassNotFoundException {
 
-    String className =
-        hiveConf.get(HiveConf.ConfVars.METASTORECONNECTURLHOOK.toString(), "").trim();
+    String className = MetastoreConf.getVar(conf, ConfVars.CONNECTURLHOOK, "").trim();
     if (className.equals("")) {
       updateData.urlHookClassName = "";
       updateData.urlHook = null;
@@ -107,6 +105,5 @@ public class MetaStoreInit {
           JavaUtils.getClassLoader());
       updateData.urlHook = (JDOConnectionURLHook) ReflectionUtils.newInstance(urlHookClass, null);
     }
-    return;
   }
 }
