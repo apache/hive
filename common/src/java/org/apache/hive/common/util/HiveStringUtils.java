@@ -1117,10 +1117,13 @@ public class HiveStringUtils {
       return "";  //assume # can only be used at the beginning of line.
     }
     StringBuilder builder = new StringBuilder();
-    for (int index = 0; index < line.length(); index++) {
+    for (int index = 0; index < line.length();) {
       if (startQuote[0] == -1 && index < line.length() - 1 && line.charAt(index) == '-'
           && line.charAt(index + 1) == '-') {
-        return builder.toString().trim();
+        // Jump to the end of current line. When a multiple line query is executed with -e parameter,
+        // it is passed in as one line string separated with '\n'
+        for (; index < line.length() && line.charAt(index) != '\n'; ++index);
+        continue;
       }
 
       char letter = line.charAt(index);
@@ -1132,9 +1135,10 @@ public class HiveStringUtils {
       }
 
       builder.append(letter);
+      index++;
     }
 
-    return builder.toString();
+    return builder.toString().trim();
   }
 
   /**

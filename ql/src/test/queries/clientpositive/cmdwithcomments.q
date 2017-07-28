@@ -10,4 +10,6 @@ limit 1;
 --comment7
 select "this is
 another --string value" from numt where idx =2; --comment8
+select 1, --comment
+2;
 drop table numt;
