@@ -18,9 +18,14 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * Extension of {@link QueryLifeTimeHook} that has hooks for pre and post parsing of a query.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface QueryLifeTimeHookWithParseHooks extends QueryLifeTimeHook {
 
   /**

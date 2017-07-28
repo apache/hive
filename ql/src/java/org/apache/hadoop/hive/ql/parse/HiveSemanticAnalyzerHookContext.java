@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -31,6 +33,8 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
  * Context information provided by Hive to implementations of
  * HiveSemanticAnalyzerHook.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveSemanticAnalyzerHookContext extends Configurable{
   /**
    * @return the Hive db instance; hook implementations can use this for
