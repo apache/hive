@@ -2256,7 +2256,8 @@ public class HiveConf extends Configuration {
 
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
         "Whether to log explain output for every query.\n" +
-        "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
+        "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level\n" +
+        "and in WebUI / Drilldown / Show Query."),
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level. Tez only."),

@@ -207,7 +207,7 @@ public class QueryDisplay {
   }
 
   public synchronized String getExplainPlan() {
-    return returnStringOrUnknown(explainPlan);
+    return explainPlan == null ? "SET hive.log.explain.output TO true TO VIEW PLANS" : explainPlan;
   }
 
   public synchronized void setExplainPlan(String explainPlan) {
