@@ -23,8 +23,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.Task;
 
+
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class StatsCollectionContext {
 
   private final Configuration hiveConf;
