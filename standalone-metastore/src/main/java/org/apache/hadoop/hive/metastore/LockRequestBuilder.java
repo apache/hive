@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -108,7 +108,7 @@ public class LockRequestBuilder {
     Map<String, TableTrie> trie;
 
     LockTrie() {
-      trie = new LinkedHashMap<String, TableTrie>();
+      trie = new LinkedHashMap<>();
     }
 
     public void add(LockComponent comp) {
