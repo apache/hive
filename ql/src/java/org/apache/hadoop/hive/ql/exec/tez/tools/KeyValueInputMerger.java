@@ -21,12 +21,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.mapred.split.TezGroupedSplit;
+import org.apache.tez.mapreduce.lib.MRReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -35,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 
 /**
@@ -50,12 +57,16 @@ public class KeyValueInputMerger extends KeyValueReader {
   public static final Logger l4j = LoggerFactory.getLogger(KeyValueInputMerger.class);
   private PriorityQueue<KeyValueReader> pQueue = null;
   private KeyValueReader nextKVReader = null;
+  private KeyValueReader prevKVReader = null;
   private ObjectInspector[] inputObjInspectors = null;
   private Deserializer deserializer = null;
   private List<StructField> structFields = null;
   private List<ObjectInspector> fieldOIs = null;
   private final Map<KeyValueReader, List<Object>> kvReaderStandardObjMap =
       new HashMap<KeyValueReader, List<Object>>();
+  private final Map<KeyValueReader, Path> kvReaderPathMap =
+      new IdentityHashMap<>();
+  private IOContext ioCxt = null;
 
   public KeyValueInputMerger(List<KeyValueReader> multiMRInputs, Deserializer deserializer,
       ObjectInspector[] inputObjInspectors, List<String> sortCols) throws Exception {
@@ -76,8 +87,28 @@ public class KeyValueInputMerger extends KeyValueReader {
     }
     l4j.info("Initialized the priority queue with multi mr inputs: " + multiMRInputs.size());
     for (KeyValueReader input : multiMRInputs) {
+      TezGroupedSplit split = (TezGroupedSplit) ((MRReader) input).getSplit();
+      List<InputSplit> splits = split.getGroupedSplits();
+      // There maybe more than 1 splits in the group, however, they all have 1 unique path.
+      // Assert that.
+      Path path = ((HiveInputFormat.HiveInputSplit) splits.get(0)).getPath();
+      Path pathFromMap = kvReaderPathMap.putIfAbsent(input, path);
+      if (pathFromMap != null) {
+        assert pathFromMap.equals(path);
+      }
       addToQueue(input);
     }
+  }
+
+  /**
+   * Set the IOContext reference so that input path can be changed.
+   * This is needed because there can be more than one inputs at play
+   * at a given time, however, there is one IOContext which needs
+   * correct input path. In other joins, even when there are multiple
+   * inputs, they are read sequentially which is not the case here.
+   */
+  public void setIOCxt(IOContext ioCxt) {
+    this.ioCxt = ioCxt;
   }
 
   /**
@@ -106,7 +137,15 @@ public class KeyValueInputMerger extends KeyValueReader {
 
     //get the new nextKVReader with lowest key
     nextKVReader = pQueue.poll();
-    return nextKVReader != null;
+    if (nextKVReader == null)
+      return false;
+
+    if (nextKVReader != prevKVReader) {
+      prevKVReader = nextKVReader;
+      // update path in IOContext
+      ioCxt.setInputPath(kvReaderPathMap.get(nextKVReader));
+    }
+    return true;
   }
 
   @Override
@@ -117,6 +156,14 @@ public class KeyValueInputMerger extends KeyValueReader {
   @Override
   public Object getCurrentValue() throws IOException {
     return nextKVReader.getCurrentValue();
+  }
+
+  /**
+   * Cleanup references
+   */
+  public void clean() {
+    ioCxt = null;
+    prevKVReader = null;
   }
 
   /**
