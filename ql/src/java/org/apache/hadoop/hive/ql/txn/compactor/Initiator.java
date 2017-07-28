@@ -188,7 +188,7 @@ public class Initiator extends CompactorThread {
   public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
     super.init(stop, looped);
     checkInterval =
-        conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
+        hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS) ;
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {

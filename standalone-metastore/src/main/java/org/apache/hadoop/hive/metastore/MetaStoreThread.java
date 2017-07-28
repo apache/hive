@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,23 +26,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A thread that runs in the metastore, separate from the threads in the thrift service.
  */
-public interface MetaStoreThread {
-
-  /**
-   * Set the Hive configuration for this thread.
-   * @param conf
-   */
-  void setHiveConf(HiveConf conf);
+public interface MetaStoreThread extends Configurable {
 
   /**
    * Set the id for this thread.
-   * @param threadId
+   * @param threadId id of the thread
    */
   void setThreadId(int threadId);
 
   /**
    * Initialize the thread.  This must not be called until after
-   * {@link #setHiveConf(org.apache.hadoop.hive.conf.HiveConf)} and  {@link #setThreadId(int)}
+   * {@link #setConf(Configuration)}  and  {@link #setThreadId(int)}
    * have been called.
    * @param stop a flag to watch for when to stop.  If this value is set to true,
    *             the thread will terminate the next time through its main loop.

@@ -65,7 +65,7 @@ public class Cleaner extends CompactorThread {
   @Override
   public void run() {
     if (cleanerCheckInterval == 0) {
-      cleanerCheckInterval = conf.getTimeVar(
+      cleanerCheckInterval = hiveConf.getTimeVar(
           HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
