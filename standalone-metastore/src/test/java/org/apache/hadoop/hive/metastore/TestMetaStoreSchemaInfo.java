@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ public class TestMetaStoreSchemaInfo {
     // greater than or equal to it
     // check the compatible case
     IMetaStoreSchemaInfo metastoreSchemaInfo =
-        MetaStoreSchemaInfoFactory.get(new HiveConf(TestMetaStoreSchemaInfo.class));
+        MetaStoreSchemaInfoFactory.get(MetastoreConf.newMetastoreConf());
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.1"));
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.1", "0.0.2"));
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("1.0.2", "2.0.1"));

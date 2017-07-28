@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,16 +42,15 @@ public class MetaStoreSchemaInfoFactory {
   }
 
   public static IMetaStoreSchemaInfo get(Configuration conf, String hiveHome, String dbType) {
-    String className = conf.get(HiveConf.ConfVars.METASTORE_SCHEMA_INFO_CLASS.varname,
-        HiveConf.ConfVars.METASTORE_SCHEMA_INFO_CLASS.defaultStrVal);
-    Class<?> clasz = null;
+    String className = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS);
+    Class<?> clasz;
     try {
       clasz = conf.getClassByName(className);
     } catch (ClassNotFoundException e) {
       LOG.error("Unable to load class " + className, e);
       throw new IllegalArgumentException(e);
     }
-    Constructor<?> constructor = null;
+    Constructor<?> constructor;
     try {
       constructor = clasz.getConstructor(String.class, String.class);
       constructor.setAccessible(true);

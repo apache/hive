@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -64,7 +64,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
 
   private void loadAllUpgradeScripts(String dbType) throws HiveMetaException {
     // load upgrade order for the given dbType
-    List<String> upgradeOrderList = new ArrayList<String>();
+    List<String> upgradeOrderList = new ArrayList<>();
     String upgradeListFile = getMetaStoreScriptDir() + File.separator +
         VERSION_UPGRADE_LIST + "." + dbType;
     try (FileReader fr = new FileReader(upgradeListFile);
@@ -90,7 +90,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   @Override
   public List<String> getUpgradeScripts(String fromVersion)
       throws HiveMetaException {
-    List <String> upgradeScriptList = new ArrayList<String>();
+    List <String> upgradeScriptList = new ArrayList<>();
 
     // check if we are already at current schema level
     if (getHiveSchemaVersion().equals(fromVersion)) {

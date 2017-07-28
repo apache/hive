@@ -17,17 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestMetaStoreSchemaFactory {
-  private HiveConf conf;
+  private Configuration conf;
 
   @Before
   public void setup() {
-    conf = new HiveConf(this.getClass());
+    conf = MetastoreConf.newMetastoreConf();
   }
 
   @Test
@@ -38,7 +40,7 @@ public class TestMetaStoreSchemaFactory {
 
   @Test
   public void testWithConfigSet() {
-    conf.set(HiveConf.ConfVars.METASTORE_SCHEMA_INFO_CLASS.varname,
+    MetastoreConf.setVar(conf, ConfVars.SCHEMA_INFO_CLASS,
         MetaStoreSchemaInfo.class.getCanonicalName());
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf);
     Assert.assertNotNull(metastoreSchemaInfo);
@@ -48,7 +50,7 @@ public class TestMetaStoreSchemaFactory {
 
   @Test
   public void testConstructor() {
-    String className = conf.get(HiveConf.ConfVars.METASTORE_SCHEMA_INFO_CLASS.varname,
+    String className = MetastoreConf.getVar(conf, ConfVars.SCHEMA_INFO_CLASS,
         MetaStoreSchemaInfo.class.getCanonicalName());
     Class<?> clasz = null;
     try {
@@ -61,7 +63,7 @@ public class TestMetaStoreSchemaFactory {
 
   @Test(expected = IllegalArgumentException.class)
   public void testInvalidClassName() {
-    conf.set(HiveConf.ConfVars.METASTORE_SCHEMA_INFO_CLASS.varname, "invalid.class.name");
+    MetastoreConf.setVar(conf, ConfVars.SCHEMA_INFO_CLASS, "invalid.class.name");
     MetaStoreSchemaInfoFactory.get(conf);
   }
 }
