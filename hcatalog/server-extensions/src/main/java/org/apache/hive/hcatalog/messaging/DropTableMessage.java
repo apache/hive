@@ -33,6 +33,7 @@ public abstract class DropTableMessage extends HCatEventMessage {
    * @return Table-name (String).
    */
   public abstract String getTable();
+  public abstract String getTableType();
 
   @Override
   public HCatEventMessage checkValid() {

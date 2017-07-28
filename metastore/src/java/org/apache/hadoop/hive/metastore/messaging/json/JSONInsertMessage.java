@@ -36,7 +36,7 @@ import java.util.List;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson, ptnObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -64,6 +64,7 @@ public class JSONInsertMessage extends InsertMessage {
 
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
 
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
@@ -86,6 +87,11 @@ public class JSONInsertMessage extends InsertMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override

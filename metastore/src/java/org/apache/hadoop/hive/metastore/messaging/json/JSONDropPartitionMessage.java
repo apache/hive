@@ -33,7 +33,7 @@ import java.util.Map;
 public class JSONDropPartitionMessage extends DropPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -49,10 +49,16 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
 
   public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
       List<Map<String, String>> partitions, Long timestamp) {
+    this(server, servicePrincipal, db, table,  null, partitions, timestamp);
+  }
+
+  public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
+      String tableType, List<Map<String, String>> partitions, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.partitions = partitions;
     this.timestamp = timestamp;
     checkValid();
@@ -61,7 +67,7 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   public JSONDropPartitionMessage(String server, String servicePrincipal, Table tableObj,
       List<Map<String, String>> partitionKeyValues, long timestamp) {
     this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
-        partitionKeyValues, timestamp);
+        tableObj.getTableType(), partitionKeyValues, timestamp);
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
@@ -87,6 +93,11 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override

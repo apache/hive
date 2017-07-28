@@ -37,6 +37,8 @@ public abstract class AddPartitionMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Table getTableObj() throws Exception;
 
   /**

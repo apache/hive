@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -384,7 +385,7 @@ public class TestDbNotificationListener {
             emptyParameters);
     Table table =
         new Table(tblName, defaultDbName, tblOwner, startTime, startTime, 0, sd, null,
-            emptyParameters, null, null, null);
+            emptyParameters, null, null, TableType.MANAGED_TABLE.toString());
     msClient.createTable(table);
 
     // Get notifications from metastore
@@ -402,6 +403,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, createTblMsg.getDB());
     assertEquals(tblName, createTblMsg.getTable());
     assertEquals(table, createTblMsg.getTableObj());
+    assertEquals(TableType.MANAGED_TABLE.toString(), createTblMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
@@ -461,6 +463,7 @@ public class TestDbNotificationListener {
 
     AlterTableMessage alterTableMessage = md.getAlterTableMessage(event.getMessage());
     assertEquals(table, alterTableMessage.getTableObjAfter());
+    assertEquals(TableType.MANAGED_TABLE.toString(), alterTableMessage.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
@@ -515,6 +518,7 @@ public class TestDbNotificationListener {
     DropTableMessage dropTblMsg = md.getDropTableMessage(event.getMessage());
     assertEquals(defaultDbName, dropTblMsg.getDB());
     assertEquals(tblName, dropTblMsg.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropTblMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_TABLE, firstEventId + 2);
@@ -584,6 +588,7 @@ public class TestDbNotificationListener {
     Iterator<Partition> ptnIter = addPtnMsg.getPartitionObjs().iterator();
     assertTrue(ptnIter.hasNext());
     assertEquals(partition, ptnIter.next());
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
@@ -654,6 +659,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, alterPtnMsg.getDB());
     assertEquals(tblName, alterPtnMsg.getTable());
     assertEquals(newPart, alterPtnMsg.getPtnObjAfter());
+    assertEquals(TableType.MANAGED_TABLE.toString(), alterPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ADD_PARTITION, firstEventId + 2);
@@ -721,6 +727,7 @@ public class TestDbNotificationListener {
     assertEquals(table.getDbName(), tableObj.getDbName());
     assertEquals(table.getTableName(), tableObj.getTableName());
     assertEquals(table.getOwner(), tableObj.getOwner());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPtnMsg.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_PARTITION, firstEventId + 3);
@@ -803,6 +810,8 @@ public class TestDbNotificationListener {
     assertEquals(dbName, addPtnMsg.getDB());
     assertEquals(tab2.getTableName(), addPtnMsg.getTable());
     Iterator<Partition> ptnIter = addPtnMsg.getPartitionObjs().iterator();
+    assertEquals(TableType.MANAGED_TABLE.toString(), addPtnMsg.getTableType());
+
     assertTrue(ptnIter.hasNext());
     Partition msgPart = ptnIter.next();
     assertEquals(part1.getValues(), msgPart.getValues());
@@ -820,6 +829,7 @@ public class TestDbNotificationListener {
     DropPartitionMessage dropPtnMsg = md.getDropPartitionMessage(event.getMessage());
     assertEquals(dbName, dropPtnMsg.getDB());
     assertEquals(tab1.getTableName(), dropPtnMsg.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), dropPtnMsg.getTableType());
     Iterator<Map<String, String>> parts = dropPtnMsg.getPartitions().iterator();
     assertTrue(parts.hasNext());
     assertEquals(part1.getValues(), Lists.newArrayList(parts.next().values()));
@@ -1204,6 +1214,12 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
     // Parse the message field
     verifyInsert(event, defaultDbName, tblName);
+
+    // Parse the message field
+    InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
+    assertEquals(defaultDbName, insertMessage.getDB());
+    assertEquals(tblName, insertMessage.getTable());
+    assertEquals(TableType.MANAGED_TABLE.toString(), insertMessage.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.INSERT, firstEventId + 2);

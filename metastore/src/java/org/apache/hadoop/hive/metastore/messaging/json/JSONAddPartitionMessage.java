@@ -43,7 +43,7 @@ import java.util.Map;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -73,6 +73,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
     this.timestamp = timestamp;
     partitions = new ArrayList<Map<String, String>>();
     partitionListJson = new ArrayList<String>();
@@ -109,6 +110,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override
