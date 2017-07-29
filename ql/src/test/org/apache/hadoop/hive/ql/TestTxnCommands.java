@@ -888,4 +888,50 @@ public class TestTxnCommands {
 
     //make sure they are the same before and after compaction
   }
+  //@Ignore("see bucket_num_reducers_acid.q")
+  @Test
+  public void testMoreBucketsThanReducers() throws Exception {
+    //see bucket_num_reducers.q bucket_num_reducers2.q
+    // todo: try using set VerifyNumReducersHook.num.reducers=10;
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 1);
+    //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
+    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
+    hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1)");//txn X write to bucket1
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(0,0),(3,3)");// txn X + 1 write to bucket0 + bucket1
+    runStatementOnDriver("update " + Table.ACIDTBL + " set b = -1");
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBL + " order by a, b");
+    int[][] expected = {{0, -1}, {1, -1}, {3, -1}};
+    Assert.assertEquals(stringifyValues(expected), r);
+  }
+  //@Ignore("see bucket_num_reducers_acid2.q")
+  @Test
+  public void testMoreBucketsThanReducers2() throws Exception {
+    //todo: try using set VerifyNumReducersHook.num.reducers=10;
+    //see bucket_num_reducers.q bucket_num_reducers2.q
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
+    //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
+    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+    runStatementOnDriver("create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    //below value for a is bucket id, for b - txn id (logically)
+    runStatementOnDriver("insert into fourbuckets values(0,1),(1,1)");//txn X write to b0 + b1
+    runStatementOnDriver("insert into fourbuckets values(2,2),(3,2)");// txn X + 1 write to b2 + b3
+    runStatementOnDriver("insert into fourbuckets values(0,3),(1,3)");//txn X + 2 write to b0 + b1
+    runStatementOnDriver("insert into fourbuckets values(2,4),(3,4)");//txn X + 3 write to b2 + b3
+    //so with 2 FileSinks and 4 buckets, FS1 should see (0,1),(2,2),(0,3)(2,4) since data is sorted by ROW__ID where tnxid is the first component
+    //FS2 should see (1,1),(3,2),(1,3),(3,4)
+
+    runStatementOnDriver("update fourbuckets set b = -1");
+    List<String> r = runStatementOnDriver("select * from fourbuckets order by a, b");
+    int[][] expected = {{0, -1},{0, -1}, {1, -1}, {1, -1}, {2, -1}, {2, -1}, {3, -1}, {3, -1}};
+    Assert.assertEquals(stringifyValues(expected), r);
+  }
 }

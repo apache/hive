@@ -479,6 +479,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         }
       } else {
         if (writer == null) {
+          //so that we create empty bucket files when needed (but see HIVE-17138)
           writer = OrcFile.createWriter(path, writerOptions);
         }
         writer.close(); // normal close.
