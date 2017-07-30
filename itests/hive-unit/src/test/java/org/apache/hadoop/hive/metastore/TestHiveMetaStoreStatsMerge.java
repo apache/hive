@@ -26,6 +26,8 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog.HyperLogLogBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -153,7 +155,12 @@ public class TestHiveMetaStoreStatsMerge extends TestCase {
     scsd.setMaxColLen(20);
     scsd.setNumNulls(30);
     scsd.setNumDVs(123);
-    scsd.setBitVectors("{0, 4, 5, 7}{0, 1}{0, 1, 2}{0, 1, 4}{0}{0, 2}{0, 3}{0, 2, 3, 4}{0, 1, 4}{0, 1}{0}{0, 1, 3, 8}{0, 2}{0, 2}{0, 9}{0, 1, 4}");
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addString("a");
+    hll.addString("b");
+    hll.addString("c");
+    hll.addString("c");
+    scsd.setBitVectors(hll.serialize());
     data.setStringStats(scsd);
     obj.setStatsData(data);
     cs.addToStatsObj(obj);
@@ -177,7 +184,12 @@ public class TestHiveMetaStoreStatsMerge extends TestCase {
     scsd.setMaxColLen(5);
     scsd.setNumNulls(70);
     scsd.setNumDVs(456);
-    scsd.setBitVectors("{0, 1}{0, 1}{1, 2, 4}{0, 1, 2}{0, 1, 2}{0, 2}{0, 1, 3, 4}{0, 1}{0, 1}{3, 4, 6}{2}{0, 1}{0, 3}{0}{0, 1}{0, 1, 4}");
+    hll = HyperLogLog.builder().build();
+    hll.addString("d");
+    hll.addString("d");
+    hll.addString("c");
+    hll.addString("c");
+    scsd.setBitVectors(hll.serialize());
     data.setStringStats(scsd);
     obj.setStatsData(data);
     cs.addToStatsObj(obj);
@@ -191,8 +203,8 @@ public class TestHiveMetaStoreStatsMerge extends TestCase {
     assertEquals(getScsd.getAvgColLen(), 20.0);
     assertEquals(getScsd.getMaxColLen(), 20);
     assertEquals(getScsd.getNumNulls(), 100);
-    // since metastore is ObjectStore, we use the max function to merge.
-    assertEquals(getScsd.getNumDVs(), 456);
+    // since metastore is ObjectStore, we use the bitvector to merge.
+    assertEquals(getScsd.getNumDVs(), 4);
 
   }
 
