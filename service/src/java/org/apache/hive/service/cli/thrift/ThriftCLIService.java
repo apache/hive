@@ -21,6 +21,7 @@ package org.apache.hive.service.cli.thrift;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -291,13 +292,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     }
   }
 
-  public void startFunction(ThriftCliFunctions function, String extraLogInfo)
+  public void startFunction(ThriftCliFunctions function, String... extraLogInfo)
       throws HiveSQLException {
-    logAuditEvent(function + extraLogInfo);
+    logAuditEvent(function.toString() + String.join("", extraLogInfo));
   }
 
   public void startFunction(ThriftCliFunctions function) throws HiveSQLException {
-    startFunction(function, "");
+    logAuditEvent(function.toString());
   }
 
   public void endFunction(ThriftCliFunctions function) {
@@ -592,8 +593,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
       String statement = req.getStatement();
-      startFunction(ThriftCliFunctions.ExecuteStatement,
+      if(auditLog.isInfoEnabled()) {
+        startFunction(ThriftCliFunctions.ExecuteStatement,
           "\tstmt={" + statement.replaceAll("[\\r\\n\\t]", "") + "}");
+      }
       Map<String, String> confOverlay = req.getConfOverlay();
       Boolean runAsync = req.isRunAsync();
       long queryTimeout = req.getQueryTimeout();
@@ -653,8 +656,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TGetSchemasResp GetSchemas(TGetSchemasReq req) throws TException {
     TGetSchemasResp resp = new TGetSchemasResp();
     try {
-      startFunction(ThriftCliFunctions.GetSchemas, "\tcatalog=" + req.getCatalogName()
-          + "\tschema=" + req.getSchemaName());
+      if(auditLog.isInfoEnabled()) {
+        startFunction(ThriftCliFunctions.GetSchemas, "\tcatalog=", req.getCatalogName(),
+          "\tschema=", req.getSchemaName());
+      }
       OperationHandle opHandle = cliService.getSchemas(
           new SessionHandle(req.getSessionHandle()), req.getCatalogName(), req.getSchemaName());
       resp.setOperationHandle(opHandle.toTOperationHandle());
@@ -672,8 +677,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TGetTablesResp GetTables(TGetTablesReq req) throws TException {
     TGetTablesResp resp = new TGetTablesResp();
     try {
-      startFunction(ThriftCliFunctions.GetTables, "\tcatalog=" + req.getCatalogName()
-          + "\tschema=" + req.getSchemaName() + "\ttable=" + req.getTableName());
+      if(auditLog.isInfoEnabled()) {
+        startFunction(ThriftCliFunctions.GetTables, "\tcatalog=", req.getCatalogName(),
+          "\tschema=", req.getSchemaName(), "\ttable=", req.getTableName());
+      }
       OperationHandle opHandle = cliService
           .getTables(new SessionHandle(req.getSessionHandle()), req.getCatalogName(),
               req.getSchemaName(), req.getTableName(), req.getTableTypes());
@@ -709,9 +716,11 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TGetColumnsResp GetColumns(TGetColumnsReq req) throws TException {
     TGetColumnsResp resp = new TGetColumnsResp();
     try {
-      startFunction(ThriftCliFunctions.GetColumns, "\tcatalog=" + req.getCatalogName() +
-          "\tschema=" + req.getSchemaName() + "\ttable=" + req.getTableName() +
-          "\tcolumn=" + req.getColumnName());
+      if(auditLog.isInfoEnabled()) {
+        startFunction(ThriftCliFunctions.GetColumns, "\tcatalog=", req.getCatalogName(),
+          "\tschema=", req.getSchemaName(), "\ttable=", req.getTableName(),
+          "\tcolumn=", req.getColumnName());
+      }
       OperationHandle opHandle = cliService.getColumns(
           new SessionHandle(req.getSessionHandle()),
           req.getCatalogName(),
@@ -733,8 +742,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TGetFunctionsResp GetFunctions(TGetFunctionsReq req) throws TException {
     TGetFunctionsResp resp = new TGetFunctionsResp();
     try {
-      startFunction(ThriftCliFunctions.GetFunctions, "\tcatalog=" + req.getCatalogName() +
-          "\tschema=" + req.getSchemaName() + "\tfunction=" + req.getFunctionName());
+      if(auditLog.isInfoEnabled()) {
+        startFunction(ThriftCliFunctions.GetFunctions, "\tcatalog=", req.getCatalogName(),
+          "\tschema=", req.getSchemaName(), "\tfunction=", req.getFunctionName());
+      }
       OperationHandle opHandle = cliService.getFunctions(
           new SessionHandle(req.getSessionHandle()), req.getCatalogName(),
           req.getSchemaName(), req.getFunctionName());
