@@ -22,7 +22,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 
 /**
  * Test for unwrapping InvocationTargetException, which is thrown from
@@ -35,7 +35,7 @@ public class TestMetaStoreListenersError extends TestCase {
     System.setProperty("hive.metastore.init.hooks", ErrorInitListener.class.getName());
     int port = MetaStoreUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
       Assert.assertEquals(
@@ -52,7 +52,7 @@ public class TestMetaStoreListenersError extends TestCase {
     System.setProperty("hive.metastore.event.listeners", ErrorEventListener.class.getName());
     int port = MetaStoreUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
       Assert.assertEquals(

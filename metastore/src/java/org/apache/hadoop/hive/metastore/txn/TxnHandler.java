@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -45,7 +46,6 @@ import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 
 import javax.sql.DataSource;
@@ -3701,8 +3701,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static String getMetastoreJdbcPasswd(HiveConf conf) throws SQLException {
     try {
-      return ShimLoader.getHadoopShims().getPassword(conf,
-          HiveConf.ConfVars.METASTOREPWD.varname);
+      return MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     } catch (IOException err) {
       throw new SQLException("Error getting metastore password", err);
     }
