@@ -406,7 +406,9 @@ public class TestMetastoreConf {
   @Test
   public void unsetValues() {
     conf = MetastoreConf.newMetastoreConf();
+    conf.set("a.random.key", "abc");
     Assert.assertNull(MetastoreConf.get(conf, "no.such.key.ever"));
+    Assert.assertEquals("abc", MetastoreConf.get(conf, "a.random.key"));
   }
 
 }

@@ -27,11 +27,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -49,9 +51,13 @@ public class MetastoreConf {
                                                            // metastore key for a value
   private static URL hiveDefaultURL = null;
   private static URL hiveSiteURL = null;
+  private static URL hiveMetastoreSiteURL = null;
+  private static URL metastoreSiteURL = null;
 
+  /*
   private static Map<String, String> metaToHiveKeys;
   private static Map<String, String> hiveToMetaKeys;
+  */
   private static Map<String, ConfVars> keyToVars;
 
   @VisibleForTesting
@@ -871,6 +877,9 @@ public class MetastoreConf {
     if (classLoader == null) {
       classLoader = MetastoreConf.class.getClassLoader();
     }
+    // We don't add this to the resources because we don't want to read config values from it.
+    // But we do find it because we want to remember where it is for later in case anyone calls
+    // getHiveDefaultLocation().
     hiveDefaultURL = classLoader.getResource("hive-default.xml");
 
     // Add in hive-site.xml.  We add this first so that it gets overridden by the new metastore
@@ -880,11 +889,11 @@ public class MetastoreConf {
 
     // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the
     // newer overrides the older.
-    URL hivemetastoreSiteUrl = findConfigFile(classLoader, "hivemetastore-site.xml");
-    if (hivemetastoreSiteUrl != null) conf.addResource(hivemetastoreSiteUrl);
+    hiveMetastoreSiteURL = findConfigFile(classLoader, "hivemetastore-site.xml");
+    if (hiveMetastoreSiteURL != null) conf.addResource(hiveMetastoreSiteURL);
 
     // Add in our conf file
-    URL metastoreSiteURL = findConfigFile(classLoader, "metastore-site.xml");
+    metastoreSiteURL = findConfigFile(classLoader, "metastore-site.xml");
     if (metastoreSiteURL !=  null) conf.addResource(metastoreSiteURL);
 
     // If a system property that matches one of our conf value names is set then use the value
@@ -1248,40 +1257,26 @@ public class MetastoreConf {
    * @return the value set
    */
   public static String get(Configuration conf, String key) {
-    // First see if we can get it as is.  If so, return that.
-    String val = conf.get(key);
-    if (val != null) return val;
-    // See if this is a meta key and we need to look for associated Hive keys
-    if (metaToHiveKeys == null) {
+    // Map this key back to the ConfVars it is associated with.
+    if (keyToVars == null) {
       synchronized (MetastoreConf.class) {
-        if (metaToHiveKeys == null) {
-          metaToHiveKeys = new HashMap<>(ConfVars.values().length);
-          hiveToMetaKeys = new HashMap<>(ConfVars.values().length);
+        if (keyToVars == null) {
           keyToVars = new HashMap<>(ConfVars.values().length * 2);
           for (ConfVars var : ConfVars.values()) {
-            metaToHiveKeys.put(var.varname, var.hiveName);
-            hiveToMetaKeys.put(var.hiveName, var.varname);
             keyToVars.put(var.varname, var);
             keyToVars.put(var.hiveName, var);
           }
         }
       }
     }
-    // Maybe they passed a Hive key and it's set as a metastore key
-    String possibleKey = metaToHiveKeys.get(key);
-    if (possibleKey != null) {
-      String v = conf.get(possibleKey);
-      if (v != null) return v;
+    ConfVars var = keyToVars.get(key);
+    if (var == null) {
+      // Ok, this isn't one we track.  Just return whatever matches the string
+      return conf.get(key);
     }
-    // Maybe they passed a metastore key and it's set as a Hive key
-    possibleKey = hiveToMetaKeys.get(key);
-    if (possibleKey != null) {
-      String v = conf.get(possibleKey);
-      if (v != null) return v;
-    }
-    // Look to see if we have a default value for this.
-    ConfVars confVars = keyToVars.get(key);
-    return confVars == null ? null : confVars.defaultVal.toString();
+    // Check if the metastore key is set first
+    String val = conf.get(var.varname);
+    return val == null ? conf.get(var.hiveName, var.defaultVal.toString()) : val;
   }
 
   public static boolean isPrintable(String key) {
@@ -1315,6 +1310,18 @@ public class MetastoreConf {
 
   public static URL getHiveSiteLocation() {
     return hiveSiteURL;
+  }
+
+  public static URL getHiveMetastoreSiteURL() {
+    return hiveMetastoreSiteURL;
+  }
+
+  public static URL getMetastoreSiteURL() {
+    return metastoreSiteURL;
+  }
+
+  public List<URL> getResourceFileLocations() {
+    return Arrays.asList(hiveSiteURL, hiveMetastoreSiteURL, metastoreSiteURL);
   }
 
   /**
@@ -1442,60 +1449,7 @@ public class MetastoreConf {
               ", which should be in between " + lower + " and " + upper);
         }
       }
-
     }
-
-    /*
-    class PatternSet implements Validator {
-
-      private final List<Pattern> expected = new ArrayList<Pattern>();
-
-      public PatternSet(String... values) {
-        for (String value : values) {
-          expected.add(Pattern.compile(value));
-        }
-      }
-
-      @Override
-      public String validate(String value) {
-        if (value == null) {
-          return "Invalid value.. expects one of patterns " + expected;
-        }
-        for (Pattern pattern : expected) {
-          if (pattern.matcher(value).matches()) {
-            return null;
-          }
-        }
-        return "Invalid value.. expects one of patterns " + expected;
-      }
-
-      @Override
-      public String toDescription() {
-        return "Expects one of the pattern in " + expected;
-      }
-    }
-
-    class RatioValidator implements Validator {
-
-      @Override
-      public String validate(String value) {
-        try {
-          float fvalue = Float.parseFloat(value);
-          if (fvalue < 0 || fvalue > 1) {
-            return "Invalid ratio " + value + ", which should be in between 0 to 1";
-          }
-        } catch (NumberFormatException e) {
-          return e.toString();
-        }
-        return null;
-      }
-
-      @Override
-      public String toDescription() {
-        return "Expects value between 0.0f and 1.0f";
-      }
-    }
-    */
 
     class TimeValidator implements Validator {
 
@@ -1543,99 +1497,6 @@ public class MetastoreConf {
         return time + " " + timeAbbreviationFor(timeUnit);
       }
     }
-    /*
-
-
-    class SizeValidator implements Validator {
-
-      private final Long min;
-      private final boolean minInclusive;
-
-      private final Long max;
-      private final boolean maxInclusive;
-
-      public SizeValidator() {
-        this(null, false, null, false);
-      }
-
-      public SizeValidator(Long min, boolean minInclusive, Long max, boolean maxInclusive) {
-        this.min = min;
-        this.minInclusive = minInclusive;
-        this.max = max;
-        this.maxInclusive = maxInclusive;
-      }
-
-      @Override
-      public String validate(String value) {
-        try {
-          long size = HiveConf.toSizeBytes(value);
-          if (min != null && (minInclusive ? size < min : size <= min)) {
-            return value + " is smaller than " + sizeString(min);
-          }
-          if (max != null && (maxInclusive ? size > max : size >= max)) {
-            return value + " is bigger than " + sizeString(max);
-          }
-        } catch (Exception e) {
-          return e.toString();
-        }
-        return null;
-      }
-
-      public String toDescription() {
-        String description =
-            "Expects a byte size value with unit (blank for bytes, kb, mb, gb, tb, pb)";
-        if (min != null && max != null) {
-          description += ".\nThe size should be in between " +
-              sizeString(min) + (minInclusive ? " (inclusive)" : " (exclusive)") + " and " +
-              sizeString(max) + (maxInclusive ? " (inclusive)" : " (exclusive)");
-        } else if (min != null) {
-          description += ".\nThe time should be bigger than " +
-              (minInclusive ? "or equal to " : "") + sizeString(min);
-        } else if (max != null) {
-          description += ".\nThe size should be smaller than " +
-              (maxInclusive ? "or equal to " : "") + sizeString(max);
-        }
-        return description;
-      }
-
-      private String sizeString(long size) {
-        final String[] units = { " bytes", "Kb", "Mb", "Gb", "Tb" };
-        long current = 1;
-        for (int i = 0; i < units.length && current > 0; ++i) {
-          long next = current << 10;
-          if ((size & (next - 1)) != 0) return (long)(size / current) + units[i];
-          current = next;
-        }
-        return current > 0 ? ((long)(size / current) + "Pb") : (size + units[0]);
-      }
-    }
-
-    public class WritableDirectoryValidator implements Validator {
-
-      @Override
-      public String validate(String value) {
-        final Path path = FileSystems.getDefault().getPath(value);
-        if (path == null && value != null) {
-          return String.format("Path '%s' provided could not be located.", value);
-        }
-        final boolean isDir = Files.isDirectory(path);
-        final boolean isWritable = Files.isWritable(path);
-        if (!isDir) {
-          return String.format("Path '%s' provided is not a directory.", value);
-        }
-        if (!isWritable) {
-          return String.format("Path '%s' provided is not writable.", value);
-        }
-        return null;
-      }
-
-      @Override
-      public String toDescription() {
-        return "Expects a writable directory on the local filesystem";
-      }
-    }
-    */
-
   }
 
 }
