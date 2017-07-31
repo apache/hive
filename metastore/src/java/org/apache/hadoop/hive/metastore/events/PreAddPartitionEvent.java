@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -27,6 +29,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class PreAddPartitionEvent extends PreEventContext {
 
   private final Table table;

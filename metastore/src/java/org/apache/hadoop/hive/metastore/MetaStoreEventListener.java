@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
@@ -44,7 +46,8 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
  * are called whenever an event occurs on metastore. Status of the event whether
  * it was successful or not is contained in container event object.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MetaStoreEventListener implements Configurable {
 
   private Configuration conf;

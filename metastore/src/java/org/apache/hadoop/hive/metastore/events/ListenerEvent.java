@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 
@@ -31,7 +33,8 @@ import java.util.Map;
  *
  * This class is not thread-safe and not expected to be called in parallel.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 @NotThreadSafe
 public abstract class ListenerEvent {
 

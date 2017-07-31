@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Index;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class PreDropIndexEvent extends PreEventContext {
 
   private final Index index;

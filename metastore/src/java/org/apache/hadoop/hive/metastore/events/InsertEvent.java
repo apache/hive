@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
@@ -30,6 +32,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class InsertEvent extends ListenerEvent {
 
   private final Table tableObj;

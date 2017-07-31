@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -25,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import java.util.Collections;
 import java.util.Iterator;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class DropPartitionEvent extends ListenerEvent {
 
   private final Table table;
