@@ -181,7 +181,6 @@ class LlapRecordReader
 
     BaseWork work = null;
     // HIVE-16985: try to find the fake merge work for SMB join, that is really another MapWork.
-    /*
     if (inputName != null) {
       if (prefixes == null ||
           !Lists.newArrayList(prefixes.split(",")).contains(inputName)) {
@@ -191,7 +190,7 @@ class LlapRecordReader
     if (inputName != null) {
       work = Utilities.getMergeWork(job, inputName);
     }
-    */
+
     if (work == null || !(work instanceof MapWork)) {
       work = Utilities.getMapWork(job);
     }
