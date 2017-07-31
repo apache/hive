@@ -130,6 +130,10 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   public static final String SHUFFLE_MANAGE_OS_CACHE = "llap.shuffle.manage.os.cache";
   public static final boolean DEFAULT_SHUFFLE_MANAGE_OS_CACHE = true;
 
+  public static final String SHUFFLE_OS_CACHE_ALWAYS_EVICT =
+      "llap.shuffle.os.cache.always.evict";
+  public static final boolean DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT = false;
+
   public static final String SHUFFLE_READAHEAD_BYTES = "llap.shuffle.readahead.bytes";
   public static final int DEFAULT_SHUFFLE_READAHEAD_BYTES = 4 * 1024 * 1024;
 
@@ -156,6 +160,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
    * sendfile
    */
   private final boolean manageOsCache;
+  private final boolean shouldAlwaysEvictOsCache;
   private final int readaheadLength;
   private final int maxShuffleConnections;
   private final int shuffleBufferSize;
@@ -255,6 +260,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     this.conf = conf;
     manageOsCache = conf.getBoolean(SHUFFLE_MANAGE_OS_CACHE,
         DEFAULT_SHUFFLE_MANAGE_OS_CACHE);
+    shouldAlwaysEvictOsCache = conf.getBoolean(SHUFFLE_OS_CACHE_ALWAYS_EVICT,
+        DEFAULT_SHUFFLE_OS_CACHE_ALWAYS_EVICT);
 
     readaheadLength = conf.getInt(SHUFFLE_READAHEAD_BYTES,
         DEFAULT_SHUFFLE_READAHEAD_BYTES);
@@ -316,6 +323,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       LOG.info("DirWatcher disabled by config");
       dirWatcher = null;
     }
+    LOG.info("manageOsCache:{}, shouldAlwaysEvictOsCache:{}, readaheadLength:{}"
+        + ", maxShuffleConnections:{}, localDirs:{}"
+        + ", shuffleBufferSize:{}, shuffleTransferToAllowed:{}"
+        + ", connectionKeepAliveEnabled:{}, connectionKeepAliveTimeOut:{}"
+        + ", mapOutputMetaInfoCacheSize:{}, sslFileBufferSize:{}",
+        manageOsCache, shouldAlwaysEvictOsCache,readaheadLength, maxShuffleConnections, localDirs,
+        shuffleBufferSize, shuffleTransferToAllowed, connectionKeepAliveEnabled,
+        connectionKeepAliveTimeOut, mapOutputMetaInfoCacheSize, sslFileBufferSize);
   }
 
 
@@ -971,10 +986,14 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       }
       ChannelFuture writeFuture;
       if (ch.getPipeline().get(SslHandler.class) == null) {
+        boolean canEvictAfterTransfer = true;
+        if (!shouldAlwaysEvictOsCache) {
+          canEvictAfterTransfer = (reduce > 0); // e.g broadcast data
+        }
         final FadvisedFileRegion partition = new FadvisedFileRegion(spill,
             info.getStartOffset(), info.getPartLength(), manageOsCache, readaheadLength,
             readaheadPool, spillfile.getAbsolutePath(), 
-            shuffleBufferSize, shuffleTransferToAllowed);
+            shuffleBufferSize, shuffleTransferToAllowed, canEvictAfterTransfer);
         writeFuture = ch.write(partition);
         writeFuture.addListener(new ChannelFutureListener() {
             // TODO error handling; distinguish IO/connection failures,
