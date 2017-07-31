@@ -63,7 +63,7 @@ import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
-import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruningBySize;
+import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruning;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
@@ -125,7 +125,7 @@ public class SparkCompiler extends TaskCompiler {
     runJoinOptimizations(procCtx);
 
     // Remove DPP based on expected size of the output data
-    runRemoveDynamicPruningBySize(procCtx);
+    runRemoveDynamicPruning(procCtx);
 
     // Remove cyclic dependencies for DPP
     runCycleAnalysisForPartitionPruning(procCtx);
@@ -133,13 +133,13 @@ public class SparkCompiler extends TaskCompiler {
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
 
-  private void runRemoveDynamicPruningBySize(OptimizeSparkProcContext procCtx) throws SemanticException {
+  private void runRemoveDynamicPruning(OptimizeSparkProcContext procCtx) throws SemanticException {
     ParseContext pCtx = procCtx.getParseContext();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
 
-    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning By Size",
+    opRules.put(new RuleRegExp("Disabling Dynamic Partition Pruning",
         SparkPartitionPruningSinkOperator.getOperatorName() + "%"),
-        new SparkRemoveDynamicPruningBySize());
+        new SparkRemoveDynamicPruning());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -153,7 +153,7 @@ public class SparkCompiler extends TaskCompiler {
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeSparkProcContext procCtx) {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+    if (!conf.isSparkDPPAny()) {
       return;
     }
 
@@ -265,7 +265,7 @@ public class SparkCompiler extends TaskCompiler {
 
   private void runDynamicPartitionPruning(OptimizeSparkProcContext procCtx)
       throws SemanticException {
-    if (!conf.getBoolVar(HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+    if (!conf.isSparkDPPAny()) {
       return;
     }
 

@@ -111,7 +111,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     FilterDesc desc = filter.getConf();
 
     if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING) &&
-        !parseContext.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+        !parseContext.getConf().isSparkDPPAny()) {
       // nothing to do when the optimization is off
       return null;
     }

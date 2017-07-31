@@ -89,30 +89,17 @@ public class SplitOpTreeForDPP implements NodeProcessor {
       }
     }
 
-    // Locate the op where the branch starts
-    // This is guaranteed to succeed since the branch always follow the pattern
-    // as shown in the first picture above.
-    Operator<?> branchingOp = pruningSinkOp;
-    while (branchingOp != null) {
-      if (branchingOp.getNumChild() > 1) {
-        break;
-      } else {
-        branchingOp = branchingOp.getParentOperators().get(0);
-      }
-    }
-
-    // Check if this is a MapJoin. If so, do not split.
-    for (Operator<?> childOp : branchingOp.getChildOperators()) {
-      if (childOp instanceof ReduceSinkOperator &&
-          childOp.getChildOperators().get(0) instanceof MapJoinOperator) {
-        context.pruningSinkSet.add(pruningSinkOp);
-        return null;
-      }
+    // If pruning sink operator is with map join, then pruning sink need not be split to a
+    // separate tree.  Add the pruning sink operator to context and return
+    if (pruningSinkOp.isWithMapjoin()) {
+      context.pruningSinkSet.add(pruningSinkOp);
+      return null;
     }
 
     List<Operator<?>> roots = new LinkedList<Operator<?>>();
     collectRoots(roots, pruningSinkOp);
 
+    Operator<?> branchingOp = pruningSinkOp.getBranchingOp();
     List<Operator<?>> savedChildOps = branchingOp.getChildOperators();
     List<Operator<?>> firstNodesOfPruningBranch = findFirstNodesOfPruningBranch(branchingOp);
     branchingOp.setChildOperators(Utilities.makeList(firstNodesOfPruningBranch.toArray(new

@@ -400,7 +400,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
       // Prune partitions
       if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && HiveConf.getBoolVar(job, HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+          && HiveConf.isSparkDPPAny(job)) {
         SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
         try {
           pruner.prune(mrwork, job);
