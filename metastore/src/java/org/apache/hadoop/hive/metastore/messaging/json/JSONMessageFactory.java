@@ -111,7 +111,7 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
     return new JSONDropTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), now());
+        table.getTableName(), table.getTableType(), now());
   }
 
   @Override
@@ -165,6 +165,13 @@ public class JSONMessageFactory extends MessageFactory {
       Iterator<String> fileIter) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
         fileIter, now());
+  }
+
+  @Override
+  public InsertMessage buildInsertMessage(String db, String table, String tableType, Map<String,
+      String> partKeyVals, Iterator<String> fileIter) {
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, tableType,
+        partKeyVals, fileIter, now());
   }
 
   private long now() {

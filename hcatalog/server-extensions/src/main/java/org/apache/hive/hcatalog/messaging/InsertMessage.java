@@ -36,6 +36,7 @@ public abstract class InsertMessage extends HCatEventMessage {
    * @return Table-name (String).
    */
   public abstract String getTable();
+  public abstract String getTableType();
 
   /**
    * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a

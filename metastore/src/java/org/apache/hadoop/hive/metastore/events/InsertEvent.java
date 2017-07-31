@@ -37,6 +37,7 @@ public class InsertEvent extends ListenerEvent {
   // we have just the string names, but that's fine for what we need.
   private final String db;
   private final String table;
+  private final String tableType;
   private final Map<String, String> keyValues;
   private final List<String> files;
   private List<String> fileChecksums = new ArrayList<String>();
@@ -60,6 +61,7 @@ public class InsertEvent extends ListenerEvent {
     GetTableRequest req = new GetTableRequest(db, table);
     req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
     Table t = handler.get_table_req(req).getTable();
+    tableType = t.getTableType();
     keyValues = new LinkedHashMap<String, String>();
     if (partVals != null) {
       for (int i = 0; i < partVals.size(); i++) {
@@ -81,6 +83,8 @@ public class InsertEvent extends ListenerEvent {
   public String getTable() {
     return table;
   }
+
+  public String getTableType() {return tableType; }
 
   /**
    * @return List of values for the partition keys.

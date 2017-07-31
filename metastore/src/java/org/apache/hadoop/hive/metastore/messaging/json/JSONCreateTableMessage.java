@@ -35,7 +35,7 @@ import com.google.common.collect.Lists;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
   @JsonProperty
   Long timestamp;
   @JsonProperty
@@ -48,18 +48,25 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      Long timestamp) {
+      String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
     checkValid();
   }
 
+  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
+      Long timestamp) {
+    this(server, servicePrincipal, db, table, null, timestamp);
+  }
+
   public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
       Iterator<String> fileIter, Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(), timestamp);
+    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+        tableObj.getTableType(), timestamp);
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
@@ -91,6 +98,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override

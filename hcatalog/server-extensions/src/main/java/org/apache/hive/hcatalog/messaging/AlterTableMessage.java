@@ -28,6 +28,7 @@ public abstract class AlterTableMessage extends HCatEventMessage {
   }
 
   public abstract String getTable();
+  public abstract String getTableType();
 
   @Override
   public HCatEventMessage checkValid() {

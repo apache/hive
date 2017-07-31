@@ -236,4 +236,7 @@ public abstract class MessageFactory {
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
       Map<String, String> partVals, Iterator<String> files);
+
+  public abstract InsertMessage buildInsertMessage(String db, String table, String tableType,
+      Map<String, String> partVals, Iterator<String> files);
 }

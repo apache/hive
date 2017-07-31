@@ -36,6 +36,8 @@ public abstract class InsertMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   /**
    * Get the map of partition keyvalues.  Will be null if this insert is to a table and not a
    * partition.

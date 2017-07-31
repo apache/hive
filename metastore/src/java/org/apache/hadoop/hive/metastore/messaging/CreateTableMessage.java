@@ -33,6 +33,8 @@ public abstract class CreateTableMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Table getTableObj() throws Exception;
 
   /**

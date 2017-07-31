@@ -28,6 +28,8 @@ public abstract class AlterTableMessage extends EventMessage {
 
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Table getTableObjBefore() throws Exception;
 
   public abstract Table getTableObjAfter() throws Exception;

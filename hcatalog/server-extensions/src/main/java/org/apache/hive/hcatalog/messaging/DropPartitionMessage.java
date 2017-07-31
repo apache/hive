@@ -32,6 +32,7 @@ public abstract class DropPartitionMessage extends HCatEventMessage {
   }
 
   public abstract String getTable();
+  public abstract String getTableType();
   public abstract List<Map<String, String>> getPartitions ();
 
   @Override
