@@ -22,6 +22,7 @@ import static org.apache.hadoop.fs.CommonConfigurationKeys.HADOOP_SECURITY_AUTHE
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Locale;
@@ -114,6 +115,21 @@ public abstract class HadoopThriftAuthBridge {
     return serverPrincipal;
   }
 
+  /**
+   * Method to get canonical-ized hostname, given a hostname (possibly a CNAME).
+   * This should allow for service-principals to use simplified CNAMEs.
+   * @param hostName The hostname to be canonical-ized.
+   * @return Given a CNAME, the canonical-ized hostname is returned. If not found, the original hostname is returned.
+   */
+  public String getCanonicalHostName(String hostName) {
+    try {
+      return InetAddress.getByName(hostName).getCanonicalHostName();
+    }
+    catch(UnknownHostException exception) {
+      LOG.warn("Could not retrieve canonical hostname for " + hostName, exception);
+      return hostName;
+    }
+  }
 
   public UserGroupInformation getCurrentUGIWithConf(String authMethod)
       throws IOException {
