@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -33,6 +35,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -54,6 +58,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
@@ -189,7 +194,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
   // Current number of open txns
-  private static volatile long numOpenTxns = 0;
+  private static final AtomicLong numOpenTxns = new AtomicLong();
   // Whether number of open transactions reaches the threshold
   private static volatile boolean tooManyOpenTxns = false;
   // The AcidHouseKeeperService for counting open transactions
@@ -272,6 +277,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new RuntimeException(e);
         } finally {
           closeDbConn(dbConn);
+        }
+
+        // Set up a metric to track the open txns
+        MetricRegistry registry = Metrics.getRegistry();
+        if (registry != null) {
+          if (!registry.getNames().contains(MetricsConstants.NUM_OPEN_TXNS)) {
+            registry.register(MetricsConstants.NUM_OPEN_TXNS, new Gauge<Long>() {
+              @Override
+              public Long getValue() {
+                return numOpenTxns.get();
+              }
+            });
+          }
         }
       }
     }
@@ -460,11 +478,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
 
-    if (!tooManyOpenTxns && numOpenTxns >= maxOpenTxns) {
+    if (!tooManyOpenTxns && numOpenTxns.get() >= maxOpenTxns) {
       tooManyOpenTxns = true;
     }
     if (tooManyOpenTxns) {
-      if (numOpenTxns < maxOpenTxns * 0.9) {
+      if (numOpenTxns.get() < maxOpenTxns * 0.9) {
         tooManyOpenTxns = false;
       } else {
         LOG.warn("Maximum allowed number of open transactions (" + maxOpenTxns + ") has been " +
@@ -3159,7 +3177,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.error("Transaction database not properly configured, " +
               "can't find txn_state from TXNS.");
         } else {
-          numOpenTxns = rs.getLong(1);
+          numOpenTxns.set(rs.getLong(1));
         }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
