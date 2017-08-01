@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -70,8 +69,7 @@ public class FileOperations {
     for (FileStatus fileStatus : fileStatuses) {
       srcPaths.add(fileStatus.getPath());
     }
-
-    ReplCopyTask.doCopy(exportRootDataDir, exportFileSystem, srcPaths, dataFileSystem, hiveConf);
+    new CopyUtils(hiveConf).doCopy(exportRootDataDir, srcPaths);
   }
 
   /**

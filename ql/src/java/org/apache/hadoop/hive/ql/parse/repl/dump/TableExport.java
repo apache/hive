@@ -57,7 +57,7 @@ public class TableExport {
       throws SemanticException {
     this.tableSpec = (tableSpec != null
         && tableSpec.tableHandle.isTemporary()
-        && !replicationSpec.isInReplicationScope())
+        && replicationSpec.isInReplicationScope())
         ? null
         : tableSpec;
     this.replicationSpec = replicationSpec;

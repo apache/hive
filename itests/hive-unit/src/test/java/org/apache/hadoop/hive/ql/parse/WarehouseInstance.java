@@ -64,7 +64,7 @@ class WarehouseInstance implements Closeable {
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster, boolean hiveInTests) throws Exception {
     this.logger = logger;
     this.miniDFSCluster = cluster;
     assert miniDFSCluster.isClusterUp();
@@ -73,10 +73,14 @@ class WarehouseInstance implements Closeable {
 
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
-    initialize(cmRootPath.toString());
+    initialize(cmRootPath.toString(), hiveInTests);
   }
 
-  private void initialize(String cmRoot) throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+    this(logger, cluster, true);
+  }
+
+  private void initialize(String cmRoot, boolean hiveInTest) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
     String hiveWarehouseLocation = System.getProperty("test.warehouse.dir", "/tmp")
@@ -89,6 +93,7 @@ class WarehouseInstance implements Closeable {
       return;
     }
 
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, hiveInTest);
     // turn on db notification listener on meta store
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
     hiveConf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
@@ -177,8 +182,7 @@ class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance verify(String data) throws IOException {
-    verifyResults(data == null ? new String[] {} : new String[] { data });
-    return this;
+    return verifyResults(data == null ? new String[] {} : new String[] { data });
   }
 
   /**
@@ -188,7 +192,7 @@ class WarehouseInstance implements Closeable {
    * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
    * before assert.
    */
-  private void verifyResults(String[] data) throws IOException {
+  WarehouseInstance verifyResults(String[] data) throws IOException {
     List<String> results = getOutput();
     logger.info("Expecting {}", StringUtils.join(data, ","));
     logger.info("Got {}", results);
@@ -196,6 +200,7 @@ class WarehouseInstance implements Closeable {
     for (int i = 0; i < data.length; i++) {
       assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
     }
+    return this;
   }
 
   List<String> getOutput() throws IOException {
