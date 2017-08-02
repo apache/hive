@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -38,8 +37,10 @@ import org.slf4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.toWriteEntity;
 
@@ -70,7 +71,7 @@ public class TableExport {
     this.paths = paths;
   }
 
-  public AuthEntities run() throws SemanticException {
+  public AuthEntities write() throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
@@ -139,13 +140,7 @@ public class TableExport {
           throw new IllegalStateException(
               "partitions cannot be null for partitionTable :" + tableSpec.tableName);
         }
-        for (Partition partition : partitions) {
-          Path fromPath = partition.getDataLocation();
-          // this the data copy
-          Path rootDataDumpDir = paths.partitionExportDir(partition.getName());
-          new FileOperations(fromPath, rootDataDumpDir, conf).export(replicationSpec);
-          authEntities.inputs.add(new ReadEntity(partition));
-        }
+        new PartitionExport(paths, partitions, conf, authEntities).write(replicationSpec);
       } else {
         Path fromPath = tableSpec.tableHandle.getDataLocation();
         //this is the data copy
@@ -210,7 +205,7 @@ public class TableExport {
       }
     }
 
-    private Path partitionExportDir(String partitionName) throws SemanticException {
+    Path partitionExportDir(String partitionName) throws SemanticException {
       return exportDir(new Path(exportRootDir, partitionName));
     }
 
@@ -271,7 +266,12 @@ public class TableExport {
   }
 
   public static class AuthEntities {
-    public final Set<ReadEntity> inputs = new HashSet<>();
+    /**
+     * This is  concurrent implementation as
+     * @see org.apache.hadoop.hive.ql.parse.repl.dump.PartitionExport
+     * uses multiple threads to flush out partitions.
+     */
+    public final Set<ReadEntity> inputs = Collections.newSetFromMap(new ConcurrentHashMap<>());
     public final Set<WriteEntity> outputs = new HashSet<>();
   }
 }
