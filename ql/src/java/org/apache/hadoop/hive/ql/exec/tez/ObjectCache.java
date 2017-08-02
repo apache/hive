@@ -54,6 +54,11 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
     registry = staticRegistry;
   }
 
+  public static boolean isObjectRegistryConfigured() {
+    return (staticRegistry != null);
+  }
+
+
   public static void setupObjectRegistry(ObjectRegistry objectRegistry) {
     staticRegistry = objectRegistry;
     staticPool = Executors.newCachedThreadPool();
