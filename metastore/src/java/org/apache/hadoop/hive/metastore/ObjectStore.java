@@ -1725,6 +1725,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (toPersist.size() > 0) {
         pm.makePersistentAll(toPersist);
+        pm.flush();
       }
 
       success = commitTransaction();
