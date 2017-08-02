@@ -28,11 +28,11 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.LinkedHashSet;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -170,7 +170,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void addEntities() throws SemanticException {
-    Database database = getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    Database database = getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
     // This restricts macro creation to privileged users.
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }

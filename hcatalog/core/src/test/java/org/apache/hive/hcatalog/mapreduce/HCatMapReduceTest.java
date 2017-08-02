@@ -36,8 +36,8 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -88,7 +88,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class HCatMapReduceTest extends HCatBaseTest {
   private static final Logger LOG = LoggerFactory.getLogger(HCatMapReduceTest.class);
 
-  protected static String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+  protected static String dbName = Warehouse.DEFAULT_DATABASE_NAME;
   protected static final String TABLE_NAME = "testHCatMapReduceTable";
 
   private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
@@ -155,7 +155,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
   @After
   public void deleteTable() throws Exception {
     try {
-      String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+      String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME : dbName;
 
       client.dropTable(databaseName, tableName);
       // in case of external table, drop the table contents as well
@@ -176,7 +176,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     // SerDe is in the disabled serdes list.
     Assume.assumeTrue(!DISABLED_SERDES.contains(serdeClass));
 
-    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+    String databaseName = (dbName == null) ? Warehouse.DEFAULT_DATABASE_NAME : dbName;
     try {
       client.dropTable(databaseName, tableName);
     } catch (Exception e) {

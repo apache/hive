@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -181,7 +180,7 @@ public final class RewriteQueryUsingAggregateIndexCtx  implements NodeProcessorC
     TableScanDesc indexTableScanDesc = new TableScanDesc(indexTableHandle);
     indexTableScanDesc.setGatherStats(false);
 
-    String k = MetaStoreUtils.encodeTableName(indexTableName) + Path.SEPARATOR;
+    String k = org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.encodeTableName(indexTableName) + Path.SEPARATOR;
     indexTableScanDesc.setStatsAggPrefix(k);
     scanOperator.setConf(indexTableScanDesc);
 

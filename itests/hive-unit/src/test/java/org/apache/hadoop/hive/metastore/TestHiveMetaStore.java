@@ -3212,7 +3212,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
   @Test
   public void testDBOwner() throws NoSuchObjectException, MetaException, TException {
-    Database db = client.getDatabase(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    Database db = client.getDatabase(Warehouse.DEFAULT_DATABASE_NAME);
     assertEquals(db.getOwnerName(), HiveMetaStore.PUBLIC);
     assertEquals(db.getOwnerType(), PrincipalType.ROLE);
   }

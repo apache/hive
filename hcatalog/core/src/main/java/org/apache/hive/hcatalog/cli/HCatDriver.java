@@ -22,7 +22,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -113,7 +112,7 @@ public class HCatDriver extends Driver {
       }
     } else {
       // looks like a db operation
-      if (dbName.isEmpty() || dbName.equals(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+      if (dbName.isEmpty() || dbName.equals(Warehouse.DEFAULT_DATABASE_NAME)) {
         // We dont set perms or groups for default dir.
         return 0;
       } else {

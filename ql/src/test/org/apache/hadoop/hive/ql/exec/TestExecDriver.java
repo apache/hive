@@ -26,13 +26,13 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -137,7 +137,7 @@ public class TestExecDriver extends TestCase {
       cols.add("key");
       cols.add("value");
       for (String src : srctables) {
-        db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
+        db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class,
             HiveIgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src, false, true, false, false, false);
@@ -492,7 +492,7 @@ public class TestExecDriver extends TestCase {
   public void testMapPlan1() throws Exception {
 
     LOG.info("Beginning testMapPlan1");
-    populateMapPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
+    populateMapPlan1(db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src"));
     executePlan();
     fileDiff("lt100.txt.deflate", "mapplan1.out");
   }
@@ -500,7 +500,7 @@ public class TestExecDriver extends TestCase {
   public void testMapPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-    populateMapPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
+    populateMapPlan2(db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src"));
     executePlan();
     fileDiff("lt100.txt", "mapplan2.out");
   }
@@ -508,7 +508,7 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan1() throws Exception {
 
     LOG.info("Beginning testMapRedPlan1");
-    populateMapRedPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan1(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
@@ -517,7 +517,7 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-    populateMapRedPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan2(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("lt100.sorted.txt", "mapredplan2.out");
@@ -526,8 +526,8 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan3() throws Exception {
 
     LOG.info("Beginning testMapPlan3");
-    populateMapRedPlan3(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-        "src"), db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src2"));
+    populateMapRedPlan3(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
+        "src"), db.getTable(Warehouse.DEFAULT_DATABASE_NAME, "src2"));
     executePlan();
     fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
   }
@@ -535,7 +535,7 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan4() throws Exception {
 
     LOG.info("Beginning testMapPlan4");
-    populateMapRedPlan4(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan4(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
@@ -544,7 +544,7 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan5() throws Exception {
 
     LOG.info("Beginning testMapPlan5");
-    populateMapRedPlan5(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan5(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
@@ -553,7 +553,7 @@ public class TestExecDriver extends TestCase {
   public void testMapRedPlan6() throws Exception {
 
     LOG.info("Beginning testMapPlan6");
-    populateMapRedPlan6(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+    populateMapRedPlan6(db.getTable(Warehouse.DEFAULT_DATABASE_NAME,
         "src"));
     executePlan();
     fileDiff("lt100.sorted.txt", "mapredplan6.out");
