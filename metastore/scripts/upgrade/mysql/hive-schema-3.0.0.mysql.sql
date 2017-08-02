@@ -662,6 +662,7 @@ CREATE TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `BIG_DECIMAL_HIGH_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin,
  `NUM_NULLS` bigint(20) NOT NULL,
  `NUM_DISTINCTS` bigint(20),
+ `BIT_VECTOR` blob,
  `AVG_COL_LEN` double(53,4),
  `MAX_COL_LEN` bigint(20),
  `NUM_TRUES` bigint(20),

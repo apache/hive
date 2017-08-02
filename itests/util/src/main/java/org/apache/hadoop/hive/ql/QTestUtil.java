@@ -2386,7 +2386,8 @@ public class QTestUtil {
         for (int i = 2; i < splits.length; i++) {
           sb.append(splits[i]+"@");
         }
-        return sb.append(tblID).toString();
+        // Add tbl_id and empty bitvector
+        return sb.append(tblID).append("@").toString();
         });
 
       Files.write(tmpFileLoc1, (Iterable<String>)replaced::iterator);

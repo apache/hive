@@ -231,6 +231,7 @@ CREATE TABLE TAB_COL_STATS
     LONG_LOW_VALUE bigint NULL,
     MAX_COL_LEN bigint NULL,
     NUM_DISTINCTS bigint NULL,
+    BIT_VECTOR varbinary(max) NULL,
     NUM_FALSES bigint NULL,
     NUM_NULLS bigint NOT NULL,
     NUM_TRUES bigint NULL,
