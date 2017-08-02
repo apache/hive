@@ -1761,13 +1761,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
       } catch(NumberFormatException ex) {
-  // nothing to do
+        // nothing to do
       }
 
       if (trashEnabled) {
         try {
           HadoopShims.HdfsEncryptionShim shim =
-            ShimLoader.getHadoopShims().createHdfsEncryptionShim(FileSystem.get(hiveConf), hiveConf);
+            ShimLoader.getHadoopShims().createHdfsEncryptionShim(pathToData.getFileSystem(hiveConf), hiveConf);
           if (shim.isPathEncrypted(pathToData)) {
             throw new MetaException("Unable to drop " + objectName + " because it is in an encryption zone" +
               " and trash is enabled.  Use PURGE option to skip trash.");
