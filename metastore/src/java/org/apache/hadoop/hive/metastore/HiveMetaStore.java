@@ -425,13 +425,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       super(name);
       hiveConf = conf;
       isInTest = HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST);
-      synchronized (HMSHandler.class) {
-        if (threadPool == null) {
-          int numThreads = HiveConf.getIntVar(conf,
-              ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
-          threadPool = Executors.newFixedThreadPool(numThreads,
-              new ThreadFactoryBuilder().setDaemon(true)
-                  .setNameFormat("HMSHandler #%d").build());
+      if (threadPool == null) {
+        synchronized (HMSHandler.class) {
+          if (threadPool == null) {
+            int numThreads = HiveConf.getIntVar(conf,
+                ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
+            threadPool = Executors.newFixedThreadPool(numThreads,
+                new ThreadFactoryBuilder().setDaemon(true)
+                    .setNameFormat("HMSHandler #%d").build());
+          }
         }
       }
       if (init) {
