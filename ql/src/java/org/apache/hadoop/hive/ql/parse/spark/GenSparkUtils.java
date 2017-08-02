@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.spark;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ import java.util.Set;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
@@ -43,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
@@ -53,7 +57,9 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
@@ -269,6 +275,11 @@ public class GenSparkUtils {
 
     Iterator<Operator<?>> it = newRoots.iterator();
     for (Operator<?> orig: roots) {
+      Set<FileSinkOperator> fsOpSet = OperatorUtils.findOperators(orig, FileSinkOperator.class);
+      for (FileSinkOperator fsOp : fsOpSet) {
+        context.fileSinkSet.remove(fsOp);
+      }
+
       Operator<?> newRoot = it.next();
       if (newRoot instanceof HashTableDummyOperator) {
         dummyOps.add((HashTableDummyOperator) newRoot);
@@ -289,6 +300,26 @@ public class GenSparkUtils {
     while (!operators.isEmpty()) {
       Operator<?> current = operators.pop();
       seen.add(current);
+
+      if (current instanceof FileSinkOperator) {
+        FileSinkOperator fileSink = (FileSinkOperator)current;
+
+        // remember it for additional processing later
+        context.fileSinkSet.add(fileSink);
+
+        FileSinkDesc desc = fileSink.getConf();
+        Path path = desc.getDirName();
+        List<FileSinkDesc> linked;
+
+        if (!context.linkedFileSinks.containsKey(path)) {
+          linked = new ArrayList<FileSinkDesc>();
+          context.linkedFileSinks.put(path, linked);
+        }
+        linked = context.linkedFileSinks.get(path);
+        linked.add(desc);
+
+        desc.setLinkedFileSinkDesc(linked);
+      }
 
       if (current instanceof UnionOperator) {
         Operator<?> parent = null;
@@ -344,7 +375,7 @@ public class GenSparkUtils {
       }
     }
 
-    Path finalName = GenMapRedUtils.createMoveTask(context.currentTask,
+    Path finalName = createMoveTask(context.currentTask,
         chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
 
     if (chDir) {
@@ -362,6 +393,52 @@ public class GenSparkUtils {
         context.currentTask.setFetchSource(true);
       }
     }
+  }
+
+  /**
+   * Create and add any dependent move tasks.
+   *
+   * This is forked from {@link GenMapRedUtils}. The difference is that it doesn't check
+   * 'isLinkedFileSink' and does not set parent dir for the linked file sinks.
+   */
+  public static Path createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+      FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
+      HiveConf hconf, DependencyCollectionTask dependencyTask) {
+
+    Path dest = null;
+
+    if (chDir) {
+      dest = fsOp.getConf().getFinalDirName();
+
+      // generate the temporary file
+      // it must be on the same file system as the current destination
+      Context baseCtx = parseCtx.getContext();
+
+      Path tmpDir = baseCtx.getExternalTmpPath(dest);
+
+      FileSinkDesc fileSinkDesc = fsOp.getConf();
+      // Change all the linked file sink descriptors
+      if (fileSinkDesc.getLinkedFileSinkDesc() != null) {
+        for (FileSinkDesc fsConf : fileSinkDesc.getLinkedFileSinkDesc()) {
+          fsConf.setDirName(tmpDir);
+        }
+      } else {
+        fileSinkDesc.setDirName(tmpDir);
+      }
+    }
+
+    Task<MoveWork> mvTask = null;
+
+    if (!chDir) {
+      mvTask = GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+    }
+
+    // Set the move task to be dependent on the current task
+    if (mvTask != null) {
+      GenMapRedUtils.addDependentMoveTasks(mvTask, hconf, currTask, dependencyTask);
+    }
+
+    return dest;
   }
 
   /**
