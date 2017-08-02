@@ -236,33 +236,41 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   private DiskRangeList addCachedBufferToIter(
       DiskRangeList currentNotCached, DiskRangeList currentCached, BooleanRef gotAllData) {
     if (currentNotCached.getOffset() >= currentCached.getOffset()) {
-      if (currentNotCached.getEnd() <= currentCached.getEnd()) {  // we assume it's always "==" now
+      // Cached buffer has the same (or lower) offset as the requested buffer.
+      if (currentNotCached.getEnd() <= currentCached.getEnd()) {
         // Replace the entire current DiskRange with new cached range.
+        // In case of an inexact match in either of the below it may throw. We do not currently
+        // support the case where the caller requests a single cache buffer via multiple smaller
+        // sub-ranges; if that happens, this may throw. Noone does it now, though.
+        // TODO: should we actively assert here for cache buffers larger than range?
         currentNotCached.replaceSelfWith(currentCached);
         return null;
       } else {
-        // Insert the new cache range before the disk range.
+        // This cache range is a prefix of the requested one; the above also applies.
+        // The cache may still contain the rest of the requested range, so don't set gotAllData.
         currentNotCached.insertPartBefore(currentCached);
         return currentNotCached;
       }
-    } else {
-      // There's some part of current buffer that is not cached.
-      if (gotAllData != null) {
-        gotAllData.value = false;
-      }
-      assert currentNotCached.getOffset() < currentCached.getOffset()
-        || currentNotCached.prev == null
-        || currentNotCached.prev.getEnd() <= currentCached.getOffset();
-      long endOffset = currentNotCached.getEnd();
+    }
+
+    // Some part of the requested range is not cached - the cached offset is past the requested.
+    if (gotAllData != null) {
+      gotAllData.value = false;
+    }
+    if (currentNotCached.getEnd() <= currentCached.getEnd()) {
+      // The cache buffer comprises the tail of the requested range (and possibly overshoots it).
+      // The same as above applies - may throw if cache buffer is larger than the requested range,
+      // and there's another range after this that starts in the middle of this cache buffer.
+      // Currently, we cache at exact offsets, so the latter should never happen.
       currentNotCached.insertPartAfter(currentCached);
-      if (endOffset <= currentCached.getEnd()) { // we assume it's always "==" now
-        return null;  // No more matches expected...
-      } else {
-        // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRangeList(currentCached.getEnd(), endOffset);
-        currentCached.insertAfter(currentNotCached);
-        return currentNotCached;
-      }
+      return null;  // No more matches expected.
+    } else {
+      // The cached buffer is in the middle of the requested range.
+      // The remaining tail of the latter may still be available further.
+      DiskRangeList tail = new DiskRangeList(currentCached.getEnd(), currentNotCached.getEnd());
+      currentNotCached.insertPartAfter(currentCached);
+      currentCached.insertAfter(tail);
+      return tail;
     }
   }
 
