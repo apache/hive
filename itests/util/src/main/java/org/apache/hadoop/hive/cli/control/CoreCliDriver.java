@@ -55,7 +55,6 @@ public class CoreCliDriver extends CliAdapter {
     final String hiveConfDir = cliConfig.getHiveConfDir();
     final String initScript = cliConfig.getInitScript();
     final String cleanupScript = cliConfig.getCleanupScript();
-    final boolean useHBaseMetastore = cliConfig.getMetastoreType() == MetastoreType.hbase;
     try {
       final String hadoopVer = cliConfig.getHadoopVersion();
 
@@ -63,8 +62,7 @@ public class CoreCliDriver extends CliAdapter {
         @Override
         public QTestUtil invokeInternal() throws Exception {
           return new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-              hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true,
-              cliConfig.getFsType());
+              hiveConfDir, hadoopVer, initScript, cleanupScript, true, cliConfig.getFsType());
         }
       }.invoke("QtestUtil instance created", LOG, true);
 
