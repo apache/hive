@@ -91,10 +91,11 @@ public class KeyValueInputMerger extends KeyValueReader {
       List<InputSplit> splits = split.getGroupedSplits();
       // There maybe more than 1 splits in the group, however, they all have 1 unique path.
       // Assert that.
-      Path path = ((HiveInputFormat.HiveInputSplit) splits.get(0)).getPath();
-      Path pathFromMap = kvReaderPathMap.putIfAbsent(input, path);
-      if (pathFromMap != null) {
-        assert pathFromMap.equals(path);
+      Path path0 = ((HiveInputFormat.HiveInputSplit) splits.get(0)).getPath();
+      kvReaderPathMap.put(input, path0);
+      for (int i = 1; i < splits.size(); i++) {
+        Path path = ((HiveInputFormat.HiveInputSplit) splits.get(i)).getPath();
+        assert path0.equals(path);
       }
       addToQueue(input);
     }
