@@ -3605,9 +3605,9 @@ public class ObjectStore implements RawStore, Configurable {
     MetaException {
     List<String> fkNames = new ArrayList<String>();
     List<MConstraint> mpkfks = new ArrayList<MConstraint>();
-    String currentConstraintName = null;
 
     for (int i = 0; i < fks.size(); i++) {
+      String currentConstraintName = null;
       final String pkTableDB = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_db());
       final String pkTableName = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_name());
       final String pkColumnName =HiveStringUtils.normalizeIdentifier(fks.get(i).getPkcolumn_name());
@@ -3693,9 +3693,9 @@ public class ObjectStore implements RawStore, Configurable {
     MetaException {
     List<String> pkNames = new ArrayList<String>();
     List<MConstraint> mpks = new ArrayList<MConstraint>();
-    String constraintName = null;
 
     for (int i = 0; i < pks.size(); i++) {
+      String constraintName = null;
       final String tableDB = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_db());
       final String tableName = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_name());
       final String columnName = HiveStringUtils.normalizeIdentifier(pks.get(i).getColumn_name());
@@ -3759,9 +3759,9 @@ public class ObjectStore implements RawStore, Configurable {
           throws InvalidObjectException, MetaException {
     List<String> ukNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
-    String constraintName = null;
 
     for (int i = 0; i < uks.size(); i++) {
+      String constraintName = null;
       final String tableDB = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_db());
       final String tableName = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_name());
       final String columnName = HiveStringUtils.normalizeIdentifier(uks.get(i).getColumn_name());
@@ -3820,9 +3820,9 @@ public class ObjectStore implements RawStore, Configurable {
           throws InvalidObjectException, MetaException {
     List<String> nnNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
-    String constraintName = null;
 
     for (int i = 0; i < nns.size(); i++) {
+      String constraintName = null;
       final String tableDB = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_db());
       final String tableName = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_name());
       final String columnName = HiveStringUtils.normalizeIdentifier(nns.get(i).getColumn_name());
