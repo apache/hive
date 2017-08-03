@@ -44,6 +44,11 @@
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 	<dependency>
 		<groupId>javolution</groupId>
 		<artifactId>javolution</artifactId>
@@ -281,39 +286,6 @@
 
   <profiles>
     <profile>
-      <id>thriftif</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.google.code.maven-replacer-plugin</groupId>
-            <artifactId>replacer</artifactId>
-            <version>1.5.3</version>
-            <executions>
-              <execution>
-                <id>process-thrift-sources</id>
-                <phase>process-sources</phase>
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hadoop/hive/metastore/api/</basedir>
-              <includes>
-                <include>FieldSchema.java</include>
-                <include>Partition.java</include>
-                <include>SerDeInfo.java</include>
-                <include>StorageDescriptor.java</include>
-              </includes>
-              <tokenValueMap>${basedir}/src/main/resources/thrift-replacements.txt</tokenValueMap>
-              <regex>true</regex>
-              <quiet>false</quiet>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>protobuf</id>
       <build>
         <plugins>
@@ -404,7 +376,6 @@
             <configuration>
               <sources>
                 <source>src/model</source>
-                <source>src/gen/thrift/gen-javabean</source>
                 <source>src/gen/protobuf/gen-java</source>
               </sources>
             </configuration>

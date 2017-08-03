@@ -139,9 +139,9 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
     String comment)
   {
     this();
-    this.name = org.apache.hive.common.util.HiveStringUtils.intern(name);
-    this.type = org.apache.hive.common.util.HiveStringUtils.intern(type);
-    this.comment = org.apache.hive.common.util.HiveStringUtils.intern(comment);
+    this.name = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(name);
+    this.type = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(type);
+    this.comment = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(comment);
   }
 
   /**
@@ -149,13 +149,13 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
    */
   public FieldSchema(FieldSchema other) {
     if (other.isSetName()) {
-      this.name = org.apache.hive.common.util.HiveStringUtils.intern(other.name);
+      this.name = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.name);
     }
     if (other.isSetType()) {
-      this.type = org.apache.hive.common.util.HiveStringUtils.intern(other.type);
+      this.type = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.type);
     }
     if (other.isSetComment()) {
-      this.comment = org.apache.hive.common.util.HiveStringUtils.intern(other.comment);
+      this.comment = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.comment);
     }
   }
 
@@ -175,7 +175,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
   }
 
   public void setName(String name) {
-    this.name = org.apache.hive.common.util.HiveStringUtils.intern(name);
+    this.name = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(name);
   }
 
   public void unsetName() {
@@ -198,7 +198,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
   }
 
   public void setType(String type) {
-    this.type = org.apache.hive.common.util.HiveStringUtils.intern(type);
+    this.type = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(type);
   }
 
   public void unsetType() {
@@ -221,7 +221,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
   }
 
   public void setComment(String comment) {
-    this.comment = org.apache.hive.common.util.HiveStringUtils.intern(comment);
+    this.comment = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(comment);
   }
 
   public void unsetComment() {

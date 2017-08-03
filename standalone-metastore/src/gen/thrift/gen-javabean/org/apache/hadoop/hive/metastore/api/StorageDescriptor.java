@@ -220,17 +220,17 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   {
     this();
     this.cols = cols;
-    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
-    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
-    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
+    this.location = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(location);
+    this.inputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(inputFormat);
+    this.outputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(outputFormat);
     this.compressed = compressed;
     setCompressedIsSet(true);
     this.numBuckets = numBuckets;
     setNumBucketsIsSet(true);
     this.serdeInfo = serdeInfo;
-    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+    this.bucketCols = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(bucketCols);
     this.sortCols = sortCols;
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(parameters);
   }
 
   /**
@@ -246,13 +246,13 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       this.cols = __this__cols;
     }
     if (other.isSetLocation()) {
-      this.location = org.apache.hive.common.util.HiveStringUtils.intern(other.location);
+      this.location = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.location);
     }
     if (other.isSetInputFormat()) {
-      this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.inputFormat);
+      this.inputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.inputFormat);
     }
     if (other.isSetOutputFormat()) {
-      this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(other.outputFormat);
+      this.outputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.outputFormat);
     }
     this.compressed = other.compressed;
     this.numBuckets = other.numBuckets;
@@ -346,7 +346,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setLocation(String location) {
-    this.location = org.apache.hive.common.util.HiveStringUtils.intern(location);
+    this.location = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(location);
   }
 
   public void unsetLocation() {
@@ -369,7 +369,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setInputFormat(String inputFormat) {
-    this.inputFormat = org.apache.hive.common.util.HiveStringUtils.intern(inputFormat);
+    this.inputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(inputFormat);
   }
 
   public void unsetInputFormat() {
@@ -392,7 +392,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setOutputFormat(String outputFormat) {
-    this.outputFormat = org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
+    this.outputFormat = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(outputFormat);
   }
 
   public void unsetOutputFormat() {
@@ -497,7 +497,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setBucketCols(List<String> bucketCols) {
-    this.bucketCols = org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+    this.bucketCols = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(bucketCols);
   }
 
   public void unsetBucketCols() {
@@ -569,7 +569,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   }
 
   public void setParameters(Map<String,String> parameters) {
-    this.parameters = org.apache.hive.common.util.HiveStringUtils.intern(parameters);
+    this.parameters = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(parameters);
   }
 
   public void unsetParameters() {

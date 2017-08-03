@@ -871,10 +871,11 @@
                   <include>org.apache.hive:hive-llap-common</include>
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
+                  <include>org.apache.hive:hive-standalone-metastore</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware:kryo-shaded</include>
-		  <include>com.esotericsoftware:minlog</include>
-		  <include>org.objenesis:objenesis</include>
+                  <include>com.esotericsoftware:minlog</include>
+                  <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>org.apache.thrift:libfb303</include>
