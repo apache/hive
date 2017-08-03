@@ -1247,6 +1247,54 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testEventTypesForDynamicAddPartitionByInsert() throws IOException {
+    String name = testName.getMethodName();
+    final String dbName = createDB(name);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] ptn_data = new String[]{ "ten"};
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data[0] + "')");
+
+    // Inject a behaviour where it throws exception if an INSERT event is found
+    // As we dynamically add a partition through INSERT INTO cmd, it should just add ADD_PARTITION
+    // event not an INSERT event
+    BehaviourInjection<NotificationEventResponse,NotificationEventResponse> eventTypeValidator
+            = new BehaviourInjection<NotificationEventResponse,NotificationEventResponse>(){
+
+      @Nullable
+      @Override
+      public NotificationEventResponse apply(@Nullable NotificationEventResponse eventsList) {
+        if (null != eventsList) {
+          List<NotificationEvent> events = eventsList.getEvents();
+          for (int i = 0; i < events.size(); i++) {
+            NotificationEvent event = events.get(i);
+
+            // Skip all the events belong to other DBs/tables.
+            if (event.getDbName().equalsIgnoreCase(dbName)) {
+              if (event.getEventType() == "INSERT") {
+                // If an insert event is found, then return null hence no event is dumped.
+                return null;
+              }
+            }
+          }
+          injectionPathCalled = true;
+        }
+        return eventsList;
+      }
+    };
+    InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventTypeValidator);
+
+    incrementalLoadAndVerify(dbName, bootstrap.lastReplId, replDbName);
+
+    eventTypeValidator.assertInjectionsPerformed(true,false);
+    InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
+
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data);
+  }
+
+  @Test
   public void testIncrementalInsertToPartition() throws IOException {
     String testName = "incrementalInsertToPartition";
     LOG.info("Testing " + testName);
