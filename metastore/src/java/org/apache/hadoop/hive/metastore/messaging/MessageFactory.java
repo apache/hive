@@ -25,10 +25,15 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
@@ -50,7 +55,11 @@ public abstract class MessageFactory {
   public static final String CREATE_INDEX_EVENT = "CREATE_INDEX";
   public static final String DROP_INDEX_EVENT = "DROP_INDEX";
   public static final String ALTER_INDEX_EVENT = "ALTER_INDEX";
-
+  public static final String ADD_PRIMARYKEY_EVENT = "ADD_PRIMARYKEY";
+  public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
+  public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
+  public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
+  public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
 
   private static MessageFactory instance = null;
 
@@ -237,4 +246,46 @@ public abstract class MessageFactory {
    */
   public abstract InsertMessage buildInsertMessage(Table tableObj, Partition ptnObj,
                                                    boolean replace, Iterator<String> files);
+
+  /***
+   * Factory method for building add primary key message
+   *
+   * @param pks list of primary keys
+   * @return instance of AddPrimaryKeyMessage
+   */
+  public abstract AddPrimaryKeyMessage buildAddPrimaryKeyMessage(List<SQLPrimaryKey> pks);
+
+  /***
+   * Factory method for building add foreign key message
+   *
+   * @param fks list of foreign keys
+   * @return instance of AddForeignKeyMessage
+   */
+  public abstract AddForeignKeyMessage buildAddForeignKeyMessage(List<SQLForeignKey> fks);
+
+  /***
+   * Factory method for building add unique constraint message
+   *
+   * @param uks list of unique constraints
+   * @return instance of SQLUniqueConstraint
+   */
+  public abstract AddUniqueConstraintMessage buildAddUniqueConstraintMessage(List<SQLUniqueConstraint> uks);
+
+  /***
+   * Factory method for building add not null constraint message
+   *
+   * @param nns list of not null constraints
+   * @return instance of SQLNotNullConstraint
+   */
+  public abstract AddNotNullConstraintMessage buildAddNotNullConstraintMessage(List<SQLNotNullConstraint> nns);
+
+  /***
+   * Factory method for building drop constraint message
+   * @param dbName
+   * @param tableName
+   * @param constraintName
+   * @return
+   */
+  public abstract DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
+      String constraintName);
 }

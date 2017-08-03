@@ -41,9 +41,17 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -51,6 +59,7 @@ import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
@@ -457,6 +466,91 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException {
     // TODO, we don't support this, but we should, since users may create an empty partition and
     // then load data into it.
+  }
+
+  /***
+   * @param addPrimaryKeyEvent add primary key event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddPrimaryKey(AddPrimaryKeyEvent addPrimaryKeyEvent) throws MetaException {
+    List<SQLPrimaryKey> cols = addPrimaryKeyEvent.getPrimaryKeyCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_PRIMARYKEY.toString(), msgFactory
+              .buildAddPrimaryKeyMessage(addPrimaryKeyEvent.getPrimaryKeyCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addPrimaryKeyEvent);
+    }
+  }
+
+  /***
+   * @param addForeignKeyEvent add foreign key event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddForeignKey(AddForeignKeyEvent addForeignKeyEvent) throws MetaException {
+    List<SQLForeignKey> cols = addForeignKeyEvent.getForeignKeyCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_FOREIGNKEY.toString(), msgFactory
+              .buildAddForeignKeyMessage(addForeignKeyEvent.getForeignKeyCols()).toString());
+      event.setDbName(cols.get(0).getPktable_db());
+      event.setTableName(cols.get(0).getPktable_name());
+      process(event, addForeignKeyEvent);
+    }
+  }
+
+  /***
+   * @param addUniqueConstraintEvent add unique constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddUniqueConstraint(AddUniqueConstraintEvent addUniqueConstraintEvent) throws MetaException {
+    List<SQLUniqueConstraint> cols = addUniqueConstraintEvent.getUniqueConstraintCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_UNIQUECONSTRAINT.toString(), msgFactory
+              .buildAddUniqueConstraintMessage(addUniqueConstraintEvent.getUniqueConstraintCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addUniqueConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addNotNullConstraintEvent add not null constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddNotNullConstraint(AddNotNullConstraintEvent addNotNullConstraintEvent) throws MetaException {
+    List<SQLNotNullConstraint> cols = addNotNullConstraintEvent.getNotNullConstraintCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_NOTNULLCONSTRAINT.toString(), msgFactory
+              .buildAddNotNullConstraintMessage(addNotNullConstraintEvent.getNotNullConstraintCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addNotNullConstraintEvent);
+    }
+  }
+
+  /***
+   * @param dropConstraintEvent drop constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
+    String dbName = dropConstraintEvent.getDbName();
+    String tableName = dropConstraintEvent.getTableName();
+    String constraintName = dropConstraintEvent.getConstraintName();
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_CONSTRAINT.toString(), msgFactory
+            .buildDropConstraintMessage(dbName, tableName, constraintName).toString());
+    event.setDbName(dbName);
+    event.setTableName(tableName);
+    process(event, dropConstraintEvent);
   }
 
   private int now() {
