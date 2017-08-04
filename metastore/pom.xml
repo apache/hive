@@ -304,11 +304,6 @@
                     <mkdir dir="${protobuf.build.dir}"/>
                     <exec executable="protoc" failonerror="true">
                       <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase"/>
-                      <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase/hbase_metastore_proto.proto"/>
-                    </exec>
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
                       <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore"/>
                       <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/metastore.proto"/>
                     </exec>

@@ -55,11 +55,10 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
-    boolean useHBaseMetastore = cliConfig.getMetastoreType() == MetastoreType.hbase;
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-          hiveConfDir, hadoopVer, initScript, cleanupScript, useHBaseMetastore, true);
+          hiveConfDir, hadoopVer, initScript, cleanupScript, true);
 
       if (Strings.isNullOrEmpty(qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH))) {
         fail(String.format("%s must be set. Try setting in blobstore-conf.xml", HCONF_TEST_BLOBSTORE_PATH));

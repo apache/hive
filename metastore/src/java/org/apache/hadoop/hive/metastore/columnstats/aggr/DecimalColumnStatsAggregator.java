@@ -28,13 +28,13 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.hbase.HBaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,8 +102,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         DecimalColumnStatsData newData = cso.getStatsData().getDecimalStats();
         lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
-        densityAvgSum += (HBaseUtils.getDoubleValue(newData.getHighValue()) - HBaseUtils
-            .getDoubleValue(newData.getLowValue())) / newData.getNumDVs();
+        densityAvgSum += (MetaStoreUtils.decimalToDouble(newData.getHighValue()) - MetaStoreUtils
+            .decimalToDouble(newData.getLowValue())) / newData.getNumDVs();
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(NumDistinctValueEstimatorFactory
               .getNumDistinctValueEstimator(newData.getBitVectors()));
@@ -111,14 +111,14 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          if (HBaseUtils.getDoubleValue(aggregateData.getLowValue()) < HBaseUtils
-              .getDoubleValue(newData.getLowValue())) {
+          if (MetaStoreUtils.decimalToDouble(aggregateData.getLowValue()) < MetaStoreUtils
+              .decimalToDouble(newData.getLowValue())) {
             aggregateData.setLowValue(aggregateData.getLowValue());
           } else {
             aggregateData.setLowValue(newData.getLowValue());
           }
-          if (HBaseUtils.getDoubleValue(aggregateData.getHighValue()) > HBaseUtils
-              .getDoubleValue(newData.getHighValue())) {
+          if (MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) > MetaStoreUtils
+              .decimalToDouble(newData.getHighValue())) {
             aggregateData.setHighValue(aggregateData.getHighValue());
           } else {
             aggregateData.setHighValue(newData.getHighValue());
@@ -138,8 +138,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
-          estimation = (long) ((HBaseUtils.getDoubleValue(aggregateData.getHighValue()) - HBaseUtils
-              .getDoubleValue(aggregateData.getLowValue())) / densityAvg);
+          estimation = (long) ((MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) - MetaStoreUtils
+              .decimalToDouble(aggregateData.getLowValue())) / densityAvg);
           if (estimation < lowerBound) {
             estimation = lowerBound;
           } else if (estimation > higherBound) {
@@ -171,8 +171,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
           DecimalColumnStatsData newData = cso.getStatsData().getDecimalStats();
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += (HBaseUtils.getDoubleValue(newData.getHighValue()) - HBaseUtils
-                .getDoubleValue(newData.getLowValue())) / newData.getNumDVs();
+            densityAvgSum += (MetaStoreUtils.decimalToDouble(newData.getHighValue()) - MetaStoreUtils
+                .decimalToDouble(newData.getLowValue())) / newData.getNumDVs();
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -201,8 +201,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
               csd.setDecimalStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                densityAvgSum += (HBaseUtils.getDoubleValue(aggregateData.getHighValue()) - HBaseUtils
-                    .getDoubleValue(aggregateData.getLowValue())) / aggregateData.getNumDVs();
+                densityAvgSum += (MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) - MetaStoreUtils
+                    .decimalToDouble(aggregateData.getLowValue())) / aggregateData.getNumDVs();
               }
               // reset everything
               pseudoPartName = new StringBuilder();
@@ -220,14 +220,14 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           if (aggregateData == null) {
             aggregateData = newData.deepCopy();
           } else {
-            if (HBaseUtils.getDoubleValue(aggregateData.getLowValue()) < HBaseUtils
-                .getDoubleValue(newData.getLowValue())) {
+            if (MetaStoreUtils.decimalToDouble(aggregateData.getLowValue()) < MetaStoreUtils
+                .decimalToDouble(newData.getLowValue())) {
               aggregateData.setLowValue(aggregateData.getLowValue());
             } else {
               aggregateData.setLowValue(newData.getLowValue());
             }
-            if (HBaseUtils.getDoubleValue(aggregateData.getHighValue()) > HBaseUtils
-                .getDoubleValue(newData.getHighValue())) {
+            if (MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) > MetaStoreUtils
+                .decimalToDouble(newData.getHighValue())) {
               aggregateData.setHighValue(aggregateData.getHighValue());
             } else {
               aggregateData.setHighValue(newData.getHighValue());
@@ -245,8 +245,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           csd.setDecimalStats(aggregateData);
           adjustedStatsMap.put(pseudoPartName.toString(), csd);
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += (HBaseUtils.getDoubleValue(aggregateData.getHighValue()) - HBaseUtils
-                .getDoubleValue(aggregateData.getLowValue())) / aggregateData.getNumDVs();
+            densityAvgSum += (MetaStoreUtils.decimalToDouble(aggregateData.getHighValue()) - MetaStoreUtils
+                .decimalToDouble(aggregateData.getLowValue())) / aggregateData.getNumDVs();
           }
         }
       }
@@ -281,8 +281,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
     double maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     double lowValue = 0;
-    double min = HBaseUtils.getDoubleValue(list.get(0).getValue().getLowValue());
-    double max = HBaseUtils.getDoubleValue(list.get(list.size() - 1).getValue().getLowValue());
+    double min = MetaStoreUtils.decimalToDouble(list.get(0).getValue().getLowValue());
+    double max = MetaStoreUtils.decimalToDouble(list.get(list.size() - 1).getValue().getLowValue());
     if (minInd == maxInd) {
       lowValue = min;
     } else if (minInd < maxInd) {
@@ -303,8 +303,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     double highValue = 0;
-    min = HBaseUtils.getDoubleValue(list.get(0).getValue().getHighValue());
-    max = HBaseUtils.getDoubleValue(list.get(list.size() - 1).getValue().getHighValue());
+    min = MetaStoreUtils.decimalToDouble(list.get(0).getValue().getHighValue());
+    max = MetaStoreUtils.decimalToDouble(list.get(list.size() - 1).getValue().getHighValue());
     if (minInd == maxInd) {
       highValue = min;
     } else if (minInd < maxInd) {

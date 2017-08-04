@@ -90,7 +90,7 @@ public class TestLocationQueries extends BaseTestQueries {
         String hadoopVer, String locationSubdir)
       throws Exception
     {
-      super(outDir, logDir, miniMr, null, hadoopVer, "", "", false, false);
+      super(outDir, logDir, miniMr, null, hadoopVer, "", "", false);
       this.locationSubdir = locationSubdir;
     }
   }

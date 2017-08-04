@@ -45,7 +45,7 @@ public abstract class AbstractCliConfig {
   public static final String HIVE_ROOT = getHiveRoot();
 
   public static enum MetastoreType {
-    sql, hbase
+    sql
   };
 
   private MetastoreType metastoreType = MetastoreType.sql;
@@ -413,8 +413,6 @@ public abstract class AbstractCliConfig {
     if (metaStoreTypeProperty != null) {
       if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
         metastoreType = MetastoreType.sql;
-      } else if (metaStoreTypeProperty.equalsIgnoreCase("hbase")) {
-        metastoreType = MetastoreType.hbase;
       } else {
         throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
       }
