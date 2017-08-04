@@ -21,8 +21,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.io.IOUtils;
+
+import com.google.common.collect.Collections2;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -45,6 +50,28 @@ public class Utils {
       throw new SemanticException(e);
     } finally {
       IOUtils.closeStream(outStream);
+    }
+  }
+
+  public static Iterable<? extends String> matchesDb(Hive db, String dbPattern) throws HiveException {
+    if (dbPattern == null) {
+      return db.getAllDatabases();
+    } else {
+      return db.getDatabasesByPattern(dbPattern);
+    }
+  }
+
+  public static Iterable<? extends String> matchesTbl(Hive db, String dbName, String tblPattern)
+      throws HiveException {
+    if (tblPattern == null) {
+      return Collections2.filter(db.getAllTables(dbName),
+          tableName -> {
+            assert tableName != null;
+            return !tableName.toLowerCase().startsWith(
+                SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase());
+          });
+    } else {
+      return db.getTablesByPattern(dbName, tblPattern);
     }
   }
 }

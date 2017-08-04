@@ -55,8 +55,10 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 PREHOOK: query: repl dump test_repldump_adminpriv
 PREHOOK: type: REPLDUMP
+PREHOOK: Input: database:test_repldump_adminpriv
 POSTHOOK: query: repl dump test_repldump_adminpriv
 POSTHOOK: type: REPLDUMP
+POSTHOOK: Input: database:test_repldump_adminpriv
 #### A masked pattern was here ####
 PREHOOK: query: show tables test_repldump_adminpriv
 PREHOOK: type: SHOWTABLES

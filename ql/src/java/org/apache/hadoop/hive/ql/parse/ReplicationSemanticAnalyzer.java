@@ -23,14 +23,17 @@ import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpTask;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -174,6 +177,17 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               ctx.getResFile().toUri().toString()
           ), conf);
       rootTasks.add(replDumpWorkTask);
+      if (dbNameOrPattern != null) {
+        for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+          if (tblNameOrPattern != null) {
+            for (String tblName : Utils.matchesTbl(db, dbName, tblNameOrPattern)) {
+              inputs.add(new ReadEntity(db.getTable(dbName, tblName)));
+            }
+          } else {
+            inputs.add(new ReadEntity(db.getDatabase(dbName)));
+          }
+        }
+      }
       setFetchTask(createFetchTask(dumpSchema));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes

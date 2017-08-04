@@ -63,8 +63,10 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 PREHOOK: query: repl dump test_replload_adminpriv_src
 PREHOOK: type: REPLDUMP
+PREHOOK: Input: database:test_replload_adminpriv_src
 POSTHOOK: query: repl dump test_replload_adminpriv_src
 POSTHOOK: type: REPLDUMP
+POSTHOOK: Input: database:test_replload_adminpriv_src
 #### A masked pattern was here ####
 PREHOOK: type: REPLLOAD
 #### A masked pattern was here ####
