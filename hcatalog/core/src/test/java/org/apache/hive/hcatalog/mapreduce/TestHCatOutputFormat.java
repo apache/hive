@@ -46,6 +46,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +111,6 @@ public class TestHCatOutputFormat extends TestCase {
     sd.setCols(Lists.newArrayList(new FieldSchema("data_column", serdeConstants.STRING_TYPE_NAME, "")));
     tbl.setSd(sd);
 
-    //sd.setLocation("hdfs://tmp");
     sd.setInputFormat(RCFileInputFormat.class.getName());
     sd.setOutputFormat(RCFileOutputFormat.class.getName());
     sd.setParameters(new HashMap<String, String>());
@@ -138,7 +138,7 @@ public class TestHCatOutputFormat extends TestCase {
 
   public void testSetOutput() throws Exception {
     Configuration conf = new Configuration();
-    Job job = new Job(conf, "test outputformat");
+    Job job = Job.getInstance(conf, "test outputformat");
 
     Map<String, String> partitionValues = new HashMap<String, String>();
     partitionValues.put("colname", "p1");
@@ -157,7 +157,7 @@ public class TestHCatOutputFormat extends TestCase {
     publishTest(job);
   }
 
-  public void publishTest(Job job) throws Exception {
+  private void publishTest(Job job) throws Exception {
     HCatOutputFormat hcof = new HCatOutputFormat();
     TaskAttemptContext tac = ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
         job.getConfiguration(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID());
@@ -172,6 +172,41 @@ public class TestHCatOutputFormat extends TestCase {
 
     StorerInfo storer = InternalUtil.extractStorerInfo(part.getSd(), part.getParameters());
     assertEquals(storer.getProperties().get("hcat.testarg"), "testArgValue");
-    assertTrue(part.getSd().getLocation().indexOf("p1") != -1);
+    assertTrue(part.getSd().getLocation().contains("p1"));
+  }
+
+  public void testGetTableSchema() throws Exception {
+
+    Configuration conf = new Configuration();
+    Job job = Job.getInstance(conf, "test getTableSchema");
+    HCatOutputFormat.setOutput(
+        job,
+        OutputJobInfo.create(
+            dbName,
+            tblName,
+            new HashMap<String, String>() {{put("colname", "col_value");}}
+        )
+    );
+
+    HCatSchema rowSchema = HCatOutputFormat.getTableSchema(job.getConfiguration());
+    assertEquals("Row-schema should have exactly one column.",
+        1, rowSchema.getFields().size());
+    assertEquals("Row-schema must contain the data column.",
+        "data_column", rowSchema.getFields().get(0).getName());
+    assertEquals("Data column should have been STRING type.",
+        serdeConstants.STRING_TYPE_NAME, rowSchema.getFields().get(0).getTypeString());
+
+    HCatSchema tableSchema = HCatOutputFormat.getTableSchemaWithPartitionColumns(job.getConfiguration());
+    assertEquals("Table-schema should have exactly 2 columns.",
+        2, tableSchema.getFields().size());
+    assertEquals("Table-schema must contain the data column.",
+        "data_column", tableSchema.getFields().get(0).getName());
+    assertEquals("Data column should have been STRING type.",
+        serdeConstants.STRING_TYPE_NAME, tableSchema.getFields().get(0).getTypeString());
+    assertEquals("Table-schema must contain the partition column.",
+        "colname", tableSchema.getFields().get(1).getName());
+    assertEquals("Partition column should have been STRING type.",
+        serdeConstants.STRING_TYPE_NAME, tableSchema.getFields().get(1).getTypeString());
+
   }
 }
