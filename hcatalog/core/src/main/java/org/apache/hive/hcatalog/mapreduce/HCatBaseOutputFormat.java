@@ -43,13 +43,26 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
   /**
    * Gets the table schema for the table specified in the HCatOutputFormat.setOutput call
    * on the specified job context.
+   * Note: This is the record-schema for the table. It does not include the table's partition columns.
    * @param conf the Configuration object
-   * @return the table schema
+   * @return the table schema, excluding partition columns
    * @throws IOException if HCatOutputFormat.setOutput has not been called for the passed context
    */
   public static HCatSchema getTableSchema(Configuration conf) throws IOException {
     OutputJobInfo jobInfo = getJobInfo(conf);
     return jobInfo.getTableInfo().getDataColumns();
+  }
+
+  /**
+   * Gets the table schema for the table specified in the HCatOutputFormat.setOutput call
+   * on the specified job context.
+   * Note: This is the complete table-schema, including the record-schema *and* the partitioning schema.
+   * @param conf the Configuration object
+   * @return the table schema, including the record-schema and partitioning schema.
+   * @throws IOException if HCatOutputFormat.setOutput has not been called for the passed context
+   */
+  public static HCatSchema getTableSchemaWithPartitionColumns(Configuration conf) throws IOException {
+    return getJobInfo(conf).getTableInfo().getAllColumns();
   }
 
   /**
