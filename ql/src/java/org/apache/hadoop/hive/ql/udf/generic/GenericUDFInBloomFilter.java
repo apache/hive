@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -32,13 +33,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.BloomFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hive.common.util.BloomKFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 
 /**
@@ -46,11 +47,10 @@ import java.sql.Timestamp;
  */
 @VectorizedExpressions({VectorInBloomFilterColDynamicValue.class})
 public class GenericUDFInBloomFilter extends GenericUDF {
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDFInBloomFilter.class);
 
   private transient ObjectInspector valObjectInspector;
   private transient ObjectInspector bloomFilterObjectInspector;
-  private transient BloomFilter bloomFilter;
+  private transient BloomKFilter bloomFilter;
   private transient boolean initializedBloomFilter;
   private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
@@ -95,13 +95,17 @@ public class GenericUDFInBloomFilter extends GenericUDF {
 
     if (!initializedBloomFilter) {
       // Setup the bloom filter once
+      InputStream in = null;
       try {
         BytesWritable bw = (BytesWritable) arguments[1].get();
         byte[] bytes = new byte[bw.getLength()];
         System.arraycopy(bw.getBytes(), 0, bytes, 0, bw.getLength());
-        bloomFilter = BloomFilter.deserialize(new ByteArrayInputStream(bytes));
+        in = new NonSyncByteArrayInputStream(bytes);
+        bloomFilter = BloomKFilter.deserialize(in);
       } catch ( IOException e) {
         throw new HiveException(e);
+      } finally {
+        IOUtils.closeStream(in);
       }
       initializedBloomFilter = true;
     }

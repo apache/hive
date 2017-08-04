@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
@@ -28,20 +29,16 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.BloomFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hive.common.util.BloomKFilter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,8 +50,6 @@ import java.util.List;
  * Generic UDF to generate Bloom Filter
  */
 public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
-
-  private static final Logger LOG = LoggerFactory.getLogger(GenericUDAFBloomFilter.class);
 
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info) throws SemanticException {
@@ -106,13 +101,13 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
      */
     @AggregationType(estimable = true)
     static class BloomFilterBuf extends AbstractAggregationBuffer {
-      BloomFilter bloomFilter;
+      BloomKFilter bloomFilter;
 
       public BloomFilterBuf(long expectedEntries, long maxEntries) {
         if (expectedEntries > maxEntries) {
-          bloomFilter = new BloomFilter(1);
+          bloomFilter = new BloomKFilter(maxEntries);
         } else {
-          bloomFilter = new BloomFilter(expectedEntries);
+          bloomFilter = new BloomKFilter(expectedEntries);
         }
       }
 
@@ -147,7 +142,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         return;
       }
 
-      BloomFilter bf = ((BloomFilterBuf)agg).bloomFilter;
+      BloomKFilter bf = ((BloomFilterBuf)agg).bloomFilter;
 
       // Add the expression into the BloomFilter
       switch (inputOI.getPrimitiveCategory()) {
@@ -228,13 +223,15 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       }
 
       BytesWritable bytes = (BytesWritable) partial;
-      ByteArrayInputStream in = new ByteArrayInputStream(bytes.getBytes());
-      // Deserialze the bloomfilter
+      ByteArrayInputStream in = new NonSyncByteArrayInputStream(bytes.getBytes());
+      // Deserialize the bloom filter
       try {
-        BloomFilter bf = BloomFilter.deserialize(in);
+        BloomKFilter bf = BloomKFilter.deserialize(in);
         ((BloomFilterBuf)agg).bloomFilter.merge(bf);
       } catch (IOException e) {
         throw new HiveException(e);
+      } finally {
+        IOUtils.closeStream(in);
       }
     }
 
@@ -242,9 +239,11 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       result.reset();
       try {
-        BloomFilter.serialize(result, ((BloomFilterBuf)agg).bloomFilter);
+        BloomKFilter.serialize(result, ((BloomFilterBuf)agg).bloomFilter);
       } catch (IOException e) {
         throw new HiveException(e);
+      } finally {
+        IOUtils.closeStream(result);
       }
       return new BytesWritable(result.toByteArray());
     }
@@ -326,6 +325,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     public float getFactor() {
       return factor;
     }
+
     @Override
     public String getExprString() {
       return "expectedEntries=" + getExpectedEntries();

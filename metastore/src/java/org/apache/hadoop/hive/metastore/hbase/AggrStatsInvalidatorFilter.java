@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import com.google.common.primitives.Longs;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,10 +102,8 @@ public class AggrStatsInvalidatorFilter extends FilterBase {
               entry.getTableName().equals(fromCol.getTableName())) {
             if (bloom == null) {
               // Now, reconstitute the bloom filter and probe it with each of our partition names
-              bloom = new BloomFilter(
-                  fromCol.getBloomFilter().getBitsList(),
-                  fromCol.getBloomFilter().getNumBits(),
-                  fromCol.getBloomFilter().getNumFuncs());
+              List<Long> bitsList = fromCol.getBloomFilter().getBitsList();
+              bloom = new BloomFilter(Longs.toArray(bitsList), fromCol.getBloomFilter().getNumFuncs());
             }
             if (bloom.test(entry.getPartName().toByteArray())) {
               // This is most likely a match, so mark it and quit looking.

@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -33,20 +35,16 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
-import org.apache.hive.common.util.BloomFilter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.BloomKFilter;
 
 public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorInBloomFilterColDynamicValue.class);
-
   protected int colNum;
   protected DynamicValue bloomFilterDynamicValue;
   protected transient boolean initialized = false;
-  protected transient BloomFilter bloomFilter;
+  protected transient BloomKFilter bloomFilter;
   protected transient BloomFilterCheck bfCheck;
 
   public VectorInBloomFilterColDynamicValue(int colNum, DynamicValue bloomFilterDynamicValue) {
@@ -90,18 +88,22 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   }
 
   private void initValue()  {
+    InputStream in = null;
     try {
       Object val = bloomFilterDynamicValue.getValue();
       if (val != null) {
         BinaryObjectInspector boi = (BinaryObjectInspector) bloomFilterDynamicValue.getObjectInspector();
         byte[] bytes = boi.getPrimitiveJavaObject(val);
-        bloomFilter = BloomFilter.deserialize(new ByteArrayInputStream(bytes));
+        in = new NonSyncByteArrayInputStream(bytes);
+        bloomFilter = BloomKFilter.deserialize(in);
       } else {
         bloomFilter = null;
       }
       initialized = true;
     } catch (Exception err) {
       throw new RuntimeException(err);
+    } finally {
+      IOUtils.closeStream(in);
     }
   }
 
