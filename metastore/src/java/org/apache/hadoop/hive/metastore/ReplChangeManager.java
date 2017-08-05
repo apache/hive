@@ -138,7 +138,7 @@ public class ReplChangeManager {
         // avoid race condition CM remove the file before setting
         // timestamp
         long now = System.currentTimeMillis();
-        fs.setTimes(path, now, now);
+        fs.setTimes(path, now, -1);
 
         boolean success = false;
         if (fs.exists(cmPath) && fileCheckSum.equalsIgnoreCase(checksumFor(cmPath, fs))) {
@@ -195,7 +195,7 @@ public class ReplChangeManager {
             LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
           }
           // Need to extend the tenancy if we saw a newer file with the same content
-          fs.setTimes(cmPath, now, now);
+          fs.setTimes(cmPath, now, -1);
         }
 
         // Tag if we want to remain in trash after deletion.
