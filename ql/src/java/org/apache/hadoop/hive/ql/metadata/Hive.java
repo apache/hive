@@ -62,13 +62,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -137,7 +137,6 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -151,19 +150,18 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.common.base.Splitter;
 
 /**
  * This class has functions that implement meta data/DDL operations using calls
@@ -3051,7 +3049,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (Future<ObjectPair<Path, Path>> future : futures) {
         try {
           ObjectPair<Path, Path> pair = future.get();
-          LOG.debug("Moved src: {}", pair.getFirst().toString(), ", to dest: {}", pair.getSecond().toString());
+          LOG.debug("Moved src: {}, to dest: {}", pair.getFirst().toString(), pair.getSecond().toString());
         } catch (Exception e) {
           throw handlePoolException(pool, e);
         }
@@ -3359,13 +3357,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       he = (HiveException) e;
       if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
         if (he.getCanonicalErrorMsg() == ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
-          LOG.error(String.format("Failed to move: {}", he.getMessage()));
+          LOG.error("Failed to move: {}", he.getMessage());
         } else {
-          LOG.info(String.format("Failed to move: {}", he.getRemoteErrorMsg()));
+          LOG.error("Failed to move: {}", he.getRemoteErrorMsg());
         }
       }
     } else {
-      LOG.error(String.format("Failed to move: {}", e.getMessage()));
+      LOG.error("Failed to move: {}", e.getMessage());
       he = new HiveException(e.getCause());
     }
     pool.shutdownNow();
