@@ -1274,13 +1274,13 @@ public class TestReplicationScenarios {
   @Test
   public void testEventTypesForDynamicAddPartitionByInsert() throws IOException {
     String name = testName.getMethodName();
-    final String dbName = createDB(name);
+    final String dbName = createDB(name, driver);
     String replDbName = dbName + "_dupe";
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
     Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
 
     String[] ptn_data = new String[]{ "ten"};
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data[0] + "')", driver);
 
     // Inject a behaviour where it throws exception if an INSERT event is found
     // As we dynamically add a partition through INSERT INTO cmd, it should just add ADD_PARTITION
@@ -1316,7 +1316,7 @@ public class TestReplicationScenarios {
     eventTypeValidator.assertInjectionsPerformed(true,false);
     InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
 
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data, driverMirror);
   }
 
   @Test
