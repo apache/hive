@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
@@ -163,6 +164,9 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     case CREATE_DATABASE:
       authorizeCreateDatabase((PreCreateDatabaseEvent)context);
       break;
+    case ALTER_DATABASE:
+        authorizeAlterDatabase((PreAlterDatabaseEvent) context);
+        break;
     case DROP_DATABASE:
       authorizeDropDatabase((PreDropDatabaseEvent)context);
       break;
@@ -249,6 +253,21 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
         authorizer.authorize(new Database(context.getDatabase()),
             HiveOperation.DROPDATABASE.getInputRequiredPrivileges(),
             HiveOperation.DROPDATABASE.getOutputRequiredPrivileges());
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private void authorizeAlterDatabase(PreAlterDatabaseEvent context)
+      throws InvalidOperationException, MetaException {
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(new Database(context.getOldDatabase()),
+            HiveOperation.ALTERDATABASE_LOCATION.getInputRequiredPrivileges(),
+            HiveOperation.ALTERDATABASE_LOCATION.getOutputRequiredPrivileges());
       }
     } catch (AuthorizationException e) {
       throw invalidOperationException(e);

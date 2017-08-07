@@ -944,6 +944,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       database.setOwnerType(alterDbDesc.getOwnerPrincipal().getType());
       break;
 
+    case ALTER_LOCATION:
+      try {
+        String newLocation = alterDbDesc.getLocation();
+        URI locationURI = new URI(newLocation);
+        if (   !locationURI.isAbsolute()
+            || StringUtils.isBlank(locationURI.getScheme())) {
+          throw new HiveException(ErrorMsg.BAD_LOCATION_VALUE, newLocation);
+        }
+        if (newLocation.equals(database.getLocationUri())) {
+          LOG.info("AlterDatabase skipped. No change in location.");
+        }
+        else {
+          database.setLocationUri(newLocation);
+        }
+      }
+      catch (URISyntaxException e) {
+        throw new HiveException(e);
+      }
+      break;
+
     default:
       throw new AssertionError("Unsupported alter database type! : " + alterDbDesc.getAlterType());
     }

@@ -476,6 +476,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ALTERDATABASE_OWNER:
       analyzeAlterDatabaseOwner(ast);
       break;
+    case HiveParser.TOK_ALTERDATABASE_LOCATION:
+      analyzeAlterDatabaseLocation(ast);
+      break;
     case HiveParser.TOK_CREATEROLE:
       analyzeCreateRole(ast);
       break;
@@ -718,6 +721,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, principalDesc);
+    addAlterDbDesc(alterDesc);
+  }
+
+  private void analyzeAlterDatabaseLocation(ASTNode ast) throws SemanticException {
+    String dbName = getUnescapedName((ASTNode) ast.getChild(0));
+    String newLocation = unescapeSQLString(ast.getChild(1).getText());
+    addLocationToOutputs(newLocation);
+    AlterDatabaseDesc alterDesc = new AlterDatabaseDesc(dbName, newLocation);
     addAlterDbDesc(alterDesc);
   }
 

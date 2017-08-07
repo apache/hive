@@ -327,6 +327,7 @@ TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
+TOK_ALTERDATABASE_LOCATION;
 TOK_TABNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
@@ -1195,6 +1196,7 @@ alterDatabaseStatementSuffix
 @after { popMsg(state); }
     : alterDatabaseSuffixProperties
     | alterDatabaseSuffixSetOwner
+    | alterDatabaseSuffixSetLocation
     ;
 
 alterDatabaseSuffixProperties
@@ -1209,6 +1211,13 @@ alterDatabaseSuffixSetOwner
 @after { popMsg(state); }
     : dbName=identifier KW_SET KW_OWNER principalName
     -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
+    ;
+
+alterDatabaseSuffixSetLocation
+@init { pushMsg("alter database set location", state); }
+@after { popMsg(state); }
+    : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]
