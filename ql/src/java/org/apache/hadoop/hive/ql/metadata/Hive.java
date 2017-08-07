@@ -3222,7 +3222,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (Future<ObjectPair<Path, Path>> future : futures) {
         try {
           ObjectPair<Path, Path> pair = future.get();
-          LOG.debug("Moved src: {}", pair.getFirst().toString(), ", to dest: {}", pair.getSecond().toString());
+          LOG.debug("Moved src: {}, to dest: {}", pair.getFirst().toString(), pair.getSecond().toString());
         } catch (Exception e) {
           throw handlePoolException(pool, e);
         }
@@ -3541,13 +3541,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       he = (HiveException) e;
       if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
         if (he.getCanonicalErrorMsg() == ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
-          LOG.error(String.format("Failed to move: {}", he.getMessage()));
+          LOG.error("Failed to move: {}", he.getMessage());
         } else {
-          LOG.info(String.format("Failed to move: {}", he.getRemoteErrorMsg()));
+          LOG.error("Failed to move: {}", he.getRemoteErrorMsg());
         }
       }
     } else {
-      LOG.error(String.format("Failed to move: {}", e.getMessage()));
+      LOG.error("Failed to move: {}", e.getMessage());
       he = new HiveException(e.getCause());
     }
     pool.shutdownNow();
