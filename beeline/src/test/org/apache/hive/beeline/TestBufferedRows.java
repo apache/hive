@@ -98,7 +98,7 @@ public class TestBufferedRows {
       }
     });
 
-    when(mockResultSet.getString(Matchers.anyInt())).thenAnswer(new Answer<String>() {
+    when(mockResultSet.getObject(Matchers.anyInt())).thenAnswer(new Answer<String>() {
       public String answer(InvocationOnMock invocation) {
         Object[] args = invocation.getArguments();
         int index = ((Integer) args[0]).intValue();
