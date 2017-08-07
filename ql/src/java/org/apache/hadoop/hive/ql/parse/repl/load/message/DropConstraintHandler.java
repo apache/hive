@@ -45,6 +45,7 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     tasks.add(dropConstraintsTask);
     context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);
     databasesUpdated.put(actualDbName, context.dmd.getEventTo());
+    tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
     return Collections.singletonList(dropConstraintsTask);    
   }
 }
