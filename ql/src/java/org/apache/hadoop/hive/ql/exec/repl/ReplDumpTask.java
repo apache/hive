@@ -61,7 +61,7 @@ import java.util.List;
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
-  private static final String FUNCTION_METADATA_DIR_NAME = "_metadata";
+  private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
 
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
   private Logger REPL_STATE_LOG = LoggerFactory.getLogger("ReplState");
@@ -86,6 +86,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(lastReplId)), dumpSchema);
     } catch (Exception e) {
       LOG.error("failed", e);
+      setException(e);
       return 1;
     }
     return 0;
@@ -262,10 +263,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // make it easy to write .q unit tests, instead of unique id generation.
       // however, this does mean that in writing tests, we have to be aware that
       // repl dump will clash with prior dumps, and thus have to clean up properly.
-      if (work.testInjectDumpDir == null) {
+      if (ReplDumpWork.testInjectDumpDir == null) {
         return "next";
       } else {
-        return work.testInjectDumpDir;
+        return ReplDumpWork.testInjectDumpDir;
       }
     } else {
       return String.valueOf(System.currentTimeMillis());
@@ -284,9 +285,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         continue;
       }
       Path functionRoot = new Path(functionsRoot, functionName);
-      Path functionMetadataRoot = new Path(functionRoot, FUNCTION_METADATA_DIR_NAME);
+      Path functionMetadataFile = new Path(functionRoot, FUNCTION_METADATA_FILE_NAME);
       try (JsonWriter jsonWriter =
-          new JsonWriter(functionMetadataRoot.getFileSystem(conf), functionMetadataRoot)) {
+          new JsonWriter(functionMetadataFile.getFileSystem(conf), functionMetadataFile)) {
         FunctionSerializer serializer = new FunctionSerializer(tuple.object, conf);
         serializer.writeTo(jsonWriter, tuple.replicationSpec);
       }
@@ -315,6 +316,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   @Override
   public StageType getType() {
-    return StageType.REPLDUMP;
+    return StageType.REPL_DUMP;
   }
 }
