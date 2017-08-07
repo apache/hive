@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
+import org.apache.hadoop.hive.druid.security.KerberosHttpClient;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -528,6 +530,13 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    if (UserGroupInformation.isSecurityEnabled()) {
+      // AM can not do Kerberos Auth so will do the input split generation in the HS2
+      LOG.debug("Setting {} to {} to enable split generation on HS2", HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(),
+              Boolean.FALSE.toString()
+      );
+      jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
+    }
     try {
       DruidStorageHandlerUtils.addDependencyJars(jobConf, DruidRecordWriter.class);
     } catch (IOException e) {
@@ -607,11 +616,16 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
             numConnection, readTimeout.toStandardDuration().getMillis()
     );
 
-    return HttpClientInit.createClient(
+    final HttpClient httpClient = HttpClientInit.createClient(
             HttpClientConfig.builder().withNumConnections(numConnection)
                     .withReadTimeout(new Period(readTimeout).toStandardDuration()).build(),
             lifecycle
     );
+    if (UserGroupInformation.isSecurityEnabled()) {
+      LOG.info("building Kerberos Http Client");
+      return new KerberosHttpClient(httpClient);
+    }
+    return httpClient;
   }
 
   public static HttpClient getHttpClient() {

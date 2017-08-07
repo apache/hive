@@ -31,7 +31,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,6 +43,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
+import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -650,9 +652,17 @@ public class DagUtils {
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
       conf.setBoolean(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, mapWork.getUseVectorizedInputFileFormat());
 
-      dataSource = MRInputHelpers.configureMRInputWithLegacySplitGeneration(conf, new Path(tezDir,
-          "split_" + mapWork.getName().replaceAll(" ", "_")), true);
-      numTasks = dataSource.getNumberOfShards();
+      InputSplitInfo inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(conf, false, 0);
+      InputInitializerDescriptor descriptor = InputInitializerDescriptor.create(MRInputSplitDistributor.class.getName());
+      InputDescriptor inputDescriptor = InputDescriptor.create(MRInputLegacy.class.getName())
+              .setUserPayload(UserPayload
+                      .create(MRRuntimeProtos.MRInputUserPayloadProto.newBuilder()
+                              .setConfigurationBytes(TezUtils.createByteStringFromConf(conf))
+                              .setSplits(inputSplitInfo.getSplitsProto()).build().toByteString()
+                              .asReadOnlyByteBuffer()));
+
+      dataSource = DataSourceDescriptor.create(inputDescriptor, descriptor, null);
+      numTasks = inputSplitInfo.getNumTasks();
 
       // set up the operator plan. (after generating splits - that changes configs)
       Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
