@@ -45,7 +45,8 @@ public abstract class PreEventContext {
     READ_DATABASE,
     ADD_INDEX,
     ALTER_INDEX,
-    DROP_INDEX
+    DROP_INDEX,
+    ALTER_DATABASE
   }
 
   private final PreEventType eventType;

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.lang.reflect.Field;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -3277,6 +3278,34 @@ public abstract class TestHiveMetaStore extends TestCase {
 
     // Cleanup
     client.dropDatabase(dbName, true, true, true);
+  }
+
+  @Test
+  public void testDBLocationChange() throws IOException, TException {
+    final String dbName = "alterDbLocation";
+    String defaultUri = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/default_location.db";
+    String newUri = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/new_location.db";
+
+    Database db = new Database();
+    db.setName(dbName);
+    db.setLocationUri(defaultUri);
+    client.createDatabase(db);
+
+    db = client.getDatabase(dbName);
+
+    assertEquals("Incorrect default location of the database",
+        warehouse.getDnsPath(new Path(defaultUri)).toString(), db.getLocationUri());
+
+    db.setLocationUri(newUri);
+    client.alterDatabase(dbName, db);
+
+    db = client.getDatabase(dbName);
+
+    assertEquals("Incorrect new location of the database",
+        warehouse.getDnsPath(new Path(newUri)).toString(), db.getLocationUri());
+
+    client.dropDatabase(dbName);
+    silentDropDatabase(dbName);
   }
 
   private void checkDbOwnerType(String dbName, String ownerName, PrincipalType ownerType)

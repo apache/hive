@@ -399,6 +399,8 @@ public class Operation2Privilege {
 (null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERDATABASE_OWNER, PrivRequirement.newIOPrivRequirement
 (null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERDATABASE_LOCATION, PrivRequirement.newIOPrivRequirement
+(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCDATABASE, PrivRequirement.newIOPrivRequirement
 (null, null));
     op2Priv.put(HiveOperationType.DFS, PrivRequirement.newIOPrivRequirement
