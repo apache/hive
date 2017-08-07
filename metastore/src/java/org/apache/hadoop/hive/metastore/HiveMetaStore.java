@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
@@ -990,13 +991,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void alter_database(final String dbName, final Database db)
+    public void alter_database(final String dbName, final Database newDB)
         throws NoSuchObjectException, TException, MetaException {
       startFunction("alter_database" + dbName);
       boolean success = false;
       Exception ex = null;
+
+      // Perform the same URI normalization as create_database_core.
+      if (newDB.getLocationUri() != null) {
+        newDB.setLocationUri(wh.getDnsPath(new Path(newDB.getLocationUri())).toString());
+      }
+
       try {
-        getMS().alterDatabase(dbName, db);
+        Database oldDB = get_database_core(dbName);
+        if (oldDB == null) {
+          throw new MetaException("Could not alter database \"" + dbName + "\". Could not retrieve old definition.");
+        }
+        firePreEvent(new PreAlterDatabaseEvent(oldDB, newDB, this));
+        getMS().alterDatabase(dbName, newDB);
         success = true;
       } catch (Exception e) {
         ex = e;

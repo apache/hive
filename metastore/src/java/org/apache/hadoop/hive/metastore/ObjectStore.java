@@ -783,6 +783,12 @@ public class ObjectStore implements RawStore, Configurable {
       if (db.getOwnerType() != null) {
         mdb.setOwnerType(db.getOwnerType().name());
       }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getDescription())) {
+        mdb.setDescription(db.getDescription());
+      }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getLocationUri())) {
+        mdb.setLocationUri(db.getLocationUri());
+      }
       openTransaction();
       pm.makePersistent(mdb);
       committed = commitTransaction();
