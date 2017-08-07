@@ -81,6 +81,27 @@ public final class FileUtils {
     }
   };
 
+  public static final PathFilter SNAPSHOT_DIR_PATH_FILTER = new PathFilter() {
+    @Override
+    public boolean accept(Path p) {
+      return ".snapshot".equalsIgnoreCase(p.getName());
+    }
+  };
+
+  /**
+   * Check if the path contains a subdirectory named '.snapshot'
+   * @param p path to check
+   * @param fs filesystem of the path
+   * @return true if p contains a subdirectory named '.snapshot'
+   * @throws IOException
+   */
+  public static boolean pathHasSnapshotSubDir(Path p, FileSystem fs) throws IOException {
+    // Hadoop is missing a public API to check for snapshotable directories. Check with the directory name
+    // until a more appropriate API is provided by HDFS-12257.
+    final FileStatus[] statuses = fs.listStatus(p, FileUtils.SNAPSHOT_DIR_PATH_FILTER);
+    return statuses != null && statuses.length != 0;
+  }
+
   /**
    * Variant of Path.makeQualified that qualifies the input path against the default file system
    * indicated by the configuration

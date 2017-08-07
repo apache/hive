@@ -2158,7 +2158,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           FileSystem fs = location.getFileSystem(getHiveConf());
           HadoopShims.HdfsEncryptionShim shim
                   = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, getHiveConf());
-          if (!shim.isPathEncrypted(location)) {
+          if (!shim.isPathEncrypted(location) && !FileUtils.pathHasSnapshotSubDir(location, fs)) {
             HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getHiveConf(), fs, location);
             FileStatus targetStatus = fs.getFileStatus(location);
             String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
