@@ -124,6 +124,10 @@ public class DiskRangeList extends DiskRange {
   public DiskRangeList insertAfter(DiskRangeList other) {
     checkArg(other);
     checkOrder(this, other, this);
+    return insertAfterInternal(other);
+  }
+
+  private DiskRangeList insertAfterInternal(DiskRangeList other) {
     other.next = this.next;
     other.prev = this;
     if (this.next != null) {
@@ -180,8 +184,10 @@ public class DiskRangeList extends DiskRange {
    * @return the split list
    */
   public final DiskRangeList split(long cOffset) {
-    insertAfter((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
-    return replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
+    DiskRangeList right = insertAfterInternal((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
+    DiskRangeList left = replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));
+    checkOrder(left, right, left); // Prev/next are already checked in the calls.
+    return left;
   }
 
   public boolean hasContiguousNext() {
