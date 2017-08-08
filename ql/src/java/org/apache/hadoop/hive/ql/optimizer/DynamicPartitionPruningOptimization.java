@@ -461,6 +461,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       desc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
           .getFieldSchemasFromColumnList(keyExprs, "key")));
       desc.setTargetColumnName(column);
+      desc.setTargetColumnType(columnType);
       desc.setPartKey(partKey);
       OperatorFactory.getAndMakeChild(desc, groupByOp);
     }

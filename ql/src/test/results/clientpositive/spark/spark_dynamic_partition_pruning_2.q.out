@@ -184,9 +184,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: dim_shops_id (int)
                             partition key expr: dim_shops_id
                             Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                            target column name: dim_shops_id
                             target work: Map 1
             Local Work:
               Map Reduce Local Work
@@ -726,9 +726,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: dim_shops_id (int)
                             partition key expr: dim_shops_id
                             Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                            target column name: dim_shops_id
                             target work: Map 1
             Local Work:
               Map Reduce Local Work
@@ -887,9 +887,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: dim_shops_id (int)
                             partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            target column name: dim_shops_id
                             target work: Map 1
             Local Work:
               Map Reduce Local Work
@@ -925,9 +925,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: dim_shops_id (int)
                             partition key expr: dim_shops_id
                             Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                            target column name: dim_shops_id
                             target work: Map 3
             Local Work:
               Map Reduce Local Work

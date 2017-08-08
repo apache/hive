@@ -25,6 +25,22 @@ select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds)
 set hive.spark.dynamic.partition.pruning=true;
 select count(*) from srcpart where ds = '2008-04-08';
 
+-- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+set hive.spark.dynamic.partition.pruning=false;
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+set hive.spark.dynamic.partition.pruning=true;
+
+-- multiple udfs and casts
+EXPLAIN select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08';
+
+-- implicit type conversion between join columns
+EXPLAIN select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08';
+
 -- multiple sources, single key
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11;
@@ -121,6 +137,10 @@ EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_
 select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08';
 select count(*) from srcpart where ds = '2008-04-08';
 
+-- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+
 -- multiple sources, single key
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11;
@@ -149,6 +169,10 @@ select count(*) from srcpart where hr = 11;
 EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08';
 select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08';
 select count(*) from srcpart where ds = '2008-04-08';
+
+-- single column, single key, udf with typechange
+EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
+select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08';
 
 -- left join
 EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08';

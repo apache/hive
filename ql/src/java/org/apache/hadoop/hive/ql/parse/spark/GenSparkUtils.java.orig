@@ -494,12 +494,6 @@ public class GenSparkUtils {
     List<String> columns = targetWork.getEventSourceColumnNameMap().get(sourceId);
     columns.add(desc.getTargetColumnName());
 
-    if (!targetWork.getEventSourceColumnTypeMap().containsKey(sourceId)) {
-      targetWork.getEventSourceColumnTypeMap().put(sourceId, new LinkedList<String>());
-    }
-    List<String> columnTypes = targetWork.getEventSourceColumnTypeMap().get(sourceId);
-    columnTypes.add(desc.getTargetColumnType());
-
     // store partition key expr in map-targetWork
     if (!targetWork.getEventSourcePartKeyExprMap().containsKey(sourceId)) {
       targetWork.getEventSourcePartKeyExprMap().put(sourceId, new LinkedList<ExprNodeDesc>());

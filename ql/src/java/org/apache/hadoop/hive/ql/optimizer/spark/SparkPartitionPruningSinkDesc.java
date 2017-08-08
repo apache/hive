@@ -31,6 +31,9 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
   // column in the target table that will be pruned against
   private String targetColumnName;
 
+  // type of target column
+  private String targetColumnType;
+
   private TableDesc table;
 
   private transient TableScanOperator tableScan;
@@ -68,13 +71,25 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     this.tableScan = tableScan;
   }
 
-  @Explain(displayName = "target column name")
+  @Explain(displayName = "Target column")
+  public String displayTargetColumn() {
+    return targetColumnName + " (" + targetColumnType + ")";
+  }
+
   public String getTargetColumnName() {
     return targetColumnName;
   }
 
   public void setTargetColumnName(String targetColumnName) {
     this.targetColumnName = targetColumnName;
+  }
+
+  public String getTargetColumnType() {
+    return targetColumnType;
+  }
+
+  public void setTargetColumnType(String columnType) {
+    this.targetColumnType = columnType;
   }
 
   public ExprNodeDesc getPartKey() {
