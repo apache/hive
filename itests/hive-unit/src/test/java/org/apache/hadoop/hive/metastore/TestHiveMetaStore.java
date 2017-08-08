@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +43,7 @@ import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -83,6 +85,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -1722,6 +1725,61 @@ public abstract class TestHiveMetaStore extends TestCase {
       throw e;
     } finally {
       cleanUp(dbName, tblName, typeName);
+    }
+  }
+
+  static class ClassNotFoundSerde extends LazySimpleSerDe {
+
+    public ClassNotFoundSerde() throws Exception {
+    }
+
+    @Override
+    public void initialize(Configuration job, Properties tbl) throws SerDeException {
+      super.initialize(job, tbl);
+      throw new NoClassDefFoundError();
+    }
+
+  }
+
+  public void testGetSchemaWithNoClassDefFoundError() throws Exception {
+    try {
+      String dbName = "testDb";
+      String tblName = "testTable";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(1);
+      cols.add(new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
+
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      SerDeInfo serdeInfo = new SerDeInfo();
+      sd.setSerdeInfo(serdeInfo);
+      serdeInfo.setSerializationLib(ClassNotFoundSerde.class.getName());
+
+      client.createTable(tbl);
+
+      Boolean MetaExceptionCaught = false;
+      try {
+        client.getSchema(dbName, tblName);
+      } catch (MetaException me) {
+        MetaExceptionCaught = true;
+      }
+      assertTrue("MetaException is expected to be caught for throwing NoClassDefFoundError", MetaExceptionCaught);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testGetSchemaWithNoClassDefFoundError() failed.");
+      throw e;
     }
   }
 
