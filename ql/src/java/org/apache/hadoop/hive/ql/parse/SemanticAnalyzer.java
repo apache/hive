@@ -402,10 +402,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  protected void reset(boolean clearPartsCache) {
+  protected void reset(boolean clearCache) {
     super.reset(true);
-    if(clearPartsCache) {
+    if(clearCache) {
       prunedPartitions.clear();
+      if (ctx != null) {
+        ctx.getOpContext().getColStatsCache().clear();
+      }
 
       //When init(true) combine with genResolvedParseTree, it will generate Resolved Parse tree from syntax tree
       //ReadEntity created under these conditions should be all relevant to the syntax tree even the ones without parents

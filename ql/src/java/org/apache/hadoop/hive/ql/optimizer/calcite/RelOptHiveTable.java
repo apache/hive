@@ -46,16 +46,18 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
@@ -77,9 +79,10 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   final HiveConf                                  hiveConf;
 
   private double                                  rowCount        = -1;
-  Map<Integer, ColStatistics>                     hiveColStatsMap = new HashMap<Integer, ColStatistics>();
+  Map<Integer, ColStatistics>                     hiveColStatsMap = new HashMap<>();
   PrunedPartitionList                             partitionList;
   Map<String, PrunedPartitionList>                partitionCache;
+  Map<String, ColumnStatsList>                    colStatsCache;
   AtomicInteger                                   noColsMissingStats;
 
   protected static final Logger                      LOG             = LoggerFactory
@@ -89,7 +92,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public RelOptHiveTable(RelOptSchema calciteSchema, String qualifiedTblName,
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols,
       List<ColumnInfo> hivePartitionCols, List<VirtualColumn> hiveVirtualCols, HiveConf hconf,
-      Map<String, PrunedPartitionList> partitionCache, AtomicInteger noColsMissingStats) {
+      Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
+      AtomicInteger noColsMissingStats) {
     super(calciteSchema, qualifiedTblName, rowType);
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
@@ -100,6 +104,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     this.hiveVirtualCols = ImmutableList.copyOf(hiveVirtualCols);
     this.hiveConf = hconf;
     this.partitionCache = partitionCache;
+    this.colStatsCache = colStatsCache;
     this.noColsMissingStats = noColsMissingStats;
   }
 
@@ -136,7 +141,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     // 3. Build new Table
     return new RelOptHiveTable(this.schema, this.name, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
-        this.hiveConf, this.partitionCache, this.noColsMissingStats);
+        this.hiveConf, this.partitionCache, this.colStatsCache, this.noColsMissingStats);
   }
 
   @Override
@@ -295,6 +300,12 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       computePartitionList(hiveConf, null, new HashSet<Integer>());
     }
 
+    ColumnStatsList colStatsCached = colStatsCache.get(partitionList.getKey());
+    if (colStatsCached == null) {
+      colStatsCached = new ColumnStatsList();
+      colStatsCache.put(partitionList.getKey(), colStatsCached);
+    }
+
     // 2. Obtain Col Stats for Non Partition Cols
     if (nonPartColNamesThatRqrStats.size() > 0) {
       List<ColStatistics> hiveColStats;
@@ -302,11 +313,12 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       if (!hiveTblMetadata.isPartitioned()) {
         // 2.1 Handle the case for unpartitioned table.
         hiveColStats = StatsUtils.getTableColumnStats(hiveTblMetadata, hiveNonPartitionCols,
-            nonPartColNamesThatRqrStats);
+            nonPartColNamesThatRqrStats, colStatsCached);
 
         // 2.1.1 Record Column Names that we needed stats for but couldn't
         if (hiveColStats == null) {
           colNamesFailedStats.addAll(nonPartColNamesThatRqrStats);
+          colStatsCached.updateState(State.NONE);
         } else if (hiveColStats.size() != nonPartColNamesThatRqrStats.size()) {
           Set<String> setOfFiledCols = new HashSet<String>(nonPartColNamesThatRqrStats);
 
@@ -317,6 +329,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           setOfFiledCols.removeAll(setOfObtainedColStats);
 
           colNamesFailedStats.addAll(setOfFiledCols);
+
+          colStatsCached.updateState(State.PARTIAL);
         } else {
           // Column stats in hiveColStats might not be in the same order as the columns in
           // nonPartColNamesThatRqrStats. reorder hiveColStats so we can build hiveColStatsMap
@@ -330,6 +344,8 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           for (String colName : nonPartColNamesThatRqrStats) {
             hiveColStats.add(columnStatsMap.get(colName));
           }
+
+          colStatsCached.updateState(State.COMPLETE);
         }
       } else {
         // 2.2 Obtain col stats for partitioned table.
@@ -338,14 +354,18 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             // no need to make a metastore call
             rowCount = 0;
             hiveColStats = new ArrayList<ColStatistics>();
-            for (String c : nonPartColNamesThatRqrStats) {
+            for (int i = 0; i < nonPartColNamesThatRqrStats.size(); i++) {
               // add empty stats object for each column
-              hiveColStats.add(new ColStatistics(c, null));
+              hiveColStats.add(
+                  new ColStatistics(
+                      nonPartColNamesThatRqrStats.get(i),
+                      hiveNonPartitionColsMap.get(nonPartColIndxsThatRqrStats.get(i)).getTypeName()));
             }
             colNamesFailedStats.clear();
+            colStatsCached.updateState(State.COMPLETE);
           } else {
             Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
-                hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats,
+                hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats, colStatsCached,
                 nonPartColNamesThatRqrStats, true, true);
             rowCount = stats.getNumRows();
             hiveColStats = new ArrayList<ColStatistics>();
@@ -357,6 +377,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
                 colNamesFailedStats.add(c);
               }
             }
+            colStatsCached.updateState(stats.getColumnStatsState());
           }
         } catch (HiveException e) {
           String logMsg = "Collecting stats failed.";
@@ -370,6 +391,12 @@ public class RelOptHiveTable extends RelOptAbstractTable {
           // the columns in nonPartColIndxsThatRqrStats/nonPartColNamesThatRqrStats/hiveColStats
           // are in same order
           hiveColStatsMap.put(nonPartColIndxsThatRqrStats.get(i), hiveColStats.get(i));
+          colStatsCached.put(hiveColStats.get(i).getColumnName(), hiveColStats.get(i));
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Stats for column " + hiveColStats.get(i).getColumnName() +
+                    " in table " + hiveTblMetadata.getTableName() + " stored in cache");
+            LOG.debug(hiveColStats.get(i).toString());
+          }
         }
       }
     }
@@ -378,11 +405,15 @@ public class RelOptHiveTable extends RelOptAbstractTable {
     if (colNamesFailedStats.isEmpty() && !partColNamesThatRqrStats.isEmpty()) {
       ColStatistics cStats = null;
       for (int i = 0; i < partColNamesThatRqrStats.size(); i++) {
-        cStats = new ColStatistics(partColNamesThatRqrStats.get(i),
-            hivePartitionColsMap.get(partColIndxsThatRqrStats.get(i)).getTypeName());
-        cStats.setCountDistint(getDistinctCount(partitionList.getPartitions(),
-            partColNamesThatRqrStats.get(i)));
+        cStats = StatsUtils.getColStatsForPartCol(hivePartitionColsMap.get(partColIndxsThatRqrStats.get(i)),
+            new PartitionIterable(partitionList.getNotDeniedPartns()), hiveConf);
         hiveColStatsMap.put(partColIndxsThatRqrStats.get(i), cStats);
+        colStatsCached.put(cStats.getColumnName(), cStats);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Stats for column " + cStats.getColumnName() +
+                  " in table " + hiveTblMetadata.getTableName() + " stored in cache");
+          LOG.debug(cStats.toString());
+        }
       }
     }
 
@@ -403,14 +434,6 @@ public class RelOptHiveTable extends RelOptAbstractTable {
         throw new RuntimeException(logMsg);
       }
     }
-  }
-
-  private int getDistinctCount(Set<Partition> partitions, String partColName) {
-    Set<String> distinctVals = new HashSet<String>(partitions.size());
-    for (Partition partition : partitions) {
-      distinctVals.add(partition.getSpec().get(partColName));
-    }
-    return distinctVals.size();
   }
 
   public List<ColStatistics> getColStat(List<Integer> projIndxLst) {

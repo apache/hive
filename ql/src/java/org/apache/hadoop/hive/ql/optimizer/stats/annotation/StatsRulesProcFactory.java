@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -123,11 +124,12 @@ public class StatsRulesProcFactory {
       TableScanOperator tsop = (TableScanOperator) nd;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       PrunedPartitionList partList = aspCtx.getParseContext().getPrunedPartitions(tsop);
+      ColumnStatsList colStatsCached = aspCtx.getParseContext().getColStatsCached(partList);
       Table table = tsop.getConf().getTableMetadata();
 
       try {
         // gather statistics for the first time and the attach it to table scan operator
-        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, table, tsop);
+        Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, colStatsCached, table, tsop);
         tsop.setStatistics(stats.clone());
 
         if (LOG.isDebugEnabled()) {

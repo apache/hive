@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -285,7 +286,7 @@ public final class HiveMaterializedViewsRegistry {
     RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
         rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<VirtualColumn>(),
         SessionState.get().getConf(), new HashMap<String, PrunedPartitionList>(),
-        new AtomicInteger());
+        new HashMap<String, ColumnStatsList>(), new AtomicInteger());
     RelNode tableRel;
 
     // 3. Build operator
