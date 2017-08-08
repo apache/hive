@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -30,6 +32,8 @@ import org.apache.hadoop.mapred.JobConf;
  * HiveStorageHandler}; it should only be implemented by handlers which
  * support decomposition of predicates being pushed down into table scans.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveStoragePredicateHandler {
 
   /**
@@ -63,6 +67,8 @@ public interface HiveStoragePredicateHandler {
   /**
    * Struct class for returning multiple values from decomposePredicate.
    */
+  @InterfaceAudience.Public
+  @InterfaceStability.Stable
   public static class DecomposedPredicate {
     /**
      * Portion of predicate to be evaluated by storage handler.  Hive

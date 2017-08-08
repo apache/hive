@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -47,6 +49,8 @@ import org.apache.hadoop.mapred.OutputFormat;
  * Storage handler classes are plugged in using the STORED BY 'classname'
  * clause in CREATE TABLE.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
   /**
    * @return Class providing an implementation of {@link InputFormat}
