@@ -1792,8 +1792,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        }
-        if (success && primaryKeyCols != null && primaryKeyCols.size() > 0) {
+        } else if (primaryKeyCols != null && primaryKeyCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
             AddPrimaryKeyEvent addPrimaryKeyEvent = new AddPrimaryKeyEvent(primaryKeyCols, true, this);
             listener.onAddPrimaryKey(addPrimaryKeyEvent);
@@ -1845,8 +1844,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        }
-        if (success && foreignKeyCols != null && foreignKeyCols.size() > 0) {
+        } else if (foreignKeyCols != null && foreignKeyCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
             AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeyCols, true, this);
             listener.onAddForeignKey(addForeignKeyEvent);
@@ -1867,6 +1865,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       RawStore ms = getMS();
       try {
+        ms.openTransaction();
         List<String> constraintNames = ms.addUniqueConstraints(uniqueConstraintCols);
         // Set unique constraint name if null before sending to listener
         if (uniqueConstraintCols != null) {
@@ -1884,7 +1883,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
           }
         }
-        success = true;
+        success = ms.commitTransaction();
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1897,8 +1896,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        }
-        if (success && uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) {
+        } else if (uniqueConstraintCols != null && uniqueConstraintCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
             AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraintCols, true, this);
             listener.onAddUniqueConstraint(addUniqueConstraintEvent);
@@ -1919,6 +1917,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       RawStore ms = getMS();
       try {
+        ms.openTransaction();
         List<String> constraintNames = ms.addNotNullConstraints(notNullConstraintCols);
         // Set not null constraint name if null before sending to listener
         if (notNullConstraintCols != null) {
@@ -1936,7 +1935,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
           }
         }
-        success = true;
+        success = ms.commitTransaction();
       } catch (Exception e) {
         ex = e;
         if (e instanceof MetaException) {
@@ -1949,8 +1948,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        }
-        if (success && notNullConstraintCols != null && notNullConstraintCols.size() > 0) {
+        } else if (notNullConstraintCols != null && notNullConstraintCols.size() > 0) {
           for (MetaStoreEventListener listener : listeners) {
             AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraintCols, true, this);
             listener.onAddNotNullConstraint(addNotNullConstraintEvent);
