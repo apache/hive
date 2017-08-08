@@ -192,7 +192,7 @@
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.8.4</tez.version>
+    <tez.version>0.9.0</tez.version>
     <slider.version>0.92.0-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.0.0</spark.version>
