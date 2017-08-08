@@ -76,6 +76,13 @@ public class LineageState {
     dirToFop.put(dir, fop);
   }
 
+  public void updateDirToOpMap(Path newPath, Path oldPath) {
+    Operator op = dirToFop.remove(oldPath);
+    if (op != null) {
+      dirToFop.put(newPath, op);
+    }
+  }
+
   /**
    * Set the lineage information for the associated directory.
    *

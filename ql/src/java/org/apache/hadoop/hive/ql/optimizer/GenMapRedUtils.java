@@ -115,6 +115,8 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -1679,12 +1681,15 @@ public final class GenMapRedUtils {
     LoadFileDesc fileDesc = null;
     LoadTableDesc tableDesc = null;
 
+    LineageState lineageState = SessionState.get().getLineageState();
     if (linkedMoveWork.getLoadFileWork() != null) {
       fileDesc = new LoadFileDesc(linkedMoveWork.getLoadFileWork());
       fileDesc.setSourcePath(condInputPath);
+      lineageState.updateDirToOpMap(condInputPath, linkedMoveWork.getLoadFileWork().getSourcePath());
     } else if (linkedMoveWork.getLoadTableWork() != null) {
       tableDesc = new LoadTableDesc(linkedMoveWork.getLoadTableWork());
       tableDesc.setSourcePath(condInputPath);
+      lineageState.updateDirToOpMap(condInputPath, linkedMoveWork.getLoadTableWork().getSourcePath());
     } else {
       throw new IllegalArgumentException("Merging a path with a MoveWork with multi-files work is not allowed.");
     }

@@ -56,6 +56,9 @@ SELECT * FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@rcfile_table
+POSTHOOK: Lineage: rcfile_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
 PREHOOK: query: SELECT * FROM rcfile_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_table
@@ -126,6 +129,9 @@ SELECT * FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@rcfile_table
+POSTHOOK: Lineage: rcfile_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: rcfile_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
 PREHOOK: query: SELECT * FROM rcfile_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_table

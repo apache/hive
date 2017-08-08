@@ -18,6 +18,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
@@ -33,6 +34,7 @@ PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (2)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1

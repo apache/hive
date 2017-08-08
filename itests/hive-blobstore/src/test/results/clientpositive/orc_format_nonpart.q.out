@@ -56,6 +56,9 @@ SELECT * FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@orc_table
+POSTHOOK: Lineage: orc_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
 PREHOOK: query: SELECT * FROM orc_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table
@@ -126,6 +129,9 @@ SELECT * FROM blobstore_source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@orc_table
+POSTHOOK: Lineage: orc_table.a EXPRESSION [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_table.value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
 PREHOOK: query: SELECT * FROM orc_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table

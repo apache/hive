@@ -63,6 +63,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobsto
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@blobstore_target
+POSTHOOK: Lineage: blobstore_target.key SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@blobstore_target
@@ -80,6 +81,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobsto
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@blobstore_target
+POSTHOOK: Lineage: blobstore_target.key SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@blobstore_target
