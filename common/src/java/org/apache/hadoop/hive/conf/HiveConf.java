@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -37,7 +36,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.HiveCompat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -442,6 +440,11 @@ public class HiveConf extends Configuration {
         "Inteval for cmroot cleanup thread."),
     REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/hive/repl/functions/",
         "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
+    REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 1000,
+        "Provide and approximate of the max number of tasks that should be executed in before  \n" +
+            "dynamically generating the next set of tasks. The number is an approximate as we \n" +
+            "will stop at slightly higher number than above, the reason being some events might \n" +
+            "lead to an task increment that would cross the above limit"),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",5,
         "Number of threads that will be used to dump partition data information during repl dump."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
