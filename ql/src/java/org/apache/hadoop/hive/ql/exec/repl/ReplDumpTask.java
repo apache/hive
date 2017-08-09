@@ -176,8 +176,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot) throws Exception {
     // bootstrap case
-    Long bootDumpBeginReplId = getHive().getMSC().getCurrentNotificationEventId().getEventId();
-
+    Hive hiveDb = getHive();
+    Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
     for (String dbName : Utils.matchesDb(getHive(), work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
@@ -186,11 +186,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       replLogger.startLog();
       Path dbRoot = dumpDbMetadata(dbName, dumpRoot);
       dumpFunctionMetadata(dbName, dumpRoot);
+
+      Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.ACTIVE.toString());
       for (String tblName : Utils.matchesTbl(getHive(), dbName, work.tableNameOrPattern)) {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
       }
+      Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.IDLE.toString());
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
     Long bootDumpEndReplId = getHive().getMSC().getCurrentNotificationEventId().getEventId();
@@ -223,7 +226,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     dmd.write();
 
     // Set the correct last repl id to return to the user
-    return bootDumpEndReplId;
+    // Currently returned bootDumpBeginReplId as we don't consolidate the events after bootstrap
+    return bootDumpBeginReplId;
   }
 
   private Path dumpDbMetadata(String dbName, Path dumpRoot) throws Exception {

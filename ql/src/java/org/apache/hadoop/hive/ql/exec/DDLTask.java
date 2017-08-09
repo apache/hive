@@ -150,6 +150,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
@@ -1157,6 +1158,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               tableName,
               FileUtils.makePartName(new ArrayList(oldPartSpec.keySet()), new ArrayList(oldPartSpec.values())));
       return 0;
+    }
+
+    String names[] = Utilities.getDbTableName(tableName);
+    if (Utils.isBootstrapDumpInProgress(db, names[0])) {
+      LOG.error("DDLTask: Rename Partition not allowed as bootstrap dump in progress");
+      throw new HiveException("Rename Partition: Not allowed as bootstrap dump in progress");
     }
 
     Table tbl = db.getTable(tableName);
@@ -3597,6 +3604,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int alterTable(Hive db, AlterTableDesc alterTbl) throws HiveException {
+    if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
+      String names[] = Utilities.getDbTableName(alterTbl.getOldName());
+      if (Utils.isBootstrapDumpInProgress(db, names[0])) {
+        LOG.error("DDLTask: Rename Table not allowed as bootstrap dump in progress");
+        throw new HiveException("Rename Table: Not allowed as bootstrap dump in progress");
+      }
+    }
+
     // alter the table
     Table tbl = db.getTable(alterTbl.getOldName());
 
