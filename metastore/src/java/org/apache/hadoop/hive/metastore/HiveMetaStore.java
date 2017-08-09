@@ -1740,11 +1740,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        }
-        for (MetaStoreEventListener listener : listeners) {
-          DropConstraintEvent dropConstraintEvent = new DropConstraintEvent(dbName,
-              tableName, constraintName, true, this);
-          listener.onDropConstraint(dropConstraintEvent);
+        } else {
+          for (MetaStoreEventListener listener : listeners) {
+            DropConstraintEvent dropConstraintEvent = new DropConstraintEvent(dbName,
+                tableName, constraintName, true, this);
+            listener.onDropConstraint(dropConstraintEvent);
+          }
         }
         endFunction("drop_constraint", success, ex, constraintName);
       }
