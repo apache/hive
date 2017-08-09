@@ -58,7 +58,16 @@ public abstract class MessageDeserializer {
       return getAlterIndexMessage(messageBody);
     case INSERT:
       return getInsertMessage(messageBody);
-
+    case ADD_PRIMARYKEY:
+      return getAddPrimaryKeyMessage(messageBody);
+    case ADD_FOREIGNKEY:
+      return getAddForeignKeyMessage(messageBody);
+    case ADD_UNIQUECONSTRAINT:
+      return getAddUniqueConstraintMessage(messageBody);
+    case ADD_NOTNULLCONSTRAINT:
+      return getAddNotNullConstraintMessage(messageBody);
+    case DROP_CONSTRAINT:
+      return getDropConstraintMessage(messageBody);
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -139,6 +148,31 @@ public abstract class MessageDeserializer {
    * @return message in object form
    */
   public abstract InsertMessage getInsertMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AddPrimaryKeyMessage instance.
+   */
+  public abstract AddPrimaryKeyMessage getAddPrimaryKeyMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AddForeignKeyMessage instance.
+   */
+  public abstract AddForeignKeyMessage getAddForeignKeyMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AddUniqueConstraintMessage instance.
+   */
+  public abstract AddUniqueConstraintMessage getAddUniqueConstraintMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AddNotNullConstraintMessage instance.
+   */
+  public abstract AddNotNullConstraintMessage getAddNotNullConstraintMessage(String messageBody);
+
+  /**
+   * Method to de-serialize DropConstraintMessage instance.
+   */
+  public abstract DropConstraintMessage getDropConstraintMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

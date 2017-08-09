@@ -188,6 +188,7 @@ import com.google.common.collect.Maps;
 public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
+  private static boolean forTwoMetastoreTesting = false;
 
   private static Lock pmfPropLock = new ReentrantLock();
   /**
@@ -290,8 +291,10 @@ public class ObjectStore implements RawStore, Configurable {
       if (propsChanged) {
         if (pmf != null){
           clearOutPmfClassLoaderCache(pmf);
-          // close the underlying connection pool to avoid leaks
-          pmf.close();
+          if (!forTwoMetastoreTesting) {
+            // close the underlying connection pool to avoid leaks
+            pmf.close();
+          }
         }
         pmf = null;
         prop = null;
@@ -979,7 +982,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createTableWithConstraints(Table tbl,
+  public List<String> createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints)
@@ -991,11 +994,12 @@ public class ObjectStore implements RawStore, Configurable {
       // Add constraints.
       // We need not do a deep retrieval of the Table Column Descriptor while persisting the
       // constraints since this transaction involving create table is not yet committed.
-      addPrimaryKeys(primaryKeys, false);
-      addForeignKeys(foreignKeys, false);
-      addUniqueConstraints(uniqueConstraints, false);
-      addNotNullConstraints(notNullConstraints, false);
+      List<String> constraintNames = addPrimaryKeys(primaryKeys, false);
+      constraintNames.addAll(addForeignKeys(foreignKeys, false));
+      constraintNames.addAll(addUniqueConstraints(uniqueConstraints, false));
+      constraintNames.addAll(addNotNullConstraints(notNullConstraints, false));
       success = commitTransaction();
+      return constraintNames;
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -3506,7 +3510,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private String generateConstraintName(String... parameters) throws MetaException {
-    int hashcode = ArrayUtils.toString(parameters).hashCode();
+    int hashcode = ArrayUtils.toString(parameters).hashCode() & 0xfffffff;
     int counter = 0;
     final int MAX_RETRIES = 10;
     while (counter < MAX_RETRIES) {
@@ -3520,9 +3524,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addForeignKeys(
+  public List<String> addForeignKeys(
     List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
-   addForeignKeys(fks, true);
+   return addForeignKeys(fks, true);
   }
 
   @Override
@@ -3596,9 +3600,10 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private void addForeignKeys(
+  private List<String> addForeignKeys(
     List<SQLForeignKey> fks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
+    List<String> fkNames = new ArrayList<String>();
     List<MConstraint> mpkfks = new ArrayList<MConstraint>();
     String currentConstraintName = null;
 
@@ -3653,6 +3658,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         currentConstraintName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFk_name());
       }
+      fkNames.add(currentConstraintName);
       Integer updateRule = fks.get(i).getUpdate_rule();
       Integer deleteRule = fks.get(i).getDelete_rule();
       int enableValidateRely = (fks.get(i).isEnable_cstr() ? 4 : 0) +
@@ -3674,16 +3680,18 @@ public class ObjectStore implements RawStore, Configurable {
       mpkfks.add(mpkfk);
     }
     pm.makePersistentAll(mpkfks);
+    return fkNames;
   }
 
   @Override
-  public void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
     MetaException {
-    addPrimaryKeys(pks, true);
+    return addPrimaryKeys(pks, true);
   }
 
-  private void addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
+  private List<String> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
+    List<String> pkNames = new ArrayList<String>();
     List<MConstraint> mpks = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3719,7 +3727,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(pks.get(i).getPk_name());
       }
-
+      pkNames.add(constraintName);
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
       (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
@@ -3738,16 +3746,18 @@ public class ObjectStore implements RawStore, Configurable {
       mpks.add(mpk);
     }
     pm.makePersistentAll(mpks);
+    return pkNames;
   }
 
   @Override
-  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
           throws InvalidObjectException, MetaException {
-    addUniqueConstraints(uks, true);
+    return addUniqueConstraints(uks, true);
   }
 
-  private void addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
+  private List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
+    List<String> ukNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3777,6 +3787,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(uks.get(i).getUk_name());
       }
+      ukNames.add(constraintName);
 
       int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
           (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
@@ -3796,16 +3807,18 @@ public class ObjectStore implements RawStore, Configurable {
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
+    return ukNames;
   }
 
   @Override
-  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
           throws InvalidObjectException, MetaException {
-    addNotNullConstraints(nns, true);
+    return addNotNullConstraints(nns, true);
   }
 
-  private void addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
+  private List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
+    List<String> nnNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3833,6 +3846,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(nns.get(i).getNn_name());
       }
+      nnNames.add(constraintName);
 
       int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
           (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
@@ -3852,6 +3866,7 @@ public class ObjectStore implements RawStore, Configurable {
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
+    return nnNames;
   }
 
   @Override
@@ -8868,5 +8883,14 @@ public class ObjectStore implements RawStore, Configurable {
         queryWrapper.close();
       }
     }
+  }
+
+  /**
+   * To make possible to run multiple metastore in unit test
+   * @param twoMetastoreTesting if we are using multiple metastore in unit test
+   */
+  @VisibleForTesting
+  public static void setTwoMetastoreTesting(boolean twoMetastoreTesting) {
+    forTwoMetastoreTesting = twoMetastoreTesting;
   }
 }

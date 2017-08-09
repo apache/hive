@@ -1895,16 +1895,17 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createTableWithConstraints(Table tbl,
+  public List<String> createTableWithConstraints(Table tbl,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints,
       List<SQLNotNullConstraint> notNullConstraints)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
+    List<String> constraintNames = rawStore.createTableWithConstraints(tbl, primaryKeys, foreignKeys,
             uniqueConstraints, notNullConstraints);
     SharedCache.addTableToCache(HiveStringUtils.normalizeIdentifier(tbl.getDbName()),
         HiveStringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
+    return constraintNames;
   }
 
   @Override
@@ -1915,31 +1916,31 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addPrimaryKeys(List<SQLPrimaryKey> pks)
+  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.addPrimaryKeys(pks);
+    return rawStore.addPrimaryKeys(pks);
   }
 
   @Override
-  public void addForeignKeys(List<SQLForeignKey> fks)
+  public List<String> addForeignKeys(List<SQLForeignKey> fks)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.addForeignKeys(fks);
+    return rawStore.addForeignKeys(fks);
   }
 
   @Override
-  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.addUniqueConstraints(uks);
+    return rawStore.addUniqueConstraints(uks);
   }
 
   @Override
-  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
-    rawStore.addNotNullConstraints(nns);
+    return rawStore.addNotNullConstraints(nns);
   }
 
   @Override

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -26,11 +27,20 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
@@ -79,15 +89,18 @@ public class TestReplicationScenarios {
       "org.apache.hive.hcatalog.listener.DbNotificationListener";
       // FIXME : replace with hive copy once that is copied
   private final static String tid =
-      TestReplicationScenarios.class.getCanonicalName().replace('.','_') + "_" + System.currentTimeMillis();
+      TestReplicationScenarios.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
   private final static String TEST_PATH =
       System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
 
   private static HiveConf hconf;
-  private static boolean useExternalMS = false;
   private static int msPort;
   private static Driver driver;
   private static HiveMetaStoreClient metaStoreClient;
+  static HiveConf hconfMirror;
+  static int msPortMirror;
+  static Driver driverMirror;
+  static HiveMetaStoreClient metaStoreClientMirror;
 
   @Rule
   public TestRule replV1BackwardCompatibleRule =
@@ -111,7 +124,6 @@ public class TestReplicationScenarios {
     String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
     if (metastoreUri != null) {
       hconf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
-      useExternalMS = true;
       return;
     }
 
@@ -140,6 +152,18 @@ public class TestReplicationScenarios {
     driver = new Driver(hconf);
     SessionState.start(new CliSessionState(hconf));
     metaStoreClient = new HiveMetaStoreClient(hconf);
+
+    FileUtils.deleteDirectory(new File("metastore_db2"));
+    HiveConf hconfMirrorServer = new HiveConf();
+    hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
+    msPortMirror = MetaStoreUtils.startMetaStore(hconfMirrorServer);
+    hconfMirror = new HiveConf(hconf);
+    hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+        + msPortMirror);
+    driverMirror = new Driver(hconfMirror);
+    metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
+
+    ObjectStore.setTwoMetastoreTesting(true);
   }
 
   @AfterClass
@@ -150,6 +174,7 @@ public class TestReplicationScenarios {
   @Before
   public void setUp(){
     // before each test
+    SessionState.get().setCurrentDatabase("default");
   }
 
   @After
@@ -199,18 +224,18 @@ public class TestReplicationScenarios {
     if (null != limit) {
       dumpCmd = dumpCmd + " LIMIT " + limit;
     }
-    run(dumpCmd);
-    String dumpLocation = getResult(0, 0);
-    String lastReplId = getResult(0, 1, true);
+    run(dumpCmd, driver);
+    String dumpLocation = getResult(0, 0, driver);
+    String lastReplId = getResult(0, 1, true, driver);
     LOG.info("Dumped to {} with id {} for command: {}", dumpLocation, lastReplId, dumpCmd);
     return new Tuple(dumpLocation, lastReplId);
   }
 
   private void loadAndVerify(String replDbName, String dumpLocation, String lastReplId) throws IOException {
-    run("EXPLAIN REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'");
-    printOutput();
-    run("REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'");
-    verifyRun("REPL STATUS " + replDbName, lastReplId);
+    run("EXPLAIN REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + replDbName + " FROM '" + dumpLocation + "'", driverMirror);
+    verifyRun("REPL STATUS " + replDbName, lastReplId, driverMirror);
     return;
   }
 
@@ -223,11 +248,11 @@ public class TestReplicationScenarios {
   @Test
   public void testBasic() throws IOException {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -242,33 +267,33 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
     String replicatedDbName = dbName + "_dupe";
     bootstrapLoadAndVerify(dbName, replicatedDbName);
 
-    verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data);
-    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + ".ptned_empty", empty);
-    verifyRun("SELECT * from " + dbName + ".unptned_empty", empty);
+    verifyRun("SELECT * from " + replicatedDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replicatedDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + ".ptned_empty", empty, driverMirror);
+    verifyRun("SELECT * from " + dbName + ".unptned_empty", empty, driverMirror);
   }
 
   @Test
   public void testBasicWithCM() throws Exception {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -286,29 +311,29 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_2, ptn_data_2);
     createTestDataFile(ptn_locn_2_later, ptn_data_2_later);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=1");
-    verifyResults(ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("SELECT * from " + dbName + ".unptned", driver);
+    verifyResults(unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    run("SELECT a from " + dbName + ".ptned WHERE b=1", driver);
+    verifyResults(ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    run("SELECT a from " + dbName + ".ptned WHERE b=2", driver);
+    verifyResults(ptn_data_2, driver);
+    run("SELECT a from " + dbName + ".ptned_empty", driver);
+    verifyResults(empty, driver);
+    run("SELECT * from " + dbName + ".unptned_empty", driver);
+    verifyResults(empty, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0, driver);
+    String replDumpId = getResult(0,1,true, driver);
 
     // Table dropped after "repl dump"
-    run("DROP TABLE " + dbName + ".unptned");
+    run("DROP TABLE " + dbName + ".unptned", driver);
     // Partition droppped after "repl dump"
-    run("ALTER TABLE " + dbName + ".ptned " + "DROP PARTITION(b=1)");
+    run("ALTER TABLE " + dbName + ".ptned " + "DROP PARTITION(b=1)", driver);
     // File changed after "repl dump"
     Partition p = metaStoreClient.getPartition(dbName, "ptned", "b=2");
     Path loc = new Path(p.getSd().getLocation());
@@ -317,25 +342,25 @@ public class TestReplicationScenarios {
     fs.delete(file, false);
     fs.copyFromLocalFile(new Path(ptn_locn_2_later), file);
 
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {replDumpId});
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {replDumpId}, driverMirror);
 
-    run("SELECT * from " + dbName + "_dupe.unptned");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
-    verifyResults(ptn_data_1);
+    run("SELECT * from " + dbName + "_dupe.unptned", driverMirror);
+    verifyResults(unptn_data, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", driverMirror);
+    verifyResults(ptn_data_1, driverMirror);
     // Since partition(b=2) changed manually, Hive cannot find
     // it in original location and cmroot, thus empty
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", driverMirror);
+    verifyResults(empty, driverMirror);
+    run("SELECT a from " + dbName + ".ptned_empty", driverMirror);
+    verifyResults(empty, driverMirror);
+    run("SELECT * from " + dbName + ".unptned_empty", driverMirror);
+    verifyResults(empty, driverMirror);
   }
 
   @Test
@@ -344,58 +369,58 @@ public class TestReplicationScenarios {
     LOG.info("Testing "+testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
     createTestDataFile(unptn_locn, unptn_data);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     // Create an empty database to load
-    run("CREATE DATABASE " + dbName + "_empty");
+    run("CREATE DATABASE " + dbName + "_empty", driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
     // Load to an empty database
-    run("REPL LOAD " + dbName + "_empty FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_empty FROM '" + replDumpLocn + "'", driverMirror);
 
     // REPL STATUS should return same repl ID as dump
-    verifyRun("REPL STATUS " + dbName + "_empty", replDumpId);
-    verifyRun("SELECT * from " + dbName + "_empty.unptned", unptn_data);
+    verifyRun("REPL STATUS " + dbName + "_empty", replDumpId, driverMirror);
+    verifyRun("SELECT * from " + dbName + "_empty.unptned", unptn_data, driverMirror);
 
     String[] nullReplId = new String[]{ "NULL" };
 
     // Create a database with a table
-    run("CREATE DATABASE " + dbName + "_withtable");
-    run("CREATE TABLE " + dbName + "_withtable.unptned(a string) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName + "_withtable", driverMirror);
+    run("CREATE TABLE " + dbName + "_withtable.unptned(a string) STORED AS TEXTFILE", driverMirror);
     // Load using same dump to a DB with table. It should fail as DB is not empty.
-    verifyFail("REPL LOAD " + dbName + "_withtable FROM '" + replDumpLocn + "'");
+    verifyFail("REPL LOAD " + dbName + "_withtable FROM '" + replDumpLocn + "'", driverMirror);
 
     // REPL STATUS should return NULL
-    verifyRun("REPL STATUS " + dbName + "_withtable", nullReplId);
+    verifyRun("REPL STATUS " + dbName + "_withtable", nullReplId, driverMirror);
 
     // Create a database with a view
-    run("CREATE DATABASE " + dbName + "_withview");
-    run("CREATE TABLE " + dbName + "_withview.unptned(a string) STORED AS TEXTFILE");
-    run("CREATE VIEW " + dbName + "_withview.view AS SELECT * FROM " + dbName + "_withview.unptned");
+    run("CREATE DATABASE " + dbName + "_withview", driverMirror);
+    run("CREATE TABLE " + dbName + "_withview.unptned(a string) STORED AS TEXTFILE", driverMirror);
+    run("CREATE VIEW " + dbName + "_withview.view AS SELECT * FROM " + dbName + "_withview.unptned", driverMirror);
     // Load using same dump to a DB with view. It should fail as DB is not empty.
-    verifyFail("REPL LOAD " + dbName + "_withview FROM '" + replDumpLocn + "'");
+    verifyFail("REPL LOAD " + dbName + "_withview FROM '" + replDumpLocn + "'", driverMirror);
 
     // REPL STATUS should return NULL
-    verifyRun("REPL STATUS " + dbName + "_withview", nullReplId);
+    verifyRun("REPL STATUS " + dbName + "_withview", nullReplId, driverMirror);
   }
 
   @Test
   public void testBootstrapWithConcurrentDropTable() throws IOException {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -410,12 +435,12 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
     advanceDumpDir();
 
@@ -435,41 +460,41 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setGetTableBehaviour(ptnedTableNuller);
 
     // The ptned table will not be dumped as getTable will return null
-    run("REPL DUMP " + dbName);
+    run("REPL DUMP " + dbName, driver);
     ptnedTableNuller.assertInjectionsPerformed(true,true);
     InjectableBehaviourObjectStore.resetGetTableBehaviour(); // reset the behaviour
 
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // The ptned table should miss in target as the table was marked virtually as dropped
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
-    verifyIfTableNotExist(dbName + "_dupe", "ptned");
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "ptned", metaStoreClient);
 
     // Verify if Drop table on a non-existing table is idempotent
-    run("DROP TABLE " + dbName + ".ptned");
-    verifyIfTableNotExist(dbName, "ptned");
+    run("DROP TABLE " + dbName + ".ptned", driver);
+    verifyIfTableNotExist(dbName, "ptned", metaStoreClient);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String postDropReplDumpLocn = getResult(0,0);
-    String postDropReplDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String postDropReplDumpLocn = getResult(0,0, driver);
+    String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
-    assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true));
+    assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true, driverMirror));
 
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifyIfTableNotExist(dbName + "_dupe", "ptned");
-    verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    verifyIfTableNotExist(dbName + "_dupe", "ptned", metaStoreClientMirror);
+    verifyFail("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", driverMirror);
   }
 
   @Test
   public void testBootstrapWithConcurrentDropPartition() throws IOException {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
     String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
@@ -481,10 +506,10 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
     advanceDumpDir();
 
@@ -500,58 +525,58 @@ public class TestReplicationScenarios {
     InjectableBehaviourObjectStore.setListPartitionNamesBehaviour(listPartitionNamesNuller);
 
     // None of the partitions will be dumped as the partitions list was empty
-    run("REPL DUMP " + dbName);
+    run("REPL DUMP " + dbName, driver);
     listPartitionNamesNuller.assertInjectionsPerformed(true, false);
     InjectableBehaviourObjectStore.resetListPartitionNamesBehaviour(); // reset the behaviour
 
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // All partitions should miss in target as it was marked virtually as dropped
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
-    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")));
-    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")));
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty, driverMirror);
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClientMirror);
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
 
     // Verify if drop partition on a non-existing partition is idempotent and just a noop.
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)");
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=2)");
-    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("1")));
-    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("2")));
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)", driver);
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=2)", driver);
+    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClient);
+    verifyIfPartitionNotExist(dbName, "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClient);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String postDropReplDumpLocn = getResult(0,0);
-    String postDropReplDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String postDropReplDumpLocn = getResult(0,0,driver);
+    String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
-    assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true));
+    assert(run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", true, driverMirror));
 
-    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")));
-    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")));
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClientMirror);
+    verifyIfPartitionNotExist(dbName + "_dupe", "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty, driverMirror);
   }
 
   @Test
   public void testIncrementalAdds() throws IOException {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
+    String dbName = createDB(name, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}",replDumpLocn,replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -566,79 +591,79 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driverMirror);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driverMirror);
 
     // Now, we load data into the tables, and see if an incremental
     // repl drop/load can duplicate it.
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * from " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * from " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data, driver);
 
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
-    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2);
+    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
 
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId );
-    String incrementalDumpLocn = getResult(0,0);
-    String incrementalDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0,0,driver);
+    String incrementalDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {incrementalDumpId});
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {incrementalDumpId}, driverMirror);
 
     // VERIFY tables and partitions on destination for equivalence.
 
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned_empty", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_empty", empty);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_empty", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_empty", empty, driverMirror);
 
 //    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
     // TODO :this does not work because LOAD DATA LOCAL INPATH into an unptned table seems
     // to use ALTER_TABLE only - it does not emit an INSERT or CREATE - re-enable after
     // fixing that.
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data, driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2, driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2, driverMirror);
   }
 
   @Test
   public void testIncrementalLoadWithVariableLengthEventId() throws IOException, TException {
     String testName = "incrementalLoadWithVariableLengthEventId";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('ten')", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // CREATE_TABLE - TRUNCATE - INSERT - The result is just one record.
     // Creating dummy table to control the event ID of TRUNCATE not to be 10 or 100 or 1000...
     String[] unptn_data = new String[]{ "eleven" };
-    run("CREATE TABLE " + dbName + ".dummy(a string) STORED AS TEXTFILE");
-    run("TRUNCATE TABLE " + dbName + ".unptned");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("CREATE TABLE " + dbName + ".dummy(a string) STORED AS TEXTFILE", driver);
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
 
     // Inject a behaviour where all events will get ID less than 100 except TRUNCATE which will get ID 100.
     // This enesures variable length of event ID in the incremental dump
@@ -713,28 +738,28 @@ public class TestReplicationScenarios {
                + " TO " + String.valueOf(metaStoreClient.getCurrentNotificationEventId().getEventId()*100);
 
     advanceDumpDir();
-    run(cmd);
+    run(cmd, driver);
     eventIdModifier.assertInjectionsPerformed(true,false);
     InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
 
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
   public void testDrops() throws IOException {
 
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned3(a string) partitioned by (b int) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned3(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -749,85 +774,85 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2, driver);
 
     // At this point, we've set up all the tables and ptns we're going to test drops across
     // Replicate it first, and then we'll drop it on the source.
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    verifySetup("REPL STATUS " + dbName + "_dupe", new String[]{replDumpId});
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    verifySetup("REPL STATUS " + dbName + "_dupe", new String[]{replDumpId}, driverMirror);
 
-    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=2", ptn_data_2);
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=2", ptn_data_2, driverMirror);
 
     // All tables good on destination, drop on source.
 
-    run("DROP TABLE " + dbName + ".unptned");
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')");
-    run("DROP TABLE " + dbName + ".ptned2");
-    run("ALTER TABLE " + dbName + ".ptned3 DROP PARTITION (b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned3 WHERE b=1",empty);
-    verifySetup("SELECT a from " + dbName + ".ptned3", ptn_data_2);
+    run("DROP TABLE " + dbName + ".unptned", driver);
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')", driver);
+    run("DROP TABLE " + dbName + ".ptned2", driver);
+    run("ALTER TABLE " + dbName + ".ptned3 DROP PARTITION (b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned3 WHERE b=1",empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned3", ptn_data_2, driver);
 
     // replicate the incremental drops
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String postDropReplDumpLocn = getResult(0,0);
-    String postDropReplDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String postDropReplDumpLocn = getResult(0,0,driver);
+    String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", driverMirror);
 
     // verify that drops were replicated. This can either be from tables or ptns
     // not existing, and thus, throwing a NoSuchObjectException, or returning nulls
     // or select * returning empty, depending on what we're testing.
 
-    verifyIfTableNotExist(dbName + "_dupe", "unptned");
+    verifyIfTableNotExist(dbName + "_dupe", "unptned", metaStoreClientMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned3", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned3", ptn_data_2, driverMirror);
 
-    verifyIfTableNotExist(dbName + "_dupe", "ptned2");
+    verifyIfTableNotExist(dbName + "_dupe", "ptned2", metaStoreClientMirror);
   }
 
   @Test
   public void testDropsWithCM() throws IOException {
 
     String testName = "drops_with_cm";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -842,79 +867,79 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("SELECT * from " + dbName + ".unptned", driver);
+    verifyResults(unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')", driver);
+    run("SELECT a from " + dbName + ".ptned WHERE b='1'", driver);
+    verifyResults(ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')", driver);
+    run("SELECT a from " + dbName + ".ptned WHERE b='2'", driver);
+    verifyResults(ptn_data_2, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')", driver);
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'", driver);
+    verifyResults(ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')", driver);
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'", driver);
+    verifyResults(ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {replDumpId});
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {replDumpId}, driverMirror);
 
-    run("SELECT * from " + dbName + "_dupe.unptned");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    run("SELECT * from " + dbName + "_dupe.unptned", driverMirror);
+    verifyResults(unptn_data, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", driverMirror);
+    verifyResults(ptn_data_1, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", driverMirror);
+    verifyResults(ptn_data_2, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", driverMirror);
+    verifyResults(ptn_data_1, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", driverMirror);
+    verifyResults(ptn_data_2, driverMirror);
 
-    run("CREATE TABLE " + dbName + ".unptned_copy" + " AS SELECT a FROM " + dbName + ".unptned");
-    run("CREATE TABLE " + dbName + ".ptned_copy" + " LIKE " + dbName + ".ptned");
+    run("CREATE TABLE " + dbName + ".unptned_copy" + " AS SELECT a FROM " + dbName + ".unptned", driver);
+    run("CREATE TABLE " + dbName + ".ptned_copy" + " LIKE " + dbName + ".ptned", driver);
     run("INSERT INTO TABLE " + dbName + ".ptned_copy" + " PARTITION(b='1') SELECT a FROM " +
-        dbName + ".ptned WHERE b='1'");
-    run("SELECT a from " + dbName + ".unptned_copy");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + ".ptned_copy");
-    verifyResults(ptn_data_1);
+        dbName + ".ptned WHERE b='1'", driver);
+    run("SELECT a from " + dbName + ".unptned_copy", driver);
+    verifyResults(unptn_data, driver);
+    run("SELECT a from " + dbName + ".ptned_copy", driver);
+    verifyResults(ptn_data_1, driver);
 
-    run("DROP TABLE " + dbName + ".unptned");
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')");
-    run("DROP TABLE " + dbName + ".ptned2");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + ".ptned");
-    verifyResults(ptn_data_1);
+    run("DROP TABLE " + dbName + ".unptned", driver);
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')", driver);
+    run("DROP TABLE " + dbName + ".ptned2", driver);
+    run("SELECT a from " + dbName + ".ptned WHERE b=2", driver);
+    verifyResults(empty, driver);
+    run("SELECT a from " + dbName + ".ptned", driver);
+    verifyResults(ptn_data_1, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String postDropReplDumpLocn = getResult(0,0);
-    String postDropReplDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String postDropReplDumpLocn = getResult(0,0,driver);
+    String postDropReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
 
     // Drop table after dump
-    run("DROP TABLE " + dbName + ".unptned_copy");
+    run("DROP TABLE " + dbName + ".unptned_copy", driver);
     // Drop partition after dump
-    run("ALTER TABLE " + dbName + ".ptned_copy DROP PARTITION(b='1')");
+    run("ALTER TABLE " + dbName + ".ptned_copy DROP PARTITION(b='1')", driver);
 
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'", driverMirror);
 
     Exception e = null;
     try {
-      Table tbl = metaStoreClient.getTable(dbName + "_dupe", "unptned");
+      Table tbl = metaStoreClientMirror.getTable(dbName + "_dupe", "unptned");
       assertNull(tbl);
     } catch (TException te) {
       e = te;
@@ -922,28 +947,28 @@ public class TestReplicationScenarios {
     assertNotNull(e);
     assertEquals(NoSuchObjectException.class, e.getClass());
 
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + "_dupe.ptned");
-    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", driverMirror);
+    verifyResults(empty, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned", driverMirror);
+    verifyResults(ptn_data_1, driverMirror);
 
-    verifyIfTableNotExist(dbName +"_dupe", "ptned2");
+    verifyIfTableNotExist(dbName +"_dupe", "ptned2", metaStoreClientMirror);
 
-    run("SELECT a from " + dbName + "_dupe.unptned_copy");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned_copy");
-    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.unptned_copy", driverMirror);
+    verifyResults(unptn_data, driverMirror);
+    run("SELECT a from " + dbName + "_dupe.ptned_copy", driverMirror);
+    verifyResults(ptn_data_1, driverMirror);
   }
 
   @Test
   public void testAlters() throws IOException {
 
     String testName = "alters";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".unptned2(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned2(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -958,51 +983,51 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned2");
-    verifySetup("SELECT * from " + dbName + ".unptned2", unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned2", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned2", unptn_data, driver);
 
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'",ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'",ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2, driver);
 
     // base tables set up, let's replicate them over
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {replDumpId});
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {replDumpId}, driverMirror);
 
-    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifySetup("SELECT * from " + dbName + "_dupe.unptned2", unptn_data);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2);
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned2", unptn_data, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2, driverMirror);
 
     // tables have been replicated over, and verified to be identical. Now, we do a couple of
     // alters on the source
 
     // Rename unpartitioned table
-    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_rn");
-    verifySetup("SELECT * from " + dbName + ".unptned_rn", unptn_data);
+    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_rn", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_rn", unptn_data, driver);
 
     // Alter unpartitioned table set table property
     String testKey = "blah";
     String testVal = "foo";
-    run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
+    run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
     if (VERIFY_SETUP_STEPS){
       try {
         Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
@@ -1014,12 +1039,12 @@ public class TestReplicationScenarios {
     }
 
     // alter partitioned table, rename partition
-    run("ALTER TABLE " + dbName + ".ptned PARTITION (b='2') RENAME TO PARTITION (b='22')");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=22", ptn_data_2);
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b='2') RENAME TO PARTITION (b='22')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=22", ptn_data_2, driver);
 
     // alter partitioned table set table property
-    run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
+    run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
     if (VERIFY_SETUP_STEPS){
       try {
         Table ptned = metaStoreClient.getTable(dbName,"ptned");
@@ -1043,46 +1068,46 @@ public class TestReplicationScenarios {
     }
 
     // rename partitioned table
-    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2);
-    run("ALTER TABLE " + dbName + ".ptned2 RENAME TO " + dbName + ".ptned2_rn");
-    verifySetup("SELECT a from " + dbName + ".ptned2_rn WHERE b=2", ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2, driver);
+    run("ALTER TABLE " + dbName + ".ptned2 RENAME TO " + dbName + ".ptned2_rn", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned2_rn WHERE b=2", ptn_data_2, driver);
 
     // All alters done, now we replicate them over.
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String postAlterReplDumpLocn = getResult(0,0);
-    String postAlterReplDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String postAlterReplDumpLocn = getResult(0,0,driver);
+    String postAlterReplDumpId = getResult(0,1,true,driver);
     LOG.info("Dumped to {} with id {}->{}", postAlterReplDumpLocn, replDumpId, postAlterReplDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'", driverMirror);
 
     // Replication done, we now do the following verifications:
 
     // verify that unpartitioned table rename succeeded.
-    verifyIfTableNotExist(dbName + "_dupe", "unptned");
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned_rn", unptn_data);
+    verifyIfTableNotExist(dbName + "_dupe", "unptned", metaStoreClientMirror);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_rn", unptn_data, driverMirror);
 
     // verify that partition rename succeded.
     try {
-      Table unptn2 = metaStoreClient.getTable(dbName + "_dupe" , "unptned2");
+      Table unptn2 = metaStoreClientMirror.getTable(dbName + "_dupe" , "unptned2");
       assertTrue(unptn2.getParameters().containsKey(testKey));
       assertEquals(testVal,unptn2.getParameters().get(testKey));
     } catch (TException te) {
       assertNull(te);
     }
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=22", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=22", ptn_data_2, driverMirror);
 
     // verify that ptned table rename succeded.
-    verifyIfTableNotExist(dbName + "_dupe", "ptned2");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2", ptn_data_2);
+    verifyIfTableNotExist(dbName + "_dupe", "ptned2", metaStoreClientMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2", ptn_data_2, driverMirror);
 
     // verify that ptned table property set worked
     try {
-      Table ptned = metaStoreClient.getTable(dbName + "_dupe" , "ptned");
+      Table ptned = metaStoreClientMirror.getTable(dbName + "_dupe" , "ptned");
       assertTrue(ptned.getParameters().containsKey(testKey));
       assertEquals(testVal, ptned.getParameters().get(testKey));
     } catch (TException te) {
@@ -1093,7 +1118,7 @@ public class TestReplicationScenarios {
     try {
       List<String> ptnVals1 = new ArrayList<String>();
       ptnVals1.add("1");
-      Partition ptn1 = metaStoreClient.getPartition(dbName + "_dupe", "ptned", ptnVals1);
+      Partition ptn1 = metaStoreClientMirror.getPartition(dbName + "_dupe", "ptned", ptnVals1);
       assertTrue(ptn1.getParameters().containsKey(testKey));
       assertEquals(testVal,ptn1.getParameters().get(testKey));
     } catch (TException te) {
@@ -1105,20 +1130,20 @@ public class TestReplicationScenarios {
   @Test
   public void testIncrementalLoad() throws IOException {
     String testName = "incrementalLoad";
-    String dbName = createDB(testName);
+    String dbName = createDB(testName, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
     run("CREATE TABLE " + dbName
-        + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+        + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0,driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
     String[] ptn_data_1 = new String[] { "thirteen", "fourteen", "fifteen" };
@@ -1133,129 +1158,129 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
-    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driverMirror);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driverMirror);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned");
-    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data, driverMirror);
 
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)");
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName
-        + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
+        + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName
-        + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+        + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
     run("CREATE TABLE " + dbName
-        + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+        + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=1) SELECT a FROM " + dbName
-        + ".ptned WHERE b=1");
-    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptn_data_1);
+        + ".ptned WHERE b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptn_data_1, driver);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
-        + ".ptned WHERE b=2");
-    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2);
+        + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2, driverMirror);
   }
 
   @Test
   public void testIncrementalInserts() throws IOException {
     String testName = "incrementalInserts";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
 
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned");
-    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + ".unptned_late ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late ORDER BY a", unptn_data);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
+    verifyRun("SELECT a from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late ORDER BY a", unptn_data, driverMirror);
 
     String[] unptn_data_after_ins = new String[] { "eleven", "thirteen", "twelve" };
     String[] data_after_ovwrite = new String[] { "hundred" };
-    run("INSERT INTO TABLE " + dbName + ".unptned_late values('" + unptn_data_after_ins[1] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned_late ORDER BY a", unptn_data_after_ins);
-    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned", data_after_ovwrite);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late values('" + unptn_data_after_ins[1] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned_late ORDER BY a", unptn_data_after_ins, driver);
+    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned", data_after_ovwrite, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late ORDER BY a", unptn_data_after_ins);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late ORDER BY a", unptn_data_after_ins, driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned", data_after_ovwrite);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned", data_after_ovwrite, driverMirror);
   }
 
   @Test
   public void testEventTypesForDynamicAddPartitionByInsert() throws IOException {
     String name = testName.getMethodName();
-    final String dbName = createDB(name);
+    final String dbName = createDB(name, driver);
     String replDbName = dbName + "_dupe";
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
     Tuple bootstrap = bootstrapLoadAndVerify(dbName, replDbName);
 
     String[] ptn_data = new String[]{ "ten"};
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data[0] + "')", driver);
 
     // Inject a behaviour where it throws exception if an INSERT event is found
     // As we dynamically add a partition through INSERT INTO cmd, it should just add ADD_PARTITION
@@ -1291,7 +1316,7 @@ public class TestReplicationScenarios {
     eventTypeValidator.assertInjectionsPerformed(true,false);
     InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
 
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data, driverMirror);
   }
 
   @Test
@@ -1300,64 +1325,64 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
 
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
 
     String[] data_after_ovwrite = new String[] { "hundred" };
     // Insert overwrite on existing partition
-    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite);
+    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite, driver);
     // Insert overwrite on dynamic partition
-    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=3) values('" + data_after_ovwrite[0] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=3)", data_after_ovwrite);
+    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=3) values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=3)", data_after_ovwrite, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2)", data_after_ovwrite);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=3)", data_after_ovwrite);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2)", data_after_ovwrite, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=3)", data_after_ovwrite, driverMirror);
   }
 
   @Test
@@ -1366,9 +1391,9 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".namelist(name string) partitioned by (year int, month int, day int) STORED AS TEXTFILE");
-    run("USE " + dbName);
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".namelist(name string) partitioned by (year int, month int, day int) STORED AS TEXTFILE", driver);
+    run("USE " + dbName, driver);
 
     String[] ptn_data_1 = new String[] { "abraham", "bob", "carter" };
     String[] ptn_year_1980 = new String[] { "abraham", "bob" };
@@ -1376,37 +1401,37 @@ public class TestReplicationScenarios {
     String[] ptn_year_1984_month_4_day_1_1 = new String[] { "carter" };
     String[] ptn_list_1 = new String[] { "year=1980/month=4/day=1", "year=1980/month=5/day=5", "year=1984/month=4/day=1" };
 
-    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=4,day=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=5,day=5) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_1[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=4,day=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1980,month=5,day=5) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_1[2] + "')", driver);
 
-    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980);
-    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1);
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980, driver);
+    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1, driver);
     verifySetup("SELECT name from " + dbName + ".namelist where (year=1984 and month=4 and day=1) ORDER BY name",
-                                                                                ptn_year_1984_month_4_day_1_1);
-    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_1);
-    verifySetup("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_1);
+                                                                                ptn_year_1984_month_4_day_1_1, driver);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_1, driver);
+    verifySetup("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_1, driver);
     verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1980,month=4,day=1)",
-                              "location", "namelist/year=1980/month=4/day=1");
+                              "location", "namelist/year=1980/month=4/day=1", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980);
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980, driverMirror);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1, driverMirror);
     verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1984 and month=4 and day=1) ORDER BY name",
-                                                                                   ptn_year_1984_month_4_day_1_1);
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_1);
-    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_1);
+                                                                                   ptn_year_1984_month_4_day_1_1, driverMirror);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_1, driverMirror);
+    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_1, driverMirror);
 
-    run("USE " + dbName + "_dupe");
+    run("USE " + dbName + "_dupe", driverMirror);
     verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1980,month=4,day=1)",
-            "location", "namelist/year=1980/month=4/day=1");
-    run("USE " + dbName);
+            "location", "namelist/year=1980/month=4/day=1", driverMirror);
+    run("USE " + dbName, driver);
 
     String[] ptn_data_2 = new String[] { "abraham", "bob", "carter", "david", "eugene" };
     String[] ptn_year_1984_month_4_day_1_2 = new String[] { "carter", "david" };
@@ -1414,187 +1439,187 @@ public class TestReplicationScenarios {
     String[] ptn_list_2 = new String[] { "year=1980/month=4/day=1", "year=1980/month=5/day=5",
                                          "year=1984/month=4/day=1", "year=1990/month=5/day=25" };
 
-    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_2[3] + "')");
-    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + ptn_data_2[4] + "')");
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1984,month=4,day=1) values('" + ptn_data_2[3] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + ptn_data_2[4] + "')", driver);
 
-    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980);
-    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1_2);
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1980) ORDER BY name", ptn_year_1980, driver);
+    verifySetup("SELECT name from " + dbName + ".namelist where (day=1) ORDER BY name", ptn_day_1_2, driver);
     verifySetup("SELECT name from " + dbName + ".namelist where (year=1984 and month=4 and day=1) ORDER BY name",
-                                                                                ptn_year_1984_month_4_day_1_2);
-    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_2);
-    verifyRun("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_2);
+                                                                                ptn_year_1984_month_4_day_1_2, driver);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_2, driver);
+    verifyRun("SHOW PARTITIONS " + dbName + ".namelist", ptn_list_2, driver);
     verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1990,month=5,day=25)",
-            "location", "namelist/year=1990/month=5/day=25");
+            "location", "namelist/year=1990/month=5/day=25", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980);
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1_2);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1980) ORDER BY name", ptn_year_1980, driverMirror);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist where (day=1) ORDER BY name", ptn_day_1_2, driverMirror);
     verifyRun("SELECT name from " + dbName + "_dupe.namelist where (year=1984 and month=4 and day=1) ORDER BY name",
-                                                                                   ptn_year_1984_month_4_day_1_2);
-    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_2);
-    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_2);
-    run("USE " + dbName + "_dupe");
+                                                                                   ptn_year_1984_month_4_day_1_2, driverMirror);
+    verifyRun("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_2, driverMirror);
+    verifyRun("SHOW PARTITIONS " + dbName + "_dupe.namelist", ptn_list_2, driverMirror);
+    run("USE " + dbName + "_dupe", driverMirror);
     verifyRunWithPatternMatch("SHOW TABLE EXTENDED LIKE namelist PARTITION (year=1990,month=5,day=25)",
-            "location", "namelist/year=1990/month=5/day=25");
-    run("USE " + dbName);
+            "location", "namelist/year=1990/month=5/day=25", driverMirror);
+    run("USE " + dbName, driverMirror);
 
     String[] ptn_data_3 = new String[] { "abraham", "bob", "carter", "david", "fisher" };
     String[] data_after_ovwrite = new String[] { "fisher" };
     // Insert overwrite on existing partition
-    run("INSERT OVERWRITE TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + data_after_ovwrite[0] + "')");
-    verifySetup("SELECT name from " + dbName + ".namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite);
-    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_3);
+    run("INSERT OVERWRITE TABLE " + dbName + ".namelist partition(year=1990,month=5,day=25) values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT name from " + dbName + ".namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite, driver);
+    verifySetup("SELECT name from " + dbName + ".namelist ORDER BY name", ptn_data_3, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifySetup("SELECT name from " + dbName + "_dupe.namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite);
-    verifySetup("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_3);
+    verifySetup("SELECT name from " + dbName + "_dupe.namelist where (year=1990 and month=5 and day=25)", data_after_ovwrite, driverMirror);
+    verifySetup("SELECT name from " + dbName + "_dupe.namelist ORDER BY name", ptn_data_3, driverMirror);
   }
 
   @Test
   public void testIncrementalInsertDropUnpartitionedTable() throws IOException {
     String testName = "incrementalInsertDropUnpartitionedTable";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
 
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".unptned");
-    verifySetup("SELECT a from " + dbName + ".unptned_tmp ORDER BY a", unptn_data);
+    run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned_tmp ORDER BY a", unptn_data, driver);
 
     // Get the last repl ID corresponding to all insert/alter/create events except DROP.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String lastDumpIdWithoutDrop = getResult(0, 1);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String lastDumpIdWithoutDrop = getResult(0, 1, driver);
 
     // Drop all the tables
-    run("DROP TABLE " + dbName + ".unptned");
-    run("DROP TABLE " + dbName + ".unptned_tmp");
-    verifyFail("SELECT * FROM " + dbName + ".unptned");
-    verifyFail("SELECT * FROM " + dbName + ".unptned_tmp");
+    run("DROP TABLE " + dbName + ".unptned", driver);
+    run("DROP TABLE " + dbName + ".unptned_tmp", driver);
+    verifyFail("SELECT * FROM " + dbName + ".unptned", driver);
+    verifyFail("SELECT * FROM " + dbName + ".unptned_tmp", driver);
 
     // Dump all the events except DROP
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutDrop);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutDrop, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
     // Need to find the tables and data as drop is not part of this dump
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned_tmp ORDER BY a", unptn_data);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_tmp ORDER BY a", unptn_data, driverMirror);
 
     // Dump the drop events and check if tables are getting dropped in target as well
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyFail("SELECT * FROM " + dbName + ".unptned");
-    verifyFail("SELECT * FROM " + dbName + ".unptned_tmp");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyFail("SELECT * FROM " + dbName + ".unptned", driverMirror);
+    verifyFail("SELECT * FROM " + dbName + ".unptned_tmp", driverMirror);
   }
 
   @Test
   public void testIncrementalInsertDropPartitionedTable() throws IOException {
     String testName = "incrementalInsertDropPartitionedTable";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
 
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[2] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=20)");
-    run("ALTER TABLE " + dbName + ".ptned RENAME PARTITION (b=20) TO PARTITION (b=2");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=20)", driver);
+    run("ALTER TABLE " + dbName + ".ptned RENAME PARTITION (b=20) TO PARTITION (b=2", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[2] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driver);
 
-    run("CREATE TABLE " + dbName + ".ptned_tmp AS SELECT * FROM " + dbName + ".ptned");
-    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+    run("CREATE TABLE " + dbName + ".ptned_tmp AS SELECT * FROM " + dbName + ".ptned", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_tmp where (b=2) ORDER BY a", ptn_data_2, driver);
 
     // Get the last repl ID corresponding to all insert/alter/create events except DROP.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String lastDumpIdWithoutDrop = getResult(0, 1);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String lastDumpIdWithoutDrop = getResult(0, 1, driver);
 
     // Drop all the tables
-    run("DROP TABLE " + dbName + ".ptned_tmp");
-    run("DROP TABLE " + dbName + ".ptned");
-    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp");
-    verifyFail("SELECT * FROM " + dbName + ".ptned");
+    run("DROP TABLE " + dbName + ".ptned_tmp", driver);
+    run("DROP TABLE " + dbName + ".ptned", driver);
+    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp", driver);
+    verifyFail("SELECT * FROM " + dbName + ".ptned", driver);
 
     // Dump all the events except DROP
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutDrop);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutDrop, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
     // Need to find the tables and data as drop is not part of this dump
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_tmp where (b=2) ORDER BY a", ptn_data_2, driverMirror);
 
     // Dump the drop events and check if tables are getting dropped in target as well
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp");
-    verifyFail("SELECT * FROM " + dbName + ".ptned");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyFail("SELECT * FROM " + dbName + ".ptned_tmp", driverMirror);
+    verifyFail("SELECT * FROM " + dbName + ".ptned", driverMirror);
   }
 
   @Test
@@ -1603,48 +1628,48 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // After INSERT INTO operation, get the last Repl ID
     String[] unptn_data = new String[] { "thirteen" };
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String insertDumpId = getResult(0, 1, false);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String insertDumpId = getResult(0, 1, false, driver);
 
     // Insert overwrite on unpartitioned table
     String[] data_after_ovwrite = new String[] { "hundred" };
-    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')");
+    run("INSERT OVERWRITE TABLE " + dbName + ".unptned values('" + data_after_ovwrite[0] + "')", driver);
 
     // Dump only one INSERT INTO operation on the table.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
     // After Load from this dump, all target tables/partitions will have initial set of data but source will have latest data.
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
 
     // Dump the remaining INSERT OVERWRITE operations on the table.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
 
     // After load, shall see the overwritten data.
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", data_after_ovwrite);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", data_after_ovwrite, driverMirror);
   }
 
   @Test
@@ -1653,54 +1678,54 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // INSERT INTO 2 partitions and get the last repl ID
     String[] ptn_data_1 = new String[] { "fourteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "sixteen" };
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String insertDumpId = getResult(0, 1, false);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')", driver);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String insertDumpId = getResult(0, 1, false, driver);
 
     // Insert overwrite on one partition with multiple files
     String[] data_after_ovwrite = new String[] { "hundred" };
-    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite);
+    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite, driver);
 
     // Dump only 2 INSERT INTO operations.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + insertDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
     // After Load from this dump, all target tables/partitions will have initial set of data.
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
 
     // Dump the remaining INSERT OVERWRITE operation on the table.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
 
     // After load, shall see the overwritten data.
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", data_after_ovwrite);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", data_after_ovwrite, driverMirror);
   }
 
   @Test
@@ -1709,64 +1734,64 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[] { "ten", "twenty" };
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen" };
 
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
 
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')", driver);
 
     // Get the last repl ID corresponding to all insert events except RENAME.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String lastDumpIdWithoutRename = getResult(0, 1);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String lastDumpIdWithoutRename = getResult(0, 1, driver);
 
-    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_renamed");
-    run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
+    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_renamed", driver);
+    run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutRename);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutRename, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyFail("SELECT a from " + dbName + "_dupe.unptned ORDER BY a");
-    verifyFail("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a");
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned_renamed ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_renamed where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_renamed where (b=2) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyFail("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", driverMirror);
+    verifyFail("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_renamed ORDER BY a", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_renamed where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_renamed where (b=2) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test
@@ -1775,67 +1800,67 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] empty = new String[] {};
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen" };
 
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[1] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')");
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[1] + "')", driver);
 
     // Get the last repl ID corresponding to all insert events except RENAME.
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String lastDumpIdWithoutRename = getResult(0, 1);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String lastDumpIdWithoutRename = getResult(0, 1, driver);
 
-    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=10)");
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=10)", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutRename);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + lastDumpIdWithoutRename, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=10) ORDER BY a", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=10) ORDER BY a", empty, driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=10) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=10) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", empty, driverMirror);
   }
 
   @Test
   public void testViewsReplication() throws IOException {
     String testName = "viewsReplication";
-    String dbName = createDB(testName);
+    String dbName = createDB(testName, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
-    run("CREATE VIEW " + dbName + ".virtual_view AS SELECT * FROM " + dbName + ".unptned");
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE VIEW " + dbName + ".virtual_view AS SELECT * FROM " + dbName + ".unptned", driver);
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -1850,72 +1875,75 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    verifySetup("SELECT a from " + dbName + ".ptned", empty);
-    verifySetup("SELECT * from " + dbName + ".unptned", empty);
-    verifySetup("SELECT * from " + dbName + ".virtual_view", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".virtual_view", empty, driver);
 
-    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
-    verifySetup("SELECT * from " + dbName + ".virtual_view", unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    verifySetup("SELECT * from " + dbName + ".virtual_view", unptn_data, driver);
 
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
-    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
 
-    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view AS SELECT a FROM " + dbName + ".ptned where b=1");
-    verifySetup("SELECT a from " + dbName + ".mat_view", ptn_data_1);
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view AS SELECT a FROM " + dbName + ".ptned where b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view", ptn_data_1, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0,0);
-    String replDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
     LOG.info("Bootstrap-dump: Dumped to {} with id {}",replDumpLocn,replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.mat_view", ptn_data_1);
+    // view is referring to old database, so no data
+    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.mat_view", ptn_data_1, driverMirror);
 
-    run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2");
-    verifySetup("SELECT a from " + dbName + ".virtual_view2", ptn_data_2);
+    run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".virtual_view2", ptn_data_2, driver);
 
     // Create a view with name already exist. Just to verify if failure flow clears the added create_table event.
-    run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2");
+    run("CREATE VIEW " + dbName + ".virtual_view2 AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
 
-    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view2 AS SELECT * FROM " + dbName + ".unptned");
-    verifySetup("SELECT * from " + dbName + ".mat_view2", unptn_data);
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view2 AS SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".mat_view2", unptn_data, driver);
 
     // Perform REPL-DUMP/LOAD
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId );
-    String incrementalDumpLocn = getResult(0,0);
-    String incrementalDumpId = getResult(0,1,true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0,0,driver);
+    String incrementalDumpId = getResult(0,1,true,driver);
     LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'");
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {incrementalDumpId});
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {incrementalDumpId}, driverMirror);
 
-    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned where b=1", ptn_data_1);
-    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.mat_view", ptn_data_1);
-    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view2", ptn_data_2);
-    verifyRun("SELECT * from " + dbName + "_dupe.mat_view2", unptn_data);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where b=1", ptn_data_1, driverMirror);
+    // view is referring to old database, so no data
+    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.mat_view", ptn_data_1, driverMirror);
+    // view is referring to old database, so no data
+    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view2", empty, driverMirror);
+    verifyRun("SELECT * from " + dbName + "_dupe.mat_view2", unptn_data, driverMirror);
   }
 
   @Test
   public void testDumpLimit() throws IOException {
     String name = testName.getMethodName();
-    String dbName = createDB(name);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    String dbName = createDB(name, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
 
     String[] unptn_data = new String[] { "eleven", "thirteen", "twelve" };
@@ -1923,49 +1951,49 @@ public class TestReplicationScenarios {
     String[] unptn_data_load2 = new String[] { "eleven", "thirteen" };
 
     // 3 events to insert, last repl ID: replDumpId+3
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     // 3 events to insert, last repl ID: replDumpId+6
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
     // 3 events to insert, last repl ID: replDumpId+9
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[2] + "')");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[2] + "')", driver);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3");
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3", driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1, driverMirror);
 
     advanceDumpDir();
     Integer lastReplID = Integer.valueOf(replDumpId);
     lastReplID += 1000;
     String toReplID = String.valueOf(lastReplID);
 
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3");
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3", driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load2);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load2, driverMirror);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
@@ -1974,91 +2002,91 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".ptned_src(a string) partitioned by (b int, c int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned_dest(a string) partitioned by (b int, c int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".ptned_src(a string) partitioned by (b int, c int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_dest(a string) partitioned by (b int, c int) STORED AS TEXTFILE", driver);
 
     String[] empty = new String[] {};
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
 
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=1, c=1) values('" + ptn_data_1[2] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned_src ADD PARTITION (b=2, c=2)");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[2] + "')");
+    run("ALTER TABLE " + dbName + ".ptned_src ADD PARTITION (b=2, c=2)", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=2) values('" + ptn_data_2[2] + "')", driver);
 
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[2] + "')");
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_src partition(b=2, c=3) values('" + ptn_data_2[2] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3)", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3)", empty, driverMirror);
 
     // Exchange single partitions using complete partition-spec (all partition columns)
-    run("ALTER TABLE " + dbName + ".ptned_dest EXCHANGE PARTITION (b=1, c=1) WITH TABLE " + dbName + ".ptned_src");
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=2)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=3)", empty);
+    run("ALTER TABLE " + dbName + ".ptned_dest EXCHANGE PARTITION (b=1, c=1) WITH TABLE " + dbName + ".ptned_src", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=2)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=3)", empty, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3)", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3)", empty, driverMirror);
 
     // Exchange multiple partitions using partial partition-spec (only one partition column)
-    run("ALTER TABLE " + dbName + ".ptned_dest EXCHANGE PARTITION (b=2) WITH TABLE " + dbName + ".ptned_src");
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=3) ORDER BY a", ptn_data_2);
+    run("ALTER TABLE " + dbName + ".ptned_dest EXCHANGE PARTITION (b=2) WITH TABLE " + dbName + ".ptned_src", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=1 and c=1)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=2)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_src where (b=2 and c=3)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=2) ORDER BY a", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_dest where (b=2 and c=3) ORDER BY a", ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3)", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=1 and c=1)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=2)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_src where (b=2 and c=3)", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=1 and c=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_dest where (b=2 and c=3) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test
@@ -2067,60 +2095,60 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
     String[] empty = new String[] {};
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    printOutput();
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data, driverMirror);
 
-    run("TRUNCATE TABLE " + dbName + ".unptned");
-    verifySetup("SELECT a from " + dbName + ".unptned", empty);
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned", empty, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned", empty);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned", empty, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned", empty, driverMirror);
 
     String[] unptn_data_after_ins = new String[] { "thirteen" };
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_after_ins[0] + "')");
-    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_after_ins);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_after_ins[0] + "')", driver);
+    verifySetup("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_after_ins, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_after_ins);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_after_ins);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_after_ins, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_after_ins, driverMirror);
   }
 
   @Test
@@ -2129,62 +2157,62 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".ptned_1(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned_2(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".ptned_1(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_2(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
     String[] empty = new String[] {};
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[2] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=1) values('" + ptn_data_1[2] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_1 PARTITION(b=2) values('" + ptn_data_2[2] + "')", driver);
 
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[2] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=10) values('" + ptn_data_1[2] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_2 PARTITION(b=20) values('" + ptn_data_2[2] + "')", driver);
 
-    verifyRun("SELECT a from " + dbName + ".ptned_1 where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + ".ptned_1 where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + ".ptned_2 where (b=10) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + ".ptned_2 where (b=20) ORDER BY a", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + ".ptned_1 where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned_1 where (b=2) ORDER BY a", ptn_data_2, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned_2 where (b=10) ORDER BY a", ptn_data_1, driver);
+    verifyRun("SELECT a from " + dbName + ".ptned_2 where (b=20) ORDER BY a", ptn_data_2, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_1 where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_1 where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_2 where (b=10) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned_2 where (b=20) ORDER BY a", ptn_data_2);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_1 where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_1 where (b=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_2 where (b=10) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_2 where (b=20) ORDER BY a", ptn_data_2, driverMirror);
 
-    run("TRUNCATE TABLE " + dbName + ".ptned_1 PARTITION(b=2)");
-    verifySetup("SELECT a from " + dbName + ".ptned_1 where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + ".ptned_1 where (b=2)", empty);
+    run("TRUNCATE TABLE " + dbName + ".ptned_1 PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_1 where (b=1) ORDER BY a", ptn_data_1, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_1 where (b=2)", empty, driver);
 
-    run("TRUNCATE TABLE " + dbName + ".ptned_2");
-    verifySetup("SELECT a from " + dbName + ".ptned_2 where (b=10)", empty);
-    verifySetup("SELECT a from " + dbName + ".ptned_2 where (b=20)", empty);
+    run("TRUNCATE TABLE " + dbName + ".ptned_2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_2 where (b=10)", empty, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_2 where (b=20)", empty, driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned_1 where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned_1 where (b=2)", empty);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned_2 where (b=10)", empty);
-    verifySetup("SELECT a from " + dbName + "_dupe.ptned_2 where (b=20)", empty);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned_1 where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned_1 where (b=2)", empty, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned_2 where (b=10)", empty, driverMirror);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned_2 where (b=20)", empty, driverMirror);
   }
 
   @Test
@@ -2193,13 +2221,13 @@ public class TestReplicationScenarios {
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
-    run("CREATE DATABASE " + dbName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE DATABASE " + dbName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String replDumpLocn = getResult(0, 0);
-    String replDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
     LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
 
     String[] empty = new String[] {};
@@ -2208,30 +2236,30 @@ public class TestReplicationScenarios {
     String[] unptn_data_load2 = new String[] { "eleven", "thirteen" };
 
     // 3 events to insert, last repl ID: replDumpId+3
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     // 3 events to insert, last repl ID: replDumpId+6
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
     // 1 event to truncate, last repl ID: replDumpId+8
-    run("TRUNCATE TABLE " + dbName + ".unptned");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", empty);
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", empty, driver);
     // 3 events to insert, last repl ID: replDumpId+11
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_load1[0] + "')");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1);
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data_load1[0] + "')", driver);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1, driver);
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
 
     // Dump and load only first insert (1 record)
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3");
-    String incrementalDumpLocn = getResult(0, 0);
-    String incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3", driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
 
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1);
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data_load1, driver);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1, driverMirror);
 
     // Dump and load only second insert (2 records)
     advanceDumpDir();
@@ -2239,44 +2267,44 @@ public class TestReplicationScenarios {
     lastReplID += 1000;
     String toReplID = String.valueOf(lastReplID);
 
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3");
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3", driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load2);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load2, driverMirror);
 
     // Dump and load only truncate (0 records)
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 2");
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 2", driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", empty, driverMirror);
 
     // Dump and load insert after truncate (1 record)
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + replDumpId);
-    incrementalDumpLocn = getResult(0, 0);
-    incrementalDumpId = getResult(0, 1, true);
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
     LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
     replDumpId = incrementalDumpId;
-    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
 
-    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1, driverMirror);
   }
 
   @Test
   public void testIncrementalRepeatEventOnExistingObject() throws IOException {
     String testName = "incrementalRepeatEventOnExistingObject";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
@@ -2291,48 +2319,53 @@ public class TestReplicationScenarios {
     String[] ptn_data_2 = new String[] { "seventeen" };
 
     // INSERT EVENT to unpartitioned table
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     Tuple replDump = dumpDbFromLastDump(dbName, bootstrapDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // ADD_PARTITION EVENT to partitioned table
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table on existing partition
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // TRUNCATE_PARTITION EVENT on partitioned table
-    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION (b=1)");
+    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION (b=1)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // TRUNCATE_TABLE EVENT on unpartitioned table
-    run("TRUNCATE TABLE " + dbName + ".unptned");
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // CREATE_TABLE EVENT with multiple partitions
-    run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".ptned");
+    run("CREATE TABLE " + dbName + ".unptned_tmp AS SELECT * FROM " + dbName + ".ptned", driver);
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // ADD_CONSTRAINT EVENT
+    run("ALTER TABLE " + dbName + ".unptned_tmp ADD CONSTRAINT uk_unptned UNIQUE(a) disable", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // Replicate all the events happened so far
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
-    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty);
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty);
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
-    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty);
-    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2, driverMirror);
 
     // Load each incremental dump from the list. Each dump have only one operation.
     for (Tuple currDump : incrementalDumpList) {
@@ -2340,20 +2373,20 @@ public class TestReplicationScenarios {
       loadAndVerify(replDbName, currDump.dumpLocation, incrDump.lastReplId);
 
       // Verify if the data are intact even after applying an applied event once again on existing objects
-      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty);
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty);
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
-      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty);
-      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2);
+      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", empty, driverMirror);
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty, driverMirror);
+      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
+      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=1) ORDER BY a", empty, driverMirror);
+      verifyRun("SELECT a from " + replDbName + ".unptned_tmp where (b=2) ORDER BY a", ptn_data_2, driverMirror);
     }
   }
 
   @Test
   public void testIncrementalRepeatEventOnMissingObject() throws IOException {
     String testName = "incrementalRepeatEventOnMissingObject";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
@@ -2368,80 +2401,85 @@ public class TestReplicationScenarios {
     String[] ptn_data_2 = new String[] { "seventeen" };
 
     // INSERT EVENT to unpartitioned table
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
     Tuple replDump = dumpDbFromLastDump(dbName, bootstrapDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=1) values('" + ptn_data_1[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // ADD_PARTITION EVENT to partitioned table
-    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)");
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=2)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table on existing partition
-    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned partition(b=2) values('" + ptn_data_2[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // TRUNCATE_PARTITION EVENT on partitioned table
-    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION(b=1)");
+    run("TRUNCATE TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // TRUNCATE_TABLE EVENT on unpartitioned table
-    run("TRUNCATE TABLE " + dbName + ".unptned");
+    run("TRUNCATE TABLE " + dbName + ".unptned", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // CREATE_TABLE EVENT on partitioned table
-    run("CREATE TABLE " + dbName + ".ptned_tmp (a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned_tmp (a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
-    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=10) values('" + ptn_data_1[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=10) values('" + ptn_data_1[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // INSERT EVENT to partitioned table with dynamic ADD_PARTITION
-    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=20) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned_tmp partition(b=20) values('" + ptn_data_2[0] + "')", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // DROP_PARTITION EVENT to partitioned table
-    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)");
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b=1)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // RENAME_PARTITION EVENT to partitioned table
-    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=20)");
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b=2) RENAME TO PARTITION (b=20)", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // RENAME_TABLE EVENT to unpartitioned table
-    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_new");
+    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_new", driver);
+    replDump = dumpDbFromLastDump(dbName, replDump);
+    incrementalDumpList.add(replDump);
+
+    // ADD_CONSTRAINT EVENT
+    run("ALTER TABLE " + dbName + ".ptned_tmp ADD CONSTRAINT uk_unptned UNIQUE(a) disable", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // DROP_TABLE EVENT to partitioned table
-    run("DROP TABLE " + dbName + ".ptned_tmp");
+    run("DROP TABLE " + dbName + ".ptned_tmp", driver);
     replDump = dumpDbFromLastDump(dbName, replDump);
     incrementalDumpList.add(replDump);
 
     // Replicate all the events happened so far
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
 
-    verifyIfTableNotExist(replDbName, "unptned");
-    verifyIfTableNotExist(replDbName, "ptned_tmp");
-    verifyIfTableExist(replDbName, "unptned_new");
-    verifyIfTableExist(replDbName, "ptned");
-    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")));
-    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")));
-    verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")));
+    verifyIfTableNotExist(replDbName, "unptned", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "ptned_tmp", metaStoreClientMirror);
+    verifyIfTableExist(replDbName, "unptned_new", metaStoreClientMirror);
+    verifyIfTableExist(replDbName, "ptned", metaStoreClientMirror);
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClientMirror);
+    verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
+    verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")), metaStoreClientMirror);
 
     // Load each incremental dump from the list. Each dump have only one operation.
     for (Tuple currDump : incrementalDumpList) {
@@ -2449,67 +2487,67 @@ public class TestReplicationScenarios {
       loadAndVerify(replDbName, currDump.dumpLocation, incrDump.lastReplId);
 
       // Verify if the data are intact even after applying an applied event once again on missing objects
-      verifyIfTableNotExist(replDbName, "unptned");
-      verifyIfTableNotExist(replDbName, "ptned_tmp");
-      verifyIfTableExist(replDbName, "unptned_new");
-      verifyIfTableExist(replDbName, "ptned");
-      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")));
-      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")));
-      verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")));
+      verifyIfTableNotExist(replDbName, "unptned", metaStoreClientMirror);
+      verifyIfTableNotExist(replDbName, "ptned_tmp", metaStoreClientMirror);
+      verifyIfTableExist(replDbName, "unptned_new", metaStoreClientMirror);
+      verifyIfTableExist(replDbName, "ptned", metaStoreClientMirror);
+      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("1")), metaStoreClientMirror);
+      verifyIfPartitionNotExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("2")), metaStoreClientMirror);
+      verifyIfPartitionExist(replDbName, "ptned", new ArrayList<>(Arrays.asList("20")), metaStoreClientMirror);
     }
   }
 
   @Test
   public void testConcatenateTable() throws IOException {
     String testName = "concatenateTable";
-    String dbName = createDB(testName);
+    String dbName = createDB(testName, driver);
 
-    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS ORC");
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS ORC", driver);
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
     String[] empty = new String[] {};
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
-    run("ALTER TABLE " + dbName + ".unptned CONCATENATE");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')", driver);
+    run("ALTER TABLE " + dbName + ".unptned CONCATENATE", driver);
 
     // Replicate all the events happened after bootstrap
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
-    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data);
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
   public void testConcatenatePartitionedTable() throws IOException {
     String testName = "concatenatePartitionedTable";
-    String dbName = createDB(testName);
+    String dbName = createDB(testName, driver);
 
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS ORC");
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS ORC", driver);
 
     String[] ptn_data_1 = new String[] { "fifteen", "fourteen", "thirteen" };
     String[] ptn_data_2 = new String[] { "fifteen", "seventeen", "sixteen" };
 
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[0] + "')", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[2] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[1] + "')");
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[2] + "')");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[2] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[1] + "')", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=2) values('" + ptn_data_2[2] + "')", driver);
 
-    run("ALTER TABLE " + dbName + ".ptned PARTITION(b=2) CONCATENATE");
+    run("ALTER TABLE " + dbName + ".ptned PARTITION(b=2) CONCATENATE", driver);
 
     // Replicate all the events happened so far
     Tuple incrDump = incrementalLoadAndVerify(dbName, bootstrapDump.lastReplId, replDbName);
-    verifySetup("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifySetup("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2);
+    verifySetup("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifySetup("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test
@@ -2535,12 +2573,12 @@ public class TestReplicationScenarios {
     // Now, to actually testing status - first, we bootstrap.
 
     String name = testName.getMethodName();
-    String dbName = createDB(name);
+    String dbName = createDB(name, driver);
     advanceDumpDir();
-    run("REPL DUMP " + dbName);
-    String lastReplDumpLocn = getResult(0, 0);
-    String lastReplDumpId = getResult(0, 1, true);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + lastReplDumpLocn + "'");
+    run("REPL DUMP " + dbName, driver);
+    String lastReplDumpLocn = getResult(0, 0, driver);
+    String lastReplDumpId = getResult(0, 1, true, driver);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + lastReplDumpLocn + "'", driverMirror);
 
     // Bootstrap done, now on to incremental. First, we test db-level REPL LOADs.
     // Both db-level and table-level repl.last.id must be updated.
@@ -2596,10 +2634,106 @@ public class TestReplicationScenarios {
 
   }
 
-  private static String createDB(String name) {
+  @Test
+  public void testConstraints() throws IOException {
+    String testName = "constraints";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName, driver);
+
+    run("CREATE TABLE " + dbName + ".tbl1(a string, b string, primary key (a) disable novalidate rely, unique (b) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl2(a string, b string, foreign key (a, b) references " + dbName + ".tbl1(a, b) disable novalidate)", driver);
+    run("CREATE TABLE " + dbName + ".tbl3(a string, b string not null disable)", driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0, 0, driver);
+    String replDumpId = getResult(0, 1, true, driver);
+    LOG.info("Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+
+    // bootstrap replication for constraint is not implemented. Will verify it works once done
+    try {
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl1"));
+      assertTrue(pks.isEmpty());
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl1"));
+      assertTrue(uks.isEmpty());
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl2"));
+      assertTrue(fks.isEmpty());
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl3"));
+      assertTrue(nns.isEmpty());
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    run("CREATE TABLE " + dbName + ".tbl4(a string, b string, primary key (a) disable novalidate rely, unique (b) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl5(a string, b string, foreign key (a, b) references " + dbName + ".tbl4(a, b) disable novalidate)", driver);
+    run("CREATE TABLE " + dbName + ".tbl6(a string, b string not null disable)", driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0, 0, driver);
+    String incrementalDumpId = getResult(0, 1, true, driver);
+    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+
+    String pkName = null;
+    String ukName = null;
+    String fkName = null;
+    String nnName = null;
+    try {
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl4"));
+      assertEquals(pks.size(), 1);
+      pkName = pks.get(0).getPk_name();
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl4"));
+      assertEquals(uks.size(), 1);
+      ukName = uks.get(0).getUk_name();
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl5"));
+      assertEquals(fks.size(), 1);
+      fkName = fks.get(0).getFk_name();
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl6"));
+      assertEquals(nns.size(), 1);
+      nnName = nns.get(0).getNn_name();
+      
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    run("ALTER TABLE " + dbName + ".tbl4 DROP CONSTRAINT `" + pkName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl4 DROP CONSTRAINT `" + ukName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl5 DROP CONSTRAINT `" + fkName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl6 DROP CONSTRAINT `" + nnName + "`", driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + incrementalDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
+    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+
+    try {
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(dbName+ "_dupe" , "tbl4"));
+      assertTrue(pks.isEmpty());
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(dbName+ "_dupe" , "tbl4"));
+      assertTrue(uks.isEmpty());
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, dbName+ "_dupe" , "tbl5"));
+      assertTrue(fks.isEmpty());
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl6"));
+      assertTrue(nns.isEmpty());
+    } catch (TException te) {
+      assertNull(te);
+    }
+  }
+
+  private static String createDB(String name, Driver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;
-    run("CREATE DATABASE " + dbName);
+    run("CREATE DATABASE " + dbName, myDriver);
     return dbName;
   }
 
@@ -2716,15 +2850,15 @@ public class TestReplicationScenarios {
   }
 
   private String verifyAndReturnDbReplStatus(String dbName, String tblName, String prevReplDumpId, String cmd) throws IOException {
-    run(cmd);
+    run(cmd, driver);
     advanceDumpDir();
-    run("REPL DUMP " + dbName + " FROM " + prevReplDumpId);
-    String lastDumpLocn = getResult(0, 0);
-    String lastReplDumpId = getResult(0, 1, true);
-    run("REPL LOAD " + dbName + "_dupe FROM '" + lastDumpLocn + "'");
-    verifyRun("REPL STATUS " + dbName + "_dupe", lastReplDumpId);
+    run("REPL DUMP " + dbName + " FROM " + prevReplDumpId, driver);
+    String lastDumpLocn = getResult(0, 0, driver);
+    String lastReplDumpId = getResult(0, 1, true, driver);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + lastDumpLocn + "'", driverMirror);
+    verifyRun("REPL STATUS " + dbName + "_dupe", lastReplDumpId, driverMirror);
     if (tblName != null){
-      verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId);
+      verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId, driverMirror);
     }
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
     return lastReplDumpId;
@@ -2733,27 +2867,27 @@ public class TestReplicationScenarios {
   // Tests that doing a table-level REPL LOAD updates table repl.last.id, but not db-level repl.last.id
   private String verifyAndReturnTblReplStatus(
       String dbName, String tblName, String lastDbReplDumpId, String prevReplDumpId, String cmd) throws IOException {
-    run(cmd);
+    run(cmd, driver);
     advanceDumpDir();
-    run("REPL DUMP " + dbName + "."+ tblName + " FROM " + prevReplDumpId);
-    String lastDumpLocn = getResult(0, 0);
-    String lastReplDumpId = getResult(0, 1, true);
-    run("REPL LOAD " + dbName + "_dupe." + tblName + " FROM '" + lastDumpLocn + "'");
-    verifyRun("REPL STATUS " + dbName + "_dupe", lastDbReplDumpId);
-    verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId);
+    run("REPL DUMP " + dbName + "."+ tblName + " FROM " + prevReplDumpId, driver);
+    String lastDumpLocn = getResult(0, 0, driver);
+    String lastReplDumpId = getResult(0, 1, true, driver);
+    run("REPL LOAD " + dbName + "_dupe." + tblName + " FROM '" + lastDumpLocn + "'", driverMirror);
+    verifyRun("REPL STATUS " + dbName + "_dupe", lastDbReplDumpId, driverMirror);
+    verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId, driverMirror);
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(prevReplDumpId));
     return lastReplDumpId;
   }
 
 
-  private String getResult(int rowNum, int colNum) throws IOException {
-    return getResult(rowNum,colNum,false);
+  private String getResult(int rowNum, int colNum, Driver myDriver) throws IOException {
+    return getResult(rowNum,colNum,false, myDriver);
   }
-  private String getResult(int rowNum, int colNum, boolean reuse) throws IOException {
+  private String getResult(int rowNum, int colNum, boolean reuse, Driver myDriver) throws IOException {
     if (!reuse) {
       lastResults = new ArrayList<String>();
       try {
-        driver.getResults(lastResults);
+        myDriver.getResults(lastResults);
       } catch (CommandNeedRetryException e) {
         e.printStackTrace();
         throw new RuntimeException(e);
@@ -2770,8 +2904,8 @@ public class TestReplicationScenarios {
    * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
    * before assert.
    */
-  private void verifyResults(String[] data) throws IOException {
-    List<String> results = getOutput();
+  private void verifyResults(String[] data, Driver myDriver) throws IOException {
+    List<String> results = getOutput(myDriver);
     LOG.info("Expecting {}", data);
     LOG.info("Got {}", results);
     assertEquals(data.length, results.size());
@@ -2780,10 +2914,10 @@ public class TestReplicationScenarios {
     }
   }
 
-  private List<String> getOutput() throws IOException {
+  private List<String> getOutput(Driver myDriver) throws IOException {
     List<String> results = new ArrayList<>();
     try {
-      driver.getResults(results);
+      myDriver.getResults(results);
     } catch (CommandNeedRetryException e) {
       LOG.warn(e.getMessage(),e);
       throw new RuntimeException(e);
@@ -2791,16 +2925,16 @@ public class TestReplicationScenarios {
     return results;
   }
 
-  private void printOutput() throws IOException {
-    for (String s : getOutput()){
+  private void printOutput(Driver myDriver) throws IOException {
+    for (String s : getOutput(myDriver)){
       LOG.info(s);
     }
   }
 
-  private void verifyIfTableNotExist(String dbName, String tableName){
+  private void verifyIfTableNotExist(String dbName, String tableName, HiveMetaStoreClient myClient){
     Exception e = null;
     try {
-      Table tbl = metaStoreClient.getTable(dbName, tableName);
+      Table tbl = myClient.getTable(dbName, tableName);
       assertNull(tbl);
     } catch (TException te) {
       e = te;
@@ -2809,20 +2943,21 @@ public class TestReplicationScenarios {
     assertEquals(NoSuchObjectException.class, e.getClass());
   }
 
-  private void verifyIfTableExist(String dbName, String tableName){
+  private void verifyIfTableExist(String dbName, String tableName, HiveMetaStoreClient myClient){
     Exception e = null;
     try {
-      Table tbl = metaStoreClient.getTable(dbName, tableName);
+      Table tbl = myClient.getTable(dbName, tableName);
       assertNotNull(tbl);
     } catch (TException te) {
       assert(false);
     }
   }
 
-  private void verifyIfPartitionNotExist(String dbName, String tableName, List<String> partValues){
+  private void verifyIfPartitionNotExist(String dbName, String tableName, List<String> partValues,
+      HiveMetaStoreClient myClient){
     Exception e = null;
     try {
-      Partition ptn = metaStoreClient.getPartition(dbName, tableName, partValues);
+      Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNull(ptn);
     } catch (TException te) {
       e = te;
@@ -2831,36 +2966,37 @@ public class TestReplicationScenarios {
     assertEquals(NoSuchObjectException.class, e.getClass());
   }
 
-  private void verifyIfPartitionExist(String dbName, String tableName, List<String> partValues){
+  private void verifyIfPartitionExist(String dbName, String tableName, List<String> partValues,
+      HiveMetaStoreClient myClient){
     Exception e = null;
     try {
-      Partition ptn = metaStoreClient.getPartition(dbName, tableName, partValues);
+      Partition ptn = myClient.getPartition(dbName, tableName, partValues);
       assertNotNull(ptn);
     } catch (TException te) {
       assert(false);
     }
   }
 
-  private void verifySetup(String cmd, String[] data) throws  IOException {
+  private void verifySetup(String cmd, String[] data, Driver myDriver) throws  IOException {
     if (VERIFY_SETUP_STEPS){
-      run(cmd);
-      verifyResults(data);
+      run(cmd, myDriver);
+      verifyResults(data, myDriver);
     }
   }
 
-  private void verifyRun(String cmd, String data) throws IOException {
-    verifyRun(cmd, new String[] { data });
+  private void verifyRun(String cmd, String data, Driver myDriver) throws IOException {
+    verifyRun(cmd, new String[] { data }, myDriver);
   }
 
-  private void verifyRun(String cmd, String[] data) throws IOException {
-    run(cmd);
-    verifyResults(data);
+  private void verifyRun(String cmd, String[] data, Driver myDriver) throws IOException {
+    run(cmd, myDriver);
+    verifyResults(data, myDriver);
   }
 
-  private void verifyFail(String cmd) throws RuntimeException {
+  private void verifyFail(String cmd, Driver myDriver) throws RuntimeException {
     boolean success = false;
     try {
-      success = run(cmd,false);
+      success = run(cmd, false, myDriver);
     } catch (AssertionError ae){
       LOG.warn("AssertionError:",ae);
       throw new RuntimeException(ae);
@@ -2869,9 +3005,9 @@ public class TestReplicationScenarios {
     assertFalse(success);
   }
 
-  private void verifyRunWithPatternMatch(String cmd, String key, String pattern) throws IOException {
-    run(cmd);
-    List<String> results = getOutput();
+  private void verifyRunWithPatternMatch(String cmd, String key, String pattern, Driver myDriver) throws IOException {
+    run(cmd, myDriver);
+    List<String> results = getOutput(myDriver);
     assertTrue(results.size() > 0);
     boolean success = false;
     for (int i = 0; i < results.size(); i++) {
@@ -2884,9 +3020,9 @@ public class TestReplicationScenarios {
     assertTrue(success);
   }
 
-  private static void run(String cmd) throws RuntimeException {
+  private static void run(String cmd, Driver myDriver) throws RuntimeException {
     try {
-    run(cmd,false); // default arg-less run simply runs, and does not care about failure
+    run(cmd,false, myDriver); // default arg-less run simply runs, and does not care about failure
     } catch (AssertionError ae){
       // Hive code has AssertionErrors in some cases - we want to record what happens
       LOG.warn("AssertionError:",ae);
@@ -2894,10 +3030,10 @@ public class TestReplicationScenarios {
     }
   }
 
-  private static boolean run(String cmd, boolean errorOnFail) throws RuntimeException {
+  private static boolean run(String cmd, boolean errorOnFail, Driver myDriver) throws RuntimeException {
     boolean success = false;
     try {
-      CommandProcessorResponse ret = driver.run(cmd);
+      CommandProcessorResponse ret = myDriver.run(cmd);
       success = (ret.getException() == null);
       if (!success){
         LOG.warn("Error {} : {} running [{}].", ret.getErrorCode(), ret.getErrorMessage(), cmd);
