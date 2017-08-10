@@ -124,4 +124,13 @@ public class AbstractOperatorDesc implements OperatorDesc {
     this.runtimeStatsTmpDir = runtimeStatsTmpDir;
   }
 
+  /**
+   * The default implementation delegates to {@link #equals(Object)}. Intended to be
+   * overridden by sub classes.
+   */
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    return equals(other);
+  }
+
 }

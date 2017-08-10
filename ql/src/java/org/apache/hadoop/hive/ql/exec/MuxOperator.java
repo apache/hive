@@ -340,4 +340,9 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   public OperatorType getType() {
     return OperatorType.MUX;
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

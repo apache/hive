@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -169,5 +170,16 @@ public class SelectDesc extends AbstractOperatorDesc {
       return null;
     }
     return new SelectOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      SelectDesc otherDesc = (SelectDesc) other;
+      return Objects.equals(getColListString(), otherDesc.getColListString()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          Objects.equals(explainNoCompute(), otherDesc.explainNoCompute());
+    }
+    return false;
   }
 }

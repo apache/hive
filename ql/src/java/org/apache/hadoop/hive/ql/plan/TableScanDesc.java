@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -453,5 +454,17 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   public boolean isVectorized() {
     return vectorized;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      TableScanDesc otherDesc = (TableScanDesc) other;
+      return Objects.equals(getAlias(), otherDesc.getAlias()) &&
+          ExprNodeDescUtils.isSame(getFilterExpr(), otherDesc.getFilterExpr()) &&
+          getRowLimit() == otherDesc.getRowLimit() &&
+          isGatherStats() == otherDesc.isGatherStats();
+    }
+    return false;
   }
 }

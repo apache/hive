@@ -915,4 +915,25 @@ public class ExprNodeDescUtils {
 
     return findColumnOrigin(parentExpr, parentOp);
   }
+
+  // Null-safe isSame
+  public static boolean isSame(ExprNodeDesc desc1, ExprNodeDesc desc2) {
+    return (desc1 == desc2) || (desc1 != null && desc1.isSame(desc2));
+  }
+
+  // Null-safe isSame for lists of ExprNodeDesc
+  public static boolean isSame(List<ExprNodeDesc> first, List<ExprNodeDesc> second) {
+    if (first == second) {
+      return true;
+    }
+    if (first == null || second == null || first.size() != second.size()) {
+      return false;
+    }
+    for (int i = 0; i < first.size(); i++) {
+      if (!first.get(i).isSame(second.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

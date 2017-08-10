@@ -101,4 +101,9 @@ public class CollectOperator extends Operator<CollectDesc> implements
   public static String getOperatorName() {
     return "COLLECT";
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

@@ -381,4 +381,9 @@ public class DemuxOperator extends Operator<DemuxDesc>
   public OperatorType getType() {
     return OperatorType.DEMUX;
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

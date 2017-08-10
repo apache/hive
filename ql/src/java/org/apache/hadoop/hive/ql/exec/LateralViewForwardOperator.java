@@ -66,4 +66,9 @@ public class LateralViewForwardOperator extends Operator<LateralViewForwardDesc>
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

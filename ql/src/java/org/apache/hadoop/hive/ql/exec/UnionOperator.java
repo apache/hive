@@ -190,4 +190,9 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     // it would be difficult to figure out the big table for the mapjoin.
     return false;
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

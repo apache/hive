@@ -49,4 +49,13 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
   public void setBigTablePosition(int pos) {
     mapJoinConversionPos = pos;
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      CommonMergeJoinDesc otherDesc = (CommonMergeJoinDesc) other;
+      return getNumBuckets() == otherDesc.getNumBuckets();
+    }
+    return false;
+  }
 }

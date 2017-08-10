@@ -1543,4 +1543,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   public void setIndexForTezUnion(int indexForTezUnion) {
     this.indexForTezUnion = indexForTezUnion;
   }
+
+  /**
+   * Decides whether two operators are logically the same.
+   * This can be used to merge same operators and avoid repeated computation.
+   */
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName()) &&
+        (conf == other.getConf() || (conf != null && other.getConf() != null &&
+            conf.isSame(other.getConf())));
+  }
 }

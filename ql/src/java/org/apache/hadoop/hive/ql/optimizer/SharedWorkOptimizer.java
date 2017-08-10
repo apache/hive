@@ -751,6 +751,7 @@ public class SharedWorkOptimizer extends Transform {
     // We can ignore table alias since when we compare ReduceSinkOperator, all
     // its ancestors need to match (down to table scan), thus we make sure that
     // both plans are the same.
+    // TODO: move this to logicalEquals
     if (op1 instanceof ReduceSinkOperator) {
       ReduceSinkDesc op1Conf = ((ReduceSinkOperator) op1).getConf();
       ReduceSinkDesc op2Conf = ((ReduceSinkOperator) op2).getConf();
@@ -770,6 +771,7 @@ public class SharedWorkOptimizer extends Transform {
 
     // We handle TableScanOperator here as we can safely ignore table alias
     // and the current comparator implementation does not.
+    // TODO: move this to logicalEquals
     if (op1 instanceof TableScanOperator) {
       TableScanOperator tsOp1 = (TableScanOperator) op1;
       TableScanOperator tsOp2 = (TableScanOperator) op2;
@@ -790,9 +792,7 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    OperatorComparatorFactory.OperatorComparator operatorComparator =
-      OperatorComparatorFactory.getOperatorComparator(op1.getClass());
-    return operatorComparator.equals(op1, op2);
+    return op1.logicalEquals(op2);
   }
 
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,

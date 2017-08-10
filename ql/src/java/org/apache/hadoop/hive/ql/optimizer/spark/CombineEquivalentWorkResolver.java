@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
-import org.apache.hadoop.hive.ql.optimizer.OperatorComparatorFactory;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalPlanResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -305,13 +304,7 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
      * @return
      */
     private boolean compareCurrentOperator(Operator<?> firstOperator, Operator<?> secondOperator) {
-      if (!firstOperator.getClass().getName().equals(secondOperator.getClass().getName())) {
-        return false;
-      }
-
-      OperatorComparatorFactory.OperatorComparator operatorComparator =
-        OperatorComparatorFactory.getOperatorComparator(firstOperator.getClass());
-      return operatorComparator.equals(firstOperator, secondOperator);
+      return firstOperator.logicalEquals(secondOperator);
     }
   }
 }

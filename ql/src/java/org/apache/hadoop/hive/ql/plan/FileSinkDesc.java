@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -518,5 +519,23 @@ public class FileSinkDesc extends AbstractOperatorDesc {
 
   public boolean getInsertOverwrite() {
     return isInsertOverwrite;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      FileSinkDesc otherDesc = (FileSinkDesc) other;
+      return Objects.equals(getDirName(), otherDesc.getDirName()) &&
+          Objects.equals(getTableInfo(), otherDesc.getTableInfo()) &&
+          getCompressed() == otherDesc.getCompressed() &&
+          getDestTableId() == otherDesc.getDestTableId() &&
+          isMultiFileSpray() == otherDesc.isMultiFileSpray() &&
+          getTotalFiles() == otherDesc.getTotalFiles() &&
+          getNumFiles() == otherDesc.getNumFiles() &&
+          Objects.equals(getStaticSpec(), otherDesc.getStaticSpec()) &&
+          isGatherStats() == otherDesc.isGatherStats() &&
+          Objects.equals(getStatsAggPrefix(), otherDesc.getStatsAggPrefix());
+    }
+    return false;
   }
 }

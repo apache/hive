@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -647,5 +648,20 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return null;
     }
     return new ReduceSinkOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      ReduceSinkDesc otherDesc = (ReduceSinkDesc) other;
+      return ExprNodeDescUtils.isSame(getKeyCols(), otherDesc.getKeyCols()) &&
+          ExprNodeDescUtils.isSame(getValueCols(), otherDesc.getValueCols()) &&
+          ExprNodeDescUtils.isSame(getPartitionCols(), otherDesc.getPartitionCols()) &&
+          getTag() == otherDesc.getTag() &&
+          Objects.equals(getOrder(), otherDesc.getOrder()) &&
+          getTopN() == otherDesc.getTopN() &&
+          isAutoParallel() == otherDesc.isAutoParallel();
+    }
+    return false;
   }
 }

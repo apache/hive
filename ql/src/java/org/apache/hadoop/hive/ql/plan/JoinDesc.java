@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
@@ -708,5 +709,19 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public void setInMemoryDataSize(final long inMemoryDataSize) {
     this.inMemoryDataSize = inMemoryDataSize;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      JoinDesc otherDesc = (JoinDesc) other;
+      return Objects.equals(getKeysString(), otherDesc.getKeysString()) &&
+          Objects.equals(getFiltersStringMap(), otherDesc.getFiltersStringMap()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          Objects.equals(getCondsList(), otherDesc.getCondsList()) &&
+          getHandleSkewJoin() == otherDesc.getHandleSkewJoin() &&
+          Objects.equals(getNullSafeString(), otherDesc.getNullSafeString());
+    }
+    return false;
   }
 }

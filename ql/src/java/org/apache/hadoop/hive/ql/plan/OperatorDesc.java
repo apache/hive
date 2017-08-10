@@ -34,4 +34,5 @@ public interface OperatorDesc extends Serializable, Cloneable {
   public void setMaxMemoryAvailable(long memoryAvailble);
   public String getRuntimeStatsTmpDir();
   public void setRuntimeStatsTmpDir(String runtimeStatsTmpDir);
+  boolean isSame(OperatorDesc other);
 }

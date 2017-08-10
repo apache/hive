@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -587,5 +588,17 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       return null;
     }
     return new SMBJoinOperatorExplainVectorization((SMBJoinDesc) this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (super.isSame(other)) {
+      MapJoinDesc otherDesc = (MapJoinDesc) other;
+      return Objects.equals(getParentToInput(), otherDesc.getParentToInput()) &&
+          Objects.equals(getKeyCountsExplainDesc(), otherDesc.getKeyCountsExplainDesc()) &&
+          getPosBigTable() == otherDesc.getPosBigTable() &&
+          isBucketMapJoin() == otherDesc.isBucketMapJoin();
+    }
+    return false;
   }
 }
