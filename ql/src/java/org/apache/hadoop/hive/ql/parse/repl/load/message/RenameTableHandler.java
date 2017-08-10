@@ -65,9 +65,8 @@ public class RenameTableHandler extends AbstractMessageHandler {
                         renameTableTask.getId(), oldName, newName);
 
       // oldDbName and newDbName *will* be the same if we're here
-      databasesUpdated.put(newDbName, context.dmd.getEventTo());
-      tablesUpdated.remove(oldName);
-      tablesUpdated.put(newName, context.dmd.getEventTo());
+      updatedMetadata.set(context.dmd.getEventTo().toString(), newDbName,
+              msg.getTableObjAfter().getTableName(), null);
 
       // Note : edge-case here in interaction with table-level REPL LOAD, where that nukes out
       // tablesUpdated. However, we explicitly don't support repl of that sort, and error out above

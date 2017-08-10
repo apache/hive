@@ -67,7 +67,8 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       // bootstrap.There should be a better way to do this but might required a lot of changes across
       // different handlers, unless this is a common pattern that is seen, leaving this here.
       if (context.dmd != null) {
-        databasesUpdated.put(builder.destinationDbName, context.dmd.getEventTo());
+        updatedMetadata.set(context.dmd.getEventTo().toString(), builder.destinationDbName,
+                            null, null);
       }
       readEntitySet.add(toReadEntity(new Path(context.location), context.hiveConf));
       if (builder.replCopyTasks.isEmpty()) {

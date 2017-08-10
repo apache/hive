@@ -25,11 +25,11 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.slf4j.Logger;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -42,9 +42,7 @@ public interface MessageHandler {
 
   Set<WriteEntity> writeEntities();
 
-  Map<String, Long> tablesUpdated();
-
-  Map<String, Long> databasesUpdated();
+  UpdatedMetaDataTracker getUpdatedMetadata();
 
   class Context {
     final String dbName, tableName, location;

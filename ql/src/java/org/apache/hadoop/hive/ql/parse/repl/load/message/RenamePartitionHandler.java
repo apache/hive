@@ -65,8 +65,7 @@ public class RenamePartitionHandler extends AbstractMessageHandler {
         new DDLWork(readEntitySet, writeEntitySet, renamePtnDesc), context.hiveConf);
     context.log.debug("Added rename ptn task : {}:{}->{}",
                       renamePtnTask.getId(), oldPartSpec, newPartSpec);
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-    tablesUpdated.put(tableName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, newPartSpec);
     return Collections.singletonList(renamePtnTask);
   }
 }
