@@ -228,8 +228,8 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       extrapolate(columnStatisticsData, partNames.size(), css.size(), adjustedIndexMap,
           adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
-    LOG.debug("Ndv estimatation for " + colName + " is "
-        + columnStatisticsData.getDoubleStats().getNumDVs());
+    LOG.debug("Ndv estimatation for {} is {}. # of partitions requested: {}. # of partitions found: {}", colName,
+        columnStatisticsData.getDoubleStats().getNumDVs(),partNames.size(), css.size());
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
@@ -248,9 +248,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         extractedAdjustedStatsMap.entrySet());
     // get the lowValue
     Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
           Map.Entry<String, DoubleColumnStatsData> o2) {
-        return o1.getValue().getLowValue() < o2.getValue().getLowValue() ? -1 : 1;
+        return Double.compare(o1.getValue().getLowValue(), o2.getValue().getLowValue());
       }
     });
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
@@ -270,9 +271,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
 
     // get the highValue
     Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
           Map.Entry<String, DoubleColumnStatsData> o2) {
-        return o1.getValue().getHighValue() < o2.getValue().getHighValue() ? -1 : 1;
+        return Double.compare(o1.getValue().getHighValue(), o2.getValue().getHighValue());
       }
     });
     minInd = adjustedIndexMap.get(list.get(0).getKey());
@@ -303,9 +305,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     long ndvMin = 0;
     long ndvMax = 0;
     Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
           Map.Entry<String, DoubleColumnStatsData> o2) {
-        return o1.getValue().getNumDVs() < o2.getValue().getNumDVs() ? -1 : 1;
+        return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
       }
     });
     long lowerBound = list.get(list.size() - 1).getValue().getNumDVs();
@@ -341,5 +344,5 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     extrapolateDoubleData.setNumDVs(ndv);
     extrapolateData.setDoubleStats(extrapolateDoubleData);
   }
-  
+
 }

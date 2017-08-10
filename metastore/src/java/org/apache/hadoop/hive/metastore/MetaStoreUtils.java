@@ -46,11 +46,18 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
@@ -1906,7 +1913,7 @@ public class MetaStoreUtils {
       // present in both, overwrite stats for columns absent in metastore and
       // leave alone columns stats missing from stats task. This last case may
       // leave stats in stale state. This will be addressed later.
-      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}", 
+      LOG.debug("New ColumnStats size is {}, but old ColumnStats size is {}",
           csNew.getStatsObj().size(), csOld.getStatsObjSize());
     }
     // In this case, we have to find out which columns can be merged.
@@ -1963,7 +1970,7 @@ public class MetaStoreUtils {
   // given a list of partStats, this function will give you an aggr stats
   public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
       String dbName, String tableName, List<String> partNames, List<String> colNames,
-      boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner)
       throws MetaException {
     // 1. group by the stats by colNames
     // map the colName to List<ColumnStatistics>
@@ -1980,26 +1987,53 @@ public class MetaStoreUtils {
         map.get(obj.getColName()).add(singleCS);
       }
     }
-    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,areAllPartsFound,useDensityFunctionForNDVEstimation, ndvTuner);
+    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
   }
 
   public static List<ColumnStatisticsObj> aggrPartitionStats(
       Map<String, List<ColumnStatistics>> map, String dbName, String tableName,
-      List<String> partNames, List<String> colNames, boolean areAllPartsFound,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
+      final List<String> partNames, List<String> colNames,
+      final boolean useDensityFunctionForNDVEstimation,final double ndvTuner) throws MetaException {
     List<ColumnStatisticsObj> colStats = new ArrayList<>();
-    // 2. aggr stats for each colName
-    // TODO: thread pool can be used to speed up the process
-    for (Entry<String, List<ColumnStatistics>> entry : map.entrySet()) {
-      List<ColumnStatistics> css = entry.getValue();
-      ColumnStatsAggregator aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css
-          .iterator().next().getStatsObj().iterator().next().getStatsData().getSetField(),
-          useDensityFunctionForNDVEstimation, ndvTuner);
-      ColumnStatisticsObj statsObj = aggregator.aggregate(entry.getKey(), partNames, css);
-      colStats.add(statsObj);
+    // 2. Aggregate stats for each column in a separate thread
+    if (map.size()< 1) {
+      //stats are absent in RDBMS
+      LOG.debug("No stats data found for: dbName=" +dbName +" tblName=" + tableName +
+          " partNames= " + partNames + " colNames=" + colNames );
+      return colStats;
     }
+    final ExecutorService pool = Executors.newFixedThreadPool(Math.min(map.size(), 16),
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("aggr-col-stats-%d").build());
+    final List<Future<ColumnStatisticsObj>> futures = Lists.newLinkedList();
+
+    long start = System.currentTimeMillis();
+    for (final Entry<String, List<ColumnStatistics>> entry : map.entrySet()) {
+      futures.add(pool.submit(new Callable<ColumnStatisticsObj>() {
+        @Override
+        public ColumnStatisticsObj call() throws Exception {
+          List<ColumnStatistics> css = entry.getValue();
+          ColumnStatsAggregator aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css
+              .iterator().next().getStatsObj().iterator().next().getStatsData().getSetField(),
+              useDensityFunctionForNDVEstimation, ndvTuner);
+          ColumnStatisticsObj statsObj = aggregator.aggregate(entry.getKey(), partNames, css);
+          return statsObj;
+        }}));
+    }
+    pool.shutdown();
+    for (Future<ColumnStatisticsObj> future : futures) {
+      try {
+        colStats.add(future.get());
+      } catch (InterruptedException | ExecutionException e) {
+        pool.shutdownNow();
+        LOG.debug(e.toString());
+        throw new MetaException(e.toString());
+      }
+    }
+    LOG.debug("Time for aggr col stats in seconds: {} Threads used: {}",
+      ((System.currentTimeMillis() - (double)start))/1000, Math.min(map.size(), 16));
     return colStats;
   }
+
 
   /**
    * Produce a hash for the storage descriptor

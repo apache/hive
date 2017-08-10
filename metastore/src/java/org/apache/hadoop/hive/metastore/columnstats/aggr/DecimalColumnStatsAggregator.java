@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(DecimalColumnStatsAggregator.class);
 
   @Override
@@ -253,9 +253,9 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
       extrapolate(columnStatisticsData, partNames.size(), css.size(), adjustedIndexMap,
           adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
+    LOG.debug("Ndv estimatation for {} is {} # of partitions requested: {} # of partitions found: {}", colName,
+        columnStatisticsData.getDecimalStats().getNumDVs(),partNames.size(), css.size());
     statsObj.setStatsData(columnStatisticsData);
-    LOG.debug("Ndv estimatation for " + colName + " is "
-        + columnStatisticsData.getDecimalStats().getNumDVs());
     return statsObj;
   }
 
@@ -273,6 +273,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         extractedAdjustedStatsMap.entrySet());
     // get the lowValue
     Collections.sort(list, new Comparator<Map.Entry<String, DecimalColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DecimalColumnStatsData> o1,
           Map.Entry<String, DecimalColumnStatsData> o2) {
         return o1.getValue().getLowValue().compareTo(o2.getValue().getLowValue());
@@ -295,6 +296,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
 
     // get the highValue
     Collections.sort(list, new Comparator<Map.Entry<String, DecimalColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DecimalColumnStatsData> o1,
           Map.Entry<String, DecimalColumnStatsData> o2) {
         return o1.getValue().getHighValue().compareTo(o2.getValue().getHighValue());
@@ -328,9 +330,10 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
     long ndvMin = 0;
     long ndvMax = 0;
     Collections.sort(list, new Comparator<Map.Entry<String, DecimalColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DecimalColumnStatsData> o1,
           Map.Entry<String, DecimalColumnStatsData> o2) {
-        return o1.getValue().getNumDVs() < o2.getValue().getNumDVs() ? -1 : 1;
+        return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
       }
     });
     long lowerBound = list.get(list.size() - 1).getValue().getNumDVs();

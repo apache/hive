@@ -232,12 +232,12 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
       extrapolate(columnStatisticsData, partNames.size(), css.size(), adjustedIndexMap,
           adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
+    LOG.debug("Ndv estimatation for {} is {} # of partitions requested: {} # of partitions found: {}", colName,
+        columnStatisticsData.getDateStats().getNumDVs(),partNames.size(), css.size());
     statsObj.setStatsData(columnStatisticsData);
-    LOG.debug("Ndv estimatation for " + colName + " is "
-        + columnStatisticsData.getDateStats().getNumDVs());
     return statsObj;
   }
-  
+
   private long diff(Date d1, Date d2) {
     return d1.getDaysSinceEpoch() - d2.getDaysSinceEpoch();
   }
@@ -264,9 +264,10 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         extractedAdjustedStatsMap.entrySet());
     // get the lowValue
     Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DateColumnStatsData> o1,
           Map.Entry<String, DateColumnStatsData> o2) {
-        return diff(o1.getValue().getLowValue(), o2.getValue().getLowValue()) < 0 ? -1 : 1;
+        return o1.getValue().getLowValue().compareTo(o2.getValue().getLowValue());
       }
     });
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
@@ -286,9 +287,10 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
 
     // get the highValue
     Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DateColumnStatsData> o1,
           Map.Entry<String, DateColumnStatsData> o2) {
-        return diff(o1.getValue().getHighValue(), o2.getValue().getHighValue()) < 0 ? -1 : 1;
+        return o1.getValue().getHighValue().compareTo(o2.getValue().getHighValue());
       }
     });
     minInd = adjustedIndexMap.get(list.get(0).getKey());
@@ -317,9 +319,10 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
     // get the ndv
     long ndv = 0;
     Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+      @Override
       public int compare(Map.Entry<String, DateColumnStatsData> o1,
           Map.Entry<String, DateColumnStatsData> o2) {
-        return o1.getValue().getNumDVs() < o2.getValue().getNumDVs() ? -1 : 1;
+        return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
       }
     });
     long lowerBound = list.get(list.size() - 1).getValue().getNumDVs();
