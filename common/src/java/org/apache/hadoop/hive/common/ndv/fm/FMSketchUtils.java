@@ -23,11 +23,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-import javolution.util.FastBitSet;
-
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javolution.util.FastBitSet;
 
 public class FMSketchUtils {
 
@@ -46,14 +45,14 @@ public class FMSketchUtils {
 
     // max of numBitVectors = 1024, 2 bytes is enough.
     byte[] nbv = new byte[2];
-    nbv[0] = (byte) fm.getnumBitVectors();
-    nbv[1] = (byte) (fm.getnumBitVectors() >>> 8);
+    nbv[0] = (byte) fm.getNumBitVectors();
+    nbv[1] = (byte) (fm.getNumBitVectors() >>> 8);
 
     out.write(nbv);
 
     // original toString takes too much space
     // we compress a fastbitset to 4 bytes
-    for (int i = 0; i < fm.getnumBitVectors(); i++) {
+    for (int i = 0; i < fm.getNumBitVectors(); i++) {
       writeBitVector(out, fm.getBitVector(i));
     }
   }
@@ -78,8 +77,8 @@ public class FMSketchUtils {
    * Deserializes from string to FastBitSet; Creates a NumDistinctValueEstimator
    * object and returns it.
    */
-  public static FMSketch deserializeFM(String s) throws IOException {
-    InputStream is = new ByteArrayInputStream(Base64.decodeBase64(s));
+  public static FMSketch deserializeFM(byte[] buf) throws IOException {
+    InputStream is = new ByteArrayInputStream(buf);
     try {
       FMSketch sketch = deserializeFM(is);
       is.close();

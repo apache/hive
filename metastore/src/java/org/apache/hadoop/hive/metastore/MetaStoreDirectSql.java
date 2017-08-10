@@ -24,8 +24,8 @@ import static org.apache.commons.lang.StringUtils.repeat;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.jdo.PersistenceManager;
@@ -66,8 +65,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
-import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
@@ -947,7 +944,7 @@ class MetaStoreDirectSql {
     }
   }
 
-  static String extractSqlBlob(Object value) throws MetaException {
+  static byte[] extractSqlBlob(Object value) throws MetaException {
     if (value == null)
       return null;
     if (value instanceof Blob) {
@@ -955,14 +952,14 @@ class MetaStoreDirectSql {
       try {
         // getBytes function says: pos the ordinal position of the first byte in
         // the BLOB value to be extracted; the first byte is at position 1
-        return new String(((Blob) value).getBytes(1, (int) ((Blob) value).length()));
+        return ((Blob) value).getBytes(1, (int) ((Blob) value).length());
       } catch (SQLException e) {
         throw new MetaException("Encounter error while processing blob.");
       }
     }
     else if (value instanceof byte[]) {
       // mysql, postgres, sql server
-      return new String((byte[])value);
+      return (byte[]) value;
     }
 	else {
       // this may happen when enablebitvector is false

@@ -20,31 +20,29 @@
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
-import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 
 public class DoubleColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DoubleColumnStatsData aggregateData = aggregateColStats.getStatsData().getDoubleStats();
-    DoubleColumnStatsData newData = newColStats.getStatsData().getDoubleStats();
+    DoubleColumnStatsDataInspector aggregateData =
+        (DoubleColumnStatsDataInspector) aggregateColStats.getStatsData().getDoubleStats();
+    DoubleColumnStatsDataInspector newData =
+        (DoubleColumnStatsDataInspector) newColStats.getStatsData().getDoubleStats();
     aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
     aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (!aggregateData.isSetBitVectors() || aggregateData.getBitVectors().length() == 0
-        || !newData.isSetBitVectors() || newData.getBitVectors().length() == 0) {
+    if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
     } else {
-      NumDistinctValueEstimator oldEst = NumDistinctValueEstimatorFactory
-          .getNumDistinctValueEstimator(aggregateData.getBitVectors());
-      NumDistinctValueEstimator newEst = NumDistinctValueEstimatorFactory
-          .getNumDistinctValueEstimator(newData.getBitVectors());
+      NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
+      NumDistinctValueEstimator newEst = newData.getNdvEstimator();
       long ndv = -1;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
-        aggregateData.setBitVectors(oldEst.serialize());
+        aggregateData.setNdvEstimator(oldEst);
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }

@@ -23,20 +23,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
-import javolution.util.FastBitSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class FMSketch implements NumDistinctValueEstimator{
+import javolution.util.FastBitSet;
+
+public class FMSketch implements NumDistinctValueEstimator {
 
   static final Logger LOG = LoggerFactory.getLogger(FMSketch.class.getName());
-  public static final byte[] MAGIC = new byte[] { 'F', 'M' };
 
   /* We want a,b,x to come from a finite field of size 0 to k, where k is a prime number.
    * 2^p - 1 is prime for p = 31. Hence bitvectorSize has to be 31. Pick k to be 2^p -1.
@@ -134,7 +132,7 @@ public class FMSketch implements NumDistinctValueEstimator{
     return bitVector[index] = fastBitSet;
   }
 
-  public int getnumBitVectors() {
+  public int getNumBitVectors() {
     return numBitVectors;
   }
 
@@ -158,12 +156,12 @@ public class FMSketch implements NumDistinctValueEstimator{
   }
 
   @Override
-  public String serialize() {
+  public byte[] serialize() {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     // write bytes to bos ...
     try {
       FMSketchUtils.serializeFM(bos, this);
-      String result = Base64.encodeBase64String(bos.toByteArray());
+      final byte[] result = bos.toByteArray();
       bos.close();
       return result;
     } catch (IOException e) {
@@ -172,8 +170,8 @@ public class FMSketch implements NumDistinctValueEstimator{
   }
 
   @Override
-  public NumDistinctValueEstimator deserialize(String s) {
-    InputStream is = new ByteArrayInputStream(Base64.decodeBase64(s));
+  public NumDistinctValueEstimator deserialize(byte[] buf) {
+    InputStream is = new ByteArrayInputStream(buf);
     try {
       NumDistinctValueEstimator n = FMSketchUtils.deserializeFM(is);
       is.close();
@@ -336,7 +334,7 @@ public class FMSketch implements NumDistinctValueEstimator{
   }
 
   public int lengthFor(JavaDataModel model) {
-    return lengthFor(model, getnumBitVectors());
+    return lengthFor(model, getNumBitVectors());
   }
 
   // the caller needs to gurrantee that they are the same type based on numBitVectors

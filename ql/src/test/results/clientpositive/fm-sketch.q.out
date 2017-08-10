@@ -38,20 +38,20 @@ STAGE PLANS:
                 aggregations: compute_stats(key, 'fm', 16)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -80,9 +80,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@n
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	0                   	500                 	1                   	                    	                    	                    	                    	Rk0QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA	 
-AAAAAAAAAAAAAAA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	0                   	500                 	1                   	                    	                    	                    	                    	FM                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create table i(key int)
 PREHOOK: type: CREATETABLE
@@ -124,20 +122,20 @@ STAGE PLANS:
                 aggregations: compute_stats(key, 'fm', 16)
                 mode: hash
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 464 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+                  Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 440 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -166,9 +164,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	196                 	                    	                    	                    	                    	Rk0QAP8YAAB/AAAA/woAAP8AAAC/AQAA/wEAAH8BAAD/AgAAfwAAAPsLAAB/AgAA/wgAAH9DAAA/	 
-AAAA/xQAAP8DAAA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	196                 	                    	                    	                    	                    	FM                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
@@ -211,9 +207,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	double              	0.0                 	498.0               	0                   	234                 	                    	                    	                    	                    	Rk0QAP8AAAD/AQAA/wAAAJ8NAAB/MAAA/xEAAP8CAAD/AgAAfwIAAP8AAAB/EQAA/wAAAP8AAAB/	 
-AAAA3wEAAP8CAAA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	double              	0.0                 	498.0               	0                   	234                 	                    	                    	                    	                    	FM                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
@@ -256,9 +250,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	decimal(10,0)       	0                   	498                 	0                   	180                 	                    	                    	                    	                    	Rk0QAP8AAAD/AwAA/wUAAP8DAAD/AwAAvwIAAH8eAAC/AQAAPwAAAL8AAAAHAAAAvwAAAP0CAAD/	 
-AQAA/wMAAH8CAAA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	decimal(10,0)       	0                   	498                 	0                   	180                 	                    	                    	                    	                    	FM                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table i
 PREHOOK: type: DROPTABLE
@@ -327,7 +319,5 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@i
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	date                	2012-03-17          	2013-08-17          	0                   	3                   	                    	                    	                    	                    	Rk0QAAEAAAAGAAAAAwAAAA0AAAADAAAABwAAAAsAAAAJAAAAEwAAAAkAAAADAAAABwAAAAMAAAAB	 
-AAAABAAAAAUAAAA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	date                	2012-03-17          	2013-08-17          	0                   	3                   	                    	                    	                    	                    	FM                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

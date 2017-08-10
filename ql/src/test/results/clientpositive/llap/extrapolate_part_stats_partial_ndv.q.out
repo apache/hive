@@ -115,8 +115,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	SExM4AMDgaTbFcD8mOYCwMOJoQQ=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -125,8 +124,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	SExM4AYGhJ2RPL68foHA90C/kJJjgJX39QKAwfg7	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -135,8 +133,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	4.0                 	0                   	4                   	                    	                    	                    	                    	SExM4AQEwvmagwOC4fQQ/cXBowKCnueKAg==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	4.0                 	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -145,8 +142,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	5.0                 	0                   	5                   	                    	                    	                    	                    	SExM4AUFgoqWCcDvhPoCguH0EP3FwaMCgp7nigI=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	5.0                 	0                   	5                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -155,8 +151,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	2000                	0                   	4                   	                    	                    	                    	                    	SExM4AQEwtKH1wOJpIYp95+qNYHs8ZgB	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	2000                	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -165,8 +160,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	910                 	0                   	4                   	                    	                    	                    	                    	SExM4AQEwavm2wOC18PyAYDUhBSCqe9l	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	910                 	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -175,8 +169,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	SExM4AMDgaPxmgPB562MAr/LtnY=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -185,8 +178,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	SExM4AMDgaPxmgPB562MAr/LtnY=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
@@ -424,8 +416,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	SExM4AICgaTbFYDJnvoC	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -434,8 +425,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	3                   	1.25                	4                   	                    	                    	SExM4AMDgaTbFcD8mOYCwJDuDA==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	1.25                	4                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -444,8 +434,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	2.0                 	0                   	2                   	                    	                    	                    	                    	SExM4AICwvmagwP/pra0Ag==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	2.0                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -454,8 +443,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	31.0                	0                   	5                   	                    	                    	                    	                    	SExM4AUFgoqWCb/8tKEBg9TE6QH9xcGjAoKe54oC	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	31.0                	0                   	5                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -464,8 +452,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	1010                	0                   	2                   	                    	                    	                    	                    	SExM4AICwtKH1wOJpIYp	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	1010                	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -474,8 +461,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	2000                	0                   	3                   	                    	                    	                    	                    	SExM4AMDwtKH1wOJpIYp95+qNQ==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	2000                	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -484,8 +470,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	94086               	94087               	0                   	2                   	                    	                    	                    	                    	SExM4AICgaPxmgOAs+SCAw==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	94086               	94087               	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -494,8 +479,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	SExM4AMDgaPxmgPB562MAr/LtnY=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
@@ -804,8 +788,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	SExM4AICgaTbFYDAoocH	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
@@ -814,8 +797,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	3                   	3.0                 	3                   	                    	                    	SExM4AMDwtmPPYHA90C/kJJj	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	3.0                 	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
@@ -824,8 +806,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	int                 	2                   	3                   	0                   	2                   	                    	                    	                    	                    	SExM4AICga/rqgHA0vSOAw==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	int                 	2                   	3                   	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
@@ -834,8 +815,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-locid               	int                 	1                   	5                   	0                   	3                   	                    	                    	                    	                    	SExM4AMDxfO+SLy7rGLA9IJO	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+locid               	int                 	1                   	5                   	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
@@ -844,8 +824,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	2000                	0                   	2                   	                    	                    	                    	                    	SExM4AICy/aNgAT3n6o1	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	2000                	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
@@ -854,8 +833,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	100                 	0                   	2                   	                    	                    	                    	                    	SExM4AICw4KqzgWC/fN5	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	100                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d

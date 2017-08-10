@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.common.ndv.fm;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
 
@@ -86,12 +87,12 @@ public class TestFMSketchSerialization {
       sketch.setBitVector(fastBitSet[i], i);
     }
     assertEquals(sketch.estimateNumDistinctValues(), 3);
-    String s = sketch.serialize();
+    byte[] buf = sketch.serialize();
     FMSketch newSketch = (FMSketch) NumDistinctValueEstimatorFactory
-        .getNumDistinctValueEstimator(s);
+        .getNumDistinctValueEstimator(buf);
     sketch.equals(newSketch);
     assertEquals(newSketch.estimateNumDistinctValues(), 3);
-    assertEquals(newSketch.serialize(), s);
+    assertArrayEquals(newSketch.serialize(), buf);
   }
 
 }

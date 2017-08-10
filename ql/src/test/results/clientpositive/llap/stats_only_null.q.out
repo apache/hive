@@ -415,8 +415,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats_null_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-a                   	double              	1.0                 	1.0                 	1                   	1                   	                    	                    	                    	                    	SExM4AEBwaDRtwU=	 
-  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+a                   	double              	1.0                 	1.0                 	1                   	1                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_null

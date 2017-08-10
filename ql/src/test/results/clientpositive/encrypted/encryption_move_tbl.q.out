@@ -61,28 +61,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	SExM4LUCtQKN6yH2ofgFwu2cAvzblwLAqoIDwf6+AcDkmgT/i5kBxOPKA72MowGA5fAbg4LgAr2L	 
-vQH/+x+A0gOA0fsBgefUBb+gkhPB+03A7aUCg+BdwKUTvbaQA4LIeL7O3QTCo6IDvbuRAsCRFoGb	 	 	 	 	 	 	 	 	 	 	 
-YL/lO4LfuQK+4acBgLePCsHvrQHD43u87s4EwP0QwJJtyL23ArjLvQPCz7wG/5yDC7/N4AKCxMcO	 	 	 	 	 	 	 	 	 	 	 
-vvCNA4HI4wP/6rEDgIIJwaZOv+cwgaevAf+GzQHA14ICwPz+BcDb+gKAhg+H7RS67okB/5HHAoOo	 	 	 	 	 	 	 	 	 	 	 
-Nb2V2wWA6fAIwJSODsCT9gGAiY8Bg/xI/bq4CoDXkgHAyvYGgOduwJKLAYKbvgH+2bQBwNCWBoK7	 	 	 	 	 	 	 	 	 	 	 
-Gb+fmQO/6J8Bgb89/9fzAsCPywLAp/wHgbJeg/z8Ar25kQGA4P0Dv/OUA4CgoQaBpL4EwDuC+m69	 	 	 	 	 	 	 	 	 	 	 
-yDWA/BLApYELxMEv/I1LgYWwBMbTlAP56cMEgZssgeiCAb+kowHBvf0CgYHSAf3g0QaBi9sC/9yi	 	 	 	 	 	 	 	 	 	 	 
-AoDbIYHllQnAhAGBqJkFvrBKgZmZDIKEogG9slWC7qgF/q5DwM30DoKHRcCN7wO+ir0DwLOtAcDy	 	 	 	 	 	 	 	 	 	 	 
-8wKB4L0Dv/HEA4adpAOAqxr6kkyA14EIwbkUgIihCIGfcoCODr/z5wKAs/QBw7JvvLnQBMHmsgL/	 	 	 	 	 	 	 	 	 	 	 
-1UTAy5gCgbHaAf+UpgOAjO0HwcRQhOePAYChCruLvQaBtSj/osUBwoK1AYGn+Qm9kLcDgLSoAYCQ	 	 	 	 	 	 	 	 	 	 	 
-2QeAv54FwoIavsJ2wYYL/9jbAoCTjgGBjDX/ztkBgPF8gtNC/r2PAoGgUcHDcb+LqAe/laoBwsOe	 	 	 	 	 	 	 	 	 	 	 
-A8D6EsDQkAT+0tcGgIRzgIqQAYCT+gXB7wv/jvQMw4miBr3LvgTA0YYBgKCTCIHyxQHBtPcCvts+	 	 	 	 	 	 	 	 	 	 	 
-we3HAsD/9gG/zaEDgMiqA8H6iQHAniPCiIQB/bucAYDykQGCodED/o+VAsa89gO6pqAHwKvqAYGu	 	 	 	 	 	 	 	 	 	 	 
-9QO/0bgPwLiEAcH7lwHA4v4FgMUrwe9k/v9ggaI5wbniAr7lOYP3tAH9vmXBxscCwPDuAYCkFoPc	 	 	 	 	 	 	 	 	 	 	 
-6QaCoOUH/MSUAr/4gwmAw4wIv/rBAsCH2QGEl1n86qQBgOWcEoLOsgb+k74EhNjFAbyX2QHAi4MB	 	 	 	 	 	 	 	 	 	 	 
-gJiCAYHyiwnAvYgC/5LkB4HnoQLA46QU/6+SBsGv6QHBut4Evo/iA8KzFL7b0AKAwJkJwZSRAb+g	 	 	 	 	 	 	 	 	 	 	 
-4gHBux+B/58F/+D2Av/5tgKAmieA4MsBwrvkBMDIBb77GoCqnwjA3PkBgPOTCMD9e8P8tgK91poD	 	 	 	 	 	 	 	 	 	 	 
-gIGeAcH3nQKAhqIEv6LdA4DK2AKClCm+mc4BxoVo+rCiAoDfoAKAtPoFwdCUAsHtpwH+j8QBwYWl	 	 	 	 	 	 	 	 	 	 	 
-Ab+00gOAy9gMgfHAA7/hvwTAqCeCsUq/yUj/t9wCxYPOArvNrQTAq5ADwJrZCcKbX764IcHS1QKA	 	 	 	 	 	 	 	 	 	 	 
-t+kLwtSlC/3wyweAl2bAhKEDwLXQCYDXhQXBpeICgcpm//3nBoDmGMG7lwH/y+YI//XaAYHTlQKA	 	 	 	 	 	 	 	 	 	 	 
-4gPA7aoC/6mKCIDZpgLDoEQ=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
 PREHOOK: type: DESCTABLE
@@ -92,28 +71,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
-A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
-r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
-gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
-wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
-gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
-xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
-sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
-wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
-gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
-BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
-nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
-v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
-/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
-ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
-fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
-tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
-KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
-sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
-zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
-A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
@@ -136,28 +94,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	SExM4LUCtQKN6yH2ofgFwu2cAvzblwLAqoIDwf6+AcDkmgT/i5kBxOPKA72MowGA5fAbg4LgAr2L	 
-vQH/+x+A0gOA0fsBgefUBb+gkhPB+03A7aUCg+BdwKUTvbaQA4LIeL7O3QTCo6IDvbuRAsCRFoGb	 	 	 	 	 	 	 	 	 	 	 
-YL/lO4LfuQK+4acBgLePCsHvrQHD43u87s4EwP0QwJJtyL23ArjLvQPCz7wG/5yDC7/N4AKCxMcO	 	 	 	 	 	 	 	 	 	 	 
-vvCNA4HI4wP/6rEDgIIJwaZOv+cwgaevAf+GzQHA14ICwPz+BcDb+gKAhg+H7RS67okB/5HHAoOo	 	 	 	 	 	 	 	 	 	 	 
-Nb2V2wWA6fAIwJSODsCT9gGAiY8Bg/xI/bq4CoDXkgHAyvYGgOduwJKLAYKbvgH+2bQBwNCWBoK7	 	 	 	 	 	 	 	 	 	 	 
-Gb+fmQO/6J8Bgb89/9fzAsCPywLAp/wHgbJeg/z8Ar25kQGA4P0Dv/OUA4CgoQaBpL4EwDuC+m69	 	 	 	 	 	 	 	 	 	 	 
-yDWA/BLApYELxMEv/I1LgYWwBMbTlAP56cMEgZssgeiCAb+kowHBvf0CgYHSAf3g0QaBi9sC/9yi	 	 	 	 	 	 	 	 	 	 	 
-AoDbIYHllQnAhAGBqJkFvrBKgZmZDIKEogG9slWC7qgF/q5DwM30DoKHRcCN7wO+ir0DwLOtAcDy	 	 	 	 	 	 	 	 	 	 	 
-8wKB4L0Dv/HEA4adpAOAqxr6kkyA14EIwbkUgIihCIGfcoCODr/z5wKAs/QBw7JvvLnQBMHmsgL/	 	 	 	 	 	 	 	 	 	 	 
-1UTAy5gCgbHaAf+UpgOAjO0HwcRQhOePAYChCruLvQaBtSj/osUBwoK1AYGn+Qm9kLcDgLSoAYCQ	 	 	 	 	 	 	 	 	 	 	 
-2QeAv54FwoIavsJ2wYYL/9jbAoCTjgGBjDX/ztkBgPF8gtNC/r2PAoGgUcHDcb+LqAe/laoBwsOe	 	 	 	 	 	 	 	 	 	 	 
-A8D6EsDQkAT+0tcGgIRzgIqQAYCT+gXB7wv/jvQMw4miBr3LvgTA0YYBgKCTCIHyxQHBtPcCvts+	 	 	 	 	 	 	 	 	 	 	 
-we3HAsD/9gG/zaEDgMiqA8H6iQHAniPCiIQB/bucAYDykQGCodED/o+VAsa89gO6pqAHwKvqAYGu	 	 	 	 	 	 	 	 	 	 	 
-9QO/0bgPwLiEAcH7lwHA4v4FgMUrwe9k/v9ggaI5wbniAr7lOYP3tAH9vmXBxscCwPDuAYCkFoPc	 	 	 	 	 	 	 	 	 	 	 
-6QaCoOUH/MSUAr/4gwmAw4wIv/rBAsCH2QGEl1n86qQBgOWcEoLOsgb+k74EhNjFAbyX2QHAi4MB	 	 	 	 	 	 	 	 	 	 	 
-gJiCAYHyiwnAvYgC/5LkB4HnoQLA46QU/6+SBsGv6QHBut4Evo/iA8KzFL7b0AKAwJkJwZSRAb+g	 	 	 	 	 	 	 	 	 	 	 
-4gHBux+B/58F/+D2Av/5tgKAmieA4MsBwrvkBMDIBb77GoCqnwjA3PkBgPOTCMD9e8P8tgK91poD	 	 	 	 	 	 	 	 	 	 	 
-gIGeAcH3nQKAhqIEv6LdA4DK2AKClCm+mc4BxoVo+rCiAoDfoAKAtPoFwdCUAsHtpwH+j8QBwYWl	 	 	 	 	 	 	 	 	 	 	 
-Ab+00gOAy9gMgfHAA7/hvwTAqCeCsUq/yUj/t9wCxYPOArvNrQTAq5ADwJrZCcKbX764IcHS1QKA	 	 	 	 	 	 	 	 	 	 	 
-t+kLwtSlC/3wyweAl2bAhKEDwLXQCYDXhQXBpeICgcpm//3nBoDmGMG7lwH/y+YI//XaAYHTlQKA	 	 	 	 	 	 	 	 	 	 	 
-4gPA7aoC/6mKCIDZpgLDoEQ=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
 PREHOOK: type: DESCTABLE
@@ -167,28 +104,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@encrypted_table
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
-A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
-r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
-gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
-wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
-gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
-xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
-sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
-wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
-gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
-BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
-nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
-v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
-/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
-ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
-fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
-tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
-KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
-sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
-zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
-A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 PREHOOK: type: ALTERTABLE_RENAME

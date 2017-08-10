@@ -98,7 +98,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: 4000.0 (type: double), _col1 (type: string)
                   Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+                  value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -107,7 +107,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), 4000.0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 4000.0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -143,8 +143,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	0                   	7                   	5.142857142857143   	6                   	                    	                    	SExM4AcHhN+NPL2pzAqA8p0tgLvPcIPS5KcCvbS+dMC7gIYB	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	0                   	7                   	5.142857142857143   	6                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
 PREHOOK: type: QUERY
@@ -177,7 +176,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: 2000.0 (type: double), _col1 (type: string)
                   Statistics: Num rows: 42 Data size: 169 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -186,7 +185,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), 2000.0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), 2000.0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -224,8 +223,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee_part
@@ -234,8 +232,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	31                  	0                   	7                   	                    	                    	                    	                    	SExM4AcHw4SxaoX10lX5nt07xsfQ5AH8u4h+gtXeeb2uipsB	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	31                  	0                   	7                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
 PREHOOK: type: QUERY
@@ -268,7 +265,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                   Statistics: Num rows: 116 Data size: 466 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>)
+                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0)
@@ -277,7 +274,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 58 Data size: 233 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 58 Data size: 233 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -323,8 +320,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	SExM4AwMgZroaMLqyAGF9dJV+rKWOf/rxgKAgPo7xsfWqAH8u4h+//bMRoPekTO9roqbAcCI5ns=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeID          	int                 	16                  	34                  	1                   	12                  	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: QUERY
@@ -357,7 +353,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                   Statistics: Num rows: 2 Data size: 466 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
+                  value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -366,7 +362,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 233 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: double), _col1 (type: string)
+            expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: double), _col1 (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 1 Data size: 233 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -412,8 +408,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	SExM4AwMhN+NPL2pzAqA8p0tgKf/ZoCU0AnAwotPw4/Z2AG9tL50wLuAhgHAmduBAcG66mL//JYR	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: drop table Employee
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table Employee
@@ -488,8 +483,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	SExM4AwMhN+NPL2pzAqA8p0tgKf/ZoCU0AnAwotPw4/Z2AG9tL50wLuAhgHAmduBAcG66mL//JYR	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -536,8 +530,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	SExM4AwMhN+NPL2pzAqA8p0tgKf/ZoCU0AnAwotPw4/Z2AG9tL50wLuAhgHAmduBAcG66mL//JYR	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	0                   	12                  	5.142857142857143   	6                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: alter table Employee add columns (c int ,d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@employee
@@ -573,8 +566,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-employeeName        	string              	                    	                    	0                   	9                   	4.777777777777778   	6                   	                    	                    	SExM4AkJhN+NPL2pzAqA8p0tgLvPcIPS5KcCvbS+dMC7gIYBwJnbgQGAz/1W	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+employeeName        	string              	                    	                    	0                   	9                   	4.777777777777778   	6                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
@@ -583,8 +575,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	2000                	4000                	0                   	3                   	                    	                    	                    	                    	SExM4AMDwpKn6wH/9JpogbzaCQ==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+c                   	int                 	2000                	4000                	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@employee
@@ -593,5 +584,4 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@employee
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-d                   	string              	                    	                    	0                   	2                   	2.4444444444444446  	3                   	                    	                    	SExM4AICgaD/7QKE/4mqAw==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+d                   	string              	                    	                    	0                   	2                   	2.4444444444444446  	3                   	                    	                    	HL                  	from deserializer   

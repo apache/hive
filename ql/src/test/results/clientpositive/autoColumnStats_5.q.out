@@ -56,7 +56,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
+                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -65,7 +65,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -195,8 +195,7 @@ POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	SExM4AQExfO+SLy7rGKA4vdMwPD8wQI=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	1                   	4                   	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
@@ -295,7 +294,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
+                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -304,7 +303,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
             Statistics: Num rows: 1 Data size: 60 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -438,8 +437,7 @@ POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	SExM4AQEguSTlQGB4f34Ab/okIMC/4XTfQ==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+c                   	int                 	10                  	40                  	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table partitioned1 partition(part=1) values(5, 'new', 100, 'hundred'),(6, 'new', 200, 'two hundred')
@@ -490,7 +488,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>)
+                    value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3)
@@ -499,7 +497,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
           Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>), _col0 (type: int)
+            expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col3 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col4 (type: struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>), _col0 (type: int)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
             Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -631,8 +629,7 @@ POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-a                   	int                 	1                   	6                   	0                   	6                   	                    	                    	                    	                    	SExM4AYGwZn6L4TaxBi8u6xigOL3TMCSiwGA3vHAAg==	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+a                   	int                 	1                   	6                   	0                   	6                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: desc formatted partitioned1 partition(part=1) c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partitioned1
@@ -642,5 +639,4 @@ POSTHOOK: Input: default@partitioned1
 col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_trues	num_falses	comment	bitvector
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	SExM4AICweD/2gaAj/YU	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+c                   	int                 	100                 	200                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   

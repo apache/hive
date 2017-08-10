@@ -19,12 +19,9 @@
 
 package org.apache.hadoop.hive.common.ndv;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketchUtils;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
@@ -34,22 +31,20 @@ public class NumDistinctValueEstimatorFactory {
   private NumDistinctValueEstimatorFactory() {
   }
 
-  private static boolean isFMSketch(String s) throws IOException {
-    InputStream in = new ByteArrayInputStream(Base64.decodeBase64(s));
+  private static boolean isFMSketch(byte[] buf) throws IOException {
     byte[] magic = new byte[2];
-    magic[0] = (byte) in.read();
-    magic[1] = (byte) in.read();
-    in.close();
+    magic[0] = (byte) buf[0];
+    magic[1] = (byte) buf[1];
     return Arrays.equals(magic, FMSketchUtils.MAGIC);
   }
 
-  public static NumDistinctValueEstimator getNumDistinctValueEstimator(String s) {
+  public static NumDistinctValueEstimator getNumDistinctValueEstimator(byte[] buf) {
     // Right now we assume only FM and HLL are available.
     try {
-      if (isFMSketch(s)) {
-        return FMSketchUtils.deserializeFM(s);
+      if (isFMSketch(buf)) {
+        return FMSketchUtils.deserializeFM(buf);
       } else {
-        return HyperLogLog.builder().build().deserialize(s);
+        return HyperLogLog.builder().build().deserialize(buf);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -59,7 +54,7 @@ public class NumDistinctValueEstimatorFactory {
   public static NumDistinctValueEstimator getEmptyNumDistinctValueEstimator(
       NumDistinctValueEstimator n) {
     if (n instanceof FMSketch) {
-      return new FMSketch(((FMSketch) n).getnumBitVectors());
+      return new FMSketch(((FMSketch) n).getNumBitVectors());
     } else {
       return HyperLogLog.builder().build();
     }

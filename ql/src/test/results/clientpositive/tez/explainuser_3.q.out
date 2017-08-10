@@ -209,11 +209,11 @@ Stage-3
         Stage-0
           Reducer 2
           File Output Operator [FS_6]
-            Group By Operator [GBY_4] (rows=1 width=960)
+            Group By Operator [GBY_4] (rows=1 width=880)
               Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_3]
-                Group By Operator [GBY_2] (rows=1 width=960)
+                Group By Operator [GBY_2] (rows=1 width=880)
                   Output:["_col0","_col1"],aggregations:["compute_stats(key, 'hll')","compute_stats(value, 'hll')"]
                   Select Operator [SEL_1] (rows=500 width=178)
                     Output:["key","value"]

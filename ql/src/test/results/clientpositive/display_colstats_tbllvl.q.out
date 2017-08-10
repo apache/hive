@@ -79,20 +79,20 @@ STAGE PLANS:
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
+                  Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -131,13 +131,13 @@ STAGE PLANS:
                 aggregations: compute_stats(sourceip, 'hll'), compute_stats(avgtimeonsite, 'hll'), compute_stats(adrevenue, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1408 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1288 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
-                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>)
+                  value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>)
                   auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -196,20 +196,20 @@ STAGE PLANS:
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1320 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
                   columns _col0,_col1,_col2
-                  columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>:struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:string>
+                  columns.types struct<columntype:string,maxlength:bigint,avglength:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>:struct<columntype:string,min:double,max:double,countnulls:bigint,numdistinctvalues:bigint,ndvbitvector:binary>
                   escape.delim \
                   hive.serialization.extend.additional.nesting.levels true
                   serialization.escape.crlf true
@@ -244,11 +244,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	SExM4Dc3wbjRG8DNgg/A1YwYwNiYDsCVzwXBzLkCgOc1v9LCJcG2rAK/65wVwYL2Br/zjxnBze8M	 
-wMiBIMDE/DG/n50HwcqyAoCXmQi/0KAPgMSxIIGKsRi/oqUSwKD9F4DuAYH72Rn/48sWgLP+EMGB	 	 	 	 	 	 	 	 	 	 	 
-wgS/28MZwPT9KsGGrwuAluEFv+ngDYGoqgT/09AOgLCEBYHVvg6/l78rgevVFMD77Q+AkZ0I/7Wz	 	 	 	 	 	 	 	 	 	 	 
-AoOimAj+mLMJwdPMCL7P1BvC9sIM/+puv4W+A4KWxlP+nsMpwYbnCf+4qyHCnJgXgPenMA==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
@@ -258,8 +254,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	SExM4AkJwZn6L4TaxBi8u6xigOL3TMCSiwHBrsJOwKr8Df+Es+QBgPyEtwI=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+avgTimeOnSite       	int                 	1                   	9                   	0                   	9                   	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
@@ -269,11 +264,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	SExM4Dc3gb3HC8Lswyq+hbYCgOOKIoHH7AKA4u4D/73OA4DH6QnA8ZIbhaSXBv/e/xf9jo4JgJ2b	 
-Av/htwrBsJ4ZwZugD//O6wbB6qcFvoW+E4DW+wyA8/gCgK6GD4HIuhD/pccFgIXqAsCl/wyAv+QK	 	 	 	 	 	 	 	 	 	 	 
-wNq4HYLrrB++s5sIgOWzPoSMlA/83cMVwdy8PYCjhwL/3LIWxOm7JPye8w/A/O0VwNjgBIDOiRHA	 	 	 	 	 	 	 	 	 	 	 
-86ELwJ/+AYCr1QzA7YUQgO2gEcDZEIDK6EPAo+kOg4HxCv3ZkSmBrLlRgd6IA/6lwROAlYAL	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	55                  	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
@@ -330,20 +321,20 @@ STAGE PLANS:
                 aggregations: compute_stats(a, 'hll'), compute_stats(b, 'hll'), compute_stats(c, 'hll'), compute_stats(d, 'hll'), compute_stats(e, 'hll')
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 1968 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1848 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 1968 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:string>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:string>), _col3 (type: struct<columntype:string,counttrues:bigint,countfalses:bigint,countnulls:bigint>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint>)
+                  Statistics: Num rows: 1 Data size: 1848 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:double,max:double,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,counttrues:bigint,countfalses:bigint,countnulls:bigint>), _col4 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint>)
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2), compute_stats(VALUE._col3), compute_stats(VALUE._col4)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 1880 Basic stats: COMPLETE Column stats: NONE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -480,11 +471,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	SExM4Dc3wbjRG8DNgg/A1YwYwNiYDsCVzwXBzLkCgOc1v9LCJcG2rAK/65wVwYL2Br/zjxnBze8M	 
-wMiBIMDE/DG/n50HwcqyAoCXmQi/0KAPgMSxIIGKsRi/oqUSwKD9F4DuAYH72Rn/48sWgLP+EMGB	 	 	 	 	 	 	 	 	 	 	 
-wgS/28MZwPT9KsGGrwuAluEFv+ngDYGoqgT/09AOgLCEBYHVvg6/l78rgevVFMD77Q+AkZ0I/7Wz	 	 	 	 	 	 	 	 	 	 	 
-AoOimAj+mLMJwdPMCL7P1BvC9sIM/+puv4W+A4KWxlP+nsMpwYbnCf+4qyHCnJgXgPenMA==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+sourceIP            	string              	                    	                    	0                   	55                  	12.763636363636364  	13                  	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
 PREHOOK: type: QUERY
@@ -510,11 +497,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	SExM4DY2gavGA8LX6ha/63i/4NIZgP/NA8Hmxi7D8X68yu4JwKnuAYKBvg6+/cIOwO2NH4D7xCeA	 
-+Q7Al64DwLnLC8Gi2Rj/p8wIwrK2LoGP3w2B/p4EvoGCEsDMiCi+xtAqwJ/3BITmuRb8sqcLgIPr	 	 	 	 	 	 	 	 	 	 	 
-aYC3txTA4/MHgN7cBICm/g3Bx13AiJMOwI79Bb+wjQLAm7oEgJnWH4LUzgL/4PYagKCOBoLi+yC9	 	 	 	 	 	 	 	 	 	 	 
-x84VgK/tGcKxyAL+6NULwcKYE8KzmD/F7/IDuK6yFoT3wgG9m5UJv9WvIcDC5DA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
@@ -524,9 +507,5 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	SExM4DY2gavGA8LX6ha/63i/4NIZgP/NA8Hmxi7D8X68yu4JwKnuAYKBvg6+/cIOwO2NH4D7xCeA	 
-+Q7Al64DwLnLC8Gi2Rj/p8wIwrK2LoGP3w2B/p4EvoGCEsDMiCi+xtAqwJ/3BITmuRb8sqcLgIPr	 	 	 	 	 	 	 	 	 	 	 
-aYC3txTA4/MHgN7cBICm/g3Bx13AiJMOwI79Bb+wjQLAm7oEgJnWH4LUzgL/4PYagKCOBoLi+yC9	 	 	 	 	 	 	 	 	 	 	 
-x84VgK/tGcKxyAL+6NULwcKYE8KzmD/F7/IDuK6yFoT3wgG9m5UJv9WvIcDC5DA=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+sKeyword            	string              	                    	                    	0                   	54                  	7.872727272727273   	19                  	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

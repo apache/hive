@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -35,14 +33,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -55,6 +53,8 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ColumnStatsUpdateTask implementation. For example, ALTER TABLE src_stat
@@ -101,7 +101,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
     if (columnType.equalsIgnoreCase("long") || columnType.equalsIgnoreCase("tinyint")
         || columnType.equalsIgnoreCase("smallint") || columnType.equalsIgnoreCase("int")
         || columnType.equalsIgnoreCase("bigint") || columnType.equalsIgnoreCase("timestamp")) {
-      LongColumnStatsData longStats = new LongColumnStatsData();
+      LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
       longStats.setLowValueIsSet(false);
@@ -125,7 +125,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       statsData.setLongStats(longStats);
       statsObj.setStatsData(statsData);
     } else if (columnType.equalsIgnoreCase("double") || columnType.equalsIgnoreCase("float")) {
-      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+      DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
       doubleStats.setNumNullsIsSet(false);
       doubleStats.setNumDVsIsSet(false);
       doubleStats.setLowValueIsSet(false);
@@ -150,7 +150,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       statsObj.setStatsData(statsData);
     } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
               || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
-      StringColumnStatsData stringStats = new StringColumnStatsData();
+      StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
       stringStats.setMaxColLenIsSet(false);
       stringStats.setAvgColLenIsSet(false);
       stringStats.setNumNullsIsSet(false);
@@ -216,7 +216,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       statsData.setBinaryStats(binaryStats);
       statsObj.setStatsData(statsData);
     } else if (columnType.toLowerCase().startsWith("decimal")) { //decimal(a,b) type
-      DecimalColumnStatsData decimalStats = new DecimalColumnStatsData();
+      DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNullsIsSet(false);
       decimalStats.setNumDVsIsSet(false);
       decimalStats.setLowValueIsSet(false);
@@ -244,7 +244,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       statsData.setDecimalStats(decimalStats);
       statsObj.setStatsData(statsData);
     } else if (columnType.equalsIgnoreCase("date")) {
-      DateColumnStatsData dateStats = new DateColumnStatsData();
+      DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {
         String fName = entry.getKey();

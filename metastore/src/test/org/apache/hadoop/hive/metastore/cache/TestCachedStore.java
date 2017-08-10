@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
-import org.apache.hadoop.hive.common.ndv.hll.HyperLogLogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -37,14 +36,14 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -435,7 +434,7 @@ public class TestCachedStore {
     // Col1
     ColumnStatisticsData data1 = new ColumnStatisticsData();
     ColumnStatisticsObj col1Stats = new ColumnStatisticsObj(col1.getName(), col1.getType(), data1);
-    LongColumnStatsData longStats = new LongColumnStatsData();
+    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
     longStats.setLowValue(col1LowVal);
     longStats.setHighValue(col1HighVal);
     longStats.setNumNulls(col1Nulls);
@@ -446,7 +445,7 @@ public class TestCachedStore {
     // Col2
     ColumnStatisticsData data2 = new ColumnStatisticsData();
     ColumnStatisticsObj col2Stats = new ColumnStatisticsObj(col2.getName(), col2.getType(), data2);
-    StringColumnStatsData stringStats = new StringColumnStatsData();
+    StringColumnStatsDataInspector stringStats = new StringColumnStatsDataInspector();
     stringStats.setMaxColLen(col2MaxColLen);
     stringStats.setAvgColLen(col2AvgColLen);
     stringStats.setNumNulls(col2Nulls);
@@ -718,7 +717,7 @@ public class TestCachedStore {
 
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
-    LongColumnStatsData longStats = new LongColumnStatsData();
+    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
     longStats.setLowValue(0);
     longStats.setHighValue(100);
     longStats.setNumNulls(50);
@@ -784,7 +783,7 @@ public class TestCachedStore {
     
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
-    LongColumnStatsData longStats = new LongColumnStatsData();
+    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
     longStats.setLowValue(0);
     longStats.setHighValue(100);
     longStats.setNumNulls(50);
@@ -854,7 +853,7 @@ public class TestCachedStore {
     
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
-    LongColumnStatsData longStats = new LongColumnStatsData();
+    LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
     longStats.setLowValue(0);
     longStats.setHighValue(100);
     longStats.setNumNulls(50);

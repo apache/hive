@@ -255,7 +255,7 @@ Stage-3
         Stage-0
           Reducer 2
           File Output Operator [FS_5]
-            Group By Operator [GBY_3] (rows=1/1 width=960)
+            Group By Operator [GBY_3] (rows=1/1 width=880)
               Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')"]
             <-Map 1 [CUSTOM_SIMPLE_EDGE]
               PARTITION_ONLY_SHUFFLE [RS_2]

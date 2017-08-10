@@ -28,9 +28,9 @@ public interface NumDistinctValueEstimator {
 
   public void reset();
 
-  public String serialize();
+  public byte[] serialize();
   
-  public NumDistinctValueEstimator deserialize(String s);
+  public NumDistinctValueEstimator deserialize(byte[] buf);
 
   public void addToEstimator(long v);
 

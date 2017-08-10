@@ -24,11 +24,11 @@ import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData._Fields;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 
 public class ColumnStatsAggregatorFactory {
 
@@ -79,19 +79,19 @@ public class ColumnStatsAggregatorFactory {
       break;
 
     case LONG_STATS:
-      csd.setLongStats(new LongColumnStatsData());
+      csd.setLongStats(new LongColumnStatsDataInspector());
       break;
 
     case DATE_STATS:
-      csd.setDateStats(new DateColumnStatsData());
+      csd.setDateStats(new DateColumnStatsDataInspector());
       break;
 
     case DOUBLE_STATS:
-      csd.setDoubleStats(new DoubleColumnStatsData());
+      csd.setDoubleStats(new DoubleColumnStatsDataInspector());
       break;
 
     case STRING_STATS:
-      csd.setStringStats(new StringColumnStatsData());
+      csd.setStringStats(new StringColumnStatsDataInspector());
       break;
 
     case BINARY_STATS:
@@ -99,7 +99,7 @@ public class ColumnStatsAggregatorFactory {
       break;
 
     case DECIMAL_STATS:
-      csd.setDecimalStats(new DecimalColumnStatsData());
+      csd.setDecimalStats(new DecimalColumnStatsDataInspector());
       break;
 
     default:

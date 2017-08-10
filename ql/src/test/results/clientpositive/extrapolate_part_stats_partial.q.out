@@ -91,8 +91,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	SExM4AMDgaTbFcD8mOYCwMOJoQQ=	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
@@ -101,8 +100,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	SExM4AYGhJ2RPL68foHA90C/kJJjgJX39QKAwfg7	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state from loc_orc_1d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state from loc_orc_1d

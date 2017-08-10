@@ -304,9 +304,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	int                 	27                  	484                 	0                   	20                  	                    	                    	                    	                    	SExM4BQUwv+PD4DTryqAhvQHgJzgE8DtpQL/wqEPx9SoWfm94QmAqJgmgbCHgwG/0+MHwJKHG4De	 
-jWeClaYVvr3WP8H6iQHDxpxl/uvvWb7ssz2AsKk6	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	27                  	484                 	0                   	20                  	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
@@ -315,9 +313,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	20                  	6.766666666666667   	7                   	                    	                    	SExM4BQUwcbsKcCnjhjArvYEgZ2yHMC03h2A4LIS/4KtDMCv7BbAz6JGgejDCP+AlzSA84UvwYTL	 
-WsDygtQBv5uoWIKExaYBvt/WIoK4tQG/vpwPv72sGg==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	20                  	6.766666666666667   	7                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum tint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum

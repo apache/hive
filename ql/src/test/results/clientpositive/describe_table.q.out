@@ -212,28 +212,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
-wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
-wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
-mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
-CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
-ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
-iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
-BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
-w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
-CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
-wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
-yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
-gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
-3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
-CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
-2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
-+MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
-z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
-A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
-1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
-BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
@@ -325,28 +304,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
-wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
-wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
-mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
-CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
-ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
-iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
-BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
-w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
-CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
-wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
-yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
-gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
-3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
-CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
-2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
-+MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
-z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
-A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
-1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
-BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE

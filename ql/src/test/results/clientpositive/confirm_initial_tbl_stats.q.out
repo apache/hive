@@ -16,28 +16,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
-wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
-wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
-mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
-CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
-ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
-iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
-BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
-w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
-CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
-wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
-yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
-gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
-3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
-CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
-2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
-+MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
-z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
-A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
-1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
-BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended src1
 PREHOOK: type: DESCTABLE
@@ -57,9 +36,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	19                  	4.92                	7                   	                    	                    	SExM4BMTgaTbFcCikRTAp44YwK72BIGdshzAtN4dgfC7Ab6ikDTAz6JGgejDCP+AlzSA84UvwYTL	 
-Wr+ivynA6+uCAsDjm8kBgri1Ab++nA+/vawa	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	19                  	4.92                	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended src_json
 PREHOOK: type: DESCTABLE
@@ -78,8 +55,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_json
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-json                	string              	                    	                    	0                   	1                   	644.0               	644                 	                    	                    	SExM4AEBhZK/6AY=	 
-  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+json                	string              	                    	                    	0                   	1                   	644.0               	644                 	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"json\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended src_sequencefile
 PREHOOK: type: DESCTABLE
@@ -99,28 +75,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_sequencefile
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
-A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
-r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
-gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
-wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
-gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
-xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
-sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
-wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
-gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
-BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
-nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
-v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
-/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
-ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
-fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
-tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
-KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
-sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
-zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
-A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended srcbucket
 PREHOOK: type: DESCTABLE
@@ -140,35 +95,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcbucket
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	430                 	6.802               	7                   	                    	                    	SExM4K4DrgPM7Sz2soMHgPgNw751/KEegclIgPbqBb/h5wOAnfoBgsWzBb7bTcD0a4CqkQPA7mKB	 
-osYB/6nkAcHVGcHekwOA7wS/u44D/7c4wJvkAYLQxAL/7acDgLXtAb/E0QOB1IQGwKwcv76qAsCV	 	 	 	 	 	 	 	 	 	 	 
-swLAzlqA4JsEgcNMv9SGCcDHgAWC2Ei+18ACwLCLBcCdmAGBuSGAhBmFr5AB+tCzAcGDswGC8n39	 	 	 	 	 	 	 	 	 	 	 
-6cQDwPDhA8GT1AG/klbAwtYBgvP0Av7EB4GRvQL/0voFgeMggv1uwFj9i2iC06gBgJQH/rXFAYGC	 	 	 	 	 	 	 	 	 	 	 
-lwGAijqB5oEB/5DfDP+2RYGo0gP/qKUGgNqHBoKL0AK+3BaA7gvBwq0Ev4j7BcLbmQG+8sQFgLx/	 	 	 	 	 	 	 	 	 	 	 
-gIXzAYDdjQHC5rIC/+OKAf/vRsD+BsK12AK+3iDCj6cDwcuXAoC1Bb6hYL+52ATAhvEDgKkLgPWj	 	 	 	 	 	 	 	 	 	 	 
-AoDJ9wSCiY0B/o/EBID8iALB/12/4poGwL4Sw7JgvdijAcHnqgP/obsCw4ZzveelAYKYVb7VSoCo	 	 	 	 	 	 	 	 	 	 	 
-/wHA6VjAjJgBwfSUAoD3PMPPygKAsBeAwxO84LoCgYc9v5mVAcDaLsH7kALA+SH/wdQCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
-xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7+rASAzogCgfKyAv/esgHA5SKAog3BlS6/4ckE	 	 	 	 	 	 	 	 	 	 	 
-wJYOgsI1/qWdAYCxlQPAndwBwPaSAoPN3gH9oMcFgaefAcHzlwP/xdQCv45EwK+ZDMCAmAGBkA+/	 	 	 	 	 	 	 	 	 	 	 
-xOUEgZXHAcGHzgT+hdkBw4QvvqmlA/+0mAGA5qwDw7Mkv7edBv6CpgLAj/sCwIV1gf2zBoSuiAH7	 	 	 	 	 	 	 	 	 	 	 
-pMMDwvHQAv69yQOC1Ez+wbkCgIngA4Hy3Aa/6LgBwIUMwK1XgIilBsCX9grBvakCv6m4AYGp7wKB	 	 	 	 	 	 	 	 	 	 	 
-nni/1fkE/98ogNojgJTZBoCWkwTAkPUCgablA/+ApwPA2JoCh8K0AbmZqQKB5kCB9fcCv5bvBMGd	 	 	 	 	 	 	 	 	 	 	 
-gQP+0F2AvpQEgeChCr/m1AjA5pEBgMWAA8D42wLCwMkB/oMgwYTTBIC0jAT/oD2CvK4C/rQ5gMym	 	 	 	 	 	 	 	 	 	 	 
-BcPGyQS+1XTDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8ClnALCsOIC/s2t	 	 	 	 	 	 	 	 	 	 	 
-Af/JsQLAmWCA+akCgrq2A77LxgPBpc4Hv9urBMKGxAT/3o4B/6abB8CL+wTA4qcKgeqxAcDugwK/	 	 	 	 	 	 	 	 	 	 	 
-nLICgsOsAv7NyQHA/f4CwOKFA4DygQKA7IwFgIiYAoC23QGAuR3B+yHAqQ6/xRWBm9EBhPaFAby9	 	 	 	 	 	 	 	 	 	 	 
-jgO/rbwEwuDXBr7HtAHA+1HAsxfAy6IDhMahBLyaSIHHSf+RyQGAjkvAtxrAt5oDwsiOA4CiDb6m	 	 	 	 	 	 	 	 	 	 	 
-0gHCt8kCv81ww8V+vseFCsKclgb+5/AB/pWuB8LwUr+u6gKB8Z8BvqwYwOqBAYSbVPzW2QKC8osD	 	 	 	 	 	 	 	 	 	 	 
-/v7KA8D+eYC5A8GYygLEpZQLu/fNAoDIasPXG8DAOL3ZNYGhF8Cj9gWCl4IB/YFvgeecCIHegAH/	 	 	 	 	 	 	 	 	 	 	 
-mosB/6lchIQe/qP+BYChKv6SigGAjH3AtakDg78k/frBAYHGygHA8uQB/8LtAYGulAK/3tcDwZ7H	 	 	 	 	 	 	 	 	 	 	 
-Ar/UvgWB6Sz/4OICwfyQAf/X9wWBvx+AowGAxY8CgY5j/rVegekTgMQ4v7ApwIryAsDSmQGB+JkD	 	 	 	 	 	 	 	 	 	 	 
-xcCxAfqrngKA7O0CgKgZhLXJAsCEDP3qS//G5ATBiqQDgcGkAcDijQT+w44BgMCUCMD+HcCY/QHB	 	 	 	 	 	 	 	 	 	 	 
-togBgM8pgrZ3gNMTvuRLv6JgwpJC/sHNAcK0uQL+vzSA45YEwfqvAoDG/AH/4rwDgrfRA77HpwaB	 	 	 	 	 	 	 	 	 	 	 
-2Ee/mMcHgafGAr+mzwfBs6sCwdpvgO8X/qq9CIGNpAL/uT+ApoACwIifCoDZBoKwRv62hALA7YcE	 	 	 	 	 	 	 	 	 	 	 
-gKF2go9LgKqIBL6u4gSB6UWFxmr6+kHByq8O/8TAAcTpsQeA9hv87TuCuLUBv/eKAYCX+AHAhQ7/	 	 	 	 	 	 	 	 	 	 	 
-/8kBws2sA8GtgQK+r5MFwfjTBL7DQMGH1gLA1YECgoGcCf2WF8Dc7QKC9/wC/riiAcHXngPDmI8B	 	 	 	 	 	 	 	 	 	 	 
-/JhghYepB7zEpgP/hReD5z29musBgYCDAYDUF8DgkwbA5vUBv5Ye	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	430                 	6.802               	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended srcbucket2
 PREHOOK: type: DESCTABLE
@@ -188,28 +115,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcbucket2
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	SExM4LUCtQLM7Sz2qpEHw751/KEegclIgPbqBb/+4QWCxbMFvttNwJ79A8DuYoDMqgOCtK0Dv6qT	 
-A/+3OMCb5AGBvuwFgLXtAb/E0QOB1IQGwKwc/9PdBMCu9gSBw0y/1IYJwKeVDcCdmAGBuSGAhBmF	 	 	 	 	 	 	 	 	 	 	 
-r5AB+tCzAcGDswGC8n292qYHwZPUAb+SVsDC1gGAuPwCgZG9Av/S+gXDuJAB//KXAv61xQGBgpcB	 	 	 	 	 	 	 	 	 	 	 
-gIo6geaBAf+Q3wz/tkWBqNID/6ilBoDahwbA1fICwcKtBIHklAe+8sQFgLx/gIXzAcLDwAP+09EB	 	 	 	 	 	 	 	 	 	 	 
-wP4GwrXYAoDuxwPBy5cCgLUF/dq4BcCkoAaAyfcEgJnRBYD8iAKA4vgGwL4SgIuEAsHnqgP/obsC	 	 	 	 	 	 	 	 	 	 	 
-gO6YAoKYVb7VSsCR2ALAjJgBwfSUAoD3PMP/4QKAwxO84LoCwKDSAcDaLsH7kAK/u/YCgLf0AYH6	 	 	 	 	 	 	 	 	 	 	 
-xwGA1c8Bg7KxAf3Wcf+9pgKA4X+FseMDvZb8Ab7MtQaA0eUDwOUigKINwZUuv+HJBMCWDoLCNf7W	 	 	 	 	 	 	 	 	 	 	 
-sgSAlO8DgO6lB8KatwT/xdQCv45EgcDADb/E5QTCnJUG/7OtBf+0mAHDmdEDv7edBv6CpgLAj/sC	 	 	 	 	 	 	 	 	 	 	 
-wIV1gf2zBv/SywTC8dAC/r3JA4LUTP7BuQKAieADgfLcBr/ouAGAs2OAiKUGwJf2CoGQ0Qa/05oG	 	 	 	 	 	 	 	 	 	 	 
-gNojgJTZBoCWkwTAt4EKx5rPA7mZqQKB5kCB9fcCgLTwB/6O8gTAxvYSwOaRAYDFgAPA+NsCgcm8	 	 	 	 	 	 	 	 	 	 	 
-BoC0jASB3esC/oDgBYGcvgXDteICwKoK/MZMgoXCAcCl4gO/m3q/3VKBs84BgY9kgMeyBL/zR8Cl	 	 	 	 	 	 	 	 	 	 	 
-nALCsOIC/s2tAf/JsQLAmWCA+akCgrq2A//wlAu/26sEwobEBP/ejgG/spYMwOKnCoHqsQHA7oMC	 	 	 	 	 	 	 	 	 	 	 
-v62oBoDghAaA8oECgPSkB4Dv+gHB+yHAqQ6/xRWBm9EBhPaFAby9jgO/1cgMgK9pwMuiA8C5/AaA	 	 	 	 	 	 	 	 	 	 	 
-/f8DwsiOA4CiDYDemwS/zXDDxX6+x4UKwpyWBv7n8AH+la4HwvBSv67qAr+duAHA3K8EgvKLA/7+	 	 	 	 	 	 	 	 	 	 	 
-ygPA/nmAuQOFvt4Nu7+4A8PXG/2ZboGhF8K6+Ab+6IsJgd6AAf+aiwH/qVyEhB7+o/4F/rO0AYCM	 	 	 	 	 	 	 	 	 	 	 
-fcC1qQOAuuYBgcbKAcDy5AH/wu0Bga6UAr/e1wPBnscCv9S+BYDKjwPB/JABgJeXBoCjAYHT8gL+	 	 	 	 	 	 	 	 	 	 	 
-tV6B6RO/9GGB1aUHxcCxAfqrngKAlIcDhLXJAr3vV//G5ATBiqQDgcGkAcDijQS+gsEJgc+FA4DP	 	 	 	 	 	 	 	 	 	 	 
-KYKJiwH9hqwBwpJC/sHNAYHStAmB4IoJvsenBoHYR8CZiBTB2m/+mdUIgY2kAv+5P8CunwyA2QaC	 	 	 	 	 	 	 	 	 	 	 
-sEb+toQCwp3JBYCqiAS+ruIEhq+wAfr6QcHKrw7/xMABxN/NB/ztO4K4tQG/94oBgJf4Ab+F2AHC	 	 	 	 	 	 	 	 	 	 	 
-zawDwa2BAr6vkwX/u5QFwYfWAsDVgQKCgZwJ/ZYXwNztAoL3/AL+uKIBwdeeA8OYjwGBoIkIvMSm	 	 	 	 	 	 	 	 	 	 	 
-A/+FF4PnPb6a7gKA1BfA4JMGwOb1Ab+WHg==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe extended srcpart
 PREHOOK: type: DESCTABLE
@@ -237,28 +143,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	SExM4LUCtQLBoliC580Fv5Nq/8NRwJtoxdPYB/yjmAO/kokBgcjcBMHblgH/lecCgMn9AcC78gm/	 
-wzeA/BHB6MgH/5KjAsKL1QqAge0D/obCAoCvMMGIDoDPDr/ovgSAn6ALgL7TEMGr8wX/6xnAuqgF	 	 	 	 	 	 	 	 	 	 	 
-wcgagNoPwY+GAf7ouATEjJwBvIfKAoGetgS/ysoIwN4dwMHtA8DAnQmB7TWBspEFv+7uBMGB4wL+	 	 	 	 	 	 	 	 	 	 	 
-mmvAqtEBgrrQAYGlkQb9j1CBuYcE/5VDgNciweGkA4Hf9wS+ws4BgPdxgJr/BcCctQOB2rQD/+LE	 	 	 	 	 	 	 	 	 	 	 
-CMDf/QHAklbAxaoBgP7gA4Gu1weBx4YB/remBMHjToDh2wH/+sEHwMqxA8DvyATBrUj/7ecCgP0H	 	 	 	 	 	 	 	 	 	 	 
-ifmTBIC8FriHfv/5pArAlSzAnIoBwJ/bAsXdU7v+0g7ArvQBgOX+AoD5+hPA/4oHgK3rAcCWB4D+	 	 	 	 	 	 	 	 	 	 	 
-iwSA/soDgu71Ab68MYD/gQKAh+ECwN6xBMCTYoSh4AO9nESArIcGwYmeA/7TpAWBncQDwthzvrb9	 	 	 	 	 	 	 	 	 	 	 
-BIG2hQG+lbgIgan2DP/2R4Cu1giAlJcDg7UU/ZBfgchL/4O8AsDO8gKBodUGwMTcA8OKggP88sYD	 	 	 	 	 	 	 	 	 	 	 
-w9tCvr+CA7/W3QfE05wB/dWUCcCa2QmBsY4HgrD3BbzCwguAih3B67gD/9zeAYX0twf7048HwLKS	 	 	 	 	 	 	 	 	 	 	 
-CICJC8GyrgGB0akBvr2mAcDP8QGA0/ECwMScA4GXrAGBpokFgKgKwNSHBP7sMIDfkAbBpzy/pdcK	 	 	 	 	 	 	 	 	 	 	 
-wLnfAYLeKP6R5wLCssoBv8JY/7IvwNEMgq+7AsDQH/6VwAGA8nXCisoBvvevAoH4PMKOqAO+lnj/	 	 	 	 	 	 	 	 	 	 	 
-yjnCwzL/7IADv/8jhK28Brzx1wGCmk6/0t0CgIyaAv/CnwXAzZ0BwJadA4GCKcC53AG/sUCBhs8J	 	 	 	 	 	 	 	 	 	 	 
-gZmRAb6zwwSBgLYGweuIAb+tbsH6gwPAngH+ysQBhLxh/NihAsGYswS/l8MKgtFX/u6jA8XB6AL8	 	 	 	 	 	 	 	 	 	 	 
-3tAC/5TDBMHMvgG/0NICwO79BYS82Qa8oMQBwPqBBcHhI//N2RLAitsEgJnuBcD+qAXA/t0FwJ32	 	 	 	 	 	 	 	 	 	 	 
-CoDBrAHDlSD9ltIDwMieBIC26QLBzZkGgbecAYCvCf+Xgwn/40+JgRX3xNcBwIkLweaQAYDuggKB	 	 	 	 	 	 	 	 	 	 	 
-2okBwPESvtvPBsHxpQL/ucsCwIeJA8CjBoH6SP+UnwKCw8IGv7mcBYHtywKChYICvKDpAsDx5gHC	 	 	 	 	 	 	 	 	 	 	 
-+MIF/sDeBYCh1ALA+poCwYygCL+TTITO3AK9weMEwf+fAb/V5AKApKMGg8Fg/J9OwfnNCv/pkgLC	 	 	 	 	 	 	 	 	 	 	 
-z+gEvt+XA4CqlgGAlOQDgIaICYGmzAGCiYUHv96HBv/njQHEzfsEv9LuB7zk1gPD4RiDo/UDu5qr	 	 	 	 	 	 	 	 	 	 	 
-A//IIcDDHsCwDYDozwLEq9EBvZp1gLwawJaGAv/JwAPC/JcDvqvcAcG1ugODzpMBvZfmAoDWB//s	 	 	 	 	 	 	 	 	 	 	 
-1wKHzaYCucW2BcL9uQT/+aMB/+WtAsKPN7+sdsTghAG7t6kEwNw+wKLUAsCDIIHcjwGAqpACgM36	 	 	 	 	 	 	 	 	 	 	 
-BcC//AOAtLEEgMbwAf+mwQiAqfgH	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe extended alltypesorc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@alltypesorc
@@ -287,16 +172,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alltypesorc
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-ctinyint            	tinyint             	-64                 	62                  	3115                	127                 	                    	                    	                    	                    	SExM4H9/wffjBsSrxgHA1wz9+IYHg+DQCP3JihW/hsoBwPWWAcCpzQaAka8Nguq/AsK1iAL87ZUO	 
-gJNyw+PsDL27kQLAhqMCwurIAb6YtwuCsqkM/uPMAoHrwgqAxvIFv4+0BsPOQb6yowG/ur4Nx8qY	 	 	 	 	 	 	 	 	 	 	 
-FbyohgT+yXaA6b0C/8ydAYCV8gKA2pQswJKLAYGJLP/rxgKAk/YDhfPdELvbjQTB5+wEv5WXE8Ch	 	 	 	 	 	 	 	 	 	 	 
-lAuHqL8IupGWB4O/f76/iwK+iKEJwaPQAf+XygGCnp4fv/WnBcCSzg/AgSSBieICv7yhBb/FvwnC	 	 	 	 	 	 	 	 	 	 	 
-oMIVv+uBKYWN+wT6/KIGxLiuAf3/uAPCqdEIvabTBYHXviP//KQEgKuDCcGV3Ai/h7wGwdqmA4DO	 	 	 	 	 	 	 	 	 	 	 
-pwaB1+kGgJuiFP6GugLB6sYcgNvQAb+vZMHalQX/jPYBgaebAoCHiwj/8NQIgeajCb+mUYHomgGA	 	 	 	 	 	 	 	 	 	 	 
-uLEa/+yOBoTZwAK8pmPAwvUCgNSdB4SjmgW86+QGgZWyAsLt0wL/26AG/9OGDf+a0QSCvZgGvp/J	 	 	 	 	 	 	 	 	 	 	 
-AYKB0AK+4ZoFwMqsA8CF8QqAy5cCgMjKDoDasB7A3/wYgoa7BP6VxASCvrwD/p2zAoGivgLAhPwX	 	 	 	 	 	 	 	 	 	 	 
-/+7aD8Hztw7AkIsE/8CDC4GHyxT/zd0EwaXNBcCM4hP/qMsBgaClAr+48AbCqqEI	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+ctinyint            	tinyint             	-64                 	62                  	3115                	127                 	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted alltypesorc cfloat
 PREHOOK: type: DESCTABLE
@@ -306,17 +182,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alltypesorc
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-cfloat              	float               	-64.0               	79.5530014038086    	3115                	131                 	                    	                    	                    	                    	SExM4IMBgwGCipYJ/7xdxIybDoK1gwiAsCS79s8MgIafCsHkghfAg+AHvrH2AYHVhgfDuPwIwIsU	 
-voWVAr/C+AiB5IADvtnDCYC79RPA2PkIwozYBb6JtAGA0owCgJ7bBMLTyQ/+j8UHweetA4C3Nb/e	 	 	 	 	 	 	 	 	 	 	 
-hwaAh7oRwOdSxvHFAvzIpAK+w44ExIbjEb6o7AH/kYodgYKOB//70wy/wdUCwPehFcTdqAX/wuML	 	 	 	 	 	 	 	 	 	 	 
-vY68B4b06QS7m/4GwL3bB7/RxQOB0twCgLoTw5/mAsS/6we59YkDwd2GC8GD7gW9xLgHwdrsA4Wx	 	 	 	 	 	 	 	 	 	 	 
-fP3L7Au9usENgM/tDYLx4Ar+n7MJho+kBPrh2ROAs+4Cwc+0CoKbrAP+2f8Ev8mtFcC6lgWAivUC	 	 	 	 	 	 	 	 	 	 	 
-wKH3B4ff0RH66u0OwM/7C4PflA29yYUBgIyFBIHt3QzB2YsK/aDFEoCT4QPA2bYVwNXRB8Gc0gO/	 	 	 	 	 	 	 	 	 	 	 
-xLcMwea/A8GajwP+q58Cga3hCv/vnwTD0LsE/fvlBoCDb8GBygWC+/oK/oaXBcC+CIOT3wb+wu8B	 	 	 	 	 	 	 	 	 	 	 
-/8j9FMCM9A3/wPgDgqybAb65xAKAm/ICwNErgIbqCsCwiQfAy98IwPumAYTJrwT8i6ECgo/rA4KX	 	 	 	 	 	 	 	 	 	 	 
-3AmA0A/85FDB0qsCgc2RA4Cw6g/+3+EGgZSjEsC/8An/+cwbwvjlBcCv4Qe+8tILwIDhAYGDxgvA	 	 	 	 	 	 	 	 	 	 	 
-q6ECv6q2CQ==	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+cfloat              	float               	-64.0               	79.5530014038086    	3115                	131                 	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted alltypesorc ctimestamp1
 PREHOOK: type: DESCTABLE
@@ -326,10 +192,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@alltypesorc
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
-ctimestamp1         	timestamp           	-30                 	31                  	3115                	35                  	                    	                    	                    	                    	SExM4CMjxdOOGLzQ1BbA9ZYBwKnNBoCRrw3En8gEvKmpLYCSgzWA4vdMwJKLAcGuwk7AqvwNwcjk	 
-OMLQ8Vn9/7gDgKfjMcC9hBa/h7wGwajOCYHyixu+m7FqwML1AoCwmzCAj+odgMuXAoDIyg7Aua03	 	 	 	 	 	 	 	 	 	 	 
-gJz/CIDc7wWBor4Cv/PWJ4GEwxKAyNs9/6jLAYKDtxE=	 	 	 	 	 	 	 	 	 	 	 
-	from deserializer   	 	 	 	 	 	 	 	 	 	 
+ctimestamp1         	timestamp           	-30                 	31                  	3115                	35                  	                    	                    	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted alltypesorc cboolean2
 PREHOOK: type: DESCTABLE

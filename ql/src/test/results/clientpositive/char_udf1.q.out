@@ -406,7 +406,7 @@ from char_udf_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":"Rk0QAAEAAAAIAAAABAAAAAgAAAACAAAAAQAAAAQAAAABAAAAAgAAAAEAAAABAAAAAgAAAAgAAAAE\r\nAAAAAQAAAAgAAAA=\r\n"}	{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":"Rk0QAAEAAAAIAAAABAAAAAgAAAACAAAAAQAAAAQAAAABAAAAAgAAAAEAAAABAAAAAgAAAAgAAAAE\r\nAAAAAQAAAAgAAAA=\r\n"}
+{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":FM                                                 }	{"columntype":"String","maxlength":7,"avglength":7.0,"countnulls":0,"numdistinctvalues":1,"ndvbitvector":FM                                                 }
 PREHOOK: query: select
   min(c2),
   min(c4)

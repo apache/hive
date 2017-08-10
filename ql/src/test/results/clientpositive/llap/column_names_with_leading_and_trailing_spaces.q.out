@@ -69,8 +69,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@space
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
 	 	 	 	 	 	 	 	 	 	 	 
- left               	string              	                    	                    	0                   	1                   	1.0                 	1                   	                    	                    	SExM4AEBxbi8+AQ=	 
-  	from deserializer   	 	 	 	 	 	 	 	 	 	 
+ left               	string              	                    	                    	0                   	1                   	1.0                 	1                   	                    	                    	HL                  	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: select * from space
 PREHOOK: type: QUERY
