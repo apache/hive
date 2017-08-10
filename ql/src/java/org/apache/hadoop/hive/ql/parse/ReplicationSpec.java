@@ -38,7 +38,7 @@ public class ReplicationSpec {
 
   private boolean isInReplicationScope = false; // default is that it's not in a repl scope
   private boolean isMetadataOnly = false; // default is full export/import, not metadata-only
-  private boolean isEventDump = false; // default is replv2 bootstrap dump or replv1 export or import/load.
+  private boolean isIncrementalDump = false; // default is replv2 bootstrap dump or replv1 export or import/load.
   private String eventId = null;
   private String currStateId = null;
   private boolean isNoop = false;
@@ -110,12 +110,12 @@ public class ReplicationSpec {
   }
 
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
-                         boolean isEventDump,
+                         boolean isIncrementalDump,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isLazy, boolean isReplace) {
     this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
-    this.isEventDump = isEventDump;
+    this.isIncrementalDump = isIncrementalDump;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
     this.isNoop = isNoop;
@@ -127,7 +127,7 @@ public class ReplicationSpec {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
     this.isInReplicationScope = false;
     this.isMetadataOnly = false;
-    this.isEventDump = false;
+    this.isIncrementalDump = false;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
@@ -233,14 +233,14 @@ public class ReplicationSpec {
   }
 
   /**
-   * @return true if this statement refers to event dump operation.
+   * @return true if this statement refers to incremental dump operation.
    */
-  public boolean isEventDump(){
-    return isEventDump;
+  public boolean isIncrementalDump(){
+    return isIncrementalDump;
   }
 
-  public void setIsEventDump(boolean isEventDump){
-    this.isEventDump = isEventDump;
+  public void setIsIncrementalDump(boolean isIncrementalDump){
+    this.isIncrementalDump = isIncrementalDump;
   }
 
   /**

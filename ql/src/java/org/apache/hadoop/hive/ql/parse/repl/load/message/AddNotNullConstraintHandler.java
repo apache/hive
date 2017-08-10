@@ -65,8 +65,7 @@ public class AddNotNullConstraintHandler extends AbstractMessageHandler {
     List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
     tasks.add(addConstraintsTask);
     context.log.debug("Added add constrains task : {}:{}", addConstraintsTask.getId(), actualTblName);
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-    tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
     return Collections.singletonList(addConstraintsTask);    
   }
 }

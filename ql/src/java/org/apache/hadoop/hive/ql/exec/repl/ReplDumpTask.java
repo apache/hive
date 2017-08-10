@@ -167,7 +167,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) throws SemanticException {
     ReplicationSpec rspec = getNewReplicationSpec(eventId.toString(), eventId.toString());
-    rspec.setIsEventDump(true);
+    rspec.setIsIncrementalDump(true);
     return rspec;
   }
 

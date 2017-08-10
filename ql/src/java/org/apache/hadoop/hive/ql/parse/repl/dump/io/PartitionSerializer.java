@@ -44,7 +44,7 @@ public class PartitionSerializer implements JsonWriter.Serializer {
       if (additionalPropertiesProvider.isInReplicationScope()) {
         // Current replication state must be set on the Partition object only for bootstrap dump.
         // Event replication State will be null in case of bootstrap dump.
-        if (!additionalPropertiesProvider.isEventDump()) {
+        if (!additionalPropertiesProvider.isIncrementalDump()) {
           partition.putToParameters(
                   ReplicationSpec.KEY.CURR_STATE_ID.toString(),
                   additionalPropertiesProvider.getCurrentReplicationState());

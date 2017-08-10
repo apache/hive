@@ -344,10 +344,8 @@ public class TestReplicationScenarios {
     verifyResults(unptn_data, driverMirror);
     run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", driverMirror);
     verifyResults(ptn_data_1, driverMirror);
-    // Since partition(b=2) changed manually, Hive cannot find
-    // it in original location and cmroot, thus empty
     run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", driverMirror);
-    verifyResults(empty, driverMirror);
+    verifyResults(ptn_data_2, driverMirror);
     run("SELECT a from " + dbName + ".ptned_empty", driverMirror);
     verifyResults(empty, driverMirror);
     run("SELECT * from " + dbName + ".unptned_empty", driverMirror);
@@ -2546,8 +2544,8 @@ public class TestReplicationScenarios {
   @Test
   public void testIncrementalLoadFailAndRetry() throws IOException {
     String testName = "incrementalLoadFailAndRetry";
-    String dbName = createDB(testName);
-    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    String dbName = createDB(testName, driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
 
     // Bootstrap dump/load
     String replDbName = dbName + "_dupe";
@@ -2557,8 +2555,8 @@ public class TestReplicationScenarios {
     String[] ptn_data_1 = new String[] { "incrementalLoadFailAndRetry_fifteen" };
     String[] empty = new String[] {};
 
-    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')");
-    run("CREATE TABLE " + dbName + ".ptned_tmp AS SELECT * FROM " + dbName + ".ptned");
+    run("INSERT INTO TABLE " + dbName + ".ptned PARTITION(b=1) values('" + ptn_data_1[0] + "')", driver);
+    run("CREATE TABLE " + dbName + ".ptned_tmp AS SELECT * FROM " + dbName + ".ptned", driver);
 
     // Move the data files of this newly created partition to a temp location
     Partition ptn = null;
@@ -2576,17 +2574,17 @@ public class TestReplicationScenarios {
     // Replicate all the events happened so far. It should fail as the data files missing in
     // original path and not available in CM as well.
     Tuple incrDump = replDumpDb(dbName, bootstrapDump.lastReplId, null, null);
-    verifyFail("REPL LOAD " + replDbName + " FROM '" + incrDump.dumpLocation + "'");
+    verifyFail("REPL LOAD " + replDbName + " FROM '" + incrDump.dumpLocation + "'", driverMirror);
 
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty);
-    verifyFail("SELECT a from " + replDbName + ".ptned_tmp where (b=1) ORDER BY a");
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", empty, driverMirror);
+    verifyFail("SELECT a from " + replDbName + ".ptned_tmp where (b=1) ORDER BY a", driverMirror);
 
     // Move the files back to original data location
     assert(dataFs.rename(tmpLoc, ptnLoc));
     loadAndVerify(replDbName, incrDump.dumpLocation, incrDump.lastReplId);
 
-    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1);
-    verifyRun("SELECT a from " + replDbName + ".ptned_tmp where (b=1) ORDER BY a", ptn_data_1);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_tmp where (b=1) ORDER BY a", ptn_data_1, driverMirror);
   }
 
   @Test
