@@ -913,7 +913,7 @@ public class TezCompiler extends TaskCompiler {
       GroupByDesc gbDesc = gbOp.getConf();
       ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
       for (AggregationDesc agg : aggregationDescs) {
-        if (agg.getGenericUDAFName() != "bloom_filter") {
+        if (!"bloom_filter".equals(agg.getGenericUDAFName())) {
           continue;
         }
 

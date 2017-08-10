@@ -610,7 +610,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // 2. the alias it serves is not sampled
         // 3. it serves different alias than another path for the same split
         if (l.size() != 1 || !nameToSamples.containsKey(l.get(0)) ||
-            (alias != null && l.get(0) != alias)) {
+            (alias != null && !alias.equals(l.get(0)))) {
           alias = null;
           break;
         }
