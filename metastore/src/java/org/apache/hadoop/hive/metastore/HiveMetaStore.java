@@ -1700,7 +1700,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             transactionalListenerResponses =
                 MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                                                       EventType.DROP_TABLE,
-                                                      new DropTableEvent(tbl, deleteData, true, this),
+                                                      new DropTableEvent(tbl, true, deleteData, this),
                                                       envContext);
           }
           success = ms.commitTransaction();
@@ -1720,7 +1720,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.DROP_TABLE,
-                                                new DropTableEvent(tbl, deleteData, success, this),
+                                                new DropTableEvent(tbl, success, deleteData, this),
                                                 envContext,
                                                 transactionalListenerResponses, ms);
         }
