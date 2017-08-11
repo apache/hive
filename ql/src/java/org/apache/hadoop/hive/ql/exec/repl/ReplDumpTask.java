@@ -236,7 +236,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       TableSpec ts = new TableSpec(db, conf, dbName + "." + tblName, null);
       TableExport.Paths exportPaths =
           new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf);
-      new TableExport(exportPaths, ts, getNewReplicationSpec(), db, conf, LOG).write();
+      String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
+      new TableExport(exportPaths, ts, getNewReplicationSpec(), db, distCpDoAsUser, conf).write();
       REPL_STATE_LOG.info(
           "Repl Dump: Analyzed dump for table/view: {}.{} and dumping metadata and data to path {}",
           dbName, tblName, exportPaths.exportRootDir.toString());

@@ -46,6 +46,7 @@ import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.Paths;
 class PartitionExport {
   private final Paths paths;
   private final PartitionIterable partitionIterable;
+  private final String distCpDoAsUser;
   private final HiveConf hiveConf;
   private final int nThreads;
   private final AuthEntities authEntities;
@@ -53,10 +54,11 @@ class PartitionExport {
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
   private BlockingQueue<Partition> queue;
 
-  PartitionExport(Paths paths, PartitionIterable partitionIterable, HiveConf hiveConf,
-      AuthEntities authEntities) {
+  PartitionExport(Paths paths, PartitionIterable partitionIterable, String distCpDoAsUser,
+                  HiveConf hiveConf, AuthEntities authEntities) {
     this.paths = paths;
     this.partitionIterable = partitionIterable;
+    this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
     this.authEntities = authEntities;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
@@ -101,7 +103,8 @@ class PartitionExport {
         try {
           // this the data copy
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
-          new FileOperations(fromPath, rootDataDumpDir, hiveConf).export(forReplicationSpec);
+          new FileOperations(fromPath, rootDataDumpDir, distCpDoAsUser, hiveConf)
+                  .export(forReplicationSpec);
           authEntities.inputs.add(new ReadEntity(partition));
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
         } catch (Exception e) {
