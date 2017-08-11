@@ -488,16 +488,20 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
     @Override
     public void taskKilled(TezTaskAttemptID taskAttemptId) throws IOException {
       String taskAttemptIdString = taskAttemptId.toString();
-      LOG.error("Task killed - " + taskAttemptIdString);
       LlapTaskUmbilicalExternalClient client = registeredClients.get(taskAttemptIdString);
       if (client != null) {
-        try {
-          client.unregisterClient();
-          if (client.responder != null) {
-            client.responder.taskKilled(taskAttemptId);
+        if (client.requestInfo.state == RequestState.PENDING) {
+          LOG.debug("Ignoring task kill for {}, request is still in pending state", taskAttemptIdString);
+        } else {
+          try {
+            LOG.error("Task killed - " + taskAttemptIdString);
+            client.unregisterClient();
+            if (client.responder != null) {
+              client.responder.taskKilled(taskAttemptId);
+            }
+          } catch (Exception err) {
+            LOG.error("Error during responder execution", err);
           }
-        } catch (Exception err) {
-          LOG.error("Error during responder execution", err);
         }
       } else {
         LOG.info("Received task killed notification for task which is not currently being tracked: " + taskAttemptId);
