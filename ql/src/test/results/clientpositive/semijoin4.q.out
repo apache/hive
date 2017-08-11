@@ -71,7 +71,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((-92 = tinyint_col_46) and decimal1309_col_65 is not null and bigint_col_13 is not null) (type: boolean)
+              predicate: ((-92 = tinyint_col_46) and bigint_col_13 is not null and decimal1309_col_65 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: bigint_col_13 (type: bigint), smallint_col_24 (type: smallint), double_col_60 (type: double), decimal1309_col_65 (type: decimal(13,9))

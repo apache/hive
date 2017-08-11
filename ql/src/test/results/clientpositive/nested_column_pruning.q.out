@@ -930,21 +930,24 @@ STAGE PLANS:
           TableScan
             alias: t1
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: s1.f3.f4 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0.f3.f4 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col0.f3.f4 (type: int)
+              Select Operator
+                expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+                Reduce Output Operator
+                  key expressions: _col0.f3.f4 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0.f3.f4 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (s2.f8.f9 = false) (type: boolean)
+              predicate: ((s2.f8.f9 = false) and s1.f6 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
@@ -1021,21 +1024,24 @@ STAGE PLANS:
           TableScan
             alias: t1
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: s1.f3.f4 is not null (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0.f3.f4 (type: int)
-                sort order: +
-                Map-reduce partition columns: _col0.f3.f4 (type: int)
+              Select Operator
+                expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+                outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+                Reduce Output Operator
+                  key expressions: _col0.f3.f4 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0.f3.f4 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (s2.f8.f9 = true) (type: boolean)
+              predicate: (s2.f8.f9 and s1.f6 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
