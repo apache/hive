@@ -74,6 +74,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
+  private static final String MR_CREDENTIALS_LOCATION_PROPERTY = "mapreduce.job.credentials.binary";
   private static final transient Logger LOG = LoggerFactory.getLogger(RemoteHiveSparkClient.class);
   private static final long MAX_PREWARM_TIME = 5000; // 5s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
@@ -238,7 +239,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
       work.configureJobConf(jobConf);
     }
     addJars(conf.get(MR_JAR_PROPERTY));
-
+    // remove the location of container tokens
+    conf.unset(MR_CREDENTIALS_LOCATION_PROPERTY);
     // add added files
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDFILES, addedFiles);
