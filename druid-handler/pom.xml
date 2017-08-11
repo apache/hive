@@ -324,6 +324,10 @@
                   <pattern>com.google.common</pattern>
                   <shadedPattern>org.apache.hive.druid.com.google.common</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.roaringbitmap</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.roaringbitmap</shadedPattern>
+                </relocation>
               </relocations>
               <artifactSet>
                 <includes>
