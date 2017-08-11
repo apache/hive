@@ -107,21 +107,6 @@
       <version>${derby.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-api-jdo</artifactId>
-      <version>${datanucleus-api-jdo.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-core</artifactId>
-      <version>${datanucleus-core.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-rdbms</artifactId>
-      <version>${datanucleus-rdbms.version}</version>
-    </dependency>
-    <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
       <version>${commons-pool.version}</version>
@@ -135,11 +120,6 @@
       <groupId>javax.jdo</groupId>
       <artifactId>jdo-api</artifactId>
       <version>${jdo-api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>javax.jdo</artifactId>
-      <version>${datanucleus-jdo.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -323,14 +303,6 @@
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/model</directory>
-        <includes>
-          <include>package.jdo</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
@@ -374,24 +346,6 @@
                 <source>src/gen/protobuf/gen-java</source>
               </sources>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.datanucleus</groupId>
-        <artifactId>datanucleus-maven-plugin</artifactId>
-        <configuration>
-          <api>JDO</api>
-          <verbose>true</verbose>
-          <metadataIncludes>**/*.jdo</metadataIncludes>
-          <fork>false</fork>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>enhance</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
