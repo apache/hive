@@ -1058,8 +1058,10 @@ public class TezCompiler extends TaskCompiler {
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
     if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            !procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN)) {
-      // Not needed without semi-join reduction
+            !procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN) ||
+            procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_FOR_MAPJOIN)) {
+      // Not needed without semi-join reduction or mapjoins or when semijoins
+      // are enabled for parallel mapjoins.
       return;
     }
 

@@ -76,7 +76,7 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
 set hive.tez.dynamic.semijoin.reduction=false;
 
--- With Mapjoins.
+-- With Mapjoins, there shouldn't be any semijoin parallel to mapjoin.
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=100000000000;
@@ -86,6 +86,11 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+set hive.tez.dynamic.semijoin.reduction.for.mapjoin=true;
+-- Enable semijoin parallel to mapjoins.
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+set hive.tez.dynamic.semijoin.reduction.for.mapjoin=false;
 set hive.tez.dynamic.semijoin.reduction=false;
 
 -- multiple sources, different  keys
@@ -94,6 +99,11 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+set hive.tez.dynamic.semijoin.reduction.for.mapjoin=true;
+-- Enable semijoin parallel to mapjoins.
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+set hive.tez.dynamic.semijoin.reduction.for.mapjoin=false;
 --set hive.tez.dynamic.semijoin.reduction=false;
 
 -- With unions
