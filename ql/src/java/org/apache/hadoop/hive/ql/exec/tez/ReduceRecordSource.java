@@ -384,7 +384,7 @@ public class ReduceRecordSource implements RecordSource {
   }
 
   /**
-   * 
+   *
    * @param keyWritable
    * @param values
    * @param tag
@@ -470,9 +470,10 @@ public class ReduceRecordSource implements RecordSource {
         rowString = "[Error getting row data with exception "
             + StringUtils.stringifyException(e2) + " ]";
       }
+      l4j.error("Hive Runtime Error while processing vector batch (tag=" + tag
+              + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " + rowString, e);
       throw new HiveException("Hive Runtime Error while processing vector batch (tag="
-          + tag + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " +
-          rowString, e);
+          + tag + ") (vectorizedVertexNum " + vectorizedVertexNum + ")", e);
     }
   }
 
