@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
-/** 
+/**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
  * logical plans for the materialized views at query runtime. When a query arrives, we will
  * just need to consult this cache and extract the logical plans for the views (which had
@@ -358,8 +359,7 @@ public final class HiveMaterializedViewsRegistry {
         return false;
       }
       ViewKey viewKey = (ViewKey) obj;
-      return creationDate == viewKey.creationDate &&
-          (viewName == viewKey.viewName || (viewName != null && viewName.equals(viewKey.viewName)));
+      return creationDate == viewKey.creationDate && Objects.equals(viewName, viewKey.viewName);
     }
 
     @Override

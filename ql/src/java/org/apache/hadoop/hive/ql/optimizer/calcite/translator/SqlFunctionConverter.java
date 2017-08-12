@@ -127,9 +127,9 @@ public class SqlFunctionConverter {
     }
     // Make sure we handle unary + and - correctly.
     if (argsLength == 1) {
-      if (name == "+") {
+      if ("+".equals(name)) {
         name = FunctionRegistry.UNARY_PLUS_FUNC_NAME;
-      } else if (name == "-") {
+      } else if ("-".equals(name)) {
         name = FunctionRegistry.UNARY_MINUS_FUNC_NAME;
       }
     }

@@ -1428,10 +1428,10 @@ public class GenVectorCode extends Task {
     String truncStringTypeName = tdesc[1];
     String truncStringHiveType;
     String truncStringHiveGetBytes;
-    if (truncStringTypeName == "Char") {
+    if ("Char".equals(truncStringTypeName)) {
       truncStringHiveType = "HiveChar";
       truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if (truncStringTypeName == "VarChar") {
+    } else if ("VarChar".equals(truncStringTypeName)) {
       truncStringHiveType = "HiveVarchar";
       truncStringHiveGetBytes = "getValue().getBytes()";
     } else {
@@ -2048,10 +2048,10 @@ public class GenVectorCode extends Task {
     String truncStringTypeName = tdesc[1];
     String truncStringHiveType;
     String truncStringHiveGetBytes;
-    if (truncStringTypeName == "Char") {
+    if ("Char".equals(truncStringTypeName)) {
       truncStringHiveType = "HiveChar";
       truncStringHiveGetBytes = "getStrippedValue().getBytes()";
-    } else if (truncStringTypeName == "VarChar") {
+    } else if ("VarChar".equals(truncStringTypeName)) {
       truncStringHiveType = "HiveVarchar";
       truncStringHiveGetBytes = "getValue().getBytes()";
     } else {

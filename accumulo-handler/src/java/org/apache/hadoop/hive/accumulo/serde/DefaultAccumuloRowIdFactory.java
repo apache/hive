@@ -77,7 +77,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 //    return LazyFactory.createLazyObject(inspector,
 //            ColumnEncoding.BINARY == rowIdMapping.getEncoding());
     return LazyFactory.createLazyObject(inspector,
-        inspector.getTypeName() != TypeInfoFactory.stringTypeInfo.getTypeName()
+            !TypeInfoFactory.stringTypeInfo.getTypeName().equals(inspector.getTypeName())
             && ColumnEncoding.BINARY == rowIdMapping.getEncoding());
   }
 
