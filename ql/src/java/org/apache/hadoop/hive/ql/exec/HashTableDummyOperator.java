@@ -79,10 +79,9 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
 
   @Override
   public boolean equals(Object obj) {
-    return super.equals(obj) || (obj instanceof HashTableDummyOperator)
-        && (((HashTableDummyOperator)obj).operatorId == operatorId);
+    return super.equals(obj) || (obj instanceof HashTableDummyOperator) && ((HashTableDummyOperator)obj).operatorId.equals(operatorId);
   }
-  
+
   @Override
   public int hashCode() {
     return operatorId.hashCode();
