@@ -97,7 +97,7 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
     try {
       thriftFormatter.initialize(conf, tbl);
     } catch (Exception e) {
-      new SerDeException(e);
+      throw new SerDeException(e);
     }
   }
 
