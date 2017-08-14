@@ -346,3 +346,19 @@ NULL	1073418988	-16379	3115	NULL	305051.4870777435
 60	626923679	-13606	23	60.0	8346.267436552042
 61	626923679	-15894	29	61.0	8785.714950987198
 62	626923679	-14307	17	62.0	9491.752726667326
+PREHOOK: query: CREATE TABLE empty_parquet(x int) PARTITIONED BY (y int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_parquet
+POSTHOOK: query: CREATE TABLE empty_parquet(x int) PARTITIONED BY (y int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_parquet
+PREHOOK: query: select * from empty_parquet t1 join empty_parquet t2 where t1.x=t2.x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select * from empty_parquet t1 join empty_parquet t2 where t1.x=t2.x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_parquet
+#### A masked pattern was here ####
