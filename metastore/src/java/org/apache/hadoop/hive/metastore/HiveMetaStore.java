@@ -295,20 +295,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private static ExecutorService threadPool;
 
-    public static final String AUDIT_FORMAT =
-        "ugi=%s\t" + // ugi
-            "ip=%s\t" + // remote IP
-            "cmd=%s\t"; // command
     public static final Logger auditLog = LoggerFactory.getLogger(
         HiveMetaStore.class.getName() + ".audit");
-    private static final ThreadLocal<Formatter> auditFormatter =
-        new ThreadLocal<Formatter>() {
-          @Override
-          protected Formatter initialValue() {
-            return new Formatter(new StringBuilder(AUDIT_FORMAT.length() * 4));
-          }
-        };
-
+    
     private static final void logAuditEvent(String cmd) {
       if (cmd == null) {
         return;
@@ -320,16 +309,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
-      final Formatter fmt = auditFormatter.get();
-      ((StringBuilder) fmt.out()).setLength(0);
 
       String address = getIPAddress();
       if (address == null) {
         address = "unknown-ip-addr";
       }
 
-      auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
-          address, cmd).toString());
+      auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
     }
 
     private static String getIPAddress() {
