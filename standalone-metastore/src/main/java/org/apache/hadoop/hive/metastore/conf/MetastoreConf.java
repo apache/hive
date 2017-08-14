@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -370,7 +371,8 @@ public class MetastoreConf {
     DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
       "hive.cluster.delegation.token.renew-interval", 1, TimeUnit.DAYS, ""),
     DELEGATION_TOKEN_STORE_CLS("metastore.cluster.delegation.token.store.class",
-        "hive.cluster.delegation.token.store.class", "", "Class to store delegation tokens"),
+        "hive.cluster.delegation.token.store.class", MetastoreDelegationTokenManager.class.getName(),
+        "Class to store delegation tokens"),
     DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit",
         "javax.jdo.option.DetachAllOnCommit", true,
         "Detaches all objects from session so that they can be used after transaction is committed"),

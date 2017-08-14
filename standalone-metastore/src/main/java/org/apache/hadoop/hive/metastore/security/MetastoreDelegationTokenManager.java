@@ -123,7 +123,13 @@ public class MetastoreDelegationTokenManager {
   private DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
     String tokenStoreClassName =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS, "");
-    if (StringUtils.isBlank(tokenStoreClassName)) {
+    // The second half of this if is to catch cases where users are passing in a HiveConf for
+    // configuration.  It will have set the default value of
+    // "hive.cluster.delegation.token.store .class" to
+    // "org.apache.hadoop.hive.thrift.MemoryTokenStore" as part of its construction.  But this is
+    // the hive-shims version of the memory store.  We want to convert this to our default value.
+    if (StringUtils.isBlank(tokenStoreClassName) ||
+        "org.apache.hadoop.hive.thrift.MemoryTokenStore".equals(tokenStoreClassName)) {
       return new MemoryTokenStore();
     }
     try {
