@@ -172,7 +172,8 @@ public class TestQueryDisplay {
     StringWriter sw = new StringWriter();
     QueryInfo queryInfo = sessionManager.getOperationManager().getQueryInfo(
       opHandle);
-    new QueryProfileTmpl().render(sw, queryInfo);
+    HiveConf hiveConf = sessionManager.getOperationManager().getHiveConf();
+    new QueryProfileTmpl().render(sw, queryInfo, hiveConf);
     String html = sw.toString();
 
     Assert.assertTrue(html.contains(stmt));
