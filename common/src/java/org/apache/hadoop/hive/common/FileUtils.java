@@ -609,16 +609,6 @@ public final class FileUtils {
     return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
   }
 
-  /**
-   * Copies files between filesystems as a fs super user using distcp, and runs
-   * as a privileged user.
-   */
-  public static boolean privilegedCopy(FileSystem srcFS, List<Path> srcPaths, Path dst,
-      HiveConf conf) throws IOException {
-    String privilegedUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
-    return distCp(srcFS, srcPaths, dst, false, privilegedUser, conf, ShimLoader.getHadoopShims());
-  }
-
   @VisibleForTesting
   static boolean copy(FileSystem srcFS, Path src,
     FileSystem dstFS, Path dst,
