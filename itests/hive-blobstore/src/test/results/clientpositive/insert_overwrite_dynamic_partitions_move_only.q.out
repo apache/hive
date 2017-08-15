@@ -50,6 +50,16 @@ POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=1000
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-10/product_id=10002
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-12/product_id=10001
 POSTHOOK: Output: default@s3_table_move@reported_date=2017-04-12/product_id=10002
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10000).event_name SIMPLE [(tmp_table_move)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10000).user_id SIMPLE [(tmp_table_move)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10001).event_name SIMPLE [(tmp_table_move)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10001).user_id SIMPLE [(tmp_table_move)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10002).event_name SIMPLE [(tmp_table_move)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-10,product_id=10002).user_id SIMPLE [(tmp_table_move)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-12,product_id=10001).event_name SIMPLE [(tmp_table_move)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-12,product_id=10001).user_id SIMPLE [(tmp_table_move)t.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-12,product_id=10002).event_name SIMPLE [(tmp_table_move)t.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: s3_table_move PARTITION(reported_date=2017-04-12,product_id=10002).user_id SIMPLE [(tmp_table_move)t.FieldSchema(name:id, type:string, comment:null), ]
 PREHOOK: query: select * from s3_table_move order by user_id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s3_table_move

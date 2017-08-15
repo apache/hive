@@ -76,8 +76,15 @@ public class LineageState {
     dirToFop.put(dir, fop);
   }
 
+  /**
+   * Update the path of the captured lineage information in case the
+   * conditional input path and the linked MoveWork were merged into one MoveWork.
+   * This should only happen for Blobstore systems with optimization turned on.
+   * @param newPath conditional input path
+   * @param oldPath path of the old linked MoveWork
+   */
   public void updateDirToOpMap(Path newPath, Path oldPath) {
-    Operator op = dirToFop.remove(oldPath);
+    Operator op = dirToFop.get(oldPath);
     if (op != null) {
       dirToFop.put(newPath, op);
     }
