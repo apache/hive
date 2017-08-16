@@ -124,6 +124,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final SchedulerFragmentCompletingListener completionListener;
   private UserGroupInformation fsTaskUgi;
   private final SocketFactory socketFactory;
+  private boolean isGuaranteed;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -133,7 +134,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
                             FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
                             TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
                             UserGroupInformation fsTaskUgi, SchedulerFragmentCompletingListener completionListener,
-                            SocketFactory socketFactory) {
+                            SocketFactory socketFactory, boolean isGuaranteed) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -167,6 +168,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.fsTaskUgi = fsTaskUgi;
     this.completionListener = completionListener;
     this.socketFactory = socketFactory;
+    this.isGuaranteed = isGuaranteed;
   }
 
   public long getStartTime() {
@@ -597,5 +599,13 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   public SignableVertexSpec getVertexSpec() {
     // TODO: support for binary spec? presumably we'd parse it somewhere earlier
     return vertex;
+  }
+
+  public boolean isGuaranteed() {
+    return isGuaranteed;
+  }
+
+  public void setIsGuaranteed(boolean isGuaranteed) {
+    this.isGuaranteed = isGuaranteed;
   }
 }

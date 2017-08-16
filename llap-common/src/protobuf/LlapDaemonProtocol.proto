@@ -129,7 +129,9 @@ message SubmitWorkRequestProto {
 
   // Serialized (and signed) NotTezEvent; used only for external clients for now.
   optional bytes initial_event_bytes = 10;
-  optional bytes initial_event_signature = 11; 
+  optional bytes initial_event_signature = 11;
+
+  optional bool is_guaranteed = 12 [default = false];
 }
 
 
@@ -169,6 +171,17 @@ message TerminateFragmentRequestProto {
 message TerminateFragmentResponseProto {
 }
 
+message UpdateFragmentRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string fragment_identifier_string = 2;
+  optional bool is_guaranteed = 3;
+}
+
+message UpdateFragmentResponseProto {
+  optional bool result = 1;
+  optional bool is_guaranteed = 2;
+}
+
 message GetTokenRequestProto {
   optional string app_id = 1;
 }
@@ -188,6 +201,7 @@ service LlapDaemonProtocol {
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
   rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
   rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
+  rpc updateFragment(UpdateFragmentRequestProto) returns (UpdateFragmentResponseProto);
 }
 
 service LlapManagementProtocol {

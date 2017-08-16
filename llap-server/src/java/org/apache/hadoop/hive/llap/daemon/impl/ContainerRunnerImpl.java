@@ -54,6 +54,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
@@ -260,11 +262,12 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Configuration callableConf = new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
+      boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this, tezHadoopShim, attemptId, vertex, initialEvent, fsTaskUgi,
-          completionListener, socketFactory);
+          completionListener, socketFactory, isGuaranteed);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {
@@ -420,6 +423,23 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     return TerminateFragmentResponseProto.getDefaultInstance();
   }
 
+  @Override
+  public UpdateFragmentResponseProto updateFragment(
+      UpdateFragmentRequestProto request) throws IOException {
+    String fragmentId = request.getFragmentIdentifierString();
+    boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
+    LOG.info("DBG: Received updateFragment request for {}", fragmentId);
+    // TODO: ideally, QueryTracker should have fragment-to-query mapping.
+    QueryIdentifier queryId = executorService.findQueryByFragment(fragmentId);
+    // checkPermissions returns false if query is not found, throws on failure.
+    boolean result = false;
+    if (queryId != null && queryTracker.checkPermissionsForQuery(queryId)) {
+      result = executorService.updateFragment(fragmentId, isGuaranteed);
+    }
+    return UpdateFragmentResponseProto.newBuilder()
+        .setResult(result).setIsGuaranteed(isGuaranteed).build();
+  }
+
   private String stringifySourceStateUpdateRequest(SourceStateUpdatedRequestProto request) {
     StringBuilder sb = new StringBuilder();
     QueryIdentifier queryIdentifier = new QueryIdentifier(request.getQueryIdentifier().getApplicationIdString(),
@@ -516,7 +536,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   public Set<String> getExecutorStatus() {
-    return executorService.getExecutorsStatus();
+    return executorService.getExecutorsStatusForReporting();
   }
 
   public static String constructUniqueQueryId(String queryId, int dagIndex) {
@@ -525,7 +545,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   }
 
   public int getNumActive() {
-    return executorService.getNumActive();
+    return executorService.getNumActiveForReporting();
   }
 
 }
