@@ -238,7 +238,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     for (BaseWork work : sparkWork.getAllWork()) {
       work.configureJobConf(jobConf);
     }
-    addJars(conf.get(MR_JAR_PROPERTY));
+    addJars(jobConf.get(MR_JAR_PROPERTY));
+
     // remove the location of container tokens
     conf.unset(MR_CREDENTIALS_LOCATION_PROPERTY);
     // add added files
