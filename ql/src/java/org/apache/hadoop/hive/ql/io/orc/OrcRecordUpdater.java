@@ -90,6 +90,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   private Path deleteEventPath;
   private final FileSystem fs;
   private OrcFile.WriterOptions writerOptions;
+  private OrcFile.WriterOptions deleteWriterOptions;
   private Writer writer = null;
   private boolean writerClosed = false;
   private Writer deleteEventWriter = null;
@@ -104,7 +105,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
-  private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder();
+  private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder("insert");
   private KeyIndexBuilder deleteEventIndexBuilder;
   private StructField recIdField = null; // field to look for the record identifier in
   private StructField rowIdField = null; // field inside recId to look for row id in
@@ -148,20 +149,23 @@ public class OrcRecordUpdater implements RecordUpdater {
   /**
    * An extension to AcidOutputFormat that allows users to add additional
    * options.
+   *
+   * todo: since this is only used for testing could we not control the writer some other way?
+   * to simplify {@link #OrcRecordUpdater(Path, AcidOutputFormat.Options)}
    */
-  public static class OrcOptions extends AcidOutputFormat.Options {
+   final static class OrcOptions extends AcidOutputFormat.Options {
     OrcFile.WriterOptions orcOptions = null;
 
-    public OrcOptions(Configuration conf) {
+    OrcOptions(Configuration conf) {
       super(conf);
     }
 
-    public OrcOptions orcOptions(OrcFile.WriterOptions opts) {
+    OrcOptions orcOptions(OrcFile.WriterOptions opts) {
       this.orcOptions = opts;
       return this;
     }
 
-    public OrcFile.WriterOptions getOrcOptions() {
+    OrcFile.WriterOptions getOrcOptions() {
       return orcOptions;
     }
   }
@@ -205,6 +209,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       this.acidOperationalProperties =
           AcidUtils.getAcidOperationalProperties(options.getConfiguration());
     }
+    assert this.acidOperationalProperties.isSplitUpdate() : "HIVE-17089?!";
     BucketCodec bucketCodec = BucketCodec.V1;
     if(options.getConfiguration() != null) {
       //so that we can test "old" files
@@ -240,6 +245,8 @@ public class OrcRecordUpdater implements RecordUpdater {
         && !options.isWritingBase()){
       flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), true, 8,
           options.getReporter());
+      flushLengths.writeLong(0);
+      OrcInputFormat.SHIMS.hflush(flushLengths);
     } else {
       flushLengths = null;
     }
@@ -265,12 +272,26 @@ public class OrcRecordUpdater implements RecordUpdater {
             optionsCloneForDelta.getConfiguration());
       }
       if (this.acidOperationalProperties.isSplitUpdate()) {
+        AcidOutputFormat.Options deleteOptions = options.clone().writingDeleteDelta(true);
         // If this is a split-update, we initialize a delete delta file path in anticipation that
         // they would write update/delete events to that separate file.
         // This writes to a file in directory which starts with "delete_delta_..."
-        // The actual initialization of a writer only happens if any delete events are written.
-        this.deleteEventPath = AcidUtils.createFilename(path,
-            optionsCloneForDelta.writingDeleteDelta(true));
+        // The actual initialization of a writer only happens if any delete events are written
+        //to avoid empty files.
+        this.deleteEventPath = AcidUtils.createFilename(path, deleteOptions);
+        /**
+         * HIVE-14514 is not done so we can't clone writerOptions().  So here we create a new
+         * options object to make sure insert and delete writers don't share them (like the
+         * callback object, for example)
+         * In any case insert writer and delete writer would most likely have very different
+         * characteristics - delete writer only writes a tiny amount of data.  Once we do early
+         * update split, each {@link OrcRecordUpdater} will have only 1 writer. (except for Mutate API)
+         * Then it would perhaps make sense to take writerOptions as input - how?.
+         */
+        this.deleteWriterOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
+          optionsCloneForDelta.getConfiguration());
+        this.deleteWriterOptions.inspector(createEventSchema(findRecId(options.getInspector(),
+          options.getRecordIdColumn())));
       }
 
       // get buffer size and stripe size for base writer
@@ -377,19 +398,10 @@ public class OrcRecordUpdater implements RecordUpdater {
         recIdInspector.getStructFieldData(rowValue, bucketField)), operation);
       // Initialize a deleteEventWriter if not yet done. (Lazy initialization)
       if (deleteEventWriter == null) {
-        // Initialize an indexBuilder for deleteEvents.
-        deleteEventIndexBuilder = new KeyIndexBuilder();
-        // Change the indexBuilder callback too for the deleteEvent file, the remaining writer
-        // options remain the same.
-
-        // TODO: When we change the callback, we are essentially mutating the writerOptions.
-        // This works but perhaps is not a good thing. The proper way to do this would be
-        // to clone the writerOptions, however it requires that the parent OrcFile.writerOptions
-        // implements a clone() method (which it does not for now). HIVE-14514 is currently an open
-        // JIRA to fix this.
-
+        // Initialize an indexBuilder for deleteEvents. (HIVE-17284)
+        deleteEventIndexBuilder = new KeyIndexBuilder("delete");
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
-                                                      writerOptions.callback(deleteEventIndexBuilder));
+                                                      deleteWriterOptions.callback(deleteEventIndexBuilder));
       }
 
       // A delete/update generates a delete event for the original row.
@@ -461,6 +473,8 @@ public class OrcRecordUpdater implements RecordUpdater {
     long len = writer.writeIntermediateFooter();
     flushLengths.writeLong(len);
     OrcInputFormat.SHIMS.hflush(flushLengths);
+    //multiple transactions only happen for streaming ingest which only allows inserts
+    assert deleteEventWriter == null : "unexpected delete writer for " + path;
   }
 
   @Override
@@ -539,12 +553,16 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {
-    StringBuilder lastKey = new StringBuilder();
+    private final String builderName;
+    StringBuilder lastKey = new StringBuilder();//list of last keys for each stripe
     long lastTransaction;
     int lastBucket;
     long lastRowId;
     AcidStats acidStats = new AcidStats();
 
+    KeyIndexBuilder(String name) {
+      this.builderName = name;
+    }
     @Override
     public void preStripeWrite(OrcFile.WriterContext context
     ) throws IOException {

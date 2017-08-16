@@ -148,8 +148,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     RecordWriter[] outWriters;
     RecordUpdater[] updaters;
     Stat stat;
-    int acidLastBucket = -1;
-    int acidFileOffset = -1;
 
     public FSPaths(Path specPath) {
       tmpPath = Utilities.toTempPath(specPath);

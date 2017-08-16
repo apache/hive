@@ -409,6 +409,11 @@ public abstract class CompactorTest {
       return null;
     }
 
+    /**
+     * This is bogus especially with split update acid tables.  This causes compaction to create
+     * delete_delta_x_y where none existed before.  Makes the data layout such as would never be
+     * created by 'real' code path.
+     */
     @Override
     public boolean isDelete(Text value) {
       // Alternate between returning deleted and not.  This is easier than actually
@@ -551,5 +556,8 @@ public abstract class CompactorTest {
    */
   String makeDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
     return AcidUtils.deltaSubdir(minTxnId, maxTxnId);
+  }
+  String makeDeleteDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
+    return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
   }
 }

@@ -125,6 +125,7 @@ public class TestOrcRecordUpdater {
     // read the stopping point for the first flush and make sure we only see
     // 3 rows
     long len = side.readLong();
+    len = side.readLong();
     Reader reader = OrcFile.createReader(bucketPath,
         new OrcFile.ReaderOptions(conf).filesystem(fs).maxLength(len));
     assertEquals(3, reader.getNumberOfRows());
@@ -266,28 +267,51 @@ public class TestOrcRecordUpdater {
 
     Reader reader = OrcFile.createReader(bucketPath,
         new OrcFile.ReaderOptions(conf).filesystem(fs));
-    assertEquals(2, reader.getNumberOfRows());
+    assertEquals(1, reader.getNumberOfRows());
 
     RecordReader rows = reader.rows();
 
     // check the contents of the file
     assertEquals(true, rows.hasNext());
     OrcStruct row = (OrcStruct) rows.next(null);
-    assertEquals(OrcRecordUpdater.UPDATE_OPERATION,
+    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
         OrcRecordUpdater.getOperation(row));
     assertEquals(100, OrcRecordUpdater.getCurrentTransaction(row));
-    assertEquals(10, OrcRecordUpdater.getOriginalTransaction(row));
-    assertEquals(20, OrcRecordUpdater.getBucket(row));
-    assertEquals(30, OrcRecordUpdater.getRowId(row));
+    assertEquals(100, OrcRecordUpdater.getOriginalTransaction(row));
+    int bucketProperty = OrcRecordUpdater.getBucket(row);
+    assertEquals(bucket, BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty));
+    assertEquals(0, OrcRecordUpdater.getRowId(row));
     assertEquals("update",
         OrcRecordUpdater.getRow(row).getFieldValue(0).toString());
+    rows.close();
+
+    options.writingDeleteDelta(true);
+    bucketPath = AcidUtils.createFilename(root, options);
+    reader = OrcFile.createReader(bucketPath,
+      new OrcFile.ReaderOptions(conf).filesystem(fs));
+    assertEquals(2, reader.getNumberOfRows());
+
+    rows = reader.rows();
     assertEquals(true, rows.hasNext());
     row = (OrcStruct) rows.next(null);
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION, OrcRecordUpdater.getOperation(row));
+    assertEquals(100, OrcRecordUpdater.getCurrentTransaction(row));
+    assertEquals(10, OrcRecordUpdater.getOriginalTransaction(row));
+    bucketProperty = OrcRecordUpdater.getBucket(row);
+    assertEquals(bucket, BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty));
+    assertEquals(30, OrcRecordUpdater.getRowId(row));
+    assertNull(OrcRecordUpdater.getRow(row));
+
+    assertEquals(true, rows.hasNext());
+    row = (OrcStruct) rows.next(null);
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION, OrcRecordUpdater.getOperation(row));
     assertEquals(100, OrcRecordUpdater.getCurrentTransaction(row));
     assertEquals(40, OrcRecordUpdater.getOriginalTransaction(row));
-    assertEquals(20, OrcRecordUpdater.getBucket(row));
+    bucketProperty = OrcRecordUpdater.getBucket(row);
+    assertEquals(bucket, BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty));
     assertEquals(60, OrcRecordUpdater.getRowId(row));
     assertNull(OrcRecordUpdater.getRow(row));
+
     assertEquals(false, rows.hasNext());
   }
 }

@@ -39,7 +39,6 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
 
   // These constants are also imported by org.apache.hadoop.hive.ql.io.AcidUtils.
   public static final String DEFAULT_TRANSACTIONAL_PROPERTY = "default";
-  public static final String LEGACY_TRANSACTIONAL_PROPERTY = "legacy";
 
   TransactionalValidationListener(Configuration conf) {
     super(conf);
@@ -276,7 +275,6 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     boolean isValid = false;
     switch (transactionalProperties) {
       case DEFAULT_TRANSACTIONAL_PROPERTY:
-      case LEGACY_TRANSACTIONAL_PROPERTY:
         isValid = true;
         break;
       default:

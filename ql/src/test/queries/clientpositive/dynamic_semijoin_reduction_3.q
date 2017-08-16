@@ -108,7 +108,7 @@ when matched then update set
   end_date = date '2017-03-15' 
 when not matched then insert values
   (sub.source_pk, upper(substr(sub.name, 0, 3)), sub.name, sub.state, true, null);
-select * from customer order by source_pk;
+select * from customer order by source_pk, is_current;
 
 drop table customer;
 drop table customer_updates;

@@ -112,6 +112,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     private long minTxnId;
     private long maxTxnId;
     private List<Integer> stmtIds;
+    //would be useful to have enum for Type: insert/delete/load data
 
     public DeltaMetaData() {
       this(0,0,new ArrayList<Integer>());
@@ -154,6 +155,11 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       for(int i = 0; i < numStatements; i++) {
         stmtIds.add(in.readInt());
       }
+    }
+    @Override
+    public String toString() {
+      //? is Type - when implemented
+      return "Delta(?," + minTxnId + "," + maxTxnId + "," + stmtIds + ")";
     }
   }
   /**

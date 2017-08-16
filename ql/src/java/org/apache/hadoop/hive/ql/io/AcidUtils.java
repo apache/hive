@@ -39,11 +39,13 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,18 @@ public class AcidUtils {
   };
   public static final String DELTA_PREFIX = "delta_";
   public static final String DELETE_DELTA_PREFIX = "delete_delta_";
+  /**
+   * Acid Streaming Ingest writes multiple transactions to the same file.  It also maintains a
+   * {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} side file which stores the length of
+   * the primary file as of the last commit ({@link OrcRecordUpdater#flush()}).  That is the 'logical length'.
+   * Once the primary is closed, the side file is deleted (logical length = actual length) but if
+   * the writer dies or the primary file is being read while its still being written to, anything
+   * past the logical length should be ignored.
+   *
+   * @see org.apache.orc.impl.OrcAcidUtils#DELTA_SIDE_FILE_SUFFIX
+   * @see org.apache.orc.impl.OrcAcidUtils#getLastFlushLength(FileSystem, Path)
+   * @see #getLogicalLength(FileSystem, FileStatus)
+   */
   public static final String DELTA_SIDE_FILE_SUFFIX = "_flush_length";
   public static final PathFilter deltaFileFilter = new PathFilter() {
     @Override
@@ -167,7 +181,7 @@ public class AcidUtils {
    * This is format of delete delta dir name prior to Hive 2.2.x
    */
   @VisibleForTesting
-  static String deleteDeltaSubdir(long min, long max) {
+  public static String deleteDeltaSubdir(long min, long max) {
     return DELETE_DELTA_PREFIX + String.format(DELTA_DIGITS, min) + "_" +
         String.format(DELTA_DIGITS, max);
   }
@@ -178,7 +192,7 @@ public class AcidUtils {
    * @since 2.2.x
    */
   @VisibleForTesting
-  static String deleteDeltaSubdir(long min, long max, int statementId) {
+  public static String deleteDeltaSubdir(long min, long max, int statementId) {
     return deleteDeltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
   }
 
@@ -371,21 +385,10 @@ public class AcidUtils {
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
-    public static final String LEGACY_VALUE_STRING = TransactionalValidationListener.LEGACY_TRANSACTIONAL_PROPERTY;
 
     private AcidOperationalProperties() {
     }
 
-    /**
-     * Returns an acidOperationalProperties object that represents ACID behavior for legacy tables
-     * that were created before ACID type system using operational properties was put in place.
-     * @return the acidOperationalProperties object
-     */
-    public static AcidOperationalProperties getLegacy() {
-      AcidOperationalProperties obj = new AcidOperationalProperties();
-      // In legacy mode, none of these properties are turned on.
-      return obj;
-    }
 
     /**
      * Returns an acidOperationalProperties object that represents default ACID behavior for tables
@@ -406,13 +409,10 @@ public class AcidUtils {
      */
     public static AcidOperationalProperties parseString(String propertiesStr) {
       if (propertiesStr == null) {
-        return AcidOperationalProperties.getLegacy();
+        return AcidOperationalProperties.getDefault();
       }
       if (propertiesStr.equalsIgnoreCase(DEFAULT_VALUE_STRING)) {
         return AcidOperationalProperties.getDefault();
-      }
-      if (propertiesStr.equalsIgnoreCase(LEGACY_VALUE_STRING)) {
-        return AcidOperationalProperties.getLegacy();
       }
       AcidOperationalProperties obj = new AcidOperationalProperties();
       String[] options = propertiesStr.split("\\|");
@@ -1119,7 +1119,12 @@ public class AcidUtils {
   public static void setTransactionalTableScan(Configuration conf, boolean isAcidTable) {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
   }
-
+  /**
+   * @param p - not null
+   */
+  public static boolean isDeleteDelta(Path p) {
+    return p.getName().startsWith(DELETE_DELTA_PREFIX);
+  }
   /** Checks if a table is a valid ACID table.
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
@@ -1171,8 +1176,8 @@ public class AcidUtils {
     String transactionalProperties = table.getProperty(
             hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (transactionalProperties == null) {
-      // If the table does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the table does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(transactionalProperties);
   }
@@ -1184,7 +1189,7 @@ public class AcidUtils {
    */
   public static AcidOperationalProperties getAcidOperationalProperties(Configuration conf) {
     // If the conf does not define any transactional properties, the parseInt() should receive
-    // a value of zero, which will set AcidOperationalProperties to a legacy type and return that.
+    // a value of 1, which will set AcidOperationalProperties to a default type and return that.
     return AcidOperationalProperties.parseInt(
             HiveConf.getIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES));
   }
@@ -1197,8 +1202,8 @@ public class AcidUtils {
   public static AcidOperationalProperties getAcidOperationalProperties(Properties props) {
     String resultStr = props.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (resultStr == null) {
-      // If the properties does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the properties does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(resultStr);
   }
@@ -1212,9 +1217,44 @@ public class AcidUtils {
           Map<String, String> parameters) {
     String resultStr = parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (resultStr == null) {
-      // If the parameters does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the parameters does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(resultStr);
+  }
+  /**
+   * See comments at {@link AcidUtils#DELTA_SIDE_FILE_SUFFIX}.
+   *
+   * Returns the logical end of file for an acid data file.
+   *
+   * This relies on the fact that if delta_x_y has no committed transactions it wil be filtered out
+   * by {@link #getAcidState(Path, Configuration, ValidTxnList)} and so won't be read at all.
+   * @param file - data file to read/compute splits on
+   */
+  public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
+    Path lengths = OrcAcidUtils.getSideFile(file.getPath());
+    if(!fs.exists(lengths)) {
+      /**
+       * if here for delta_x_y that means txn y is resolved and all files in this delta are closed so
+       * they should all have a valid ORC footer and info from NameNode about length is good
+       */
+      return file.getLen();
+    }
+    long len = OrcAcidUtils.getLastFlushLength(fs, file.getPath());
+    if(len >= 0) {
+      /**
+       * if here something is still writing to delta_x_y so  read only as far as the last commit,
+       * i.e. where last footer was written.  The file may contain more data after 'len' position
+       * belonging to an open txn.
+       */
+      return len;
+    }
+    /**
+     * if here, side file is there but we couldn't read it.  We want to avoid a read where
+     * (file.getLen() < 'value from side file' which may happen if file is not closed) because this
+     * means some committed data from 'file' would be skipped.
+     * This should be very unusual.
+     */
+    throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
   }
 }

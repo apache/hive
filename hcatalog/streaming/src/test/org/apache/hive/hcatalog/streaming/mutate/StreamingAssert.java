@@ -27,12 +27,12 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.AcidRecordReader;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -123,35 +123,50 @@ public class StreamingAssert {
   }
 
   List<Record> readRecords() throws Exception {
+    return readRecords(1);
+  }
+
+  /**
+   * TODO: this would be more flexible doing a SQL select statement rather than using InputFormat directly
+   * see {@link org.apache.hive.hcatalog.streaming.TestStreaming#checkDataWritten2(Path, long, long, int, String, String...)}
+   * @param numSplitsExpected
+   * @return
+   * @throws Exception
+   */
+  List<Record> readRecords(int numSplitsExpected) throws Exception {
     if (currentDeltas.isEmpty()) {
       throw new AssertionError("No data");
     }
     InputFormat<NullWritable, OrcStruct> inputFormat = new OrcInputFormat();
     JobConf job = new JobConf();
     job.set("mapred.input.dir", partitionLocation.toString());
-    job.set("bucket_count", Integer.toString(table.getSd().getNumBuckets()));
+    job.set(hive_metastoreConstants.BUCKET_COUNT, Integer.toString(table.getSd().getNumBuckets()));
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "id,msg");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "bigint:string");
-    job.set(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, "true");
+    AcidUtils.setTransactionalTableScan(job,true);
+    job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set(ValidTxnList.VALID_TXNS_KEY, txns.toString());
     InputSplit[] splits = inputFormat.getSplits(job, 1);
-    assertEquals(1, splits.length);
+    assertEquals(numSplitsExpected, splits.length);
 
-    final AcidRecordReader<NullWritable, OrcStruct> recordReader = (AcidRecordReader<NullWritable, OrcStruct>) inputFormat
-        .getRecordReader(splits[0], job, Reporter.NULL);
-
-    NullWritable key = recordReader.createKey();
-    OrcStruct value = recordReader.createValue();
 
     List<Record> records = new ArrayList<>();
-    while (recordReader.next(key, value)) {
-      RecordIdentifier recordIdentifier = recordReader.getRecordIdentifier();
-      Record record = new Record(new RecordIdentifier(recordIdentifier.getTransactionId(),
+    for(InputSplit is : splits) {
+      final AcidRecordReader<NullWritable, OrcStruct> recordReader = (AcidRecordReader<NullWritable, OrcStruct>) inputFormat
+        .getRecordReader(is, job, Reporter.NULL);
+
+      NullWritable key = recordReader.createKey();
+      OrcStruct value = recordReader.createValue();
+
+      while (recordReader.next(key, value)) {
+        RecordIdentifier recordIdentifier = recordReader.getRecordIdentifier();
+        Record record = new Record(new RecordIdentifier(recordIdentifier.getTransactionId(),
           recordIdentifier.getBucketProperty(), recordIdentifier.getRowId()), value.toString());
-      System.out.println(record);
-      records.add(record);
+        System.out.println(record);
+        records.add(record);
+      }
+      recordReader.close();
     }
-    recordReader.close();
     return records;
   }
 

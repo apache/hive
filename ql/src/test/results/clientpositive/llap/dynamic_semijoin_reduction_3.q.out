@@ -981,11 +981,11 @@ POSTHOOK: Lineage: customer.sk EXPRESSION [(new_customer_stage)stage.FieldSchema
 POSTHOOK: Lineage: customer.source_pk SIMPLE [(new_customer_stage)stage.FieldSchema(name:source_pk, type:int, comment:null), ]
 POSTHOOK: Lineage: customer.state SIMPLE [(new_customer_stage)stage.FieldSchema(name:state, type:string, comment:null), ]
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(customer)customer.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-PREHOOK: query: select * from customer order by source_pk
+PREHOOK: query: select * from customer order by source_pk, is_current
 PREHOOK: type: QUERY
 PREHOOK: Input: type2_scd_helper@customer
 #### A masked pattern was here ####
-POSTHOOK: query: select * from customer order by source_pk
+POSTHOOK: query: select * from customer order by source_pk, is_current
 POSTHOOK: type: QUERY
 POSTHOOK: Input: type2_scd_helper@customer
 #### A masked pattern was here ####

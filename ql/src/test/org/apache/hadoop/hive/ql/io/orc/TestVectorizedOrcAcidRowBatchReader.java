@@ -246,10 +246,6 @@ public class TestVectorizedOrcAcidRowBatchReader {
   @Test
   public void testCanCreateVectorizedAcidRowBatchReaderOnSplit() throws Exception {
     OrcSplit mockSplit = Mockito.mock(OrcSplit.class);
-    conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
-        AcidUtils.AcidOperationalProperties.getLegacy().toInt());
-    // Test false when trying to create a vectorized ACID row batch reader for a legacy table.
-    assertFalse(VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, mockSplit));
 
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());

@@ -529,22 +529,23 @@ public class TestMutations {
     StreamingAssert indiaAssertions = assertionFactory.newStreamingAssert(table, ASIA_INDIA);
     indiaAssertions.assertMinTransactionId(1L);
     indiaAssertions.assertMaxTransactionId(2L);
-    List<Record> indiaRecords = indiaAssertions.readRecords();
+    List<Record> indiaRecords = indiaAssertions.readRecords(2);
     assertThat(indiaRecords.size(), is(3));
     assertThat(indiaRecords.get(0).getRow(), is("{1, Namaste streaming 1}"));
     assertThat(indiaRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
       encodeBucket(0), 0L)));
     assertThat(indiaRecords.get(1).getRow(), is("{2, UPDATED: Namaste streaming 2}"));
-    assertThat(indiaRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(1L,
-      encodeBucket(0), 1L)));
+    assertThat(indiaRecords.get(1).getRecordIdentifier(), is(new RecordIdentifier(2L,
+      encodeBucket(0), 0L)));//with split update, new version of the row is a new insert
     assertThat(indiaRecords.get(2).getRow(), is("{20, Namaste streaming 3}"));
     assertThat(indiaRecords.get(2).getRecordIdentifier(), is(new RecordIdentifier(2L,
-      encodeBucket(0), 0L)));
+      encodeBucket(0), 1L)));
 
     StreamingAssert ukAssertions = assertionFactory.newStreamingAssert(table, EUROPE_UK);
     ukAssertions.assertMinTransactionId(1L);
     ukAssertions.assertMaxTransactionId(2L);
-    List<Record> ukRecords = ukAssertions.readRecords();
+    //1 split since mutateTransaction txn just does deletes
+    List<Record> ukRecords = ukAssertions.readRecords(1);
     assertThat(ukRecords.size(), is(1));
     assertThat(ukRecords.get(0).getRow(), is("{4, Hello streaming 2}"));
     assertThat(ukRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
@@ -553,11 +554,11 @@ public class TestMutations {
     StreamingAssert franceAssertions = assertionFactory.newStreamingAssert(table, EUROPE_FRANCE);
     franceAssertions.assertMinTransactionId(1L);
     franceAssertions.assertMaxTransactionId(2L);
-    List<Record> franceRecords = franceAssertions.readRecords();
+    List<Record> franceRecords = franceAssertions.readRecords(2);
     assertThat(franceRecords.size(), is(1));
     assertThat(franceRecords.get(0).getRow(), is("{6, UPDATED: Bonjour streaming 2}"));
-    assertThat(franceRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(1L,
-      encodeBucket(0), 1L)));
+    assertThat(franceRecords.get(0).getRecordIdentifier(), is(new RecordIdentifier(2L,
+      encodeBucket(0), 0L)));//with split update, new version of the row is a new insert
 
     client.close();
   }
