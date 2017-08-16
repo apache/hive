@@ -178,7 +178,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // bootstrap case
     Hive hiveDb = getHive();
     Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
-    for (String dbName : Utils.matchesDb(getHive(), work.dbNameOrPattern)) {
+    for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
               Utils.getAllTables(getHive(), dbName).size(),
@@ -188,7 +188,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dumpFunctionMetadata(dbName, dumpRoot);
 
       Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.ACTIVE.toString());
-      for (String tblName : Utils.matchesTbl(getHive(), dbName, work.tableNameOrPattern)) {
+      for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
@@ -196,7 +196,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.IDLE.toString());
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
-    Long bootDumpEndReplId = getHive().getMSC().getCurrentNotificationEventId().getEventId();
+    Long bootDumpEndReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
     LOG.info("Bootstrap object dump phase took from {} to {}", bootDumpBeginReplId,
         bootDumpEndReplId);
 
@@ -207,7 +207,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     IMetaStoreClient.NotificationFilter evFilter =
         new DatabaseAndTableFilter(work.dbNameOrPattern, work.tableNameOrPattern);
     EventUtils.MSClientNotificationFetcher evFetcher =
-        new EventUtils.MSClientNotificationFetcher(getHive().getMSC());
+        new EventUtils.MSClientNotificationFetcher(hiveDb.getMSC());
     EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
         evFetcher, bootDumpBeginReplId,
         Ints.checkedCast(bootDumpEndReplId - bootDumpBeginReplId) + 1,

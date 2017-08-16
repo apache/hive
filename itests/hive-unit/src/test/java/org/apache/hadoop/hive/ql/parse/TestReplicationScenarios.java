@@ -582,10 +582,11 @@ public class TestReplicationScenarios {
                 Driver driver2 = new Driver(hconf);
                 SessionState.start(new CliSessionState(hconf));
                 CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
-                success |= (ret.getException() == null);
+                success = (ret.getException() == null);
                 assertFalse(success);
                 ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
-                success |= (ret.getException() == null);
+                success = (ret.getException() == null);
+                assertFalse(success);
                 LOG.info("Exit new thread success - {}", success);
               } catch (CommandNeedRetryException e) {
                 LOG.info("Hit Exception {} from new thread", e.getMessage());
@@ -600,8 +601,6 @@ public class TestReplicationScenarios {
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
-          // After exit from thread, both rename operations should be unsuccessful
-          assertFalse(success);
         }
         return table;
       }

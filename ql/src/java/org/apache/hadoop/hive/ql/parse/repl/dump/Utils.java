@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Utils {
-  public static final String BOOTSTRAP_DUMP_STATE_KEY = "bootstrap.dump.state";
+  private static final String BOOTSTRAP_DUMP_STATE_KEY = "bootstrap.dump.state";
 
   public enum ReplDumpState {
     IDLE("idle"),
@@ -120,14 +120,6 @@ public class Utils {
     }
 
     hiveDb.alterDatabase(dbName, database);
-    return;
-  }
-
-  private static String getDbBootstrapDumpStateFromParameters(Map<String, String> params) {
-    if ((params != null) && (params.containsKey(BOOTSTRAP_DUMP_STATE_KEY))){
-      return params.get(BOOTSTRAP_DUMP_STATE_KEY);
-    }
-    return null;
   }
 
   public static boolean isBootstrapDumpInProgress(Hive hiveDb, String dbName) throws HiveException {
@@ -135,7 +127,11 @@ public class Utils {
     if (database == null) {
       return false;
     }
-    String dumpState = getDbBootstrapDumpStateFromParameters(database.getParameters());
-    return ((dumpState != null) && dumpState.equals(ReplDumpState.ACTIVE.toString()));
+    Map<String, String> parameters = database.getParameters();
+    if (parameters == null) {
+      return false;
+    }
+    return (parameters.containsKey(BOOTSTRAP_DUMP_STATE_KEY) && parameters
+            .get(BOOTSTRAP_DUMP_STATE_KEY).equals(ReplDumpState.ACTIVE.toString()));
   }
 }
