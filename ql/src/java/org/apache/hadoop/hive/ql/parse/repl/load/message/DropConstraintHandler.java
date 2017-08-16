@@ -44,8 +44,7 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
     tasks.add(dropConstraintsTask);
     context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-    tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
     return Collections.singletonList(dropConstraintsTask);    
   }
 }

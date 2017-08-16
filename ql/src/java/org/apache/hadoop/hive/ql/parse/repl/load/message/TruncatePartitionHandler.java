@@ -62,8 +62,7 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
             context.hiveConf);
     context.log.debug("Added truncate ptn task : {}:{}", truncatePtnTask.getId(),
         truncateTableDesc.getTableName());
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-    tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, partSpec);
     return Collections.singletonList(truncatePtnTask);
   }
 }

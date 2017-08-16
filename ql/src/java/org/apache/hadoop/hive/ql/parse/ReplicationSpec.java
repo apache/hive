@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
 import java.text.Collator;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,6 +38,7 @@ public class ReplicationSpec {
 
   private boolean isInReplicationScope = false; // default is that it's not in a repl scope
   private boolean isMetadataOnly = false; // default is full export/import, not metadata-only
+  private boolean isIncrementalDump = false; // default is replv2 bootstrap dump or replv1 export or import/load.
   private String eventId = null;
   private String currStateId = null;
   private boolean isNoop = false;
@@ -69,34 +69,6 @@ public class ReplicationSpec {
   public enum SCOPE { NO_REPL, MD_ONLY, REPL };
 
   static private Collator collator = Collator.getInstance();
-
-  /**
-   * Class that extends HashMap with a slightly different put semantic, where
-   * put behaves as follows:
-   *  a) If the key does not already exist, then retains existing HashMap.put behaviour
-   *  b) If the map already contains an entry for the given key, then will replace only
-   *     if the new value is "greater" than the old value.
-   *
-   * The primary goal for this is to track repl updates for dbs and tables, to replace state
-   * only if the state is newer.
-   */
-  public static class ReplStateMap<K,V extends Comparable> extends HashMap<K,V> {
-    @Override
-    public V put(K k, V v){
-      if (!containsKey(k)){
-        return super.put(k,v);
-      }
-      V oldValue = get(k);
-      if (v.compareTo(oldValue) > 0){
-        return super.put(k,v);
-      }
-      // we did no replacement, but return the old value anyway. This
-      // seems most consistent with HashMap behaviour, becuse the "put"
-      // was effectively processed and consumed, although we threw away
-      // the enw value.
-      return oldValue;
-    }
-  }
 
   /**
    * Constructor to construct spec based on either the ASTNode that
@@ -134,14 +106,16 @@ public class ReplicationSpec {
   }
 
   public ReplicationSpec(String fromId, String toId) {
-    this(true, false, fromId, toId, false, true, false);
+    this(true, false, false, fromId, toId, false, true, false);
   }
 
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
+                         boolean isIncrementalDump,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isLazy, boolean isReplace) {
     this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
+    this.isIncrementalDump = isIncrementalDump;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
     this.isNoop = isNoop;
@@ -151,8 +125,9 @@ public class ReplicationSpec {
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
-    this.isMetadataOnly = false;
     this.isInReplicationScope = false;
+    this.isMetadataOnly = false;
+    this.isIncrementalDump = false;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
@@ -255,6 +230,17 @@ public class ReplicationSpec {
    */
   public boolean isInReplicationScope(){
     return isInReplicationScope;
+  }
+
+  /**
+   * @return true if this statement refers to incremental dump operation.
+   */
+  public boolean isIncrementalDump(){
+    return isIncrementalDump;
+  }
+
+  public void setIsIncrementalDump(boolean isIncrementalDump){
+    this.isIncrementalDump = isIncrementalDump;
   }
 
   /**

@@ -44,8 +44,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
 
     context.log.debug("Added truncate tbl task : {}:{}", truncateTableTask.getId(),
         truncateTableDesc.getTableName());
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-    tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
     return Collections.singletonList(truncateTableTask);
   }
 }

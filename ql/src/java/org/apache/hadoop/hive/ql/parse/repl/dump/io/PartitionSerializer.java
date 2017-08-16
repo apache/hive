@@ -42,9 +42,13 @@ public class PartitionSerializer implements JsonWriter.Serializer {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
       if (additionalPropertiesProvider.isInReplicationScope()) {
-        partition.putToParameters(
-            ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-            additionalPropertiesProvider.getCurrentReplicationState());
+        // Current replication state must be set on the Partition object only for bootstrap dump.
+        // Event replication State will be null in case of bootstrap dump.
+        if (!additionalPropertiesProvider.isIncrementalDump()) {
+          partition.putToParameters(
+                  ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  additionalPropertiesProvider.getCurrentReplicationState());
+        }
         if (isPartitionExternal()) {
           // Replication destination will not be external
           partition.putToParameters("EXTERNAL", "FALSE");

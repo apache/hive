@@ -46,7 +46,7 @@ public class DropTableHandler extends AbstractMessageHandler {
     context.log.debug(
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()
     );
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropTableTask);
   }
 }

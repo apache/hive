@@ -165,8 +165,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
                 .getPath();
         filePaths.add(f);
       } catch (MetaException e) {
-        // skip and issue warning for missing file
+        // issue warning for missing file and throw exception
         LOG.warn("Cannot find " + fileWithChksum[0] + " in source repo or cmroot");
+        throw new IOException(e.getMessage());
       }
       // Note - we need srcFs rather than fs, because it is possible that the _files lists files
       // which are from a different filesystem than the fs where the _files file itself was loaded

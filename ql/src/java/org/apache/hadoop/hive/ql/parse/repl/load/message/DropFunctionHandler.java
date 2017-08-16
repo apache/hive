@@ -43,7 +43,7 @@ public class DropFunctionHandler extends AbstractMessageHandler {
     context.log.debug(
         "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getFunctionName()
     );
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropFunctionTask);
   }
 }
