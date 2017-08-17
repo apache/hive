@@ -37091,7 +37091,7 @@ class get_notification_events_count_result:
   """
 
   thrift_spec = (
-    (0, TType.STRUCT, 'success', (NotificationEventsCount, NotificationEventsCount.thrift_spec), None, ), # 0
+    (0, TType.STRUCT, 'success', (NotificationEventsCountResponse, NotificationEventsCountResponse.thrift_spec), None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -37108,7 +37108,7 @@ class get_notification_events_count_result:
         break
       if fid == 0:
         if ftype == TType.STRUCT:
-          self.success = NotificationEventsCount()
+          self.success = NotificationEventsCountResponse()
           self.success.read(iprot)
         else:
           iprot.skip(ftype)

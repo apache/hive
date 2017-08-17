@@ -2358,7 +2358,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
-  public NotificationEventsCount getNotificationEventsCount(NotificationEventsCountRequest rqst)
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
           throws TException {
     return client.get_notification_events_count(rqst);
   }

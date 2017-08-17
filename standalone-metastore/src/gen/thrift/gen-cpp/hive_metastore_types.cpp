@@ -17327,15 +17327,15 @@ void NotificationEventsCountRequest::printTo(std::ostream& out) const {
 }
 
 
-NotificationEventsCount::~NotificationEventsCount() throw() {
+NotificationEventsCountResponse::~NotificationEventsCountResponse() throw() {
 }
 
 
-void NotificationEventsCount::__set_eventsCount(const int64_t val) {
+void NotificationEventsCountResponse::__set_eventsCount(const int64_t val) {
   this->eventsCount = val;
 }
 
-uint32_t NotificationEventsCount::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t NotificationEventsCountResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -17379,10 +17379,10 @@ uint32_t NotificationEventsCount::read(::apache::thrift::protocol::TProtocol* ip
   return xfer;
 }
 
-uint32_t NotificationEventsCount::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t NotificationEventsCountResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("NotificationEventsCount");
+  xfer += oprot->writeStructBegin("NotificationEventsCountResponse");
 
   xfer += oprot->writeFieldBegin("eventsCount", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64(this->eventsCount);
@@ -17393,21 +17393,21 @@ uint32_t NotificationEventsCount::write(::apache::thrift::protocol::TProtocol* o
   return xfer;
 }
 
-void swap(NotificationEventsCount &a, NotificationEventsCount &b) {
+void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b) {
   using ::std::swap;
   swap(a.eventsCount, b.eventsCount);
 }
 
-NotificationEventsCount::NotificationEventsCount(const NotificationEventsCount& other692) {
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other692) {
   eventsCount = other692.eventsCount;
 }
-NotificationEventsCount& NotificationEventsCount::operator=(const NotificationEventsCount& other693) {
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other693) {
   eventsCount = other693.eventsCount;
   return *this;
 }
-void NotificationEventsCount::printTo(std::ostream& out) const {
+void NotificationEventsCountResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "NotificationEventsCount(";
+  out << "NotificationEventsCountResponse(";
   out << "eventsCount=" << to_string(eventsCount);
   out << ")";
 }

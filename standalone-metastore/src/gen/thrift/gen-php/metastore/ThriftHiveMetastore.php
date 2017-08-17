@@ -1192,7 +1192,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function get_current_notificationEventId();
   /**
    * @param \metastore\NotificationEventsCountRequest $rqst
-   * @return \metastore\NotificationEventsCount
+   * @return \metastore\NotificationEventsCountResponse
    */
   public function get_notification_events_count(\metastore\NotificationEventsCountRequest $rqst);
   /**
@@ -45654,7 +45654,7 @@ class ThriftHiveMetastore_get_notification_events_count_result {
   static $_TSPEC;
 
   /**
-   * @var \metastore\NotificationEventsCount
+   * @var \metastore\NotificationEventsCountResponse
    */
   public $success = null;
 
@@ -45664,7 +45664,7 @@ class ThriftHiveMetastore_get_notification_events_count_result {
         0 => array(
           'var' => 'success',
           'type' => TType::STRUCT,
-          'class' => '\metastore\NotificationEventsCount',
+          'class' => '\metastore\NotificationEventsCountResponse',
           ),
         );
     }
@@ -45696,7 +45696,7 @@ class ThriftHiveMetastore_get_notification_events_count_result {
       {
         case 0:
           if ($ftype == TType::STRUCT) {
-            $this->success = new \metastore\NotificationEventsCount();
+            $this->success = new \metastore\NotificationEventsCountResponse();
             $xfer += $this->success->read($input);
           } else {
             $xfer += $input->skip($ftype);

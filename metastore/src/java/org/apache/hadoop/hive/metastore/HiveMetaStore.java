@@ -7036,7 +7036,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public NotificationEventsCount get_notification_events_count(NotificationEventsCountRequest rqst)
+    public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
             throws TException {
       RawStore ms = getMS();
       return ms.getNotificationEventsCount(rqst);

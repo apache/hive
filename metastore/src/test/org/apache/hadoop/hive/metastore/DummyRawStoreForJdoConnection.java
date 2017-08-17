@@ -45,8 +45,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCount;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -812,7 +812,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public NotificationEventsCount getNotificationEventsCount(NotificationEventsCountRequest rqst) {
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
     return null;
   }
 

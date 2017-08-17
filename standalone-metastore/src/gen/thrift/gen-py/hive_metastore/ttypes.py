@@ -12017,7 +12017,7 @@ class NotificationEventsCountRequest:
   def __ne__(self, other):
     return not (self == other)
 
-class NotificationEventsCount:
+class NotificationEventsCountResponse:
   """
   Attributes:
    - eventsCount
@@ -12054,7 +12054,7 @@ class NotificationEventsCount:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('NotificationEventsCount')
+    oprot.writeStructBegin('NotificationEventsCountResponse')
     if self.eventsCount is not None:
       oprot.writeFieldBegin('eventsCount', TType.I64, 1)
       oprot.writeI64(self.eventsCount)

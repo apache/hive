@@ -2690,7 +2690,7 @@ class NotificationEventsCountRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class NotificationEventsCount
+class NotificationEventsCountResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   EVENTSCOUNT = 1
 

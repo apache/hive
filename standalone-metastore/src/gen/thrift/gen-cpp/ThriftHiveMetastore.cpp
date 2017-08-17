@@ -49316,7 +49316,7 @@ void ThriftHiveMetastoreClient::recv_get_current_notificationEventId(CurrentNoti
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_current_notificationEventId failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst)
+void ThriftHiveMetastoreClient::get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst)
 {
   send_get_notification_events_count(rqst);
   recv_get_notification_events_count(_return);
@@ -49336,7 +49336,7 @@ void ThriftHiveMetastoreClient::send_get_notification_events_count(const Notific
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_get_notification_events_count(NotificationEventsCount& _return)
+void ThriftHiveMetastoreClient::recv_get_notification_events_count(NotificationEventsCountResponse& _return)
 {
 
   int32_t rseqid = 0;
@@ -73192,7 +73192,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_current_notificationEventId(C
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst)
+void ThriftHiveMetastoreConcurrentClient::get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst)
 {
   int32_t seqid = send_get_notification_events_count(rqst);
   recv_get_notification_events_count(_return, seqid);
@@ -73216,7 +73216,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_notification_events_count(
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_get_notification_events_count(NotificationEventsCount& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_get_notification_events_count(NotificationEventsCountResponse& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;

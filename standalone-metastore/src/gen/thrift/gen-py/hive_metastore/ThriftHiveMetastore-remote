@@ -175,7 +175,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
-  print('  NotificationEventsCount get_notification_events_count(NotificationEventsCountRequest rqst)')
+  print('  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)')
   print('  FireEventResponse fire_listener_event(FireEventRequest rqst)')
   print('  void flushCache()')
   print('  CmRecycleResponse cm_recycle(CmRecycleRequest request)')

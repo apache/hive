@@ -382,7 +382,7 @@ class CurrentNotificationEventId;
 
 class NotificationEventsCountRequest;
 
-class NotificationEventsCount;
+class NotificationEventsCountResponse;
 
 class InsertEventRequestData;
 
@@ -7049,30 +7049,30 @@ inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCount
 }
 
 
-class NotificationEventsCount {
+class NotificationEventsCountResponse {
  public:
 
-  NotificationEventsCount(const NotificationEventsCount&);
-  NotificationEventsCount& operator=(const NotificationEventsCount&);
-  NotificationEventsCount() : eventsCount(0) {
+  NotificationEventsCountResponse(const NotificationEventsCountResponse&);
+  NotificationEventsCountResponse& operator=(const NotificationEventsCountResponse&);
+  NotificationEventsCountResponse() : eventsCount(0) {
   }
 
-  virtual ~NotificationEventsCount() throw();
+  virtual ~NotificationEventsCountResponse() throw();
   int64_t eventsCount;
 
   void __set_eventsCount(const int64_t val);
 
-  bool operator == (const NotificationEventsCount & rhs) const
+  bool operator == (const NotificationEventsCountResponse & rhs) const
   {
     if (!(eventsCount == rhs.eventsCount))
       return false;
     return true;
   }
-  bool operator != (const NotificationEventsCount &rhs) const {
+  bool operator != (const NotificationEventsCountResponse &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const NotificationEventsCount & ) const;
+  bool operator < (const NotificationEventsCountResponse & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -7080,9 +7080,9 @@ class NotificationEventsCount {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(NotificationEventsCount &a, NotificationEventsCount &b);
+void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b);
 
-inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCount& obj)
+inline std::ostream& operator<<(std::ostream& out, const NotificationEventsCountResponse& obj)
 {
   obj.printTo(out);
   return out;

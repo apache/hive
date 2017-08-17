@@ -10368,7 +10368,7 @@ module ThriftHiveMetastore
     SUCCESS = 0
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEventsCount}
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEventsCountResponse}
     }
 
     def struct_fields; FIELDS; end

@@ -17173,7 +17173,7 @@ class NotificationEventsCountRequest {
 
 }
 
-class NotificationEventsCount {
+class NotificationEventsCountResponse {
   static $_TSPEC;
 
   /**
@@ -17198,7 +17198,7 @@ class NotificationEventsCount {
   }
 
   public function getName() {
-    return 'NotificationEventsCount';
+    return 'NotificationEventsCountResponse';
   }
 
   public function read($input)
@@ -17235,7 +17235,7 @@ class NotificationEventsCount {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('NotificationEventsCount');
+    $xfer += $output->writeStructBegin('NotificationEventsCountResponse');
     if ($this->eventsCount !== null) {
       $xfer += $output->writeFieldBegin('eventsCount', TType::I64, 1);
       $xfer += $output->writeI64($this->eventsCount);

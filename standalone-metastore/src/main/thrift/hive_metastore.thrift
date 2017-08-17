@@ -864,7 +864,7 @@ struct NotificationEventsCountRequest {
     2: required string dbName,
 }
 
-struct NotificationEventsCount {
+struct NotificationEventsCountResponse {
     1: required i64 eventsCount,
 }
 
@@ -1555,7 +1555,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
-  NotificationEventsCount get_notification_events_count(NotificationEventsCountRequest rqst)
+  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 

@@ -173,7 +173,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
-  virtual void get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst) = 0;
+  virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
   virtual void flushCache() = 0;
   virtual void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) = 0;
@@ -693,7 +693,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_current_notificationEventId(CurrentNotificationEventId& /* _return */) {
     return;
   }
-  void get_notification_events_count(NotificationEventsCount& /* _return */, const NotificationEventsCountRequest& /* rqst */) {
+  void get_notification_events_count(NotificationEventsCountResponse& /* _return */, const NotificationEventsCountRequest& /* rqst */) {
     return;
   }
   void fire_listener_event(FireEventResponse& /* _return */, const FireEventRequest& /* rqst */) {
@@ -19594,11 +19594,11 @@ class ThriftHiveMetastore_get_notification_events_count_result {
   }
 
   virtual ~ThriftHiveMetastore_get_notification_events_count_result() throw();
-  NotificationEventsCount success;
+  NotificationEventsCountResponse success;
 
   _ThriftHiveMetastore_get_notification_events_count_result__isset __isset;
 
-  void __set_success(const NotificationEventsCount& val);
+  void __set_success(const NotificationEventsCountResponse& val);
 
   bool operator == (const ThriftHiveMetastore_get_notification_events_count_result & rhs) const
   {
@@ -19627,7 +19627,7 @@ class ThriftHiveMetastore_get_notification_events_count_presult {
 
 
   virtual ~ThriftHiveMetastore_get_notification_events_count_presult() throw();
-  NotificationEventsCount* success;
+  NotificationEventsCountResponse* success;
 
   _ThriftHiveMetastore_get_notification_events_count_presult__isset __isset;
 
@@ -21009,9 +21009,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_current_notificationEventId(CurrentNotificationEventId& _return);
   void send_get_current_notificationEventId();
   void recv_get_current_notificationEventId(CurrentNotificationEventId& _return);
-  void get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst);
+  void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst);
   void send_get_notification_events_count(const NotificationEventsCountRequest& rqst);
-  void recv_get_notification_events_count(NotificationEventsCount& _return);
+  void recv_get_notification_events_count(NotificationEventsCountResponse& _return);
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst);
   void send_fire_listener_event(const FireEventRequest& rqst);
   void recv_fire_listener_event(FireEventResponse& _return);
@@ -22853,7 +22853,7 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst) {
+  void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -23421,9 +23421,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_current_notificationEventId(CurrentNotificationEventId& _return);
   int32_t send_get_current_notificationEventId();
   void recv_get_current_notificationEventId(CurrentNotificationEventId& _return, const int32_t seqid);
-  void get_notification_events_count(NotificationEventsCount& _return, const NotificationEventsCountRequest& rqst);
+  void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst);
   int32_t send_get_notification_events_count(const NotificationEventsCountRequest& rqst);
-  void recv_get_notification_events_count(NotificationEventsCount& _return, const int32_t seqid);
+  void recv_get_notification_events_count(NotificationEventsCountResponse& _return, const int32_t seqid);
   void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst);
   int32_t send_fire_listener_event(const FireEventRequest& rqst);
   void recv_fire_listener_event(FireEventResponse& _return, const int32_t seqid);
