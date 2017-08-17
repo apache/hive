@@ -21,7 +21,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -33,19 +33,19 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [12]
                         selectExpressions: DoubleColDivideDoubleScalar(col 5, val 0.0) -> 12:double
-                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Limit
                       Number of rows: 100
                       Limit Vectorization:
                           className: VectorLimitOperator
                           native: true
-                      Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -201,7 +201,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -211,7 +211,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3, val 0) -> boolean, FilterLongColLessLongScalar(col 3, val 100000000) -> boolean) -> boolean
                     predicate: ((cbigint > 0) and (cbigint < 100000000)) (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (cbigint - 988888) (type: bigint), (cdouble / UDFToDouble((cbigint - 988888))) (type: double), (1.2 / CAST( (cbigint - 988888) AS decimal(19,0))) (type: decimal(22,21))
                       outputColumnNames: _col0, _col1, _col2
@@ -220,7 +220,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumns: [12, 15, 17]
                           selectExpressions: LongColSubtractLongScalar(col 3, val 988888) -> 12:long, DoubleColDivideDoubleColumn(col 5, col 14)(children: CastLongToDouble(col 13)(children: LongColSubtractLongScalar(col 3, val 988888) -> 13:long) -> 14:double) -> 15:double, DecimalScalarDivideDecimalColumn(val 1.2, col 16)(children: CastLongToDecimal(col 13)(children: LongColSubtractLongScalar(col 3, val 988888) -> 13:long) -> 16:decimal(19,0)) -> 17:decimal(22,21)
-                      Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint), _col1 (type: double)
                         sort order: ++
@@ -228,7 +228,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col2 (type: decimal(22,21))
             Execution mode: vectorized
@@ -257,19 +257,19 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1, 2]
-                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -418,7 +418,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -428,7 +428,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColGreaterEqualDoubleScalar(col 5, val -500.0) -> boolean, FilterDoubleColLessDoubleScalar(col 5, val -199.0) -> boolean) -> boolean
                     predicate: ((cdouble >= -500.0) and (cdouble < -199.0)) (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (cdouble + 200.0) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0)) (type: double), ((cdouble + 200.0) / (cdouble + 200.0)) (type: double), (3.0 / (cdouble + 200.0)) (type: double), (1.2 / (cdouble + 200.0)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col4, _col5
@@ -437,7 +437,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumns: [12, 15, 16, 14, 17]
                           selectExpressions: DoubleColAddDoubleScalar(col 5, val 200.0) -> 12:double, DoubleColDivideDoubleColumn(col 13, col 14)(children: CastLongToDouble(col 3) -> 13:double, DoubleColAddDoubleScalar(col 5, val 200.0) -> 14:double) -> 15:double, DoubleColDivideDoubleColumn(col 13, col 14)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double, DoubleColAddDoubleScalar(col 5, val 200.0) -> 14:double) -> 16:double, DoubleScalarDivideDoubleColumn(val 3.0, col 13)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double) -> 14:double, DoubleScalarDivideDoubleColumn(val 1.2, col 13)(children: DoubleColAddDoubleScalar(col 5, val 200.0) -> 13:double) -> 17:double
-                      Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: double), _col1 (type: double)
                         sort order: ++
@@ -445,7 +445,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
             Execution mode: vectorized
@@ -474,19 +474,19 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1, 2, 1, 3, 4]
-                Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 100
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 100 Data size: 3000 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 21500 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

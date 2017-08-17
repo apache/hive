@@ -63,7 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -73,7 +73,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 1, col 2)(children: col 1) -> boolean, FilterExprAndExpr(children: FilterLongScalarGreaterEqualLongColumn(val -89010, col 0)(children: col 0) -> boolean, FilterDoubleColGreaterDoubleScalar(col 5, val 79.553) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongScalarNotEqualLongColumn(val -563, col 3) -> boolean, FilterExprOrExpr(children: FilterLongColNotEqualLongColumn(col 0, col 3)(children: col 0) -> boolean, FilterDoubleScalarGreaterEqualDoubleColumn(val -3728.0, col 5) -> boolean) -> boolean) -> boolean) -> boolean
                     predicate: ((UDFToInteger(csmallint) >= cint) or ((-89010 >= UDFToInteger(ctinyint)) and (cdouble > 79.553)) or ((-563 <> cbigint) and ((UDFToLong(ctinyint) <> cbigint) or (-3728.0 >= cdouble)))) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), cint (type: int), cdouble (type: double)
                       outputColumnNames: ctinyint, cint, cdouble
@@ -81,7 +81,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 2, 5]
-                      Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(cint), stddev_pop(cdouble), avg(cdouble), var_pop(cdouble), min(ctinyint)
                         Group By Vectorization:

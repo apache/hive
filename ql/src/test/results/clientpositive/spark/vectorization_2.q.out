@@ -63,7 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -73,7 +73,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterTimestampColLessTimestampColumn(col 8, col 9) -> boolean, FilterStringColLikeStringScalar(col 7, pattern b%) -> boolean, FilterDoubleColLessEqualDoubleScalar(col 4, val -5638.14990234375) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColLessDoubleColumn(col 5, col 12)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, FilterExprOrExpr(children: FilterDoubleScalarNotEqualDoubleColumn(val -10669.0, col 12)(children: CastTimestampToDouble(col 9) -> 12:double) -> boolean, FilterLongScalarGreaterLongColumn(val 359, col 2) -> boolean) -> boolean) -> boolean) -> boolean
                     predicate: (((ctimestamp1 < ctimestamp2) and (cstring2 like 'b%') and (cfloat <= -5638.15)) or ((cdouble < UDFToDouble(ctinyint)) and ((-10669.0 <> UDFToDouble(ctimestamp2)) or (359 > cint)))) (type: boolean)
-                    Statistics: Num rows: 4778 Data size: 146682 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4778 Data size: 1027287 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cbigint (type: bigint), cfloat (type: float), cdouble (type: double)
                       outputColumnNames: ctinyint, csmallint, cbigint, cfloat, cdouble
@@ -81,7 +81,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1, 3, 4, 5]
-                      Statistics: Num rows: 4778 Data size: 146682 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4778 Data size: 1027287 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(csmallint), sum(cfloat), var_pop(cbigint), count(), min(ctinyint), avg(cdouble)
                         Group By Vectorization:

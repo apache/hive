@@ -260,7 +260,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cd
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -271,7 +271,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [2]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -299,7 +299,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: hd
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -310,7 +310,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [3]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       Spark Hash Table Sink Vectorization:
                           className: VectorSparkHashTableSinkOperator
@@ -345,7 +345,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -356,7 +356,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumns: [2, 3]
-                    Statistics: Num rows: 20 Data size: 5277 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 20 Data size: 4431 Basic stats: COMPLETE Column stats: NONE
                     Map Join Operator
                       condition map:
                            Left Outer Join 0 to 1
@@ -374,7 +374,7 @@ STAGE PLANS:
                       outputColumnNames: _col1
                       input vertices:
                         1 Map 3
-                      Statistics: Num rows: 22 Data size: 5804 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 22 Data size: 4874 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Left Outer Join 0 to 1
@@ -392,7 +392,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 24 Data size: 6384 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 5361 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col1)
                           Group By Vectorization:

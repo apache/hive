@@ -57,7 +57,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -67,7 +67,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNotNull(col 11) -> boolean, FilterStringColLikeStringScalar(col 6, pattern %b%) -> boolean) -> boolean, FilterExprAndExpr(children: FilterDoubleColEqualDoubleColumn(col 12, col 5)(children: CastLongToDouble(col 0) -> 12:double) -> boolean, SelectColumnIsNotNull(col 9) -> boolean, FilterStringColLikeStringScalar(col 7, pattern a) -> boolean) -> boolean) -> boolean
                     predicate: ((cboolean2 is not null and (cstring1 like '%b%')) or ((UDFToDouble(ctinyint) = cdouble) and ctimestamp2 is not null and (cstring2 like 'a'))) (type: boolean)
-                    Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int)
                       outputColumnNames: ctinyint, csmallint, cint
@@ -75,7 +75,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [0, 1, 2]
-                      Statistics: Num rows: 9216 Data size: 282927 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 9216 Data size: 1981473 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: max(csmallint), count(), min(csmallint), sum(cint), max(ctinyint)
                         Group By Vectorization:
