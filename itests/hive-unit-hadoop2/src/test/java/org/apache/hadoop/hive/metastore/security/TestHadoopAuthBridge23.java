@@ -16,7 +16,7 @@
  * limitations under the License.
  */
  
-package org.apache.hadoop.hive.thrift;
+package org.apache.hadoop.hive.metastore.security;
 
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge.Server.ServerMode;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -71,7 +70,7 @@ public class TestHadoopAuthBridge23 {
 
   public static class MyTokenStore extends MemoryTokenStore {
     static volatile DelegationTokenStore TOKEN_STORE = null;
-    public void init(Object hmsHandler, ServerMode smode) throws TokenStoreException {
+    public void init(Object hmsHandler, HadoopThriftAuthBridge.Server.ServerMode smode) throws TokenStoreException {
       super.init(hmsHandler, smode);
       TOKEN_STORE = this;
       try {
