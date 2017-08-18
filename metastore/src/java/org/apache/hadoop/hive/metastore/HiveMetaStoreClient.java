@@ -194,7 +194,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           metastoreUris[i++] = new URI(
               tmpUri.getScheme(),
               tmpUri.getUserInfo(),
-              ShimLoader.getHadoopThriftAuthBridge().getCanonicalHostName(tmpUri.getHost()),
+              HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
               tmpUri.getPort(),
               tmpUri.getPath(),
               tmpUri.getQuery(),
