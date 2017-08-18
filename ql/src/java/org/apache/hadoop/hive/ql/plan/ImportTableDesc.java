@@ -300,8 +300,12 @@ public class ImportTableDesc {
    * @param replaceMode Determine if this CreateTable should behave like a replace-into alter instead
    */
   public void setReplaceMode(boolean replaceMode) {
-    if (TYPE.TABLE.equals(getTableType())) {
-      createTblDesc.setReplaceMode(replaceMode);
+    switch (getTableType()) {
+      case TABLE:
+        createTblDesc.setReplaceMode(replaceMode);
+        break;
+      case VIEW:
+        createViewDesc.setOrReplace(replaceMode);
     }
   }
 

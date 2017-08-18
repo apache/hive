@@ -1923,6 +1923,21 @@ public class TestReplicationScenarios {
     // view is referring to old database, so no data
     verifyRun("SELECT * from " + dbName + "_dupe.virtual_view2", empty, driverMirror);
     verifyRun("SELECT * from " + dbName + "_dupe.mat_view2", unptn_data, driverMirror);
+
+    // Test "alter table"
+    run("ALTER VIEW " + dbName + ".virtual_view RENAME TO " + dbName + ".virtual_view_rename", driver);
+    verifySetup("SELECT * from " + dbName + ".virtual_view_rename", unptn_data, driver);
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + incrementalDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
+    LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SELECT * from " + dbName + "_dupe.virtual_view_rename", empty, driverMirror);
   }
 
   @Test
