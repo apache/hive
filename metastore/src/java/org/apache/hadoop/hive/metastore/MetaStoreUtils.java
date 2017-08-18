@@ -65,6 +65,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -108,8 +110,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -1258,7 +1258,7 @@ public class MetaStoreUtils {
   }
 
   public static int startMetaStore() throws Exception {
-    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), null);
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
   }
 
   public static int startMetaStore(final HadoopThriftAuthBridge bridge, HiveConf conf) throws Exception {
@@ -1268,7 +1268,7 @@ public class MetaStoreUtils {
   }
 
   public static int startMetaStore(HiveConf conf) throws Exception {
-    return startMetaStore(ShimLoader.getHadoopThriftAuthBridge(), conf);
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
   public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {

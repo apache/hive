@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
@@ -311,8 +312,7 @@ public class MiniHS2 extends AbstractHiveService {
     if (isMetastoreRemote) {
       int metaStorePort = MetaStoreUtils.findFreePort();
       getHiveConf().setVar(ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
-      MetaStoreUtils.startMetaStore(metaStorePort,
-      ShimLoader.getHadoopThriftAuthBridge(), getHiveConf());
+      MetaStoreUtils.startMetaStore(metaStorePort, HadoopThriftAuthBridge.getBridge(), getHiveConf());
     }
 
     hiveServer2 = new HiveServer2();

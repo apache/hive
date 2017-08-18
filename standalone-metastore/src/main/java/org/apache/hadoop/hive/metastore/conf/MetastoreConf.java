@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -361,6 +362,17 @@ public class MetastoreConf {
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
             "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
             "The user has to be aware that the dynamic partition value should not contain this value to avoid confusions."),
+    DELEGATION_KEY_UPDATE_INTERVAL("metastore.cluster.delegation.key.update-interval",
+        "hive.cluster.delegation.key.update-interval", 1, TimeUnit.DAYS, ""),
+    DELEGATION_TOKEN_GC_INTERVAL("metastore.cluster.delegation.token.gc-interval",
+        "hive.cluster.delegation.token.gc-interval", 1, TimeUnit.HOURS, ""),
+    DELEGATION_TOKEN_MAX_LIFETIME("metastore.cluster.delegation.token.max-lifetime",
+        "hive.cluster.delegation.token.max-lifetime", 7, TimeUnit.DAYS, ""),
+    DELEGATION_TOKEN_RENEW_INTERVAL("metastore.cluster.delegation.token.renew-interval",
+      "hive.cluster.delegation.token.renew-interval", 1, TimeUnit.DAYS, ""),
+    DELEGATION_TOKEN_STORE_CLS("metastore.cluster.delegation.token.store.class",
+        "hive.cluster.delegation.token.store.class", MetastoreDelegationTokenManager.class.getName(),
+        "Class to store delegation tokens"),
     DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit",
         "javax.jdo.option.DetachAllOnCommit", true,
         "Detaches all objects from session so that they can be used after transaction is committed"),
