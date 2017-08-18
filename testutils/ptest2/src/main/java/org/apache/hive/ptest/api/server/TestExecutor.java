@@ -30,6 +30,7 @@ import org.apache.hive.ptest.execution.Dirs;
 import org.apache.hive.ptest.execution.LocalCommandFactory;
 import org.apache.hive.ptest.execution.LogDirectoryCleaner;
 import org.apache.hive.ptest.execution.PTest;
+import org.apache.hive.ptest.execution.conf.Context;
 import org.apache.hive.ptest.execution.conf.ExecutionContextConfiguration;
 import org.apache.hive.ptest.execution.conf.TestConfiguration;
 import org.apache.hive.ptest.execution.context.CreateHostsFailedException;
@@ -48,6 +49,8 @@ import org.slf4j.LoggerFactory;
 public class TestExecutor extends Thread {
   private static final Logger LOG = LoggerFactory
       .getLogger(TestExecutor.class);
+  private static final String SERVER_ENV_PROPERTIES = "hive.ptest.server.env.properties";
+
   private final ExecutionContextConfiguration mExecutionContextConfiguration;
   private final ExecutionContextProvider mExecutionContextProvider;
   private final BlockingQueue<Test> mTestQueue;
@@ -110,7 +113,18 @@ public class TestExecutor extends Thread {
             test.setOutputFile(logFile);
             logStream = new PrintStream(logFile);
             logger = new TestLogger(logStream, TestLogger.LEVEL.DEBUG);
-            TestConfiguration testConfiguration = TestConfiguration.fromFile(profileConfFile, logger);
+
+            Context.ContextBuilder builder = new Context.ContextBuilder();
+            builder.addPropertiesFile(profileConfFile);
+
+            String environmentConfigurationFile = System.getProperty(SERVER_ENV_PROPERTIES, null);
+            if (environmentConfigurationFile != null) {
+              builder.addPropertiesFile(environmentConfigurationFile);
+            }
+
+            Context ctx = builder.build();
+
+            TestConfiguration testConfiguration = TestConfiguration.withContext(ctx, logger);
             testConfiguration.setPatch(startRequest.getPatchURL());
             testConfiguration.setJiraName(startRequest.getJiraName());
             testConfiguration.setClearLibraryCache(startRequest.isClearLibraryCache());

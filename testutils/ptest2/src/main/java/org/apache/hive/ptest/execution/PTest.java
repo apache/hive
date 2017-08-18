@@ -41,6 +41,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
+import org.apache.hive.ptest.execution.conf.Context;
 import org.apache.hive.ptest.execution.conf.ExecutionContextConfiguration;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestConfiguration;
@@ -262,6 +263,7 @@ public class PTest {
   }
 
   private static final String PROPERTIES = "properties";
+  private static final String SERVER_ENV_PROPERTIES = "hive.ptest.server.env.properties";
   private static final String REPOSITORY = TestConfiguration.REPOSITORY;
   private static final String REPOSITORY_NAME = TestConfiguration.REPOSITORY_NAME;
   private static final String BRANCH = TestConfiguration.BRANCH;
@@ -282,6 +284,7 @@ public class PTest {
     CommandLineParser parser = new GnuParser();
     Options options = new Options();
     options.addOption(null, PROPERTIES, true, "properties file");
+    options.addOption(null, SERVER_ENV_PROPERTIES, true, "optional properties file with environment properties");
     options.addOption(null, REPOSITORY, true, "Overrides git repository in properties file");
     options.addOption(null, REPOSITORY_NAME, true, "Overrides git repository *name* in properties file");
     options.addOption(null, BRANCH, true, "Overrides git branch in properties file");
@@ -297,8 +300,19 @@ public class PTest {
           join(PTest.class.getName(), "--" + PROPERTIES,"config.properties"));
     }
     String testConfigurationFile = commandLine.getOptionValue(PROPERTIES);
+    String environmentConfigurationFile = commandLine.getOptionValue(SERVER_ENV_PROPERTIES);
+
+    Context.ContextBuilder builder = new Context.ContextBuilder();
+    builder.addPropertiesFile(testConfigurationFile);
+
+    if (environmentConfigurationFile != null) {
+      builder.addPropertiesFile(environmentConfigurationFile);
+    }
+
+    Context ctx = builder.build();
+
     ExecutionContextConfiguration executionContextConfiguration = ExecutionContextConfiguration.
-        fromFile(testConfigurationFile);
+        withContext(ctx);
     String buildTag = System.getenv("BUILD_TAG") == null ? "undefined-"
         + System.currentTimeMillis() : System.getenv("BUILD_TAG");
         File logDir = Dirs.create(new File(executionContextConfiguration.getGlobalLogDirectory(), buildTag));
@@ -307,7 +321,7 @@ public class PTest {
     cleaner.setName("LogCleaner-" + executionContextConfiguration.getGlobalLogDirectory());
     cleaner.setDaemon(true);
     cleaner.start();
-    TestConfiguration conf = TestConfiguration.fromFile(testConfigurationFile, LOG);
+    TestConfiguration conf = TestConfiguration.withContext(ctx, LOG);
     String repository = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY)).trim();
     if(!repository.isEmpty()) {
       conf.setRepository(repository);
