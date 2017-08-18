@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -367,7 +368,7 @@ public class OperatorUtils {
    * Remove the branch that contains the specified operator. Do nothing if there's no branching,
    * i.e. all the upstream operators have only one child.
    */
-  public static void removeBranch(Operator<?> op) {
+  public static void removeBranch(SparkPartitionPruningSinkOperator op) {
     Operator<?> child = op;
     Operator<?> curr = op;
 
@@ -408,5 +409,19 @@ public class OperatorUtils {
       return op.toString() + " (" + ((TableScanOperator) op).getConf().getAlias() + ")";
     }
     return op.toString();
+  }
+
+  /**
+   * Return true if contain branch otherwise return false
+   */
+  public static boolean isInBranch(SparkPartitionPruningSinkOperator op) {
+    Operator<?> curr = op;
+    while (curr.getChildOperators().size() <= 1) {
+      if (curr.getParentOperators() == null || curr.getParentOperators().isEmpty()) {
+        return false;
+      }
+      curr = curr.getParentOperators().get(0);
+    }
+    return true;
   }
 }

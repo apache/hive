@@ -22,9 +22,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -43,4 +50,46 @@ public class TestSparkTask {
     verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_MR_TASKS);
   }
 
+  @Test
+  public void removeEmptySparkTask() {
+    SparkTask grandpa = new SparkTask();
+    SparkWork grandpaWork = new SparkWork("grandpa");
+    grandpaWork.add(new MapWork());
+    grandpa.setWork(grandpaWork);
+
+    SparkTask parent = new SparkTask();
+    SparkWork parentWork = new SparkWork("parent");
+    parentWork.add(new MapWork());
+    parent.setWork(parentWork);
+
+    SparkTask child1 = new SparkTask();
+    SparkWork childWork1 = new SparkWork("child1");
+    childWork1.add(new MapWork());
+    child1.setWork(childWork1);
+
+
+    grandpa.addDependentTask(parent);
+    parent.addDependentTask(child1);
+
+    Assert.assertEquals(grandpa.getChildTasks().size(), 1);
+    Assert.assertEquals(child1.getParentTasks().size(), 1);
+    if (isEmptySparkWork(parent.getWork())) {
+      SparkUtilities.removeEmptySparkTask(parent);
+    }
+
+    Assert.assertEquals(grandpa.getChildTasks().size(), 0);
+    Assert.assertEquals(child1.getParentTasks().size(), 0);
+  }
+
+  private boolean isEmptySparkWork(SparkWork sparkWork) {
+    List<BaseWork> allWorks = sparkWork.getAllWork();
+    boolean allWorksIsEmtpy = true;
+    for (BaseWork work : allWorks) {
+      if (work.getAllOperators().size() > 0) {
+        allWorksIsEmtpy = false;
+        break;
+      }
+    }
+    return allWorksIsEmtpy;
+  }
 }
