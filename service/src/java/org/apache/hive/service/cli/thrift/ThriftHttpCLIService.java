@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.HttpMethod;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -42,7 +44,7 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.FilterMapping;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -50,6 +52,8 @@ import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 
 public class ThriftHttpCLIService extends ThriftCLIService {
+  private static final String APPLICATION_THRIFT = "application/x-thrift";
+
   private final Runnable oomHook;
 
   public ThriftHttpCLIService(CLIService cliService, Runnable oomHook) {
@@ -149,9 +153,18 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         LOG.warn("XSRF filter disabled");
       }
 
-      String httpPath = getHttpPath(hiveConf
+      final String httpPath = getHttpPath(hiveConf
           .getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
-      httpServer.setHandler(context);
+
+      if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED)) {
+        final GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setHandler(context);
+        gzipHandler.addIncludedMethods(HttpMethod.POST);
+        gzipHandler.addIncludedMimeTypes(APPLICATION_THRIFT);
+        httpServer.setHandler(gzipHandler);
+      } else {
+        httpServer.setHandler(context);
+      }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize, bodyRecieveDuration, etc.

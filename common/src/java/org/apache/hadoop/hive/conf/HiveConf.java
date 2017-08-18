@@ -2430,7 +2430,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE("hive.server2.thrift.http.request.header.size", 6*1024,
         "Request header size in bytes, when using HTTP transport mode. Jetty defaults used."),
     HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE("hive.server2.thrift.http.response.header.size", 6*1024,
-        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."),
+        "Response header size in bytes, when using HTTP transport mode. Jetty defaults used."), 
+    HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED("hive.server2.thrift.http.compression.enabled", true,
+        "Enable thrift http compression via Jetty compression support"),
 
     // Cookie based authentication when using HTTP Transport
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
