@@ -121,7 +121,7 @@ public class HiveAlterHandler implements AlterHandler {
     boolean success = false;
     boolean dataWasMoved = false;
     Table oldt = null;
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }
@@ -377,7 +377,7 @@ public class HiveAlterHandler implements AlterHandler {
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     boolean success = false;
     Partition oldPart = null;
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }
@@ -599,7 +599,7 @@ public class HiveAlterHandler implements AlterHandler {
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     List<Partition> oldParts = new ArrayList<Partition>();
     List<List<String>> partValsList = new ArrayList<List<String>>();
-    List<MetaStoreEventListener> transactionalListeners = null;
+    List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
     }

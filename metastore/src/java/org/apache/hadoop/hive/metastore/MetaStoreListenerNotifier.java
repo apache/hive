@@ -55,6 +55,7 @@ import static org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
  */
 @Private
 public class MetaStoreListenerNotifier {
+
   private interface EventNotifier {
     void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException;
   }
@@ -184,7 +185,7 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event) throws MetaException {
 
@@ -192,7 +193,7 @@ public class MetaStoreListenerNotifier {
     Preconditions.checkNotNull(event, "The event must not be null.");
 
     for (MetaStoreEventListener listener : listeners) {
-      notificationEvents.get(eventType).notify(listener, event);
+        notificationEvents.get(eventType).notify(listener, event);
     }
 
     // Each listener called above might set a different parameter on the event.
@@ -214,7 +215,7 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event,
                                                 EnvironmentContext environmentContext) throws MetaException {
@@ -245,7 +246,7 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event,
                                                 EnvironmentContext environmentContext,
