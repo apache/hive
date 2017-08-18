@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.conf;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -3757,9 +3758,9 @@ public class HiveConf extends Configuration {
             + "It is not in list of params that are allowed to be modified at runtime");
       }
     }
-    if (restrictList.contains(name)) {
+    if (Iterables.any(restrictList, restrictedVar -> restrictedVar.startsWith(name))) {
       throw new IllegalArgumentException("Cannot modify " + name + " at runtime. It is in the list"
-          + " of parameters that can't be modified at runtime");
+          + " of parameters that can't be modified at runtime or is prefixed by a restricted variable");
     }
     String oldValue = name != null ? get(name) : null;
     if (name == null || value == null || !value.equals(oldValue)) {

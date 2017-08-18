@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,11 +93,20 @@ public class HiveConfUtil {
    * @param hiddenSet The values to strip
    */
   public static void stripConfigurations(Configuration conf, Set<String> hiddenSet) {
-    for (String name : hiddenSet) {
-      if (conf.get(name) != null) {
-        conf.set(name, StringUtils.EMPTY);
-      }
-    }
+
+    // Find all configurations where the key contains any string from hiddenSet
+    Iterable<Map.Entry<String, String>> matching =
+        Iterables.filter(conf, confEntry -> {
+          for (String name : hiddenSet) {
+            if (confEntry.getKey().startsWith(name)) {
+              return true;
+            }
+          }
+          return false;
+        });
+
+    // Remove the value of every key found matching
+    matching.forEach(entry -> conf.set(entry.getKey(), StringUtils.EMPTY));
   }
 
   /**
