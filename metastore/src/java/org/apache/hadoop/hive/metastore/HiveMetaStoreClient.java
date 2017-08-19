@@ -123,7 +123,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private long retryDelaySeconds = 0;
   private final ClientCapabilities version;
 
-  static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
+  static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(HiveConf conf) throws MetaException {
     this(conf, null, true);
