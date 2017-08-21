@@ -236,7 +236,6 @@ public class TezSessionPoolManager {
         }
       }
     }
-    
 
     sessionLifetimeMs = conf.getTimeVar(
         ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME, TimeUnit.MILLISECONDS);
@@ -337,6 +336,8 @@ public class TezSessionPoolManager {
       default: // All good.
       }
     }
+
+    // Check the restricted configs that the users cannot set.
     for (ConfVars var : restrictedHiveConf) {
       String userValue = HiveConf.getVarWithoutType(conf, var),
           serverValue = HiveConf.getVarWithoutType(initConf, var);
@@ -347,6 +348,14 @@ public class TezSessionPoolManager {
     for (String var : restrictedNonHiveConf) {
       String userValue = conf.get(var), serverValue = initConf.get(var);
       validateRestrictedConfigValues(var, userValue, serverValue);
+    }
+
+    // Propagate this value from HS2; don't allow users to set it.
+    // In HS2, initConf will be set; it won't be set otherwise as noone calls setupPool.
+    // TODO: add a section like the restricted configs for overrides when there's more than one.
+    if (initConf != null) {
+      conf.set(ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID.varname,
+          HiveConf.getVarWithoutType(initConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
     }
 
     // TODO Session re-use completely disabled for doAs=true. Always launches a new session.

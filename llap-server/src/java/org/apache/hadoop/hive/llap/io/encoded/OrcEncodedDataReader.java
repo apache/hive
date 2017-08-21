@@ -204,7 +204,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fs = split.getPath().getFileSystem(jobConf);
     fileKey = determineFileId(fs, split,
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID));
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
     fileMetadata = getOrReadFileMetadata();
     if (readerSchema == null) {
       readerSchema = fileMetadata.getSchema();
@@ -518,7 +519,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private static Object determineFileId(FileSystem fs, FileSplit split,
-      boolean allowSynthetic) throws IOException {
+      boolean allowSynthetic, boolean checkDefaultFs) throws IOException {
     if (split instanceof OrcSplit) {
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) {
@@ -526,7 +527,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic);
+    return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs);
   }
 
   /**

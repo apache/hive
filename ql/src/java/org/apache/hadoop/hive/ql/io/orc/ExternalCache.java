@@ -208,7 +208,7 @@ public class ExternalCache implements FooterCache {
   }
 
   private Long generateTestFileId(final FileStatus fs, List<HdfsFileStatusWithId> files, int i) {
-    final Long fileId = HdfsUtils.createFileId(fs.getPath().toUri().getPath(), fs, false, null);
+    final Long fileId = HdfsUtils.createTestFileId(fs.getPath().toUri().getPath(), fs, false, null);
     files.set(i, new HdfsFileStatusWithId() {
       @Override
       public FileStatus getFileStatus() {
