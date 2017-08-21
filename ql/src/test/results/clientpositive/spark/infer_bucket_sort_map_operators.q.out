@@ -182,7 +182,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -311,7 +311,7 @@ Table:              	test_table_out
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	2                   
+	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	0                   
@@ -457,7 +457,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -563,7 +563,7 @@ Table:              	test_table_out
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	2                   
+	numFiles            	4                   
 	numRows             	309                 
 	rawDataSize         	2728                
 	totalSize           	3037                

@@ -1185,7 +1185,8 @@ public class QTestUtil {
           try {
             // Wait a little for cluster to init, at most 4 minutes
             long endTime = System.currentTimeMillis() + 240000;
-            while (sparkSession.getMemoryAndCores().getSecond() <= 1) {
+            int expectedCores = conf.getInt("spark.executor.instances", 1) * 2;
+            while (sparkSession.getMemoryAndCores().getSecond() < expectedCores) {
               if (System.currentTimeMillis() >= endTime) {
                 String msg = "Timed out waiting for Spark cluster to init";
                 throw new IllegalStateException(msg);

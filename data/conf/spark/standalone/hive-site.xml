@@ -201,7 +201,7 @@
 
 <property>
   <name>spark.master</name>
-  <value>local-cluster[2,2,1024]</value>
+  <value>local-cluster[1,2,1024]</value>
 </property>
 
 <property>

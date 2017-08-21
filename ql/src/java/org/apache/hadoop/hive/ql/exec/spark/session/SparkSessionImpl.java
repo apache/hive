@@ -90,7 +90,7 @@ public class SparkSessionImpl implements SparkSession {
     long totalMemory = (long) (numExecutors * executorMemoryInMB * memoryFraction * 1024 * 1024);
     int totalCores;
     String masterURL = sparkConf.get("spark.master");
-    if (masterURL.startsWith("spark")) {
+    if (masterURL.startsWith("spark") || masterURL.startsWith("local")) {
       totalCores = sparkConf.contains("spark.default.parallelism") ?
           sparkConf.getInt("spark.default.parallelism", 1) :
           hiveSparkClient.getDefaultParallelism();
