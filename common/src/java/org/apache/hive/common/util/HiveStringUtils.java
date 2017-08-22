@@ -87,18 +87,11 @@ public class HiveStringUtils {
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
 
-  /**
-   * Maintain a String pool to reduce memory.
-   */
-  private static final Interner<String> STRING_INTERNER;
-
   static {
     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
     decimalFormat = (DecimalFormat) numberFormat;
     decimalFormat.applyPattern("#.##");
-
-    STRING_INTERNER = Interners.newWeakInterner();
-  }
+}
 
   /**
    * Return the internalized string, or null if the given string is null.
@@ -109,7 +102,7 @@ public class HiveStringUtils {
     if(str == null) {
       return null;
     }
-    return STRING_INTERNER.intern(str);
+    return str.intern();
   }
 
   /**

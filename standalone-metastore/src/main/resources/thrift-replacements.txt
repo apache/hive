@@ -59,3 +59,11 @@ this\.tableName\ \=\ other\.tableName;=this.tableName\ \=\ org.apache.hadoop.hiv
 __this__parameters_copy_key\ \=\ other_element_key;=__this__parameters_copy_key\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element_key);
 __this__parameters_copy_value\ \=\ other_element_value;=__this__parameters_copy_value\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element_value);
 __this_values\.add(other_element);=__this_values.add(org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other_element));
+
+# Fix methods in Partition.java that call Map.put(String key, String value)
+
+this\.parameters\.put\(key,\ val\);=this.parameters.put(org.apache.hadoop.hive.metastore.utils.StringUtils.intern(key),\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(val));
+
+# Fix the deserialization methods in Partitions.java: intern parameters after it's deserialized
+
+struct\.setParametersIsSet\(true\);=struct.parameters\ \=\ org.apache.hadoop.hive.metastore.utils.StringUtils.intern(struct.parameters);\ struct.setParametersIsSet(true);

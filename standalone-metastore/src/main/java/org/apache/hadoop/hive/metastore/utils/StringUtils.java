@@ -32,18 +32,16 @@ import java.util.Set;
 
 public class StringUtils {
 
-  private static final Interner<String> STRING_INTERNER = Interners.newWeakInterner();
-
   /**
    * Return the internalized string, or null if the given string is null.
    * @param str The string to intern
    * @return The identical string cached in the string pool.
    */
   public static String intern(String str) {
-    if(str == null) {
+    if (str == null) {
       return null;
     }
-    return STRING_INTERNER.intern(str);
+    return str.intern();
   }
 
   /**
