@@ -170,7 +170,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private ReplicationSpec getNewEventOnlyReplicationSpec(Long eventId) throws SemanticException {
     ReplicationSpec rspec = getNewReplicationSpec(eventId.toString(), eventId.toString());
-    rspec.setIsIncrementalDump(true);
+    rspec.setReplSpecType(ReplicationSpec.Type.INCREMENTAL_DUMP);
     return rspec;
   }
 
@@ -260,8 +260,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState) {
-    return new ReplicationSpec(true, false, false, evState, objState,
-                               false, true, true);
+    return new ReplicationSpec(true, false, evState, objState, false, true, true);
   }
 
   private String getNextDumpDir() {

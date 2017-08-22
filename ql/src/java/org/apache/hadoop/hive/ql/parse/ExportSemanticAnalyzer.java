@@ -46,6 +46,14 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       replicationSpec = new ReplicationSpec();
     }
+    if (replicationSpec.getCurrentReplicationState() == null) {
+      try {
+        long currentEventId = db.getMSC().getCurrentNotificationEventId().getEventId();
+        replicationSpec.setCurrentReplicationState(String.valueOf(currentEventId));
+      } catch (Exception e) {
+        throw new SemanticException("Error when getting current notification event ID", e);
+      }
+    }
 
     // initialize source table/partition
     TableSpec ts;

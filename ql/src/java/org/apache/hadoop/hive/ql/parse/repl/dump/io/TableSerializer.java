@@ -70,7 +70,8 @@ public class TableSerializer implements JsonWriter.Serializer {
     if (additionalPropertiesProvider.isInReplicationScope()) {
       // Current replication state must be set on the Table object only for bootstrap dump.
       // Event replication State will be null in case of bootstrap dump.
-      if (!additionalPropertiesProvider.isIncrementalDump()) {
+      if (additionalPropertiesProvider.getReplSpecType()
+              != ReplicationSpec.Type.INCREMENTAL_DUMP) {
         table.putToParameters(
                 ReplicationSpec.KEY.CURR_STATE_ID.toString(),
                 additionalPropertiesProvider.getCurrentReplicationState());
