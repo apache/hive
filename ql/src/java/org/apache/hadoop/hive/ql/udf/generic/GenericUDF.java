@@ -24,6 +24,8 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -64,6 +66,8 @@ import org.apache.hive.common.util.DateUtils;
  * array<int>, array<array<int>> and so on (arbitrary levels of nesting). 4. It
  * can do short-circuit evaluations using DeferedObject.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
 
@@ -74,6 +78,8 @@ public abstract class GenericUDF implements Closeable {
    * A Defered Object allows us to do lazy-evaluation and short-circuiting.
    * GenericUDF use DeferedObject to pass arguments.
    */
+  @InterfaceAudience.Public
+  @InterfaceStability.Stable
   public static interface DeferredObject {
     void prepare(int version) throws HiveException;
     Object get() throws HiveException;

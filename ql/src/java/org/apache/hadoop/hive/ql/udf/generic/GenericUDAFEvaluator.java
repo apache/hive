@@ -24,6 +24,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,9 +48,13 @@ import org.apache.hive.common.util.AnnotationUtils;
  * signature - for example, it's easy to write a GenericUDAF that accepts
  * array<int>, array<array<int>> and so on (arbitrary levels of nesting).
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDAFEvaluator implements Closeable {
 
+  @InterfaceAudience.Public
+  @InterfaceStability.Stable
   @Retention(RetentionPolicy.RUNTIME)
   public static @interface AggregationType {
     boolean estimable() default false;
@@ -151,6 +157,8 @@ public abstract class GenericUDAFEvaluator implements Closeable {
   public static interface AggregationBuffer {
   };
 
+  @InterfaceAudience.Public
+  @InterfaceStability.Stable
   public static abstract class AbstractAggregationBuffer implements AggregationBuffer {
     /**
      * Estimate the size of memory which is occupied by aggregation buffer.

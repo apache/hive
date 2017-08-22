@@ -18,12 +18,15 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 
 /**
  * Generic exception class for Hive.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class HiveException extends Exception {
   /**
    * Standard predefined message with error code and possibly SQL State, etc.

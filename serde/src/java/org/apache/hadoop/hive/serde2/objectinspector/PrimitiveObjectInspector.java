@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 
@@ -24,6 +26,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
  * PrimitiveObjectInspector.
  *
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface PrimitiveObjectInspector extends ObjectInspector {
 
   /**

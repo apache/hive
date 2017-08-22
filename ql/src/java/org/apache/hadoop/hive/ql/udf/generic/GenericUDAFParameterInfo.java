@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -40,6 +42,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * data bound to parameter types for <tt>DISTINCT</tt> implementation is
  * handled by the framework and not the <tt>COUNT</tt> UDAF implementation.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface GenericUDAFParameterInfo {
 
   /**

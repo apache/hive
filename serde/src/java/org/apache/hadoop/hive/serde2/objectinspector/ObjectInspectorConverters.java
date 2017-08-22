@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -54,6 +56,8 @@ public final class ObjectInspectorConverters {
   /**
    * A converter which will convert objects with one ObjectInspector to another.
    */
+  @InterfaceAudience.Public
+  @InterfaceStability.Stable
   public static interface Converter {
     Object convert(Object input);
   }
