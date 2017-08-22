@@ -1759,11 +1759,11 @@ Stage-0
     Stage-1
       Reducer 3
       File Output Operator [FS_18]
-        Select Operator [SEL_17] (rows=250 width=178)
+        Select Operator [SEL_17] (rows=183 width=178)
           Output:["_col0","_col1"]
-          Filter Operator [FIL_16] (rows=250 width=178)
+          Filter Operator [FIL_16] (rows=183 width=179)
             predicate:_col4 is null
-            Join Operator [JOIN_15] (rows=250 width=178)
+            Join Operator [JOIN_15] (rows=250 width=179)
               Output:["_col0","_col1","_col4"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
             <-Reducer 2 [PARTITION-LEVEL SORT]
               PARTITION-LEVEL SORT [RS_13]
@@ -1835,7 +1835,7 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_11]
-        Join Operator [JOIN_9] (rows=1 width=178)
+        Join Operator [JOIN_9] (rows=134 width=178)
           Output:["_col0","_col1"],condition map:[{"":"{\"type\":\"Left Semi\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
         <-Map 1 [PARTITION-LEVEL SORT]
           PARTITION-LEVEL SORT [RS_7]
@@ -1885,7 +1885,7 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_11]
-        Join Operator [JOIN_9] (rows=1 width=178)
+        Join Operator [JOIN_9] (rows=134 width=178)
           Output:["_col0","_col1"],condition map:[{"":"{\"type\":\"Left Semi\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
         <-Map 1 [PARTITION-LEVEL SORT]
           PARTITION-LEVEL SORT [RS_7]

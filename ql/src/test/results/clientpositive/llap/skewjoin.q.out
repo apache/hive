@@ -781,7 +781,7 @@ STAGE PLANS:
                   0 _col0 (type: string), UDFToDouble(substring(_col1, 5)) (type: double)
                   1 _col0 (type: string), (substring(_col1, 5) + 1) (type: double)
                 outputColumnNames: _col2, _col3
-                Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 809 Data size: 144002 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(hash(_col2)), sum(hash(_col3))
                   mode: hash

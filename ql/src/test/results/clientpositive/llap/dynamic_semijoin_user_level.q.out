@@ -486,7 +486,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Merge Join Operator [MERGEJOIN_19] (rows=1 width=8)
+              Merge Join Operator [MERGEJOIN_19] (rows=129 width=8)
                 Conds:RS_6._col0, _col1=RS_7._col0, _col1(Inner)
               <-Map 1 [SIMPLE_EDGE] llap
                 SHUFFLE [RS_6]
@@ -551,7 +551,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Merge Join Operator [MERGEJOIN_39] (rows=1 width=8)
+              Merge Join Operator [MERGEJOIN_39] (rows=129 width=8)
                 Conds:RS_6._col0, _col1=RS_7._col0, _col1(Inner)
               <-Map 4 [SIMPLE_EDGE] llap
                 PARTITION_ONLY_SHUFFLE [RS_7]
