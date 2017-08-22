@@ -1924,7 +1924,7 @@ public class TestReplicationScenarios {
     verifyRun("SELECT * from " + dbName + "_dupe.virtual_view2", empty, driverMirror);
     verifyRun("SELECT * from " + dbName + "_dupe.mat_view2", unptn_data, driverMirror);
 
-    // Test "alter table"
+    // Test "alter table" with rename
     run("ALTER VIEW " + dbName + ".virtual_view RENAME TO " + dbName + ".virtual_view_rename", driver);
     verifySetup("SELECT * from " + dbName + ".virtual_view_rename", unptn_data, driver);
 
@@ -1938,6 +1938,21 @@ public class TestReplicationScenarios {
     printOutput(driverMirror);
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
     verifyRun("SELECT * from " + dbName + "_dupe.virtual_view_rename", empty, driverMirror);
+
+    // Test "alter table" with schema change
+    run("ALTER VIEW " + dbName + ".virtual_view_rename AS SELECT a, concat(a, '_') as a_ FROM " + dbName + ".unptned", driver);
+    verifySetup("SHOW COLUMNS FROM " + dbName + ".virtual_view_rename", new String[] {"a", "a_"}, driver);
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + incrementalDumpId, driver);
+    incrementalDumpLocn = getResult(0, 0, driver);
+    incrementalDumpId = getResult(0, 1, true, driver);
+    LOG.info("Incremental-dump: Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    printOutput(driverMirror);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'", driverMirror);
+    verifyRun("SHOW COLUMNS FROM " + dbName + "_dupe.virtual_view_rename", new String[] {"a", "a_"}, driverMirror);
   }
 
   @Test
@@ -2942,7 +2957,7 @@ public class TestReplicationScenarios {
     LOG.info("Got {}", results);
     assertEquals(data.length, results.size());
     for (int i = 0; i < data.length; i++) {
-      assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
+      assertEquals(data[i].toLowerCase().trim(), results.get(i).toLowerCase().trim());
     }
   }
 
