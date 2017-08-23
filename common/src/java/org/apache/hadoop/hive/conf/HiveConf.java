@@ -2844,7 +2844,9 @@ public class HiveConf extends Configuration {
         "Whether to generate consistent split locations when generating splits in the AM"),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez/Spark (Hadoop 2 only)"),
     HIVE_PREWARM_NUM_CONTAINERS("hive.prewarm.numcontainers", 10, "Controls the number of containers to prewarm for Tez/Spark (Hadoop 2 only)"),
-
+    HIVE_PREWARM_SPARK_TIMEOUT("hive.prewarm.spark.timeout", "5000ms",
+         new TimeValidator(TimeUnit.MILLISECONDS),
+         "Time to wait to finish prewarming spark executors"),
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none", new StringSet("none", "idonly", "traverse", "execution"), ""),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false, ""),
 

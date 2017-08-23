@@ -205,6 +205,21 @@
 </property>
 
 <property>
+  <name>hive.prewarm.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.prewarm.numcontainers</name>
+  <value>1</value>
+</property>
+
+<property>
+  <name>hive.prewarm.spark.timeout</name>
+  <value>30s</value>
+</property>
+
+<property>
   <name>spark.serializer</name>
   <value>org.apache.spark.serializer.KryoSerializer</value>
 </property>

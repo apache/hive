@@ -1116,7 +1116,7 @@ public class QTestUtil {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
     Utilities.clearWorkMap(conf);
-    CliSessionState ss = createSessionState();
+    CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
 
@@ -1176,33 +1176,6 @@ public class QTestUtil {
     return outf.getAbsolutePath();
   }
 
-  private CliSessionState createSessionState() {
-   return new CliSessionState(conf) {
-      @Override
-      public void setSparkSession(SparkSession sparkSession) {
-        super.setSparkSession(sparkSession);
-        if (sparkSession != null) {
-          try {
-            // Wait a little for cluster to init, at most 4 minutes
-            long endTime = System.currentTimeMillis() + 240000;
-            int expectedCores = conf.getInt("spark.executor.instances", 1) * 2;
-            while (sparkSession.getMemoryAndCores().getSecond() < expectedCores) {
-              if (System.currentTimeMillis() >= endTime) {
-                String msg = "Timed out waiting for Spark cluster to init";
-                throw new IllegalStateException(msg);
-              }
-              Thread.sleep(100);
-            }
-          } catch (Exception e) {
-            String msg = "Error trying to obtain executor info: " + e;
-            LOG.error(msg, e);
-            throw new IllegalStateException(msg, e);
-          }
-        }
-      }
-    };
-  }
-
   private CliSessionState startSessionState(boolean canReuseSession)
       throws IOException {
 
@@ -1211,7 +1184,7 @@ public class QTestUtil {
 
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
-    CliSessionState ss = createSessionState();
+    CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
     ss.out = System.out;
