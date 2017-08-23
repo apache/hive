@@ -15,36 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class IncrementalLoadEventLog extends AbstractReplLog {
+public class BootstrapLoadBegin extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String eventId;
+  private String dumpDir;
 
   @JsonProperty
-  private String eventType;
+  private DumpType loadType;
 
   @JsonProperty
-  private String eventsLoadProgress;
+  private Long numTables;
 
   @JsonProperty
-  private Long loadTime;
+  private Long numFunctions;
 
-  public IncrementalLoadEventLog(String dbName,
-                                 String eventId,
-                                 String eventType,
-                                 Long eventSeqNo,
-                                 Long numEvents) {
+  @JsonProperty
+  private Long loadStartTime;
+
+  public BootstrapLoadBegin(String dbName, String dumpDir, long numTables, long numFunctions) {
     this.dbName = dbName;
-    this.eventId = eventId;
-    this.eventType = eventType;
-    this.eventsLoadProgress = new String(new StringBuilder()
-                                            .append(eventSeqNo).append("/").append(numEvents));
-    this.loadTime = System.currentTimeMillis() / 1000;
+    this.dumpDir = dumpDir;
+    this.loadType = DumpType.BOOTSTRAP;
+    this.numTables = numTables;
+    this.numFunctions = numFunctions;
+    this.loadStartTime = System.currentTimeMillis() / 1000;
   }
 }

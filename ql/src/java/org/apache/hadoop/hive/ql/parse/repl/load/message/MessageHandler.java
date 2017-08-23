@@ -45,9 +45,10 @@ public interface MessageHandler {
   UpdatedMetaDataTracker getUpdatedMetadata();
 
   class Context {
-    final String dbName, tableName, location;
-    final Task<? extends Serializable> precursor;
-    DumpMetaData dmd;
+    public String dbName;
+    public final String tableName, location;
+    public final Task<? extends Serializable> precursor;
+    public DumpMetaData dmd;
     final HiveConf hiveConf;
     final Hive db;
     final org.apache.hadoop.hive.ql.Context nestedContext;
@@ -83,7 +84,7 @@ public interface MessageHandler {
       return StringUtils.isEmpty(tableName);
     }
 
-    boolean isDbNameEmpty() {
+    public boolean isDbNameEmpty() {
       return StringUtils.isEmpty(dbName);
     }
 

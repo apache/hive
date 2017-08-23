@@ -15,37 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapLoadTableLog extends AbstractReplLog {
+public class IncrementalDumpEnd extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String tableName;
+  private DumpType dumpType;
 
   @JsonProperty
-  private String tableType;
+  private Long actualNumEvents;
 
   @JsonProperty
-  private String tablesLoadProgress;
+  private Long dumpEndTime;
 
   @JsonProperty
-  private Long loadTime;
+  private String dumpDir;
 
-  public BootstrapLoadTableLog(String dbName,
-                               String tableName,
-                               TableType tableType,
-                               Long tableSeqNo,
-                               Long numTables) {
+  @JsonProperty
+  private String lastReplId;
+
+  public IncrementalDumpEnd(String dbName,
+                            long actualNumEvents,
+                            String dumpDir,
+                            String lastReplId) {
     this.dbName = dbName;
-    this.tableName = tableName;
-    this.tableType = tableType.toString();
-    this.tablesLoadProgress = new String(new StringBuilder()
-                                          .append(tableSeqNo).append("/").append(numTables));
-    this.loadTime = System.currentTimeMillis() / 1000;
+    this.dumpType = DumpType.INCREMENTAL;
+    this.actualNumEvents = actualNumEvents;
+    this.dumpEndTime = System.currentTimeMillis() / 1000;
+    this.dumpDir = dumpDir;
+    this.lastReplId = lastReplId;
   }
 }

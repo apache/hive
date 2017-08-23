@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class IncrementalLoadEndLog extends AbstractReplLog {
+public class IncrementalLoadEnd extends ReplState {
   @JsonProperty
   private String dbName;
 
@@ -39,10 +40,10 @@ public class IncrementalLoadEndLog extends AbstractReplLog {
   @JsonProperty
   private String lastReplId;
 
-  public IncrementalLoadEndLog(String dbName,
-                               Long numEvents,
-                               String dumpDir,
-                               String lastReplId) {
+  public IncrementalLoadEnd(String dbName,
+                            long numEvents,
+                            String dumpDir,
+                            String lastReplId) {
     this.dbName = dbName;
     this.loadType = DumpType.INCREMENTAL;
     this.numEvents = numEvents;

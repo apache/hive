@@ -15,37 +15,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapDumpTableLog extends AbstractReplLog {
+public class BootstrapDumpEnd extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String tableName;
+  private DumpType dumpType;
 
   @JsonProperty
-  private String tableType;
+  private Long actualNumTables;
 
   @JsonProperty
-  private String tablesDumpProgress;
+  private Long actualNumFunctions;
 
   @JsonProperty
-  private Long dumpTime;
+  private Long dumpEndTime;
 
-  public BootstrapDumpTableLog(String dbName,
-                               String tableName,
-                               TableType tableType,
-                               Long tableSeqNo,
-                               Long estimatedNumTables) {
+  @JsonProperty
+  private String dumpDir;
+
+  @JsonProperty
+  private String lastReplId;
+
+  public BootstrapDumpEnd(String dbName,
+                          long actualNumTables,
+                          long actualNumFunctions,
+                          String dumpDir,
+                          String lastReplId) {
     this.dbName = dbName;
-    this.tableName = tableName;
-    this.tableType = tableType.toString();
-    this.tablesDumpProgress = new String(new StringBuilder()
-                                        .append(tableSeqNo).append("/").append(estimatedNumTables));
-    this.dumpTime = System.currentTimeMillis() / 1000;
+    this.dumpType = DumpType.BOOTSTRAP;
+    this.actualNumTables = actualNumTables;
+    this.actualNumFunctions = actualNumFunctions;
+    this.dumpEndTime = System.currentTimeMillis() / 1000;
+    this.dumpDir = dumpDir;
+    this.lastReplId = lastReplId;
   }
 }

@@ -15,49 +15,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.logger;
+package org.apache.hadoop.hive.ql.parse.repl.load.log;
 
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.ql.parse.repl.log.message.*;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.state.*;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
 public class BootstrapLoadLogger extends ReplLogger {
   private String dbName;
   private String dumpDir;
-  private Long numTables;
-  private Long numFunctions;
-  private Long tableSeqNo;
-  private Long functionSeqNo;
+  private long numTables;
+  private long numFunctions;
+  private long tableSeqNo;
+  private long functionSeqNo;
 
   public BootstrapLoadLogger(String dbName, String dumpDir, long numTables, long numFunctions) {
     this.dbName = dbName;
     this.dumpDir = dumpDir;
-    this.numTables = new Long(numTables);
-    this.numFunctions = new Long(numFunctions);
-    this.tableSeqNo = new Long(0);
-    this.functionSeqNo = new Long(0);
+    this.numTables = numTables;
+    this.numFunctions = numFunctions;
+    this.tableSeqNo = 0;
+    this.functionSeqNo = 0;
   }
 
   @Override
   public void startLog() {
-    (new BootstrapLoadBeginLog(dbName, dumpDir, numTables, numFunctions)).log(LogTag.START);
+    (new BootstrapLoadBegin(dbName, dumpDir, numTables, numFunctions)).log(LogTag.REPL_START);
   }
 
   @Override
   public void tableLog(String tableName, TableType tableType) {
     tableSeqNo++;
-    (new BootstrapLoadTableLog(dbName, tableName, tableType, tableSeqNo, numTables))
+    (new BootstrapLoadTable(dbName, tableName, tableType, tableSeqNo, numTables))
             .log(LogTag.TABLE_LOAD);
   }
 
   @Override
   public void functionLog(String funcName) {
     functionSeqNo++;
-    (new BootstrapLoadFunctionLog(dbName, funcName, functionSeqNo, numFunctions))
+    (new BootstrapLoadFunction(dbName, funcName, functionSeqNo, numFunctions))
             .log(LogTag.FUNCTION_LOAD);
   }
 
   @Override
   public void endLog(String dumpDir, String lastReplId) {
-    (new BootstrapLoadEndLog(dbName, numTables, numFunctions, dumpDir, lastReplId)).log(LogTag.END);
+    (new BootstrapLoadEnd(dbName, numTables, numFunctions, dumpDir, lastReplId))
+            .log(LogTag.REPL_END);
   }
 }

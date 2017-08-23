@@ -15,29 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapLoadFunctionLog extends AbstractReplLog {
+public class IncrementalLoadEvent extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String functionName;
+  private String eventId;
 
   @JsonProperty
-  private String functionsLoadProgress;
+  private String eventType;
+
+  @JsonProperty
+  private String eventsLoadProgress;
 
   @JsonProperty
   private Long loadTime;
 
-  public BootstrapLoadFunctionLog(String dbName, String funcName,
-                                  Long functionSeqNo, Long numFunctions) {
+  public IncrementalLoadEvent(String dbName,
+                              String eventId,
+                              String eventType,
+                              long eventSeqNo,
+                              long numEvents) {
     this.dbName = dbName;
-    this.functionName = funcName;
-    this.functionsLoadProgress = new String(new StringBuilder()
-                                          .append(functionSeqNo).append("/").append(numFunctions));
+    this.eventId = eventId;
+    this.eventType = eventType;
+    this.eventsLoadProgress = new String(new StringBuilder()
+                                            .append(eventSeqNo).append("/").append(numEvents));
     this.loadTime = System.currentTimeMillis() / 1000;
   }
 }

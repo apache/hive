@@ -15,44 +15,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapLoadEndLog extends AbstractReplLog {
+public class BootstrapDumpTable extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private DumpType loadType;
+  private String tableName;
 
   @JsonProperty
-  private Long numTables;
+  private String tableType;
 
   @JsonProperty
-  private Long numFunctions;
+  private String tablesDumpProgress;
 
   @JsonProperty
-  private Long loadEndTime;
+  private Long dumpTime;
 
-  @JsonProperty
-  private String dumpDir;
-
-  @JsonProperty
-  private String lastReplId;
-
-  public BootstrapLoadEndLog(String dbName,
-                             Long numTables,
-                             Long numFunctions,
-                             String dumpDir,
-                             String lastReplId) {
+  public BootstrapDumpTable(String dbName,
+                            String tableName,
+                            TableType tableType,
+                            long tableSeqNo,
+                            long estimatedNumTables) {
     this.dbName = dbName;
-    this.loadType = DumpType.BOOTSTRAP;
-    this.numTables = numTables;
-    this.numFunctions = numFunctions;
-    this.loadEndTime = System.currentTimeMillis() / 1000;
-    this.dumpDir = dumpDir;
-    this.lastReplId = lastReplId;
+    this.tableName = tableName;
+    this.tableType = tableType.name();
+    this.tablesDumpProgress = new String(new StringBuilder()
+                                        .append(tableSeqNo).append("/").append(estimatedNumTables));
+    this.dumpTime = System.currentTimeMillis() / 1000;
   }
 }

@@ -15,36 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapLoadBeginLog extends AbstractReplLog {
+public class BootstrapDumpBegin extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String dumpDir;
+  private DumpType dumpType;
 
   @JsonProperty
-  private DumpType loadType;
+  private Long estimatedNumTables;
 
   @JsonProperty
-  private Long numTables;
+  private Long estimatedNumFunctions;
 
   @JsonProperty
-  private Long numFunctions;
+  private Long dumpStartTime;
 
-  @JsonProperty
-  private Long loadStartTime;
-
-  public BootstrapLoadBeginLog(String dbName,  String dumpDir, Long numTables, Long numFunctions) {
+  public BootstrapDumpBegin(String dbName, long estimatedNumTables, long estimatedNumFunctions) {
     this.dbName = dbName;
-    this.dumpDir = dumpDir;
-    this.loadType = DumpType.BOOTSTRAP;
-    this.numTables = numTables;
-    this.numFunctions = numFunctions;
-    this.loadStartTime = System.currentTimeMillis() / 1000;
+    this.dumpType = DumpType.BOOTSTRAP;
+    this.estimatedNumTables = estimatedNumTables;
+    this.estimatedNumFunctions = estimatedNumFunctions;
+    this.dumpStartTime = System.currentTimeMillis() / 1000;
   }
 }

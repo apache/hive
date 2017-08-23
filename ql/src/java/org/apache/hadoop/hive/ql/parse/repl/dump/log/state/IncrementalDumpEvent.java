@@ -15,32 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class IncrementalLoadBeginLog extends AbstractReplLog {
+public class IncrementalDumpEvent extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String dumpDir;
+  private String eventId;
 
   @JsonProperty
-  private DumpType loadType;
+  private String eventType;
 
   @JsonProperty
-  private Long numEvents;
+  private String eventsDumpProgress;
 
   @JsonProperty
-  private Long loadStartTime;
+  private Long dumpTime;
 
-  public IncrementalLoadBeginLog(String dbName, String dumpDir, Long numEvents) {
+  public IncrementalDumpEvent(String dbName,
+                              String eventId,
+                              String eventType,
+                              long eventSeqNo,
+                              long estimatedNumEvents) {
     this.dbName = dbName;
-    this.dumpDir = dumpDir;
-    this.loadType = DumpType.INCREMENTAL;
-    this.numEvents = numEvents;
-    this.loadStartTime = System.currentTimeMillis() / 1000;
+    this.eventId = eventId;
+    this.eventType = eventType;
+    this.eventsDumpProgress = new String(new StringBuilder()
+                                        .append(eventSeqNo).append("/").append(estimatedNumEvents));
+    this.dumpTime = System.currentTimeMillis() / 1000;
   }
 }

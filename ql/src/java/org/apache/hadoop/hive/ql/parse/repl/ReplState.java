@@ -15,30 +15,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl;
 
-import org.codehaus.jackson.map.DeserializationConfig;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class AbstractReplLog {
-  static final Logger REPL_LOG = LoggerFactory.getLogger("ReplState");
-  static final ObjectMapper mapper = new ObjectMapper(); // Thread-safe.
+public abstract class ReplState {
+  @JsonIgnoreProperties
+  private static final Logger REPL_LOG = LoggerFactory.getLogger("ReplState");
+
+  @JsonIgnoreProperties
+  private static final ObjectMapper mapper = new ObjectMapper(); // Thread-safe.
 
   static {
-    mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     mapper.configure(SerializationConfig.Feature.AUTO_DETECT_GETTERS, false);
     mapper.configure(SerializationConfig.Feature.AUTO_DETECT_IS_GETTERS, false);
     mapper.configure(SerializationConfig.Feature.AUTO_DETECT_FIELDS, false);
   }
 
+  public enum LogTag {
+    REPL_START,
+    TABLE_DUMP,
+    FUNCTION_DUMP,
+    EVENT_DUMP,
+    TABLE_LOAD,
+    FUNCTION_LOAD,
+    EVENT_LOAD,
+    REPL_END
+  }
+
   public void log(LogTag tag) {
     try {
-      REPL_LOG.info("{}: {}", tag.toString(), mapper.writeValueAsString(this));
+      REPL_LOG.info("{}: {}", tag.name(), mapper.writeValueAsString(this));
     } catch (Exception exception) {
-      throw new IllegalArgumentException("Could not serialize: ", exception);
+      REPL_LOG.error("Could not serialize REPL log: {}", exception.getMessage());
     }
   }
 }

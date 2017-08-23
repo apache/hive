@@ -24,8 +24,8 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.repl.log.logger.BootstrapLoadLogger;
-import org.apache.hadoop.hive.ql.parse.repl.log.logger.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 
 import java.io.IOException;
 import java.util.Arrays;

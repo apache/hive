@@ -15,40 +15,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.logger;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log;
 
-import org.apache.hadoop.hive.ql.parse.repl.log.message.IncrementalLoadBeginLog;
-import org.apache.hadoop.hive.ql.parse.repl.log.message.IncrementalLoadEndLog;
-import org.apache.hadoop.hive.ql.parse.repl.log.message.IncrementalLoadEventLog;
-import org.apache.hadoop.hive.ql.parse.repl.log.message.LogTag;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.IncrementalDumpBegin;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.IncrementalDumpEnd;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.state.IncrementalDumpEvent;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
-public class IncrementalLoadLogger extends ReplLogger {
+public class IncrementalDumpLogger extends ReplLogger {
   private String dbName;
-  private String dumpDir;
-  private Long numEvents;
-  private Long eventSeqNo;
+  private long estimatedNumEvents;
+  private long eventSeqNo;
 
-  public IncrementalLoadLogger(String dbName, String dumpDir, int numEvents) {
+  public IncrementalDumpLogger(String dbName, long estimatedNumEvents) {
     this.dbName = dbName;
-    this.dumpDir = dumpDir;
-    this.numEvents = new Long(numEvents);
-    this.eventSeqNo = new Long(0);
+    this.estimatedNumEvents = estimatedNumEvents;
+    this.eventSeqNo = 0;
   }
 
   @Override
   public void startLog() {
-    (new IncrementalLoadBeginLog(dbName, dumpDir, numEvents)).log(LogTag.START);
+    (new IncrementalDumpBegin(dbName, estimatedNumEvents)).log(LogTag.REPL_START);
   }
 
   @Override
   public void eventLog(String eventId, String eventType) {
     eventSeqNo++;
-    (new IncrementalLoadEventLog(dbName, eventId, eventType, eventSeqNo, numEvents))
-            .log(LogTag.EVENT_LOAD);
+    (new IncrementalDumpEvent(dbName, eventId, eventType, eventSeqNo, estimatedNumEvents))
+            .log(LogTag.EVENT_DUMP);
   }
 
   @Override
   public void endLog(String dumpDir, String lastReplId) {
-    (new IncrementalLoadEndLog(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.END);
+    (new IncrementalDumpEnd(dbName, eventSeqNo, dumpDir, lastReplId)).log(LogTag.REPL_END);
   }
 }

@@ -15,29 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class BootstrapDumpFunctionLog extends AbstractReplLog {
+public class IncrementalDumpBegin extends ReplState {
   @JsonProperty
   private String dbName;
 
   @JsonProperty
-  private String functionName;
+  private DumpType dumpType;
 
   @JsonProperty
-  private String functionsDumpProgress;
+  private Long estimatedNumEvents;
 
   @JsonProperty
-  private Long dumpTime;
+  private Long dumpStartTime;
 
-  public BootstrapDumpFunctionLog(String dbName, String funcName,
-                                  Long functionSeqNo, Long estimatedNumFunctions) {
+  public IncrementalDumpBegin(String dbName, long estimatedNumEvents) {
     this.dbName = dbName;
-    this.functionName = funcName;
-    this.functionsDumpProgress = new String(new StringBuilder()
-                                  .append(functionSeqNo).append("/").append(estimatedNumFunctions));
-    this.dumpTime = System.currentTimeMillis() / 1000;
+    this.dumpType = DumpType.INCREMENTAL;
+    this.estimatedNumEvents = estimatedNumEvents;
+    this.dumpStartTime = System.currentTimeMillis() / 1000;
   }
 }

@@ -15,26 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.log.message;
+package org.apache.hadoop.hive.ql.parse.repl;
 
-public enum LogTag {
-  START("REPL_START"),
-  TABLE_DUMP("TABLE_DUMP"),
-  FUNCTION_DUMP("FUNCTION_DUMP"),
-  EVENT_DUMP("EVENT_DUMP"),
-  TABLE_LOAD("TABLE_LOAD"),
-  FUNCTION_LOAD("FUNCTION_LOAD"),
-  EVENT_LOAD("EVENT_LOAD"),
-  END("REPL_END")
-  ;
+import org.apache.hadoop.hive.metastore.TableType;
 
-  String tag = null;
-  LogTag(String tag) {
-    this.tag = tag;
+public abstract class ReplLogger {
+
+  public ReplLogger() {
   }
 
-  @Override
-  public String toString(){
-    return tag;
+  public abstract void startLog();
+  public abstract void endLog(String dumpDir, String lastReplId);
+
+  public void tableLog(String tableName, TableType tableType) {
+  }
+  public void functionLog(String funcName){
+  }
+  public void eventLog(String eventId, String eventType) {
   }
 }
