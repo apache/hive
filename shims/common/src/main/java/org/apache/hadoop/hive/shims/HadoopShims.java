@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.shims;
 
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -659,7 +657,7 @@ public interface HadoopShims {
    * Gets file ID. Only supported on hadoop-2.
    * @return inode ID of the file.
    */
-  long getFileId(DistributedFileSystem fs, String path) throws IOException;
+  long getFileId(FileSystem fs, String path) throws IOException;
 
   /** Clones the UGI and the Subject. */
   UserGroupInformation cloneUgi(UserGroupInformation baseUgi) throws IOException;

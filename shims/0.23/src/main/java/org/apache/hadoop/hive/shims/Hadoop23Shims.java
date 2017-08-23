@@ -1378,8 +1378,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public long getFileId(DistributedFileSystem fs, String path) throws IOException {
-    return fs.getClient().getFileInfo(path).getFileId();
+  public long getFileId(FileSystem fs, String path) throws IOException {
+    return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
   }
 
 
