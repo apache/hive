@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 
 /**
- * The list of pruned partitions.
+ * The list of column stats and their state.
  */
 public class ColumnStatsList {
 
