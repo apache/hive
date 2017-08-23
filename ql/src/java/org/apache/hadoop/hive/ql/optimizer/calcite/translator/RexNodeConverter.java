@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToChar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToDecimal;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToTimestampLocalTZ;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
@@ -382,7 +383,7 @@ public class RexNodeConverter {
           || (udf instanceof GenericUDFToDecimal) || (udf instanceof GenericUDFToDate)
           // Calcite can not specify the scale for timestamp. As a result, all
           // the millisecond part will be lost
-          || (udf instanceof GenericUDFTimestamp)
+          || (udf instanceof GenericUDFTimestamp) || (udf instanceof GenericUDFToTimestampLocalTZ)
           || (udf instanceof GenericUDFToBinary) || castExprUsingUDFBridge(udf)) {
         castExpr = cluster.getRexBuilder().makeAbstractCast(
             TypeConverter.convert(func.getTypeInfo(), cluster.getTypeFactory()),

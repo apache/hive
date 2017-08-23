@@ -99,7 +99,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -834,7 +834,7 @@ public class StatsUtils {
       cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPTZ_TYPE_NAME)) {
+        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
@@ -1144,7 +1144,7 @@ public class StatsUtils {
         || colTypeLowerCase.equals("long")) {
       return JavaDataModel.get().primitive2();
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPTZ_TYPE_NAME)) {
+        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfTimestamp();
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       return JavaDataModel.get().lengthOfDate();
@@ -1182,7 +1182,7 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       return JavaDataModel.get().lengthForBooleanArrayOfSize(length);
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-        colTypeLowerCase.equals(serdeConstants.TIMESTAMPTZ_TYPE_NAME)) {
+        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       return JavaDataModel.get().lengthForTimestampArrayOfSize(length);
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       return JavaDataModel.get().lengthForDateArrayOfSize(length);
@@ -1268,7 +1268,7 @@ public class StatsUtils {
     } else if (oi instanceof WritableShortObjectInspector) {
       return JavaDataModel.get().primitive1();
     } else if (oi instanceof WritableTimestampObjectInspector ||
-        oi instanceof WritableTimestampTZObjectInspector) {
+        oi instanceof WritableTimestampLocalTZObjectInspector) {
       return JavaDataModel.get().lengthOfTimestamp();
     }
 
@@ -1648,7 +1648,7 @@ public class StatsUtils {
           int acl = (int) Math.round(cs.getAvgColLen());
           sizeOf = JavaDataModel.get().lengthForByteArrayOfSize(acl);
         } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
-            colTypeLowerCase.equals(serdeConstants.TIMESTAMPTZ_TYPE_NAME)) {
+            colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
           sizeOf = JavaDataModel.get().lengthOfTimestamp();
         } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
           sizeOf = JavaDataModel.get().lengthOfDecimal();

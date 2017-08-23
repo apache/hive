@@ -402,7 +402,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
-    system.registerGenericUDF(serdeConstants.TIMESTAMPTZ_TYPE_NAME, GenericUDFToTimestampTZ.class);
+    system.registerGenericUDF(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, GenericUDFToTimestampLocalTZ.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, GenericUDFToIntervalYearMonth.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, GenericUDFToIntervalDayTime.class);
     system.registerGenericUDF(serdeConstants.BINARY_TYPE_NAME, GenericUDFToBinary.class);
@@ -1538,7 +1538,7 @@ public final class FunctionRegistry {
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
-        udfClass == GenericUDFToTimestampTZ.class;
+        udfClass == GenericUDFToTimestampLocalTZ.class;
   }
 
   /**

@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.TimeZone;
 
@@ -29,8 +30,8 @@ public class TestTimestampTZ {
   @Test
   public void testConvertToUTC() {
     String s = "2017-04-14 18:00:00 Asia/Shanghai";
-    TimestampTZ timestampTZ = TimestampTZ.parse(s);
-    Assert.assertEquals("2017-04-14 10:00:00.0 Z", timestampTZ.toString());
+    TimestampTZ timestampTZ = TimestampTZUtil.parse(s, ZoneId.of("UTC"));
+    Assert.assertEquals("2017-04-14 10:00:00.0 UTC", timestampTZ.toString());
   }
 
   @Test
@@ -39,10 +40,10 @@ public class TestTimestampTZ {
     String s2 = "2017-04-14 10:00:00.00 GMT";
     String s3 = "2017-04-14 18:00:00 UTC+08:00";
     String s4 = "2017-04-14 18:00:00 Europe/London";
-    TimestampTZ tstz1 = TimestampTZ.parse(s1);
-    TimestampTZ tstz2 = TimestampTZ.parse(s2);
-    TimestampTZ tstz3 = TimestampTZ.parse(s3);
-    TimestampTZ tstz4 = TimestampTZ.parse(s4);
+    TimestampTZ tstz1 = TimestampTZUtil.parse(s1);
+    TimestampTZ tstz2 = TimestampTZUtil.parse(s2);
+    TimestampTZ tstz3 = TimestampTZUtil.parse(s3);
+    TimestampTZ tstz4 = TimestampTZUtil.parse(s4);
 
     Assert.assertEquals(tstz1, tstz2);
     Assert.assertEquals(tstz1, tstz3);
@@ -55,47 +56,47 @@ public class TestTimestampTZ {
   public void testDST() {
     String s1 = "2005-04-03 02:01:00 America/Los_Angeles";
     String s2 = "2005-04-03 03:01:00 America/Los_Angeles";
-    Assert.assertEquals(TimestampTZ.parse(s1), TimestampTZ.parse(s2));
+    Assert.assertEquals(TimestampTZUtil.parse(s1), TimestampTZUtil.parse(s2));
   }
 
   @Test
   public void testFromToInstant() {
     String s1 = "2017-04-14 18:00:00 UTC";
-    TimestampTZ tstz = TimestampTZ.parse(s1);
+    TimestampTZ tstz = TimestampTZUtil.parse(s1);
     long seconds = tstz.getEpochSecond();
     int nanos = tstz.getNanos();
-    Assert.assertEquals(tstz, new TimestampTZ(seconds, nanos));
+    Assert.assertEquals(tstz, new TimestampTZ(seconds, nanos, ZoneId.of("UTC")));
 
     nanos += 123000000;
-    Assert.assertEquals("2017-04-14 18:00:00.123 Z", new TimestampTZ(seconds, nanos).toString());
+    Assert.assertEquals("2017-04-14 18:00:00.123 UTC", new TimestampTZ(seconds, nanos, ZoneId.of("UTC")).toString());
 
     seconds -= 3;
-    Assert.assertEquals("2017-04-14 17:59:57.123 Z", new TimestampTZ(seconds, nanos).toString());
+    Assert.assertEquals("2017-04-14 17:59:57.123 UTC", new TimestampTZ(seconds, nanos, ZoneId.of("UTC")).toString());
   }
 
   @Test
   public void testVariations() {
     // Omitting zone or time part is allowed
-    TimestampTZ.parse("2017-01-01 13:33:00");
-    TimestampTZ.parse("2017-11-08 Europe/London");
-    TimestampTZ.parse("2017-05-20");
-    TimestampTZ.parse("2017-11-08GMT");
-    TimestampTZ.parse("2017-10-11 GMT+8:00");
-    TimestampTZ.parse("2017-05-08 07:45:00-3:00");
+    TimestampTZUtil.parse("2017-01-01 13:33:00", ZoneId.of("UTC"));
+    TimestampTZUtil.parse("2017-11-08 Europe/London");
+    TimestampTZUtil.parse("2017-05-20", ZoneId.of("UTC"));
+    TimestampTZUtil.parse("2017-11-08GMT");
+    TimestampTZUtil.parse("2017-10-11 GMT+8:00");
+    TimestampTZUtil.parse("2017-05-08 07:45:00-3:00");
   }
 
   @Test
   public void testInvalidStrings() {
     // invalid zone
     try {
-      TimestampTZ.parse("2017-01-01 13:33:00 foo");
+      TimestampTZUtil.parse("2017-01-01 13:33:00 foo");
       Assert.fail("Invalid timezone ID should cause exception");
     } catch (DateTimeParseException e) {
       // expected
     }
     // invalid time part
     try {
-      TimestampTZ.parse("2017-01-01 13:33:61");
+      TimestampTZUtil.parse("2017-01-01 13:33:61");
       Assert.fail("Invalid time should cause exception");
     } catch (DateTimeParseException e) {
       // expected
@@ -108,10 +109,26 @@ public class TestTimestampTZ {
     try {
       // Use system zone when converting from timestamp to timestamptz
       String s = "2017-06-12 23:12:56.34";
-      TimeZone.setDefault(TimeZone.getTimeZone("Europe/London"));
-      TimestampTZ tstz1 = TimestampTZ.convert(Timestamp.valueOf(s));
-      TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-      TimestampTZ tstz2 = TimestampTZ.convert(Timestamp.valueOf(s));
+      TimestampTZ tstz1 = TimestampTZUtil.convert(
+          Timestamp.valueOf(s),
+          TimeZone.getTimeZone("Europe/London").toZoneId());
+      TimestampTZ tstz2 = TimestampTZUtil.convert(
+          Timestamp.valueOf(s),
+          TimeZone.getTimeZone("America/Los_Angeles").toZoneId());
+      Assert.assertTrue(tstz1.compareTo(tstz2) < 0);
+    } finally {
+      TimeZone.setDefault(defaultZone);
+    }
+  }
+
+  @Test
+  public void testConvertFromTimestamp2() {
+    TimeZone defaultZone = TimeZone.getDefault();
+    try {
+      // Use system zone when converting from timestamp to timestamptz
+      String s = "2017-06-12 23:12:56.34";
+      TimestampTZ tstz1 = TimestampTZUtil.parse(s + " " + TimeZone.getTimeZone("Europe/London").getID());
+      TimestampTZ tstz2 = TimestampTZUtil.parse(s + " " + TimeZone.getTimeZone("America/Los_Angeles").getID());
       Assert.assertTrue(tstz1.compareTo(tstz2) < 0);
     } finally {
       TimeZone.setDefault(defaultZone);

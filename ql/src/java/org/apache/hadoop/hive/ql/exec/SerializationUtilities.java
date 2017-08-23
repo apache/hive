@@ -29,6 +29,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,8 @@ import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -316,13 +319,15 @@ public class SerializationUtilities {
     public void write(Kryo kryo, Output output, TimestampTZ object) {
       output.writeLong(object.getEpochSecond());
       output.writeInt(object.getNanos());
+      output.writeString(object.getZonedDateTime().getZone().getId());
     }
 
     @Override
     public TimestampTZ read(Kryo kryo, Input input, Class<TimestampTZ> type) {
       long seconds = input.readLong();
       int nanos = input.readInt();
-      return new TimestampTZ(seconds, nanos);
+      String zoneId = input.readString();
+      return new TimestampTZ(seconds, nanos, ZoneId.of(zoneId));
     }
   }
 

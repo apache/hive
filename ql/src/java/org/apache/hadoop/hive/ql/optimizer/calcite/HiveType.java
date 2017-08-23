@@ -6,31 +6,43 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.calcite.sql.type.AbstractSqlType;
+import org.apache.calcite.sql.type.SqlTypeName;
 
-public class WritableConstantTimestampTZObjectInspector
-    extends WritableTimestampTZObjectInspector implements ConstantObjectInspector {
+/**
+ * Hive-specific type.
+ *
+ * TODO: Created to represent timestamp with time-zone type.
+ * It can be removed once the type exists in Calcite.
+ */
+public class HiveType extends AbstractSqlType {
+  private final Class clazz;
 
-  private TimestampTZWritable value;
-
-  public WritableConstantTimestampTZObjectInspector(TimestampTZWritable value) {
-    this.value = value;
+  public HiveType(Class clazz) {
+    super(SqlTypeName.NULL, true, null);
+    this.clazz = clazz;
+    computeDigest();
   }
 
-  @Override
-  public Object getWritableConstantValue() {
-    return value;
+  protected void generateTypeString(StringBuilder sb, boolean withDetail) {
+    sb.append("HiveType(");
+    sb.append(clazz);
+    sb.append(")");
   }
+
+  public Class getTypeClass() {
+    return clazz;
+  }
+
 }

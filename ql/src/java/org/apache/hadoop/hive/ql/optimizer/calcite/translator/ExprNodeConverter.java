@@ -48,8 +48,10 @@ import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -265,8 +267,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, null);
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
     } else {
@@ -334,8 +340,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(secsBd));
       }
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, literal.getValue3());
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }

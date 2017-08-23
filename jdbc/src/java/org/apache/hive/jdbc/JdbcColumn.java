@@ -145,8 +145,8 @@ public class JdbcColumn {
       return Type.DATE_TYPE;
     } else if ("timestamp".equalsIgnoreCase(type)) {
       return Type.TIMESTAMP_TYPE;
-    } else if (serdeConstants.TIMESTAMPTZ_TYPE_NAME.equalsIgnoreCase(type)) {
-      return Type.TIMESTAMPTZ_TYPE;
+    } else if (serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.equalsIgnoreCase(type)) {
+      return Type.TIMESTAMPLOCALTZ_TYPE;
     } else if ("interval_year_month".equalsIgnoreCase(type)) {
       return Type.INTERVAL_YEAR_MONTH_TYPE;
     } else if ("interval_day_time".equalsIgnoreCase(type)) {
@@ -200,8 +200,8 @@ public class JdbcColumn {
       return serdeConstants.BIGINT_TYPE_NAME;
     } else if ("timestamp".equalsIgnoreCase(type)) {
       return serdeConstants.TIMESTAMP_TYPE_NAME;
-    } else if (serdeConstants.TIMESTAMPTZ_TYPE_NAME.equalsIgnoreCase(type)) {
-      return serdeConstants.TIMESTAMPTZ_TYPE_NAME;
+    } else if (serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.equalsIgnoreCase(type)) {
+      return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME;
     } else if ("date".equalsIgnoreCase(type)) {
       return serdeConstants.DATE_TYPE_NAME;
     } else if ("interval_year_month".equalsIgnoreCase(type)) {

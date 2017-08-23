@@ -15,22 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.lazybinary;
+package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampTZObjectInspector;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-public class LazyBinaryTimestampTZ extends
-    LazyBinaryPrimitive<WritableTimestampTZObjectInspector, TimestampTZWritable> {
+public interface TimestampLocalTZObjectInspector extends PrimitiveObjectInspector {
 
-  public LazyBinaryTimestampTZ(WritableTimestampTZObjectInspector oi) {
-    super(oi);
-    data = new TimestampTZWritable();
-  }
+  TimestampLocalTZWritable getPrimitiveWritableObject(Object o);
 
-  @Override
-  public void init(ByteArrayRef bytes, int start, int length) {
-    data.set(bytes.getData(), start);
-  }
+  TimestampTZ getPrimitiveJavaObject(Object o);
 }

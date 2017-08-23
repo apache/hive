@@ -961,9 +961,9 @@ public final class ConstantPropagateProcFactory {
         TypeInfo typeInfo = poi.getTypeInfo();
         o = poi.getPrimitiveJavaObject(o);
         if (typeInfo.getTypeName().contains(serdeConstants.DECIMAL_TYPE_NAME)
-            || typeInfo.getTypeName()
-                .contains(serdeConstants.VARCHAR_TYPE_NAME)
-            || typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)) {
+            || typeInfo.getTypeName().contains(serdeConstants.VARCHAR_TYPE_NAME)
+            || typeInfo.getTypeName().contains(serdeConstants.CHAR_TYPE_NAME)
+            || typeInfo.getTypeName().contains(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
           return new ExprNodeConstantDesc(typeInfo, o);
         }
       } else if (udf instanceof GenericUDFStruct

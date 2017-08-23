@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -515,8 +515,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
         t.writeToByteStream(byteStream);
         return;
       }
-      case TIMESTAMPTZ: {
-        TimestampTZWritable t = ((TimestampTZObjectInspector) poi).getPrimitiveWritableObject(obj);
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZWritable t = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
         return;
       }

@@ -72,9 +72,9 @@ public enum Type {
   TIMESTAMP_TYPE("TIMESTAMP",
       java.sql.Types.TIMESTAMP,
       TTypeId.TIMESTAMP_TYPE),
-  TIMESTAMPTZ_TYPE(serdeConstants.TIMESTAMPTZ_TYPE_NAME.toUpperCase(),
-      Types.TIMESTAMP_WITH_TIMEZONE,
-      TTypeId.TIMESTAMPTZ_TYPE),
+  TIMESTAMPLOCALTZ_TYPE(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase(),
+      java.sql.Types.OTHER,
+      TTypeId.TIMESTAMPLOCALTZ_TYPE),
   INTERVAL_YEAR_MONTH_TYPE("INTERVAL_YEAR_MONTH",
       java.sql.Types.OTHER,
       TTypeId.INTERVAL_YEAR_MONTH_TYPE),
@@ -230,8 +230,8 @@ public enum Type {
       case TIMESTAMP: {
         return Type.TIMESTAMP_TYPE;
       }
-      case TIMESTAMPTZ: {
-        return Type.TIMESTAMPTZ_TYPE;
+      case TIMESTAMPLOCALTZ: {
+        return Type.TIMESTAMPLOCALTZ_TYPE;
       }
       case INTERVAL_YEAR_MONTH: {
         return Type.INTERVAL_YEAR_MONTH_TYPE;

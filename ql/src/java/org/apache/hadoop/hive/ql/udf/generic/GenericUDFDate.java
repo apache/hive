@@ -87,7 +87,7 @@ public class GenericUDFDate extends GenericUDF {
       timestampConverter = new TimestampConverter(argumentOI,
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
       break;
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
     case DATE:
       dateWritableConverter = ObjectInspectorConverters.getConverter(argumentOI,
           PrimitiveObjectInspectorFactory.writableDateObjectInspector);
@@ -121,7 +121,7 @@ public class GenericUDFDate extends GenericUDF {
           .getTimestamp();
       output.set(DateWritable.millisToDays(ts.getTime()));
       break;
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
     case DATE:
       DateWritable dw = (DateWritable) dateWritableConverter.convert(arguments[0].get());
       output.set(dw);

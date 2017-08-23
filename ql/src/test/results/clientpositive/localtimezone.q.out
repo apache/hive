@@ -1,0 +1,558 @@
+PREHOOK: query: drop table `date_test`
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table `date_test`
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table `timestamp_test`
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table `timestamp_test`
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table `timestamptz_test`
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table `timestamptz_test`
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table `date_test` (`mydate1` date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_test
+POSTHOOK: query: create table `date_test` (`mydate1` date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_test
+PREHOOK: query: insert into `date_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@date_test
+POSTHOOK: query: insert into `date_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@date_test
+POSTHOOK: Lineage: date_test.mydate1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: create table `timestamp_test` (`mydate1` timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_test
+POSTHOOK: query: create table `timestamp_test` (`mydate1` timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_test
+PREHOOK: query: insert into `timestamp_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@timestamp_test
+POSTHOOK: query: insert into `timestamp_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@timestamp_test
+POSTHOOK: Lineage: timestamp_test.mydate1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with local time zone)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamptz_test
+POSTHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with local time zone)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamptz_test
+PREHOOK: query: insert into `timestamptz_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@timestamptz_test
+POSTHOOK: query: insert into `timestamptz_test` VALUES
+  ('2011-01-01 01:01:01.123'),
+  ('2011-01-01 01:01:01.123 Europe/Rome'),
+  ('2011-01-01 01:01:01.123 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912'),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome'),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
+  ('2011-01-01 01:01:01.12345678912 xyz')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@timestamptz_test
+POSTHOOK: Lineage: timestamptz_test.mydate1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from `date_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `date_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_test
+#### A masked pattern was here ####
+2011-01-01
+2010-12-31
+2010-12-31
+2011-01-01
+2010-12-31
+2010-12-31
+NULL
+PREHOOK: query: select * from `timestamp_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamp_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123
+2010-12-31 16:01:01.123
+2010-12-31 22:01:01.123
+2011-01-01 01:01:01.123456789
+2010-12-31 16:01:01.123456789
+2010-12-31 22:01:01.123456789
+NULL
+PREHOOK: query: select * from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123 US/Pacific
+2010-12-31 16:01:01.123 US/Pacific
+2010-12-31 22:01:01.123 US/Pacific
+2011-01-01 01:01:01.123456789 US/Pacific
+2010-12-31 16:01:01.123456789 US/Pacific
+2010-12-31 22:01:01.123456789 US/Pacific
+NULL
+PREHOOK: query: select * from `date_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `date_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_test
+#### A masked pattern was here ####
+2011-01-01
+2010-12-31
+2010-12-31
+2011-01-01
+2010-12-31
+2010-12-31
+NULL
+PREHOOK: query: select * from `timestamp_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamp_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123
+2010-12-31 16:01:01.123
+2010-12-31 22:01:01.123
+2011-01-01 01:01:01.123456789
+2010-12-31 16:01:01.123456789
+2010-12-31 22:01:01.123456789
+NULL
+PREHOOK: query: select * from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01 10:01:01.123 Europe/Rome
+2011-01-01 01:01:01.123 Europe/Rome
+2011-01-01 07:01:01.123 Europe/Rome
+2011-01-01 10:01:01.123456789 Europe/Rome
+2011-01-01 01:01:01.123456789 Europe/Rome
+2011-01-01 07:01:01.123456789 Europe/Rome
+NULL
+PREHOOK: query: select * from `date_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `date_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_test
+#### A masked pattern was here ####
+2011-01-01
+2010-12-31
+2010-12-31
+2011-01-01
+2010-12-31
+2010-12-31
+NULL
+PREHOOK: query: select * from `timestamp_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamp_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123
+2010-12-31 16:01:01.123
+2010-12-31 22:01:01.123
+2011-01-01 01:01:01.123456789
+2010-12-31 16:01:01.123456789
+2010-12-31 22:01:01.123456789
+NULL
+PREHOOK: query: select * from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123 America/Los_Angeles
+2010-12-31 16:01:01.123 America/Los_Angeles
+2010-12-31 22:01:01.123 America/Los_Angeles
+2011-01-01 01:01:01.123456789 America/Los_Angeles
+2010-12-31 16:01:01.123456789 America/Los_Angeles
+2010-12-31 22:01:01.123456789 America/Los_Angeles
+NULL
+PREHOOK: query: select * from `date_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `date_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_test
+#### A masked pattern was here ####
+2011-01-01
+2010-12-31
+2010-12-31
+2011-01-01
+2010-12-31
+2010-12-31
+NULL
+PREHOOK: query: select * from `timestamp_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamp_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123
+2010-12-31 16:01:01.123
+2010-12-31 22:01:01.123
+2011-01-01 01:01:01.123456789
+2010-12-31 16:01:01.123456789
+2010-12-31 22:01:01.123456789
+NULL
+PREHOOK: query: select * from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01 02:01:01.123 GMT-07:00
+2010-12-31 17:01:01.123 GMT-07:00
+2010-12-31 23:01:01.123 GMT-07:00
+2011-01-01 02:01:01.123456789 GMT-07:00
+2010-12-31 17:01:01.123456789 GMT-07:00
+2010-12-31 23:01:01.123456789 GMT-07:00
+NULL
+PREHOOK: query: select extract(year from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(year from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011
+2010
+2010
+2011
+2010
+2010
+NULL
+PREHOOK: query: select extract(quarter from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(quarter from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+1
+4
+4
+1
+4
+4
+NULL
+PREHOOK: query: select extract(month from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(month from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+1
+12
+12
+1
+12
+12
+NULL
+PREHOOK: query: select extract(day from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(day from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+1
+31
+31
+1
+31
+31
+NULL
+PREHOOK: query: select extract(hour from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(hour from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2
+17
+23
+2
+17
+23
+NULL
+PREHOOK: query: select extract(minute from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(minute from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+1
+NULL
+PREHOOK: query: select extract(second from `mydate1`) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select extract(second from `mydate1`) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+1
+1
+1
+1
+1
+1
+NULL
+PREHOOK: query: select cast(`mydate1` as date) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`mydate1` as date) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01
+2010-12-31
+2010-12-31
+2011-01-01
+2010-12-31
+2010-12-31
+NULL
+PREHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `date_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_test
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `date_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_test
+#### A masked pattern was here ####
+2011-01-01 00:00:00.0 GMT-07:00
+2010-12-31 00:00:00.0 GMT-07:00
+2010-12-31 00:00:00.0 GMT-07:00
+2011-01-01 00:00:00.0 GMT-07:00
+2010-12-31 00:00:00.0 GMT-07:00
+2010-12-31 00:00:00.0 GMT-07:00
+NULL
+PREHOOK: query: select cast(`mydate1` as timestamp) from `timestamptz_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`mydate1` as timestamp) from `timestamptz_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2011-01-01 02:01:01.123
+2010-12-31 17:01:01.123
+2010-12-31 23:01:01.123
+2011-01-01 02:01:01.123456789
+2010-12-31 17:01:01.123456789
+2010-12-31 23:01:01.123456789
+NULL
+PREHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `timestamp_test`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`mydate1` as timestamp with local time zone) from `timestamp_test`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_test
+#### A masked pattern was here ####
+2011-01-01 01:01:01.123 GMT-07:00
+2010-12-31 16:01:01.123 GMT-07:00
+2010-12-31 22:01:01.123 GMT-07:00
+2011-01-01 01:01:01.123456789 GMT-07:00
+2010-12-31 16:01:01.123456789 GMT-07:00
+2010-12-31 22:01:01.123456789 GMT-07:00
+NULL
+PREHOOK: query: select `mydate1` from `timestamptz_test` group by `mydate1`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select `mydate1` from `timestamptz_test` group by `mydate1`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+NULL
+2010-12-31 17:01:01.123 GMT-07:00
+2010-12-31 17:01:01.123456789 GMT-07:00
+2010-12-31 23:01:01.123 GMT-07:00
+2010-12-31 23:01:01.123456789 GMT-07:00
+2011-01-01 02:01:01.123 GMT-07:00
+2011-01-01 02:01:01.123456789 GMT-07:00
+PREHOOK: query: select a.`mydate1` as c1, b.`mydate1` as c2
+from `timestamptz_test` a join `timestamptz_test` b
+on a.`mydate1` = b.`mydate1`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+POSTHOOK: query: select a.`mydate1` as c1, b.`mydate1` as c2
+from `timestamptz_test` a join `timestamptz_test` b
+on a.`mydate1` = b.`mydate1`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test
+#### A masked pattern was here ####
+2010-12-31 17:01:01.123 GMT-07:00	2010-12-31 17:01:01.123 GMT-07:00
+2010-12-31 17:01:01.123456789 GMT-07:00	2010-12-31 17:01:01.123456789 GMT-07:00
+2010-12-31 23:01:01.123 GMT-07:00	2010-12-31 23:01:01.123 GMT-07:00
+2010-12-31 23:01:01.123456789 GMT-07:00	2010-12-31 23:01:01.123456789 GMT-07:00
+2011-01-01 02:01:01.123 GMT-07:00	2011-01-01 02:01:01.123 GMT-07:00
+2011-01-01 02:01:01.123456789 GMT-07:00	2011-01-01 02:01:01.123456789 GMT-07:00
+PREHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with local time zone, `item` string, `price` double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamptz_test2
+POSTHOOK: query: create table `timestamptz_test2` (`mydate1` timestamp with local time zone, `item` string, `price` double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamptz_test2
+PREHOOK: query: insert into `timestamptz_test2` VALUES
+  ('2011-01-01 01:01:01.123', 'laptop 1', 9.2),
+  ('2011-01-01 01:01:01.123', 'mouse 1', 3.1),
+  ('2011-01-01 01:01:01.123 Europe/Rome', 'keyboard 1', 4.2),
+  ('2011-01-01 01:01:01.123 GMT-05:00', 'keyboard 2', 3.9),
+  ('2011-01-01 01:01:01.123 GMT-05:00', 'keyboard 3', 3.99),
+  ('2011-01-01 01:01:01.12345678912', 'mouse 2', 4.594),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome', 'laptop 2', 10),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome', 'hdmi', 1.25),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00', 'pin', null),
+  ('2011-01-01 01:01:01.12345678912 xyz', 'cable', 0.0)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@timestamptz_test2
+POSTHOOK: query: insert into `timestamptz_test2` VALUES
+  ('2011-01-01 01:01:01.123', 'laptop 1', 9.2),
+  ('2011-01-01 01:01:01.123', 'mouse 1', 3.1),
+  ('2011-01-01 01:01:01.123 Europe/Rome', 'keyboard 1', 4.2),
+  ('2011-01-01 01:01:01.123 GMT-05:00', 'keyboard 2', 3.9),
+  ('2011-01-01 01:01:01.123 GMT-05:00', 'keyboard 3', 3.99),
+  ('2011-01-01 01:01:01.12345678912', 'mouse 2', 4.594),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome', 'laptop 2', 10),
+  ('2011-01-01 01:01:01.12345678912 Europe/Rome', 'hdmi', 1.25),
+  ('2011-01-01 01:01:01.12345678912 GMT-05:00', 'pin', null),
+  ('2011-01-01 01:01:01.12345678912 xyz', 'cable', 0.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@timestamptz_test2
+POSTHOOK: Lineage: timestamptz_test2.item SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: timestamptz_test2.mydate1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: timestamptz_test2.price EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: select `item`, `price`,
+rank() over (partition by `mydate1` order by `price`) as r
+from `timestamptz_test2`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test2
+#### A masked pattern was here ####
+POSTHOOK: query: select `item`, `price`,
+rank() over (partition by `mydate1` order by `price`) as r
+from `timestamptz_test2`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test2
+#### A masked pattern was here ####
+cable	0.0	1
+keyboard 1	4.2	1
+hdmi	1.25	1
+laptop 2	10.0	2
+keyboard 2	3.9	1
+keyboard 3	3.99	2
+pin	NULL	1
+mouse 1	3.1	1
+laptop 1	9.2	2
+mouse 2	4.594	1
+PREHOOK: query: select `item`, `price`,
+rank() over (partition by cast(`mydate1` as date) order by `price`) as r
+from `timestamptz_test2`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamptz_test2
+#### A masked pattern was here ####
+POSTHOOK: query: select `item`, `price`,
+rank() over (partition by cast(`mydate1` as date) order by `price`) as r
+from `timestamptz_test2`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamptz_test2
+#### A masked pattern was here ####
+cable	0.0	1
+pin	NULL	1
+hdmi	1.25	2
+keyboard 2	3.9	3
+keyboard 3	3.99	4
+keyboard 1	4.2	5
+laptop 2	10.0	6
+mouse 1	3.1	1
+mouse 2	4.594	2
+laptop 1	9.2	3

@@ -201,7 +201,7 @@ public class ColumnValue {
       return dateValue((Date)value);
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
-    case TIMESTAMPTZ_TYPE:
+    case TIMESTAMPLOCALTZ_TYPE:
       return timestampTZValue((TimestampTZ) value);
     case INTERVAL_YEAR_MONTH_TYPE:
       return stringValue((HiveIntervalYearMonth) value);

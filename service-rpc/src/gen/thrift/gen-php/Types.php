@@ -65,7 +65,7 @@ final class TTypeId {
   const CHAR_TYPE = 19;
   const INTERVAL_YEAR_MONTH_TYPE = 20;
   const INTERVAL_DAY_TIME_TYPE = 21;
-  const TIMESTAMPTZ_TYPE = 22;
+  const TIMESTAMPLOCALTZ_TYPE = 22;
   static public $__names = array(
     0 => 'BOOLEAN_TYPE',
     1 => 'TINYINT_TYPE',
@@ -89,7 +89,7 @@ final class TTypeId {
     19 => 'CHAR_TYPE',
     20 => 'INTERVAL_YEAR_MONTH_TYPE',
     21 => 'INTERVAL_DAY_TIME_TYPE',
-    22 => 'TIMESTAMPTZ_TYPE',
+    22 => 'TIMESTAMPLOCALTZ_TYPE',
   );
 }
 
@@ -10101,7 +10101,7 @@ final class Constant extends \Thrift\Type\TConstant {
             19 => "CHAR",
             20 => "INTERVAL_YEAR_MONTH",
             21 => "INTERVAL_DAY_TIME",
-            22 => "TIMESTAMP WITH TIME ZONE",
+            22 => "TIMESTAMP WITH LOCAL TIME ZONE",
     );
   }
 

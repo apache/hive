@@ -67,7 +67,7 @@ enum TProtocolVersion {
   // V10 adds support for in place updates via GetOperationStatus
   HIVE_CLI_SERVICE_PROTOCOL_V10
 
-  // V11 adds timestamp with time zone type
+  // V11 adds timestamp with local time zone type
   HIVE_CLI_SERVICE_PROTOCOL_V11
 }
 
@@ -94,7 +94,7 @@ enum TTypeId {
   CHAR_TYPE,
   INTERVAL_YEAR_MONTH_TYPE,
   INTERVAL_DAY_TIME_TYPE,
-  TIMESTAMPTZ_TYPE
+  TIMESTAMPLOCALTZ_TYPE
 }
 
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -115,7 +115,7 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.CHAR_TYPE,
   TTypeId.INTERVAL_YEAR_MONTH_TYPE,
   TTypeId.INTERVAL_DAY_TIME_TYPE,
-  TTypeId.TIMESTAMPTZ_TYPE
+  TTypeId.TIMESTAMPLOCALTZ_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -153,7 +153,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.CHAR_TYPE: "CHAR"
   TTypeId.INTERVAL_YEAR_MONTH_TYPE: "INTERVAL_YEAR_MONTH"
   TTypeId.INTERVAL_DAY_TIME_TYPE: "INTERVAL_DAY_TIME"
-  TTypeId.TIMESTAMPTZ_TYPE: "TIMESTAMP WITH TIME ZONE"
+  TTypeId.TIMESTAMPLOCALTZ_TYPE: "TIMESTAMP WITH LOCAL TIME ZONE"
 }
 
 // Thrift does not support recursively defined types or forward declarations,

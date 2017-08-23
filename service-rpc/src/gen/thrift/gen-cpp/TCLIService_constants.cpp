@@ -60,7 +60,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)19, "CHAR"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)20, "INTERVAL_YEAR_MONTH"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)21, "INTERVAL_DAY_TIME"));
-  TYPE_NAMES.insert(std::make_pair((TTypeId::type)22, "TIMESTAMP WITH TIME ZONE"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)22, "TIMESTAMP WITH LOCAL TIME ZONE"));
 
   CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
 

@@ -27,14 +27,18 @@ import org.apache.hadoop.io.WritableUtils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.Arrays;
 
 /**
  * Writable for TimestampTZ. Copied from TimestampWritable.
  * After we replace {@link java.sql.Timestamp} with {@link java.time.LocalDateTime} for Timestamp,
  * it'll need a new Writable.
+ * All timestamp with time zone will be serialized as UTC retaining the instant.
+ * E.g. "2017-04-14 18:00:00 Asia/Shanghai" will be converted to
+ * "2017-04-14 10:00:00.0 Z".
  */
-public class TimestampTZWritable implements WritableComparable<TimestampTZWritable> {
+public class TimestampLocalTZWritable implements WritableComparable<TimestampLocalTZWritable> {
 
   public static final byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
   private static final int DECIMAL_OR_SECOND_VINT_FLAG = 1 << 31;
@@ -48,6 +52,7 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
   public static final int BINARY_SORTABLE_LENGTH = 11;
 
   private TimestampTZ timestampTZ = new TimestampTZ();
+  private ZoneId timeZone;
 
   /**
    * true if data is stored in timestamptz field rather than byte arrays.
@@ -63,27 +68,28 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
   private byte[] externalBytes;
   private int offset;
 
-  public TimestampTZWritable() {
-    bytesEmpty = false;
-    currentBytes = internalBytes;
-    offset = 0;
+  public TimestampLocalTZWritable() {
+    this.bytesEmpty = false;
+    this.currentBytes = internalBytes;
+    this.offset = 0;
   }
 
-  public TimestampTZWritable(byte[] bytes, int offset) {
-    set(bytes, offset);
+  public TimestampLocalTZWritable(byte[] bytes, int offset, ZoneId timeZone) {
+    set(bytes, offset, timeZone);
   }
 
-  public TimestampTZWritable(TimestampTZWritable other) {
-    this(other.getBytes(), 0);
+  public TimestampLocalTZWritable(TimestampLocalTZWritable other) {
+    this(other.getBytes(), 0, other.getTimestampTZ().getZonedDateTime().getZone());
   }
 
-  public TimestampTZWritable(TimestampTZ tstz) {
+  public TimestampLocalTZWritable(TimestampTZ tstz) {
     set(tstz);
   }
 
-  public void set(byte[] bytes, int offset) {
+  public void set(byte[] bytes, int offset, ZoneId timeZone) {
     externalBytes = bytes;
     this.offset = offset;
+    this.timeZone = timeZone;
     bytesEmpty = false;
     timestampTZEmpty = true;
     currentBytes = externalBytes;
@@ -95,18 +101,31 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
       return;
     }
     timestampTZ = tstz;
+    timeZone = timestampTZ.getZonedDateTime().getZone();
     bytesEmpty = true;
     timestampTZEmpty = false;
   }
 
-  public void set(TimestampTZWritable t) {
+  public void set(TimestampLocalTZWritable t) {
     if (t.bytesEmpty) {
       set(t.getTimestampTZ());
     } else if (t.currentBytes == t.externalBytes) {
-      set(t.currentBytes, t.offset);
+      set(t.currentBytes, t.offset, t.timeZone);
     } else {
-      set(t.currentBytes, 0);
+      set(t.currentBytes, 0, t.timeZone);
     }
+  }
+
+  public void setTimeZone(ZoneId timeZone) {
+    if (timestampTZ != null) {
+      timestampTZ.setZonedDateTime(
+          timestampTZ.getZonedDateTime().withZoneSameInstant(timeZone));
+    }
+    this.timeZone = timeZone;
+  }
+
+  public ZoneId getTimeZone() {
+    return timeZone;
   }
 
   public TimestampTZ getTimestampTZ() {
@@ -176,9 +195,12 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
 
   private void populateTimestampTZ() {
     if (timestampTZEmpty) {
-      long seconds = getSeconds();
-      int nanos = getNanos();
-      timestampTZ.set(seconds, nanos);
+      if (bytesEmpty) {
+        throw new IllegalStateException("Bytes are empty");
+      }
+      long seconds = getSeconds(currentBytes, offset);
+      int nanos = hasDecimalOrSecondVInt(currentBytes[offset]) ? getNanos(currentBytes, offset + 4) : 0;
+      timestampTZ.set(seconds, nanos, timeZone);
       timestampTZEmpty = false;
     }
   }
@@ -202,14 +224,14 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
   }
 
   @Override
-  public int compareTo(TimestampTZWritable o) {
+  public int compareTo(TimestampLocalTZWritable o) {
     return getTimestampTZ().compareTo(o.getTimestampTZ());
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o instanceof TimestampTZWritable) {
-      return compareTo((TimestampTZWritable) o) == 0;
+    if (o instanceof TimestampLocalTZWritable) {
+      return compareTo((TimestampLocalTZWritable) o) == 0;
     }
     return false;
   }
@@ -272,11 +294,11 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
     return b;
   }
 
-  public void fromBinarySortable(byte[] bytes, int binSortOffset) {
+  public void fromBinarySortable(byte[] bytes, int binSortOffset, ZoneId timeZone) {
     // Flip the sign bit (and unused bits of the high-order byte) of the seven-byte long back.
     long seconds = readSevenByteLong(bytes, binSortOffset) ^ SEVEN_BYTE_LONG_SIGN_FLIP;
     int nanos = bytesToInt(bytes, binSortOffset + 7);
-    timestampTZ.set(seconds, nanos);
+    timestampTZ.set(seconds, nanos, timeZone);
     timestampTZEmpty = false;
     bytesEmpty = true;
   }
@@ -315,10 +337,10 @@ public class TimestampTZWritable implements WritableComparable<TimestampTZWritab
     return decimal != 0;
   }
 
-  public static void setTimestampTZ(TimestampTZ t, byte[] bytes, int offset) {
+  public static void setTimestampTZ(TimestampTZ t, byte[] bytes, int offset, ZoneId timeZone) {
     long seconds = getSeconds(bytes, offset);
     int nanos = hasDecimalOrSecondVInt(bytes[offset]) ? getNanos(bytes, offset + 4) : 0;
-    t.set(seconds, nanos);
+    t.set(seconds, nanos, timeZone);
   }
 
   public static int getTotalLength(byte[] bytes, int offset) {

@@ -48,12 +48,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TypeInfoUtils.
  *
  */
 public final class TypeInfoUtils {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(TypeInfoUtils.class);
 
   public static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
   // The ordering of types here is used to determine which numeric types
@@ -297,6 +301,23 @@ public final class TypeInfoUtils {
       int end = 1;
       while (end <= typeInfoString.length()) {
         // last character ends a token?
+        // if there are quotes, all the text between the quotes
+        // is considered a single token (this can happen for
+        // timestamp with local time-zone)
+        if (begin > 0 &&
+            typeInfoString.charAt(begin - 1) == '(' &&
+            typeInfoString.charAt(begin) == '\'') {
+          // Ignore starting quote
+          begin++;
+          do {
+            end++;
+          } while (typeInfoString.charAt(end) != '\'');
+        } else if (typeInfoString.charAt(begin) == '\'' &&
+            typeInfoString.charAt(begin + 1) == ')') {
+          // Ignore closing quote
+          begin++;
+          end++;
+        }
         if (end == typeInfoString.length()
             || !isTypeChar(typeInfoString.charAt(end - 1))
             || !isTypeChar(typeInfoString.charAt(end))) {
@@ -443,6 +464,7 @@ public final class TypeInfoUtils {
                 "Type " + typeEntry.typeName+ " only takes one parameter, but " +
                 params.length + " is seen");
           }
+
         case DECIMAL:
           int precision = HiveDecimal.USER_DEFAULT_PRECISION;
           int scale = HiveDecimal.USER_DEFAULT_SCALE;
@@ -462,8 +484,8 @@ public final class TypeInfoUtils {
             throw new IllegalArgumentException("Type decimal only takes two parameter, but " +
                 params.length + " is seen");
           }
-
           return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
+
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }

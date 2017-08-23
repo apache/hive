@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,8 +56,6 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo shortTypeInfo = new PrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
   public static final PrimitiveTypeInfo dateTypeInfo = new PrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME);
   public static final PrimitiveTypeInfo timestampTypeInfo = new PrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
-  public static final PrimitiveTypeInfo timestampTZTypeInfo =
-      new PrimitiveTypeInfo(serdeConstants.TIMESTAMPTZ_TYPE_NAME);
   public static final PrimitiveTypeInfo intervalYearMonthTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
   public static final PrimitiveTypeInfo intervalDayTimeTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   public static final PrimitiveTypeInfo binaryTypeInfo = new PrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
@@ -66,6 +65,12 @@ public final class TypeInfoFactory {
    */
   public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.SYSTEM_DEFAULT_PRECISION,
       HiveDecimal.SYSTEM_DEFAULT_SCALE);
+
+  /**
+   * A TimestampTZTypeInfo with system default time zone.
+   */
+  public static final TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo(
+      ZoneId.systemDefault().getId());
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
 
@@ -87,7 +92,7 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.SMALLINT_TYPE_NAME, shortTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.DATE_TYPE_NAME, dateTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_TYPE_NAME, timestampTypeInfo);
-    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMPTZ_TYPE_NAME, timestampTZTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, timestampLocalTZTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, intervalYearMonthTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, intervalDayTimeTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
@@ -158,6 +163,11 @@ public final class TypeInfoFactory {
         }
         return new DecimalTypeInfo(Integer.valueOf(parts.typeParams[0]),
             Integer.valueOf(parts.typeParams[1]));
+      case TIMESTAMPLOCALTZ:
+        if (parts.typeParams.length != 1) {
+          return null;
+        }
+        return new TimestampLocalTZTypeInfo(parts.typeParams[0]);
       default:
         return null;
     }
@@ -176,6 +186,11 @@ public final class TypeInfoFactory {
   public static DecimalTypeInfo getDecimalTypeInfo(int precision, int scale) {
     String fullName = DecimalTypeInfo.getQualifiedName(precision, scale);
     return (DecimalTypeInfo) getPrimitiveTypeInfo(fullName);
+  };
+
+  public static TimestampLocalTZTypeInfo getTimestampTZTypeInfo(ZoneId defaultTimeZone) {
+    String fullName = TimestampLocalTZTypeInfo.getQualifiedName(defaultTimeZone);
+    return (TimestampLocalTZTypeInfo) getPrimitiveTypeInfo(fullName);
   };
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(

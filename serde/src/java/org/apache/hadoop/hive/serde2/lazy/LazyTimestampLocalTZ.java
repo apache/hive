@@ -17,34 +17,45 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import org.apache.hadoop.hive.common.type.TimestampTZ;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampTZObjectInspector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * LazyPrimitive for TimestampTZ. Similar to LazyTimestamp.
+ * LazyPrimitive for TimestampLocalTZ. Similar to LazyTimestamp.
  */
-public class LazyTimestampTZ extends
-    LazyPrimitive<LazyTimestampTZObjectInspector, TimestampTZWritable> {
+public class LazyTimestampLocalTZ extends
+    LazyPrimitive<LazyTimestampLocalTZObjectInspector, TimestampLocalTZWritable> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LazyTimestampTZ.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LazyTimestampLocalTZ.class);
 
-  public LazyTimestampTZ(LazyTimestampTZObjectInspector lazyTimestampTZObjectInspector) {
+  private ZoneId timeZone;
+
+  public LazyTimestampLocalTZ(LazyTimestampLocalTZObjectInspector lazyTimestampTZObjectInspector) {
     super(lazyTimestampTZObjectInspector);
-    data = new TimestampTZWritable();
+    TimestampLocalTZTypeInfo typeInfo = (TimestampLocalTZTypeInfo) oi.getTypeInfo();
+    if (typeInfo == null) {
+      throw new RuntimeException("TimestampLocalTZ type used without type params");
+    }
+    timeZone = typeInfo.timeZone();
+    data = new TimestampLocalTZWritable();
   }
 
-  public LazyTimestampTZ(LazyTimestampTZ copy) {
+  public LazyTimestampLocalTZ(LazyTimestampLocalTZ copy) {
     super(copy);
-    data = new TimestampTZWritable(copy.data);
+    timeZone = copy.timeZone;
+    data = new TimestampLocalTZWritable(copy.data);
   }
 
   @Override
@@ -61,9 +72,9 @@ public class LazyTimestampTZ extends
       if (s.equals("NULL")) {
         isNull = true;
         logExceptionMessage(bytes, start, length,
-            serdeConstants.TIMESTAMPTZ_TYPE_NAME.toUpperCase());
+            serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase());
       } else {
-        t = TimestampTZ.parse(s);
+        t = TimestampTZUtil.parse(s, timeZone);
         isNull = false;
       }
     } catch (UnsupportedEncodingException e) {
@@ -71,19 +82,19 @@ public class LazyTimestampTZ extends
       LOG.error("Unsupported encoding found ", e);
     } catch (DateTimeParseException e) {
       isNull = true;
-      logExceptionMessage(bytes, start, length, serdeConstants.TIMESTAMPTZ_TYPE_NAME.toUpperCase());
+      logExceptionMessage(bytes, start, length, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME.toUpperCase());
     }
     data.set(t);
   }
 
   @Override
-  public TimestampTZWritable getWritableObject() {
+  public TimestampLocalTZWritable getWritableObject() {
     return data;
   }
 
-  public static void writeUTF8(OutputStream out, TimestampTZWritable i) throws IOException {
+  public static void writeUTF8(OutputStream out, TimestampLocalTZWritable i) throws IOException {
     if (i == null) {
-      out.write(TimestampTZWritable.nullBytes);
+      out.write(TimestampLocalTZWritable.nullBytes);
     } else {
       out.write(i.toString().getBytes("US-ASCII"));
     }

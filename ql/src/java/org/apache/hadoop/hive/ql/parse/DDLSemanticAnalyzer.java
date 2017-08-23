@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -198,7 +199,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DATETIME, serdeConstants.DATETIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TIMESTAMP, serdeConstants.TIMESTAMP_TYPE_NAME);
-    TokenToTypeName.put(HiveParser.TOK_TIMESTAMPTZ, serdeConstants.TIMESTAMPTZ_TYPE_NAME);
+    TokenToTypeName.put(HiveParser.TOK_TIMESTAMPLOCALTZ, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
@@ -222,10 +223,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(node);
       typeName = varcharTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_TIMESTAMPLOCALTZ:
+      HiveConf conf;
+      try {
+        conf = Hive.get().getConf();
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(
+          conf.getLocalTimeZone());
+      typeName = timestampLocalTZTypeInfo.getQualifiedName();
+      break;
     case HiveParser.TOK_DECIMAL:
-        DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
-        typeName = decTypeInfo.getQualifiedName();
-        break;
+      DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
+      typeName = decTypeInfo.getQualifiedName();
+      break;
     default:
       typeName = TokenToTypeName.get(token);
     }

@@ -46,7 +46,7 @@ DECIMAL_TYPE_NAME = "decimal"
 BINARY_TYPE_NAME = "binary"
 INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month"
 INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time"
-TIMESTAMPTZ_TYPE_NAME = "timestamp with time zone"
+TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone"
 LIST_TYPE_NAME = "array"
 MAP_TYPE_NAME = "map"
 STRUCT_TYPE_NAME = "struct"
@@ -74,7 +74,7 @@ PrimitiveTypes = set([
   "interval_day_time",
   "decimal",
   "binary",
-  "timestamp with time zone",
+  "timestamp with local time zone",
 ])
 CollectionTypes = set([
   "array",

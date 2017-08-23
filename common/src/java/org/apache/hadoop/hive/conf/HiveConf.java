@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.Validator.PatternSet;
 import org.apache.hadoop.hive.conf.Validator.RangeValidator;
 import org.apache.hadoop.hive.conf.Validator.RatioValidator;
@@ -52,6 +53,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -975,6 +977,12 @@ public class HiveConf extends Configuration {
     HIVESESSIONID("hive.session.id", "", ""),
     // whether session is running in silent mode or not
     HIVESESSIONSILENT("hive.session.silent", false, ""),
+
+    HIVE_LOCAL_TIME_ZONE("hive.local.time.zone", "LOCAL",
+        "Sets the time-zone for displaying and interpreting time stamps. If this property value is set to\n" +
+        "LOCAL, it is not specified, or it is not a correct time-zone, the system default time-zone will be\n " +
+        "used instead. Time-zone IDs can be specified as region-based zone IDs (based on IANA time-zone data),\n" +
+        "abbreviated zone IDs, or offset IDs."),
 
     HIVE_SESSION_HISTORY_ENABLED("hive.session.history.enabled", false,
         "Whether to log Hive query, query plan, runtime statistics etc."),
@@ -4286,6 +4294,14 @@ public class HiveConf extends Configuration {
     String confVarPatternStr = Joiner.on("|").join(convertVarsToRegex(sqlStdAuthSafeVarNames));
     String regexPatternStr = Joiner.on("|").join(sqlStdAuthSafeVarNameRegexes);
     return regexPatternStr + "|" + confVarPatternStr;
+  }
+
+  /**
+   * Obtains the local time-zone ID.
+   */
+  public ZoneId getLocalTimeZone() {
+    String timeZoneStr = getVar(ConfVars.HIVE_LOCAL_TIME_ZONE);
+    return TimestampTZUtil.parseTimeZone(timeZoneStr);
   }
 
   /**

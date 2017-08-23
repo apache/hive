@@ -85,7 +85,7 @@ serdeConstants::serdeConstants() {
 
   INTERVAL_DAY_TIME_TYPE_NAME = "interval_day_time";
 
-  TIMESTAMPTZ_TYPE_NAME = "timestamp with time zone";
+  TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
 
   LIST_TYPE_NAME = "array";
 
@@ -121,7 +121,7 @@ serdeConstants::serdeConstants() {
   PrimitiveTypes.insert("interval_day_time");
   PrimitiveTypes.insert("decimal");
   PrimitiveTypes.insert("binary");
-  PrimitiveTypes.insert("timestamp with time zone");
+  PrimitiveTypes.insert("timestamp with local time zone");
 
   CollectionTypes.insert("array");
   CollectionTypes.insert("map");
