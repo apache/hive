@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jolbox.bonecp.BoneCPConfig;
-import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -35,11 +33,12 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
 
-import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
@@ -50,7 +49,6 @@ import org.apache.hadoop.util.StringUtils;
 
 import javax.sql.DataSource;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.sql.*;
@@ -3168,25 +3166,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private static synchronized DataSource setupJdbcConnectionPool(HiveConf conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
-    String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = getMetastoreJdbcUser(conf);
-    String passwd = getMetastoreJdbcPasswd(conf);
+    String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(conf);
+    String user = DataSourceProvider.getMetastoreJdbcUser(conf);
+    String passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
     String connectionPooler = conf.getVar(
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
 
     if ("bonecp".equals(connectionPooler)) {
-      BoneCPConfig config = new BoneCPConfig();
-      config.setJdbcUrl(driverUrl);
-      //if we are waiting for connection for a long time, something is really wrong
-      //better raise an error than hang forever
-      //see DefaultConnectionStrategy.getConnectionInternal()
-      config.setConnectionTimeoutInMs(getConnectionTimeoutMs);
-      config.setMaxConnectionsPerPartition(maxPoolSize);
-      config.setPartitionCount(1);
-      config.setUser(user);
-      config.setPassword(passwd);
       doRetryOnConnPool = true;  // Enable retries to work around BONECP bug.
-      return new BoneCPDataSource(config);
+      return new BoneCPDataSourceProvider().create(conf);
     } else if ("dbcp".equals(connectionPooler)) {
       GenericObjectPool objectPool = new GenericObjectPool();
       //https://commons.apache.org/proper/commons-pool/api-1.6/org/apache/commons/pool/impl/GenericObjectPool.html#setMaxActive(int)
@@ -3695,18 +3683,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static String getMetastoreJdbcUser(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-  }
-
-  private static String getMetastoreJdbcPasswd(HiveConf conf) throws SQLException {
-    try {
-      return MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
-    } catch (IOException err) {
-      throw new SQLException("Error getting metastore password", err);
-    }
-  }
-
   private static class NoPoolConnectionPool implements DataSource {
     // Note that this depends on the fact that no-one in this class calls anything but
     // getConnection.  If you want to use any of the Logger or wrap calls you'll have to
@@ -3724,8 +3700,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     @Override
     public Connection getConnection() throws SQLException {
       if (user == null) {
-        user = getMetastoreJdbcUser(conf);
-        passwd = getMetastoreJdbcPasswd(conf);
+        user = DataSourceProvider.getMetastoreJdbcUser(conf);
+        passwd = DataSourceProvider.getMetastoreJdbcPasswd(conf);
       }
       return getConnection(user, passwd);
     }
