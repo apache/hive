@@ -975,6 +975,14 @@ public class TestHCatClient {
     }
   }
 
+  private HCatClient sourceMetaStore() throws HCatException {
+    return HCatClient.create(new Configuration(hcatConf));
+  }
+
+  private HCatClient targetMetaStore() throws HCatException {
+    return HCatClient.create(new Configuration(replicationTargetHCatConf));
+  }
+
   /**
    * Test for detecting schema-changes for an HCatalog table, across 2 different HCat instances.
    * A table is created with the same schema on 2 HCat instances. The table-schema is modified on the source HCat
@@ -986,13 +994,12 @@ public class TestHCatClient {
   public void testTableSchemaPropagation() throws Exception {
     try {
       startReplicationTargetMetaStoreIfRequired();
-      HCatClient sourceMetaStore = HCatClient.create(new Configuration(hcatConf));
       final String dbName = "myDb";
       final String tableName = "myTable";
 
-      sourceMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      sourceMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
 
-      sourceMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      sourceMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
       List<HCatFieldSchema> columnSchema = Arrays.asList(new HCatFieldSchema("foo", Type.INT, ""),
           new HCatFieldSchema("bar", Type.STRING, ""));
 
@@ -1000,27 +1007,26 @@ public class TestHCatClient {
           new HCatFieldSchema("grid", Type.STRING, ""));
 
       HCatTable sourceTable = new HCatTable(dbName, tableName).cols(columnSchema).partCols(partitionSchema);
-      sourceMetaStore.createTable(HCatCreateTableDesc.create(sourceTable).build());
+      sourceMetaStore().createTable(HCatCreateTableDesc.create(sourceTable).build());
 
       // Verify that the sourceTable was created successfully.
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
       assertNotNull("Table couldn't be queried for. ", sourceTable);
 
       // Serialize Table definition. Deserialize using the target HCatClient instance.
-      String tableStringRep = sourceMetaStore.serializeTable(sourceTable);
-      HCatClient targetMetaStore = HCatClient.create(new Configuration(replicationTargetHCatConf));
-      targetMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
-      targetMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      String tableStringRep = sourceMetaStore().serializeTable(sourceTable);
+      targetMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      targetMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
 
-      HCatTable targetTable = targetMetaStore.deserializeTable(tableStringRep);
+      HCatTable targetTable = targetMetaStore().deserializeTable(tableStringRep);
 
       assertEquals("Table after deserialization should have been identical to sourceTable.",
           HCatTable.NO_DIFF, sourceTable.diff(targetTable));
 
       // Create table on Target.
-      targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
+      targetMetaStore().createTable(HCatCreateTableDesc.create(targetTable).build());
       // Verify that the created table is identical to sourceTable.
-      targetTable = targetMetaStore.getTable(dbName, tableName);
+      targetTable = targetMetaStore().getTable(dbName, tableName);
       assertEquals("Table after deserialization should have been identical to sourceTable.",
           HCatTable.NO_DIFF, sourceTable.diff(targetTable));
 
@@ -1033,8 +1039,8 @@ public class TestHCatClient {
                  .fileFormat("orcfile")     // Change SerDe, File I/O formats.
                  .tblProps(tableParams)
                  .serdeParam(serdeConstants.FIELD_DELIM, Character.toString('\001'));
-      sourceMetaStore.updateTableSchema(dbName, tableName, sourceTable);
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceMetaStore().updateTableSchema(dbName, tableName, sourceTable);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
 
       // Diff against table on target.
 
@@ -1053,8 +1059,8 @@ public class TestHCatClient {
           diff.contains(HCatTable.TableAttribute.TABLE_PROPERTIES));
 
       // Replicate the changes to the replicated-table.
-      targetMetaStore.updateTableSchema(dbName, tableName, targetTable.resolve(sourceTable, diff));
-      targetTable = targetMetaStore.getTable(dbName, tableName);
+      targetMetaStore().updateTableSchema(dbName, tableName, targetTable.resolve(sourceTable, diff));
+      targetTable = targetMetaStore().getTable(dbName, tableName);
 
       assertEquals("After propagating schema changes, source and target tables should have been equivalent.",
           HCatTable.NO_DIFF, targetTable.diff(sourceTable));
@@ -1083,13 +1089,12 @@ public class TestHCatClient {
     try {
       startReplicationTargetMetaStoreIfRequired();
 
-      HCatClient sourceMetaStore = HCatClient.create(new Configuration(hcatConf));
       final String dbName = "myDb";
       final String tableName = "myTable";
 
-      sourceMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      sourceMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
 
-      sourceMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      sourceMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
       List<HCatFieldSchema> columnSchema = new ArrayList<HCatFieldSchema>(
           Arrays.asList(new HCatFieldSchema("foo", Type.INT, ""),
                         new HCatFieldSchema("bar", Type.STRING, "")));
@@ -1101,10 +1106,10 @@ public class TestHCatClient {
                                                               .partCols(partitionSchema)
                                                               .comment("Source table.");
 
-      sourceMetaStore.createTable(HCatCreateTableDesc.create(sourceTable).build());
+      sourceMetaStore().createTable(HCatCreateTableDesc.create(sourceTable).build());
 
       // Verify that the sourceTable was created successfully.
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
       assertNotNull("Table couldn't be queried for. ", sourceTable);
 
       // Partitions added now should inherit table-schema, properties, etc.
@@ -1114,11 +1119,11 @@ public class TestHCatClient {
       HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1,
           makePartLocation(sourceTable,partitionSpec_1));
 
-      sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
+      sourceMetaStore().addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
-                   1, sourceMetaStore.getPartitions(dbName, tableName).size());
+                   1, sourceMetaStore().getPartitions(dbName, tableName).size());
       // Verify that partition_1 was added correctly, and properties were inherited from the HCatTable.
-      HCatPartition addedPartition_1 = sourceMetaStore.getPartition(dbName, tableName, partitionSpec_1);
+      HCatPartition addedPartition_1 = sourceMetaStore().getPartition(dbName, tableName, partitionSpec_1);
       assertEquals("Column schema doesn't match.", sourceTable.getCols(), addedPartition_1.getColumns());
       assertEquals("InputFormat doesn't match.", sourceTable.getInputFileFormat(), addedPartition_1.getInputFormat());
       assertEquals("OutputFormat doesn't match.", sourceTable.getOutputFileFormat(), addedPartition_1.getOutputFormat());
@@ -1127,14 +1132,13 @@ public class TestHCatClient {
 
       // Replicate table definition.
 
-      HCatClient targetMetaStore = HCatClient.create(new Configuration(replicationTargetHCatConf));
-      targetMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      targetMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
 
-      targetMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      targetMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
       // Make a copy of the source-table, as would be done across class-loaders.
-      HCatTable targetTable = targetMetaStore.deserializeTable(sourceMetaStore.serializeTable(sourceTable));
-      targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
-      targetTable = targetMetaStore.getTable(dbName, tableName);
+      HCatTable targetTable = targetMetaStore().deserializeTable(sourceMetaStore().serializeTable(sourceTable));
+      targetMetaStore().createTable(HCatCreateTableDesc.create(targetTable).build());
+      targetTable = targetMetaStore().getTable(dbName, tableName);
 
       assertEquals("Created table doesn't match the source.", HCatTable.NO_DIFF, targetTable.diff(sourceTable));
 
@@ -1147,8 +1151,8 @@ public class TestHCatClient {
           .fileFormat("orcfile")     // Change SerDe, File I/O formats.
           .tblProps(tableParams)
           .serdeParam(serdeConstants.FIELD_DELIM, Character.toString('\001'));
-      sourceMetaStore.updateTableSchema(dbName, tableName, sourceTable);
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceMetaStore().updateTableSchema(dbName, tableName, sourceTable);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
 
       // Add another partition to the source.
       Map<String, String> partitionSpec_2 = new HashMap<String, String>();
@@ -1156,12 +1160,12 @@ public class TestHCatClient {
       partitionSpec_2.put("dt", "2012_01_01");
       HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2,
           makePartLocation(sourceTable,partitionSpec_2));
-      sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
+      sourceMetaStore().addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
 
       // The source table now has 2 partitions, one in TEXTFILE, the other in ORC.
       // Test adding these partitions to the target-table *without* replicating the table-change.
 
-      List<HCatPartition> sourcePartitions = sourceMetaStore.getPartitions(dbName, tableName);
+      List<HCatPartition> sourcePartitions = sourceMetaStore().getPartitions(dbName, tableName);
       assertEquals("Unexpected number of source partitions.", 2, sourcePartitions.size());
 
       List<HCatAddPartitionDesc> addPartitionDescs = new ArrayList<HCatAddPartitionDesc>(sourcePartitions.size());
@@ -1169,9 +1173,9 @@ public class TestHCatClient {
         addPartitionDescs.add(HCatAddPartitionDesc.create(partition).build());
       }
 
-      targetMetaStore.addPartitions(addPartitionDescs);
+      targetMetaStore().addPartitions(addPartitionDescs);
 
-      List<HCatPartition> targetPartitions = targetMetaStore.getPartitions(dbName, tableName);
+      List<HCatPartition> targetPartitions = targetMetaStore().getPartitions(dbName, tableName);
 
       assertEquals("Expected the same number of partitions. ", sourcePartitions.size(), targetPartitions.size());
 
@@ -1211,13 +1215,12 @@ public class TestHCatClient {
     try {
       startReplicationTargetMetaStoreIfRequired();
 
-      HCatClient sourceMetaStore = HCatClient.create(new Configuration(hcatConf));
       final String dbName = "myDb";
       final String tableName = "myTable";
 
-      sourceMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      sourceMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
 
-      sourceMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      sourceMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
       List<HCatFieldSchema> columnSchema = new ArrayList<HCatFieldSchema>(
           Arrays.asList(new HCatFieldSchema("foo", Type.INT, ""),
               new HCatFieldSchema("bar", Type.STRING, "")));
@@ -1229,10 +1232,10 @@ public class TestHCatClient {
           .partCols(partitionSchema)
           .comment("Source table.");
 
-      sourceMetaStore.createTable(HCatCreateTableDesc.create(sourceTable).build());
+      sourceMetaStore().createTable(HCatCreateTableDesc.create(sourceTable).build());
 
       // Verify that the sourceTable was created successfully.
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
       assertNotNull("Table couldn't be queried for. ", sourceTable);
 
       // Partitions added now should inherit table-schema, properties, etc.
@@ -1242,11 +1245,11 @@ public class TestHCatClient {
       HCatPartition sourcePartition_1 = new HCatPartition(sourceTable, partitionSpec_1,
           makePartLocation(sourceTable,partitionSpec_1));
 
-      sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
+      sourceMetaStore().addPartition(HCatAddPartitionDesc.create(sourcePartition_1).build());
       assertEquals("Unexpected number of partitions. ",
-          1, sourceMetaStore.getPartitions(dbName, tableName).size());
+          1, sourceMetaStore().getPartitions(dbName, tableName).size());
       // Verify that partition_1 was added correctly, and properties were inherited from the HCatTable.
-      HCatPartition addedPartition_1 = sourceMetaStore.getPartition(dbName, tableName, partitionSpec_1);
+      HCatPartition addedPartition_1 = sourceMetaStore().getPartition(dbName, tableName, partitionSpec_1);
       assertEquals("Column schema doesn't match.", sourceTable.getCols(), addedPartition_1.getColumns());
       assertEquals("InputFormat doesn't match.", sourceTable.getInputFileFormat(), addedPartition_1.getInputFormat());
       assertEquals("OutputFormat doesn't match.", sourceTable.getOutputFileFormat(), addedPartition_1.getOutputFormat());
@@ -1255,14 +1258,13 @@ public class TestHCatClient {
 
       // Replicate table definition.
 
-      HCatClient targetMetaStore = HCatClient.create(new Configuration(replicationTargetHCatConf));
-      targetMetaStore.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+      targetMetaStore().dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
 
-      targetMetaStore.createDatabase(HCatCreateDBDesc.create(dbName).build());
+      targetMetaStore().createDatabase(HCatCreateDBDesc.create(dbName).build());
       // Make a copy of the source-table, as would be done across class-loaders.
-      HCatTable targetTable = targetMetaStore.deserializeTable(sourceMetaStore.serializeTable(sourceTable));
-      targetMetaStore.createTable(HCatCreateTableDesc.create(targetTable).build());
-      targetTable = targetMetaStore.getTable(dbName, tableName);
+      HCatTable targetTable = targetMetaStore().deserializeTable(sourceMetaStore().serializeTable(sourceTable));
+      targetMetaStore().createTable(HCatCreateTableDesc.create(targetTable).build());
+      targetTable = targetMetaStore().getTable(dbName, tableName);
 
       assertEquals("Created table doesn't match the source.", HCatTable.NO_DIFF, targetTable.diff(sourceTable));
 
@@ -1275,8 +1277,8 @@ public class TestHCatClient {
           .fileFormat("orcfile")     // Change SerDe, File I/O formats.
           .tblProps(tableParams)
           .serdeParam(serdeConstants.FIELD_DELIM, Character.toString('\001'));
-      sourceMetaStore.updateTableSchema(dbName, tableName, sourceTable);
-      sourceTable = sourceMetaStore.getTable(dbName, tableName);
+      sourceMetaStore().updateTableSchema(dbName, tableName, sourceTable);
+      sourceTable = sourceMetaStore().getTable(dbName, tableName);
 
       // Add another partition to the source.
       Map<String, String> partitionSpec_2 = new HashMap<String, String>();
@@ -1284,24 +1286,24 @@ public class TestHCatClient {
       partitionSpec_2.put("dt", "2012_01_01");
       HCatPartition sourcePartition_2 = new HCatPartition(sourceTable, partitionSpec_2,
           makePartLocation(sourceTable,partitionSpec_2));
-      sourceMetaStore.addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
+      sourceMetaStore().addPartition(HCatAddPartitionDesc.create(sourcePartition_2).build());
 
       // The source table now has 2 partitions, one in TEXTFILE, the other in ORC.
       // Test adding these partitions to the target-table *without* replicating the table-change.
 
-      HCatPartitionSpec sourcePartitionSpec = sourceMetaStore.getPartitionSpecs(dbName, tableName, -1);
+      HCatPartitionSpec sourcePartitionSpec = sourceMetaStore().getPartitionSpecs(dbName, tableName, -1);
       assertEquals("Unexpected number of source partitions.", 2, sourcePartitionSpec.size());
 
       // Serialize the hcatPartitionSpec.
-      List<String> partitionSpecString = sourceMetaStore.serializePartitionSpec(sourcePartitionSpec);
+      List<String> partitionSpecString = sourceMetaStore().serializePartitionSpec(sourcePartitionSpec);
 
       // Deserialize the HCatPartitionSpec using the target HCatClient instance.
-      HCatPartitionSpec targetPartitionSpec = targetMetaStore.deserializePartitionSpec(partitionSpecString);
+      HCatPartitionSpec targetPartitionSpec = targetMetaStore().deserializePartitionSpec(partitionSpecString);
       assertEquals("Could not add the expected number of partitions.",
-          sourcePartitionSpec.size(), targetMetaStore.addPartitionSpec(targetPartitionSpec));
+          sourcePartitionSpec.size(), targetMetaStore().addPartitionSpec(targetPartitionSpec));
 
       // Retrieve partitions.
-      targetPartitionSpec = targetMetaStore.getPartitionSpecs(dbName, tableName, -1);
+      targetPartitionSpec = targetMetaStore().getPartitionSpecs(dbName, tableName, -1);
       assertEquals("Could not retrieve the expected number of partitions.",
           sourcePartitionSpec.size(), targetPartitionSpec.size());
 
