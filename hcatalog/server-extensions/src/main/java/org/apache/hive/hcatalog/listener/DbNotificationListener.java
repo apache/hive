@@ -92,8 +92,6 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
 
-  private static final Object NOTIFICATION_TBL_LOCK = new Object();
-
   // This is the same object as super.conf, but it's convenient to keep a copy of it as a
   // HiveConf rather than a Configuration.
   private HiveConf hiveConf;
@@ -573,11 +571,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    */
   private void process(NotificationEvent event, ListenerEvent listenerEvent) throws MetaException {
     event.setMessageFormat(msgFactory.getMessageFormat());
-    synchronized (NOTIFICATION_TBL_LOCK) {
-      LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
-          event.getMessage());
-      HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
-    }
+    LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
+        event.getMessage());
+    HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
 
       // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
       if (event.isSetEventId()) {
@@ -603,9 +599,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     @Override
     public void run() {
       while (true) {
-        synchronized(NOTIFICATION_TBL_LOCK) {
-          rs.cleanNotificationEvents(ttl);
-        }
+        rs.cleanNotificationEvents(ttl);
         LOG.debug("Cleaner thread done");
         try {
           Thread.sleep(sleepTime);
