@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,8 +27,6 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -36,6 +34,8 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -67,13 +67,13 @@ public class ExpressionTree {
     private final String sqlOp;
 
     // private constructor
-    private Operator(String op){
+    Operator(String op){
       this.op = op;
       this.jdoOp = op;
       this.sqlOp = op;
     }
 
-    private Operator(String op, String jdoOp, String sqlOp){
+    Operator(String op, String jdoOp, String sqlOp){
       this.op = op;
       this.jdoOp = jdoOp;
       this.sqlOp = sqlOp;
@@ -351,7 +351,7 @@ public class ExpressionTree {
       if (filterBuilder.hasError()) return;
 
       boolean canPushDownIntegral =
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN);
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.INTEGER_JDO_PUSHDOWN);
       String valueAsString = getJdoFilterPushdownParam(
           table, partitionColumnIndex, filterBuilder, canPushDownIntegral);
       if (filterBuilder.hasError()) return;
@@ -443,7 +443,7 @@ public class ExpressionTree {
       // columns have been excluded above, so it will either compare w/string or fail.
       Object val = value;
       if (value instanceof Date) {
-        val = HiveMetaStore.PARTITION_DATE_FORMAT.get().format((Date)value);
+        val = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format((Date)value);
       }
       boolean isStringValue = val instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(val instanceof Long))) {
@@ -487,7 +487,7 @@ public class ExpressionTree {
   private static void makeFilterForEquals(String keyName, String value, String paramName,
       Map<String, Object> params, int keyPos, int keyCount, boolean isEq, FilterBuilder fltr)
           throws MetaException {
-    Map<String, String> partKeyToVal = new HashMap<String, String>();
+    Map<String, String> partKeyToVal = new HashMap<>();
     partKeyToVal.put(keyName, value);
     // If a partition has multiple partition keys, we make the assumption that
     // makePartName with one key will return a substring of the name made
@@ -526,7 +526,7 @@ public class ExpressionTree {
   /**
    * The node stack used to keep track of the tree nodes during parsing.
    */
-  private final Stack<TreeNode> nodeStack = new Stack<TreeNode>();
+  private final Stack<TreeNode> nodeStack = new Stack<>();
 
   public TreeNode getRoot() {
     return this.root;

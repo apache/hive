@@ -21,7 +21,20 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 public class MetaStoreUtils {
+  /** A fixed date format to be used for hive partition column values. */
+  public static final ThreadLocal<DateFormat> PARTITION_DATE_FORMAT =
+       new ThreadLocal<DateFormat>() {
+    @Override
+    protected DateFormat initialValue() {
+      DateFormat val = new SimpleDateFormat("yyyy-MM-dd");
+      val.setLenient(false); // Without this, 2020-20-20 becomes 2021-08-20.
+      return val;
+    };
+  };
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
   /**
