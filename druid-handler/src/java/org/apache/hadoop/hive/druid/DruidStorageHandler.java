@@ -281,7 +281,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
-    Lifecycle lifecycle = new Lifecycle();
     LOG.info("Committing table {} to the druid metastore", table.getDbName());
     final Path tableDir = getSegmentDescriptorDir();
     try {
@@ -310,19 +309,9 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
       String coordinatorResponse = null;
       try {
-        coordinatorResponse = RetryUtils.retry(new Callable<String>() {
-          @Override
-          public String call() throws Exception {
-            return DruidStorageHandlerUtils.getURL(getHttpClient(),
-                    new URL(String.format("http://%s/status", coordinatorAddress))
-            );
-          }
-        }, new Predicate<Throwable>() {
-          @Override
-          public boolean apply(@Nullable Throwable input) {
-            return input instanceof IOException;
-          }
-        }, maxTries);
+        coordinatorResponse = RetryUtils.retry(() -> DruidStorageHandlerUtils.getURL(getHttpClient(),
+                new URL(String.format("http://%s/status", coordinatorAddress))
+        ), input -> input instanceof IOException, maxTries);
       } catch (Exception e) {
         console.printInfo(
                 "Will skip waiting for data loading");
@@ -338,28 +327,25 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       long passiveWaitTimeMs = HiveConf
               .getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
       ImmutableSet<URL> setOfUrls = FluentIterable.from(segmentList)
-              .transform(new Function<DataSegment, URL>() {
-                @Override
-                public URL apply(DataSegment dataSegment) {
-                  try {
-                    //Need to make sure that we are using UTC since most of the druid cluster use UTC by default
-                    return new URL(String
-                            .format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
-                                    coordinatorAddress, dataSourceName, DataSegment
-                                            .makeDataSegmentIdentifier(dataSegment.getDataSource(),
-                                                    new DateTime(dataSegment.getInterval()
-                                                            .getStartMillis(), DateTimeZone.UTC),
-                                                    new DateTime(dataSegment.getInterval()
-                                                            .getEndMillis(), DateTimeZone.UTC),
-                                                    dataSegment.getVersion(),
-                                                    dataSegment.getShardSpec()
-                                            )
-                            ));
-                  } catch (MalformedURLException e) {
-                    Throwables.propagate(e);
-                  }
-                  return null;
+              .transform(dataSegment -> {
+                try {
+                  //Need to make sure that we are using UTC since most of the druid cluster use UTC by default
+                  return new URL(String
+                          .format("http://%s/druid/coordinator/v1/datasources/%s/segments/%s",
+                                  coordinatorAddress, dataSourceName, DataSegment
+                                          .makeDataSegmentIdentifier(dataSegment.getDataSource(),
+                                                  new DateTime(dataSegment.getInterval()
+                                                          .getStartMillis(), DateTimeZone.UTC),
+                                                  new DateTime(dataSegment.getInterval()
+                                                          .getEndMillis(), DateTimeZone.UTC),
+                                                  dataSegment.getVersion(),
+                                                  dataSegment.getShardSpec()
+                                          )
+                          ));
+                } catch (MalformedURLException e) {
+                  Throwables.propagate(e);
                 }
+                return null;
               }).toSet();
 
       int numRetries = 0;
@@ -399,7 +385,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       Throwables.propagate(e);
     } finally {
       cleanWorkingDir();
-      lifecycle.stop();
     }
   }
 

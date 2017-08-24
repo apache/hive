@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.druid;
 
 import io.druid.common.utils.JodaUtils;
 import io.druid.jackson.DefaultObjectMapper;
+import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
@@ -28,7 +29,6 @@ import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
 import io.druid.segment.column.ColumnConfig;
 import io.druid.segment.loading.DataSegmentPusher;
-import io.druid.segment.loading.DataSegmentPusherUtil;
 import io.druid.segment.realtime.appenderator.SegmentIdentifier;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
 import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
@@ -77,6 +77,7 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
@@ -135,10 +136,9 @@ public final class DruidStorageHandlerUtils {
   static
   {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
-    InjectableValues.Std injectableValues = new InjectableValues.Std().addValue(
-        SelectQueryConfig.class,
-        new SelectQueryConfig(false)
-    );
+    InjectableValues.Std injectableValues = new InjectableValues.Std()
+            .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
+            .addValue(ExprMacroTable.class, ExprMacroTable.nil());
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
     HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
@@ -720,9 +720,17 @@ public final class DruidStorageHandlerUtils {
   }
 
   public static Path finalPathForSegment(String segmentDirectory, DataSegment segment) {
-    return new Path(
-            String.format("%s/%s/index.zip", segmentDirectory,
-                    DataSegmentPusherUtil.getHdfsStorageDir(segment)));
+    String path = DataSegmentPusher.JOINER.join(
+            segment.getDataSource(),
+            String.format(
+                    "%s_%s",
+                    segment.getInterval().getStart().toString(ISODateTimeFormat.basicDateTime()),
+                    segment.getInterval().getEnd().toString(ISODateTimeFormat.basicDateTime())
+            ),
+            segment.getVersion().replaceAll(":", "_")
+    );
+
+    return new Path(String.format("%s/%s/index.zip", segmentDirectory, path));
   }
 
   private static ShardSpec getNextPartitionShardSpec(ShardSpec shardSpec) {

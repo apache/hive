@@ -142,7 +142,8 @@ public class TestDruidRecordWriter {
 
     IndexSpec indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(null, null, null,
-            temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, 0, 0, null, null
+            temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, 0, 0, null, null,
+            0L
     );
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(
@@ -192,8 +193,7 @@ public class TestDruidRecordWriter {
             ImmutableList.of(new WindowedStorageAdapter(adapter, adapter.getInterval())),
             ImmutableList.of("host"),
             ImmutableList.of("visited_sum", "unique_hosts"),
-            null,
-            Granularities.NONE
+            null
     );
 
     List<InputRow> rows = Lists.newArrayList();

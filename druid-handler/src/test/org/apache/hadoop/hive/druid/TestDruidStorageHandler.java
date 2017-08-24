@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.druid;
 import io.druid.indexer.JobHelper;
 import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
 import io.druid.metadata.MetadataStorageTablesConfig;
+import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.loading.SegmentLoadingException;
+import io.druid.storage.hdfs.HdfsDataSegmentPusher;
+import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
 import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.LinearShardSpec;
 import io.druid.timeline.partition.NoneShardSpec;
@@ -202,8 +205,15 @@ public class TestDruidStorageHandler {
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
     DataSegment dataSegment = createSegment(new Path(taskDirPath, "index.zip").toString());
+    HdfsDataSegmentPusherConfig hdfsDSPConfig = new HdfsDataSegmentPusherConfig();
+    hdfsDSPConfig.setStorageDirectory(segmentRootPath);
+    HdfsDataSegmentPusher hdfsDataSegmentPusher = new HdfsDataSegmentPusher(hdfsDSPConfig, config,
+            DruidStorageHandlerUtils.JSON_MAPPER
+    );
     Path segmentOutputPath = JobHelper
-            .makeFileNamePath(new Path(segmentRootPath), localFileSystem, dataSegment, JobHelper.INDEX_ZIP);
+            .makeFileNamePath(new Path(segmentRootPath), localFileSystem, dataSegment,
+                    JobHelper.INDEX_ZIP, hdfsDataSegmentPusher
+            );
     Path indexPath = new Path(segmentOutputPath, "index.zip");
     DataSegment dataSegmentWithLoadspect = DataSegment.builder(dataSegment).loadSpec(
             ImmutableMap.<String, Object>of("path", indexPath)).build();

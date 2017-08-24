@@ -212,7 +212,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             0,
             0,
             true,
-            null
+            null,
+            0L
     );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
