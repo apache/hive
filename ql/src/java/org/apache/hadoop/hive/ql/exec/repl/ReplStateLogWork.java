@@ -42,7 +42,6 @@ public class ReplStateLogWork implements Serializable {
   private String tableName;
   private TableType tableType;
   private String functionName;
-  private String dumpDir;
   private String lastReplId;
 
   private enum LOG_TYPE {
@@ -72,10 +71,9 @@ public class ReplStateLogWork implements Serializable {
     this.functionName = functionName;
   }
 
-  public ReplStateLogWork(ReplLogger replLogger, String dumpDir, Database db) {
+  public ReplStateLogWork(ReplLogger replLogger, Database db) {
     this.logType = LOG_TYPE.END;
     this.replLogger = replLogger;
-    this.dumpDir = dumpDir;
     this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(db.getParameters());
   }
 
@@ -94,7 +92,7 @@ public class ReplStateLogWork implements Serializable {
         break;
       }
       case END: {
-        replLogger.endLog(dumpDir, lastReplId);
+        replLogger.endLog(lastReplId);
         break;
       }
     }

@@ -27,13 +27,16 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
 public class BootstrapDumpLogger extends ReplLogger {
   private String dbName;
+  private String dumpDir;
   private long estimatedNumTables;
   private long estimatedNumFunctions;
   private long tableSeqNo;
   private long functionSeqNo;
 
-  public BootstrapDumpLogger(String dbName, int estimatedNumTables, int estimatedNumFunctions) {
+  public BootstrapDumpLogger(String dbName, String dumpDir,
+                             int estimatedNumTables, int estimatedNumFunctions) {
     this.dbName = dbName;
+    this.dumpDir = dumpDir;
     this.estimatedNumTables = estimatedNumTables;
     this.estimatedNumFunctions = estimatedNumFunctions;
     this.tableSeqNo = 0;
@@ -61,7 +64,7 @@ public class BootstrapDumpLogger extends ReplLogger {
   }
 
   @Override
-  public void endLog(String dumpDir, String lastReplId) {
+  public void endLog(String lastReplId) {
     (new BootstrapDumpEnd(dbName, tableSeqNo, functionSeqNo, dumpDir, lastReplId))
             .log(LogTag.REPL_END);
   }

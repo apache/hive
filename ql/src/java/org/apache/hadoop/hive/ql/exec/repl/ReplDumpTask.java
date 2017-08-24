@@ -130,7 +130,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     String dbName = (null != work.dbNameOrPattern && !work.dbNameOrPattern.isEmpty())
         ? work.dbNameOrPattern
         : "?";
-    replLogger = new IncrementalDumpLogger(dbName,
+    replLogger = new IncrementalDumpLogger(dbName, dumpRoot.toString(),
             evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName));
     replLogger.startLog();
     while (evIter.hasNext()) {
@@ -140,7 +140,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dumpEvent(ev, evRoot, cmRoot);
     }
 
-    replLogger.endLog(dumpRoot.toString(), lastReplId.toString());
+    replLogger.endLog(lastReplId.toString());
 
     LOG.info("Done dumping events, preparing to return {},{}", dumpRoot.toUri(), lastReplId);
     Utils.writeOutput(
@@ -180,9 +180,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
     for (String dbName : Utils.matchesDb(getHive(), work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
-      replLogger = new BootstrapDumpLogger(dbName,
-                                           Utils.getAllTables(getHive(), dbName).size(),
-                                           getHive().getAllFunctions().size());
+      replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
+              Utils.getAllTables(getHive(), dbName).size(),
+              getHive().getAllFunctions().size());
       replLogger.startLog();
       Path dbRoot = dumpDbMetadata(dbName, dumpRoot);
       dumpFunctionMetadata(dbName, dumpRoot);
@@ -191,7 +191,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
       }
-      replLogger.endLog(dumpRoot.toString(), bootDumpBeginReplId.toString());
+      replLogger.endLog(bootDumpBeginReplId.toString());
     }
     Long bootDumpEndReplId = getHive().getMSC().getCurrentNotificationEventId().getEventId();
     LOG.info("Bootstrap object dump phase took from {} to {}", bootDumpBeginReplId,

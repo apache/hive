@@ -386,9 +386,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // If any event is there and db name is known, then dump the start and end logs
         if (!StringUtils.isEmpty(actualDbName) && (evTaskRoot != taskChainTail)) {
-          ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
-                  loadPath.toString(),
-                  db.getDatabase(actualDbName));
+          ReplStateLogWork replStateLogWork
+                  = new ReplStateLogWork(replLogger, db.getDatabase(actualDbName));
           Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
           taskChainTail.addDependentTask(barrierTask);
           LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",

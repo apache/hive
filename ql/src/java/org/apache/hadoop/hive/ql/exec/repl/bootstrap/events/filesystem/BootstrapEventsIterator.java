@@ -150,10 +150,6 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     return replLogger;
   }
 
-  public String dumpDirectory() {
-    return dumpDirectory;
-  }
-
   private void initReplLogger() {
     try {
       Path dbDumpPath = currentDatabaseIterator.dbLevelPath();

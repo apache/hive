@@ -194,8 +194,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
 
         if (!iterator.currentDbHasNext()) {
-          loadTaskTracker.updateTaskCount(createEndReplLogTask(context, scope,
-                  iterator.replLogger(), iterator.dumpDirectory()));
+          loadTaskTracker.updateTaskCount(createEndReplLogTask(context, scope, iterator.replLogger()));
         }
       }
       boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState();
@@ -234,9 +233,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private Task<? extends Serializable> createEndReplLogTask(Context context, Scope scope,
-                                                            ReplLogger replLogger, String dumpDir) throws SemanticException {
+                                                            ReplLogger replLogger) throws SemanticException {
     Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dumpDir, dbInMetadata);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (null == scope.rootTasks) {
       scope.rootTasks.add(replLogTask);

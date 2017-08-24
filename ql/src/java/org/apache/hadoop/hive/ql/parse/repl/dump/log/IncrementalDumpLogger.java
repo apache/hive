@@ -25,11 +25,13 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 
 public class IncrementalDumpLogger extends ReplLogger {
   private String dbName;
+  private String dumpDir;
   private long estimatedNumEvents;
   private long eventSeqNo;
 
-  public IncrementalDumpLogger(String dbName, long estimatedNumEvents) {
+  public IncrementalDumpLogger(String dbName, String dumpDir, long estimatedNumEvents) {
     this.dbName = dbName;
+    this.dumpDir = dumpDir;
     this.estimatedNumEvents = estimatedNumEvents;
     this.eventSeqNo = 0;
   }
@@ -47,7 +49,7 @@ public class IncrementalDumpLogger extends ReplLogger {
   }
 
   @Override
-  public void endLog(String dumpDir, String lastReplId) {
+  public void endLog(String lastReplId) {
     (new IncrementalDumpEnd(dbName, eventSeqNo, dumpDir, lastReplId)).log(LogTag.REPL_END);
   }
 }

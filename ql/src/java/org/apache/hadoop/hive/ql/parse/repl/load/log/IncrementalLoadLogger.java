@@ -49,7 +49,7 @@ public class IncrementalLoadLogger extends ReplLogger {
   }
 
   @Override
-  public void endLog(String dumpDir, String lastReplId) {
+  public void endLog(String lastReplId) {
     (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.REPL_END);
   }
 }

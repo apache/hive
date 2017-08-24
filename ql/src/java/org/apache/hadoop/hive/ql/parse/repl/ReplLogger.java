@@ -25,7 +25,7 @@ public abstract class ReplLogger {
   }
 
   public abstract void startLog();
-  public abstract void endLog(String dumpDir, String lastReplId);
+  public abstract void endLog(String lastReplId);
 
   public void tableLog(String tableName, TableType tableType) {
   }

@@ -59,7 +59,7 @@ public class BootstrapLoadLogger extends ReplLogger {
   }
 
   @Override
-  public void endLog(String dumpDir, String lastReplId) {
+  public void endLog(String lastReplId) {
     (new BootstrapLoadEnd(dbName, numTables, numFunctions, dumpDir, lastReplId))
             .log(LogTag.REPL_END);
   }
