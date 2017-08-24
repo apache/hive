@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,17 +21,17 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 
-public class StringColumnStatsMerger extends ColumnStatsMerger {
+public class LongColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    StringColumnStatsDataInspector aggregateData =
-        (StringColumnStatsDataInspector) aggregateColStats.getStatsData().getStringStats();
-    StringColumnStatsDataInspector newData =
-        (StringColumnStatsDataInspector) newColStats.getStatsData().getStringStats();
-    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
-    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+    LongColumnStatsDataInspector aggregateData =
+        (LongColumnStatsDataInspector) aggregateColStats.getStatsData().getLongStats();
+    LongColumnStatsDataInspector newData =
+        (LongColumnStatsDataInspector) newColStats.getStatsData().getLongStats();
+    aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
+    aggregateData.setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));

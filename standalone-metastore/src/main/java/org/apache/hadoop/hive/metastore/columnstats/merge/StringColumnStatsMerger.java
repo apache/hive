@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,22 +21,17 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 
-public class DateColumnStatsMerger extends ColumnStatsMerger {
+public class StringColumnStatsMerger extends ColumnStatsMerger {
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
-    DateColumnStatsDataInspector aggregateData =
-        (DateColumnStatsDataInspector) aggregateColStats.getStatsData().getDateStats();
-    DateColumnStatsDataInspector newData =
-        (DateColumnStatsDataInspector) newColStats.getStatsData().getDateStats();
-    Date lowValue = aggregateData.getLowValue().compareTo(newData.getLowValue()) < 0 ? aggregateData
-        .getLowValue() : newData.getLowValue();
-    aggregateData.setLowValue(lowValue);
-    Date highValue = aggregateData.getHighValue().compareTo(newData.getHighValue()) >= 0 ? aggregateData
-        .getHighValue() : newData.getHighValue();
-    aggregateData.setHighValue(highValue);
+    StringColumnStatsDataInspector aggregateData =
+        (StringColumnStatsDataInspector) aggregateColStats.getStatsData().getStringStats();
+    StringColumnStatsDataInspector newData =
+        (StringColumnStatsDataInspector) newColStats.getStatsData().getStringStats();
+    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
     aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
     if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
       aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));

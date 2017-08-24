@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,13 +19,17 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public abstract class ColumnStatsMerger {
-  protected final Logger LOG = LoggerFactory.getLogger(ColumnStatsMerger.class.getName());
+public class BinaryColumnStatsMerger extends ColumnStatsMerger {
 
-  public abstract void merge(ColumnStatisticsObj aggregateColStats,
-      ColumnStatisticsObj newColStats);
+  @Override
+  public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    BinaryColumnStatsData aggregateData = aggregateColStats.getStatsData().getBinaryStats();
+    BinaryColumnStatsData newData = newColStats.getStatsData().getBinaryStats();
+    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
+  }
 }
