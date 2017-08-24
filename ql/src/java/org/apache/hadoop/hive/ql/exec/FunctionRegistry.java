@@ -262,6 +262,10 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ltrim", GenericUDFLTrim.class);
     system.registerGenericUDF("rtrim", GenericUDFRTrim.class);
     system.registerUDF("length", UDFLength.class, false);
+    //added by zhaowei 20170822
+    system.registerGenericUDF("contains", GenericUDFContains.class);
+    system.registerGenericUDF("fulltext", GenericUDFFullText.class);
+    //
     system.registerUDF("reverse", UDFReverse.class, false);
     system.registerGenericUDF("field", GenericUDFField.class);
     system.registerUDF("find_in_set", UDFFindInSet.class, false);
