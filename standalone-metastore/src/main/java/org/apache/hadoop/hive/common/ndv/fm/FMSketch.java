@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -313,7 +313,7 @@ public class FMSketch implements NumDistinctValueEstimator {
     return ((long)(numDistinctValues));
   }
 
-  @InterfaceAudience.LimitedPrivate(value = { "Hive" })
+  @InterfaceAudience.LimitedPrivate(value = {"Hive" })
   static int lengthFor(JavaDataModel model, Integer numVector) {
     int length = model.object();
     length += model.primitive1() * 2;       // two int

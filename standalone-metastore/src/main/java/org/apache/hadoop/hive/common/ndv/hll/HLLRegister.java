@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,7 +26,7 @@ public interface HLLRegister {
    *          - hashcode to add
    * @return true if register value is updated else false
    */
-  public boolean add(long hashcode);
+  boolean add(long hashcode);
 
   /**
    * Instead of specifying hashcode, this interface can be used to directly
@@ -39,12 +39,12 @@ public interface HLLRegister {
    *          - register value
    * @return true if register value is updated else false
    */
-  public boolean set(int idx, byte value);
+  boolean set(int idx, byte value);
 
   /**
    * Merge hyperloglog registers of the same type (SPARSE or DENSE register)
    * @param reg
    *          - register to be merged
    */
-  public void merge(HLLRegister reg);
+  void merge(HLLRegister reg);
 }

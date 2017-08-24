@@ -78,6 +78,11 @@
       <version>${dropwizard.version}</version>
     </dependency>
     <dependency>
+      <groupId>javolution</groupId>
+      <artifactId>javolution</artifactId>
+      <version>${javolution.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
       <version>${antlr.version}</version>

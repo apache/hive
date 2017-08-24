@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -97,7 +97,7 @@ public class TestHLLSerialization {
   public void testHLLSparseSerializationHalfDistinct() throws IOException {
     HyperLogLog hll = HyperLogLog.builder().setEncoding(EncodingType.SPARSE).build();
     Random rand = new Random(SEED);
-    Set<Integer> hashset = new HashSet<Integer>();
+    Set<Integer> hashset = new HashSet<>();
     for (int i = 0; i < size; i++) {
       int val = rand.nextInt(size / 2);
       hll.addLong(val);
@@ -146,7 +146,7 @@ public class TestHLLSerialization {
     HyperLogLog hll = HyperLogLog.builder().setEncoding(EncodingType.SPARSE)
         .enableBitPacking(false).build();
     Random rand = new Random(SEED);
-    Set<Integer> hashset = new HashSet<Integer>();
+    Set<Integer> hashset = new HashSet<>();
     for (int i = 0; i < size; i++) {
       int val = rand.nextInt(size / 2);
       hll.addLong(val);
@@ -193,7 +193,7 @@ public class TestHLLSerialization {
   public void testHLLDenseSerializationHalfDistinct() throws IOException {
     HyperLogLog hll = HyperLogLog.builder().setEncoding(EncodingType.DENSE).build();
     Random rand = new Random(SEED);
-    Set<Integer> hashset = new HashSet<Integer>();
+    Set<Integer> hashset = new HashSet<>();
     for (int i = 0; i < size; i++) {
       int val = rand.nextInt(size / 2);
       hll.addLong(val);
@@ -242,7 +242,7 @@ public class TestHLLSerialization {
     HyperLogLog hll = HyperLogLog.builder().setEncoding(EncodingType.DENSE).enableBitPacking(false)
         .build();
     Random rand = new Random(SEED);
-    Set<Integer> hashset = new HashSet<Integer>();
+    Set<Integer> hashset = new HashSet<>();
     for (int i = 0; i < size; i++) {
       int val = rand.nextInt(size / 2);
       hll.addLong(val);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,7 +46,7 @@ public class HLLSparseRegister implements HLLRegister {
 
   public HLLSparseRegister(int p, int pp, int qp) {
     this.p = p;
-    this.sparseMap = new TreeMap<Integer,Byte>();
+    this.sparseMap = new TreeMap<>();
     this.tempList = new int[HLLConstants.TEMP_LIST_DEFAULT_SIZE];
     this.tempListIdx = 0;
     this.pPrime = pp;

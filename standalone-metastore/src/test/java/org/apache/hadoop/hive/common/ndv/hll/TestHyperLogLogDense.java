@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -68,7 +68,7 @@ public class TestHyperLogLogDense {
     Random rand = new Random(size);
     HyperLogLog hll = HyperLogLog.builder().setEncoding(HyperLogLog.EncodingType.DENSE).build();
     int unique = size / 2;
-    Set<Long> hashset = new HashSet<Long>();
+    Set<Long> hashset = new HashSet<>();
     for (int i = 0; i < size; i++) {
       long val = rand.nextInt(unique);
       hashset.add(val);

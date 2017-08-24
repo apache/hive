@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,28 +24,28 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 public interface NumDistinctValueEstimator {
 
-  static final Logger LOG = LoggerFactory.getLogger(NumDistinctValueEstimator.class.getName());
+  Logger LOG = LoggerFactory.getLogger(NumDistinctValueEstimator.class.getName());
 
-  public void reset();
+  void reset();
 
-  public byte[] serialize();
+  byte[] serialize();
   
-  public NumDistinctValueEstimator deserialize(byte[] buf);
+  NumDistinctValueEstimator deserialize(byte[] buf);
 
-  public void addToEstimator(long v);
+  void addToEstimator(long v);
 
-  public void addToEstimator(double d);
+  void addToEstimator(double d);
 
-  public void addToEstimator(String s);
+  void addToEstimator(String s);
 
-  public void addToEstimator(HiveDecimal decimal);
+  void addToEstimator(HiveDecimal decimal);
 
-  public void mergeEstimators(NumDistinctValueEstimator o);
+  void mergeEstimators(NumDistinctValueEstimator o);
 
-  public long estimateNumDistinctValues();
+  long estimateNumDistinctValues();
 
-  public int lengthFor(JavaDataModel model);
+  int lengthFor(JavaDataModel model);
 
-  public boolean canMerge(NumDistinctValueEstimator o);
+  boolean canMerge(NumDistinctValueEstimator o);
 
 }
