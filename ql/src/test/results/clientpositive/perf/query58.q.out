@@ -222,7 +222,7 @@ Stage-0
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_257] (rows=73049 width=1119)
                                                   predicate:(d_week_seq is not null and d_date is not null)
-                                                  TableScan [TS_18] (rows=73049 width=1119)
+                                                  TableScan [TS_21] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date","d_week_seq"]
                                           <-Reducer 24 [SIMPLE_EDGE]
                                             SHUFFLE [RS_77]
@@ -235,7 +235,7 @@ Stage-0
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_256] (rows=36524 width=1119)
                                                       predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-                                                       Please refer to the previous TableScan [TS_18]
+                                                       Please refer to the previous TableScan [TS_21]
                                               <-Reducer 23 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_74]
                                                   Select Operator [SEL_67] (rows=1 width=8)
@@ -333,7 +333,7 @@ Stage-0
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_263] (rows=73049 width=1119)
                                                   predicate:(d_week_seq is not null and d_date is not null)
-                                                   Please refer to the previous TableScan [TS_18]
+                                                   Please refer to the previous TableScan [TS_21]
                                           <-Reducer 28 [SIMPLE_EDGE]
                                             SHUFFLE [RS_127]
                                               PartitionCols:_col1
@@ -345,7 +345,7 @@ Stage-0
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_262] (rows=36524 width=1119)
                                                       predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-                                                       Please refer to the previous TableScan [TS_18]
+                                                       Please refer to the previous TableScan [TS_21]
                                               <-Reducer 27 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_124]
                                                   Select Operator [SEL_117] (rows=1 width=8)
@@ -396,7 +396,7 @@ Stage-0
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_251] (rows=73049 width=1119)
                                                   predicate:(d_week_seq is not null and d_date is not null)
-                                                   Please refer to the previous TableScan [TS_18]
+                                                   Please refer to the previous TableScan [TS_21]
                                           <-Reducer 20 [SIMPLE_EDGE]
                                             SHUFFLE [RS_27]
                                               PartitionCols:_col1
@@ -408,7 +408,7 @@ Stage-0
                                                     Output:["_col0"]
                                                     Filter Operator [FIL_250] (rows=36524 width=1119)
                                                       predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-                                                       Please refer to the previous TableScan [TS_18]
+                                                       Please refer to the previous TableScan [TS_21]
                                               <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
                                                 PARTITION_ONLY_SHUFFLE [RS_24]
                                                   Select Operator [SEL_17] (rows=1 width=8)

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -362,7 +363,9 @@ public class SharedWorkOptimizer extends Transform {
   private static Multimap<String, TableScanOperator> splitTableScanOpsByTable(
           ParseContext pctx) {
     Multimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
-    for (Entry<String, TableScanOperator> e : pctx.getTopOps().entrySet()) {
+    // Sort by operator ID so we get deterministic results
+    Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
+    for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
       TableScanOperator tsOp = e.getValue();
       tableNameToOps.put(
               tsOp.getConf().getTableMetadata().getDbName() + "."
