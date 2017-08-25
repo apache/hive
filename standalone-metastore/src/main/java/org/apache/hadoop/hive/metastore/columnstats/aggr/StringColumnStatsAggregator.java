@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -125,12 +125,12 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       // we need extrapolation
       LOG.debug("start extrapolation for " + colName);
 
-      Map<String, Integer> indexMap = new HashMap<String, Integer>();
+      Map<String, Integer> indexMap = new HashMap<>();
       for (int index = 0; index < partNames.size(); index++) {
         indexMap.put(partNames.get(index), index);
       }
-      Map<String, Double> adjustedIndexMap = new HashMap<String, Double>();
-      Map<String, ColumnStatisticsData> adjustedStatsMap = new HashMap<String, ColumnStatisticsData>();
+      Map<String, Double> adjustedIndexMap = new HashMap<>();
+      Map<String, ColumnStatisticsData> adjustedStatsMap = new HashMap<>();
       if (ndvEstimator == null) {
         // if not every partition uses bitvector for ndv, we just fall back to
         // the traditional extrapolation methods.
@@ -217,7 +217,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
     for (Map.Entry<String, ColumnStatisticsData> entry : adjustedStatsMap.entrySet()) {
       extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getStringStats());
     }
-    List<Map.Entry<String, StringColumnStatsData>> list = new LinkedList<Map.Entry<String, StringColumnStatsData>>(
+    List<Map.Entry<String, StringColumnStatsData>> list = new LinkedList<>(
         extractedAdjustedStatsMap.entrySet());
     // get the avgLen
     Collections.sort(list, new Comparator<Map.Entry<String, StringColumnStatsData>>() {

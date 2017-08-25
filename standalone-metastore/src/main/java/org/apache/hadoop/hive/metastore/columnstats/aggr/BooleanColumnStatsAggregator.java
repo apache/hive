@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,19 +21,19 @@ package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
-public class BinaryColumnStatsAggregator extends ColumnStatsAggregator {
+public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
 
   @Override
   public ColumnStatisticsObj aggregate(String colName, List<String> partNames,
       List<ColumnStatistics> css) throws MetaException {
     ColumnStatisticsObj statsObj = null;
-    BinaryColumnStatsData aggregateData = null;
+    BooleanColumnStatsData aggregateData = null;
     String colType = null;
     for (ColumnStatistics cs : css) {
       if (cs.getStatsObjSize() != 1) {
@@ -47,18 +47,19 @@ public class BinaryColumnStatsAggregator extends ColumnStatsAggregator {
         statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
             .getStatsData().getSetField());
       }
-      BinaryColumnStatsData newData = cso.getStatsData().getBinaryStats();
+      BooleanColumnStatsData newData = cso.getStatsData().getBooleanStats();
       if (aggregateData == null) {
         aggregateData = newData.deepCopy();
       } else {
-        aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
-        aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+        aggregateData.setNumTrues(aggregateData.getNumTrues() + newData.getNumTrues());
+        aggregateData.setNumFalses(aggregateData.getNumFalses() + newData.getNumFalses());
         aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
       }
     }
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
-    columnStatisticsData.setBinaryStats(aggregateData);
+    columnStatisticsData.setBooleanStats(aggregateData);
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
+
 }

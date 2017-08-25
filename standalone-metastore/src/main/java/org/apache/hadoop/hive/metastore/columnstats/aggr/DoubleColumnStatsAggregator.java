@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,17 +31,16 @@ import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Date;
-import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
+public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DateColumnStatsAggregator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LongColumnStatsAggregator.class);
 
   @Override
   public ColumnStatisticsObj aggregate(String colName, List<String> partNames,
@@ -66,14 +65,14 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         statsObj = ColumnStatsAggregatorFactory.newColumnStaticsObj(colName, colType, cso
             .getStatsData().getSetField());
       }
-      DateColumnStatsDataInspector dateColumnStats =
-          (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
-      if (dateColumnStats.getNdvEstimator() == null) {
+      DoubleColumnStatsDataInspector doubleColumnStatsData =
+          (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
+      if (doubleColumnStatsData.getNdvEstimator() == null) {
         ndvEstimator = null;
         break;
       } else {
         // check if all of the bit vectors can merge
-        NumDistinctValueEstimator estimator = dateColumnStats.getNdvEstimator();
+        NumDistinctValueEstimator estimator = doubleColumnStatsData.getNdvEstimator();
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
@@ -93,27 +92,26 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
     LOG.debug("all of the bit vectors can merge for " + colName + " is " + (ndvEstimator != null));
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
     if (doAllPartitionContainStats || css.size() < 2) {
-      DateColumnStatsDataInspector aggregateData = null;
+      DoubleColumnStatsDataInspector aggregateData = null;
       long lowerBound = 0;
       long higherBound = 0;
       double densityAvgSum = 0.0;
       for (ColumnStatistics cs : css) {
         ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
-        DateColumnStatsDataInspector newData =
-            (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
+        DoubleColumnStatsDataInspector newData =
+            (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
         lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
-        densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue()))
-            / newData.getNumDVs();
+        densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          aggregateData.setLowValue(min(aggregateData.getLowValue(), newData.getLowValue()));
+          aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
           aggregateData
-              .setHighValue(max(aggregateData.getHighValue(), newData.getHighValue()));
+              .setHighValue(Math.max(aggregateData.getHighValue(), newData.getHighValue()));
           aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
@@ -129,7 +127,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
-          estimation = (long) (diff(aggregateData.getHighValue(), aggregateData.getLowValue()) / densityAvg);
+          estimation = (long) ((aggregateData.getHighValue() - aggregateData.getLowValue()) / densityAvg);
           if (estimation < lowerBound) {
             estimation = lowerBound;
           } else if (estimation > higherBound) {
@@ -140,17 +138,16 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         }
         aggregateData.setNumDVs(estimation);
       }
-      columnStatisticsData.setDateStats(aggregateData);
+      columnStatisticsData.setDoubleStats(aggregateData);
     } else {
       // we need extrapolation
       LOG.debug("start extrapolation for " + colName);
-
-      Map<String, Integer> indexMap = new HashMap<String, Integer>();
+      Map<String, Integer> indexMap = new HashMap<>();
       for (int index = 0; index < partNames.size(); index++) {
         indexMap.put(partNames.get(index), index);
       }
-      Map<String, Double> adjustedIndexMap = new HashMap<String, Double>();
-      Map<String, ColumnStatisticsData> adjustedStatsMap = new HashMap<String, ColumnStatisticsData>();
+      Map<String, Double> adjustedIndexMap = new HashMap<>();
+      Map<String, ColumnStatisticsData> adjustedStatsMap = new HashMap<>();
       // while we scan the css, we also get the densityAvg, lowerbound and
       // higerbound when useDensityFunctionForNDVEstimation is true.
       double densityAvgSum = 0.0;
@@ -160,9 +157,9 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         for (ColumnStatistics cs : css) {
           String partName = cs.getStatsDesc().getPartName();
           ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
-          DateColumnStatsData newData = cso.getStatsData().getDateStats();
+          DoubleColumnStatsData newData = cso.getStatsData().getDoubleStats();
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(newData.getHighValue(), newData.getLowValue()) / newData.getNumDVs();
+            densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -174,12 +171,12 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         double pseudoIndexSum = 0;
         int length = 0;
         int curIndex = -1;
-        DateColumnStatsDataInspector aggregateData = null;
+        DoubleColumnStatsData aggregateData = null;
         for (ColumnStatistics cs : css) {
           String partName = cs.getStatsDesc().getPartName();
           ColumnStatisticsObj cso = cs.getStatsObjIterator().next();
-          DateColumnStatsDataInspector newData =
-              (DateColumnStatsDataInspector) cso.getStatsData().getDateStats();
+          DoubleColumnStatsDataInspector newData =
+              (DoubleColumnStatsDataInspector) cso.getStatsData().getDoubleStats();
           // newData.isSetBitVectors() should be true for sure because we
           // already checked it before.
           if (indexMap.get(partName) != curIndex) {
@@ -189,11 +186,10 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
               adjustedIndexMap.put(pseudoPartName.toString(), pseudoIndexSum / length);
               aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
               ColumnStatisticsData csd = new ColumnStatisticsData();
-              csd.setDateStats(aggregateData);
+              csd.setDoubleStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
-                    / aggregateData.getNumDVs();
+                densityAvgSum += (aggregateData.getHighValue() - aggregateData.getLowValue()) / aggregateData.getNumDVs();
               }
               // reset everything
               pseudoPartName = new StringBuilder();
@@ -211,8 +207,9 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           if (aggregateData == null) {
             aggregateData = newData.deepCopy();
           } else {
-            aggregateData.setLowValue(min(aggregateData.getLowValue(), newData.getLowValue()));
-            aggregateData.setHighValue(max(aggregateData.getHighValue(), newData.getHighValue()));
+            aggregateData.setLowValue(Math.min(aggregateData.getLowValue(), newData.getLowValue()));
+            aggregateData.setHighValue(Math.max(aggregateData.getHighValue(),
+                newData.getHighValue()));
             aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
           }
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
@@ -222,33 +219,20 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           adjustedIndexMap.put(pseudoPartName.toString(), pseudoIndexSum / length);
           aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
           ColumnStatisticsData csd = new ColumnStatisticsData();
-          csd.setDateStats(aggregateData);
+          csd.setDoubleStats(aggregateData);
           adjustedStatsMap.put(pseudoPartName.toString(), csd);
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
-                / aggregateData.getNumDVs();
+            densityAvgSum += (aggregateData.getHighValue() - aggregateData.getLowValue()) / aggregateData.getNumDVs();
           }
         }
       }
       extrapolate(columnStatisticsData, partNames.size(), css.size(), adjustedIndexMap,
           adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
-    LOG.debug("Ndv estimatation for {} is {} # of partitions requested: {} # of partitions found: {}", colName,
-        columnStatisticsData.getDateStats().getNumDVs(),partNames.size(), css.size());
+    LOG.debug("Ndv estimatation for {} is {}. # of partitions requested: {}. # of partitions found: {}", colName,
+        columnStatisticsData.getDoubleStats().getNumDVs(),partNames.size(), css.size());
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
-  }
-
-  private long diff(Date d1, Date d2) {
-    return d1.getDaysSinceEpoch() - d2.getDaysSinceEpoch();
-  }
-
-  private Date min(Date d1, Date d2) {
-    return d1.compareTo(d2) < 0 ? d1 : d2;
-  }
-
-  private Date max(Date d1, Date d2) {
-    return d1.compareTo(d2) < 0 ? d2 : d1;
   }
 
   @Override
@@ -256,62 +240,62 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg) {
     int rightBorderInd = numParts;
-    DateColumnStatsDataInspector extrapolateDateData = new DateColumnStatsDataInspector();
-    Map<String, DateColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
+    DoubleColumnStatsDataInspector extrapolateDoubleData = new DoubleColumnStatsDataInspector();
+    Map<String, DoubleColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
     for (Map.Entry<String, ColumnStatisticsData> entry : adjustedStatsMap.entrySet()) {
-      extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getDateStats());
+      extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getDoubleStats());
     }
-    List<Map.Entry<String, DateColumnStatsData>> list = new LinkedList<Map.Entry<String, DateColumnStatsData>>(
+    List<Map.Entry<String, DoubleColumnStatsData>> list = new LinkedList<>(
         extractedAdjustedStatsMap.entrySet());
     // get the lowValue
-    Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
       @Override
-      public int compare(Map.Entry<String, DateColumnStatsData> o1,
-          Map.Entry<String, DateColumnStatsData> o2) {
-        return o1.getValue().getLowValue().compareTo(o2.getValue().getLowValue());
+      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
+          Map.Entry<String, DoubleColumnStatsData> o2) {
+        return Double.compare(o1.getValue().getLowValue(), o2.getValue().getLowValue());
       }
     });
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
     double maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
-    long lowValue = 0;
-    long min = list.get(0).getValue().getLowValue().getDaysSinceEpoch();
-    long max = list.get(list.size() - 1).getValue().getLowValue().getDaysSinceEpoch();
+    double lowValue = 0;
+    double min = list.get(0).getValue().getLowValue();
+    double max = list.get(list.size() - 1).getValue().getLowValue();
     if (minInd == maxInd) {
       lowValue = min;
     } else if (minInd < maxInd) {
       // left border is the min
-      lowValue = (long) (max - (max - min) * maxInd / (maxInd - minInd));
+      lowValue = (max - (max - min) * maxInd / (maxInd - minInd));
     } else {
       // right border is the min
-      lowValue = (long) (max - (max - min) * (rightBorderInd - maxInd) / (minInd - maxInd));
+      lowValue = (max - (max - min) * (rightBorderInd - maxInd) / (minInd - maxInd));
     }
 
     // get the highValue
-    Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
       @Override
-      public int compare(Map.Entry<String, DateColumnStatsData> o1,
-          Map.Entry<String, DateColumnStatsData> o2) {
-        return o1.getValue().getHighValue().compareTo(o2.getValue().getHighValue());
+      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
+          Map.Entry<String, DoubleColumnStatsData> o2) {
+        return Double.compare(o1.getValue().getHighValue(), o2.getValue().getHighValue());
       }
     });
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
-    long highValue = 0;
-    min = list.get(0).getValue().getHighValue().getDaysSinceEpoch();
-    max = list.get(list.size() - 1).getValue().getHighValue().getDaysSinceEpoch();
+    double highValue = 0;
+    min = list.get(0).getValue().getHighValue();
+    max = list.get(list.size() - 1).getValue().getHighValue();
     if (minInd == maxInd) {
       highValue = min;
     } else if (minInd < maxInd) {
       // right border is the max
-      highValue = (long) (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+      highValue = (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
     } else {
       // left border is the max
-      highValue = (long) (min + (max - min) * minInd / (minInd - maxInd));
+      highValue = (min + (max - min) * minInd / (minInd - maxInd));
     }
 
     // get the #nulls
     long numNulls = 0;
-    for (Map.Entry<String, DateColumnStatsData> entry : extractedAdjustedStatsMap.entrySet()) {
+    for (Map.Entry<String, DoubleColumnStatsData> entry : extractedAdjustedStatsMap.entrySet()) {
       numNulls += entry.getValue().getNumNulls();
     }
     // we scale up sumNulls based on the number of partitions
@@ -319,16 +303,18 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
 
     // get the ndv
     long ndv = 0;
-    Collections.sort(list, new Comparator<Map.Entry<String, DateColumnStatsData>>() {
+    long ndvMin = 0;
+    long ndvMax = 0;
+    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
       @Override
-      public int compare(Map.Entry<String, DateColumnStatsData> o1,
-          Map.Entry<String, DateColumnStatsData> o2) {
+      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
+          Map.Entry<String, DoubleColumnStatsData> o2) {
         return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
       }
     });
     long lowerBound = list.get(list.size() - 1).getValue().getNumDVs();
     long higherBound = 0;
-    for (Map.Entry<String, DateColumnStatsData> entry : list) {
+    for (Map.Entry<String, DoubleColumnStatsData> entry : list) {
       higherBound += entry.getValue().getNumDVs();
     }
     if (useDensityFunctionForNDVEstimation && densityAvg != 0.0) {
@@ -341,22 +327,23 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
     } else {
       minInd = adjustedIndexMap.get(list.get(0).getKey());
       maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
-      min = list.get(0).getValue().getNumDVs();
-      max = list.get(list.size() - 1).getValue().getNumDVs();
+      ndvMin = list.get(0).getValue().getNumDVs();
+      ndvMax = list.get(list.size() - 1).getValue().getNumDVs();
       if (minInd == maxInd) {
-        ndv = min;
+        ndv = ndvMin;
       } else if (minInd < maxInd) {
         // right border is the max
-        ndv = (long) (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+        ndv = (long) (ndvMin + (ndvMax - ndvMin) * (rightBorderInd - minInd) / (maxInd - minInd));
       } else {
         // left border is the max
-        ndv = (long) (min + (max - min) * minInd / (minInd - maxInd));
+        ndv = (long) (ndvMin + (ndvMax - ndvMin) * minInd / (minInd - maxInd));
       }
     }
-    extrapolateDateData.setLowValue(new Date(lowValue));
-    extrapolateDateData.setHighValue(new Date(highValue));
-    extrapolateDateData.setNumNulls(numNulls);
-    extrapolateDateData.setNumDVs(ndv);
-    extrapolateData.setDateStats(extrapolateDateData);
+    extrapolateDoubleData.setLowValue(lowValue);
+    extrapolateDoubleData.setHighValue(highValue);
+    extrapolateDoubleData.setNumNulls(numNulls);
+    extrapolateDoubleData.setNumDVs(ndv);
+    extrapolateData.setDoubleStats(extrapolateDoubleData);
   }
+
 }

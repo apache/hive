@@ -1818,29 +1818,6 @@ public class MetaStoreUtils {
     return cols;
   }
 
-  // given a list of partStats, this function will give you an aggr stats
-  public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
-      String dbName, String tableName, List<String> partNames, List<String> colNames,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner)
-      throws MetaException {
-    // 1. group by the stats by colNames
-    // map the colName to List<ColumnStatistics>
-    Map<String, List<ColumnStatistics>> map = new HashMap<>();
-    for (ColumnStatistics css : partStats) {
-      List<ColumnStatisticsObj> objs = css.getStatsObj();
-      for (ColumnStatisticsObj obj : objs) {
-        List<ColumnStatisticsObj> singleObj = new ArrayList<>();
-        singleObj.add(obj);
-        ColumnStatistics singleCS = new ColumnStatistics(css.getStatsDesc(), singleObj);
-        if (!map.containsKey(obj.getColName())) {
-          map.put(obj.getColName(), new ArrayList<ColumnStatistics>());
-        }
-        map.get(obj.getColName()).add(singleCS);
-      }
-    }
-    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
-  }
-
   public static List<ColumnStatisticsObj> aggrPartitionStats(
       Map<String, List<ColumnStatistics>> map, String dbName, String tableName,
       final List<String> partNames, List<String> colNames,
@@ -1975,16 +1952,12 @@ public class MetaStoreUtils {
     return md.digest();
   }
 
-  public static double decimalToDouble(Decimal decimal) {
-    return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
-  }
-
   /**
    * Verify if the user is allowed to make DB notification related calls.
    * Only the superusers defined in the Hadoop proxy user settings have the permission.
    *
    * @param user the short user name
-   * @param config that contains the proxy user settings
+   * @param conf that contains the proxy user settings
    * @return if the user has the permission
    */
   public static boolean checkUserHasHostProxyPrivileges(String user, Configuration conf, String ipAddress) {

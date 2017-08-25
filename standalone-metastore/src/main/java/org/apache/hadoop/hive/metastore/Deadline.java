@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -100,7 +101,7 @@ public class Deadline {
 
   /**
    * start the timer before a method is invoked.
-   * @param method
+   * @param method method to be invoked
    */
   public static boolean startTimer(String method) throws MetaException {
     Deadline deadline = getCurrentDeadline();

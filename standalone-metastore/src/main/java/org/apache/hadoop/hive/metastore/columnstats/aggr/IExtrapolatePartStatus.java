@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,7 +40,7 @@ public interface IExtrapolatePartStatus {
    *          the average of ndv density, which is useful when
    *          useDensityFunctionForNDVEstimation is true.
    */
-  public abstract void extrapolate(ColumnStatisticsData extrapolateData, int numParts,
+  void extrapolate(ColumnStatisticsData extrapolateData, int numParts,
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg);
 
