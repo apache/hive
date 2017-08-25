@@ -49,7 +49,7 @@ public class TestTezSessionPool {
     }
 
     @Override
-    public TezSessionPoolManager.TezSessionPoolSession createSession(String sessionId) {
+    public TezSessionPoolSession createSession(String sessionId) {
       return new SampleTezSessionState(sessionId, this);
     }
   }
