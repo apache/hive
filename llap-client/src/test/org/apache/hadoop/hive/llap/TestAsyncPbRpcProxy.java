@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.tez;
+package org.apache.hadoop.hive.llap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,10 +26,11 @@ import java.util.Map;
 import com.google.protobuf.Message;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.hadoop.hive.llap.LlapNodeId;
+import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestLlapDaemonProtocolClientProxy {
+public class TestAsyncPbRpcProxy {
 
   @Test (timeout = 5000)
   public void testMultipleNodes() {
