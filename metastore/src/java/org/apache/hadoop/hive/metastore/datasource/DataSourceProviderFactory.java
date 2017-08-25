@@ -27,7 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 public abstract  class DataSourceProviderFactory {
 
   private static final ImmutableList<DataSourceProvider> FACTORIES =
-      ImmutableList.<DataSourceProvider>builder().add(new BoneCPDataSourceProvider()).build();
+      ImmutableList.<DataSourceProvider>builder().add(new HikariCPDataSourceProvider(), new BoneCPDataSourceProvider()).build();
 
   /**
    * @param hdpConfig hadoop configuration

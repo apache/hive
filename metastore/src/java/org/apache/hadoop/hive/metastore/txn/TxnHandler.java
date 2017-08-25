@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -32,9 +30,9 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -3187,15 +3185,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           new PoolableConnectionFactory(connFactory, objectPool, null, null, false, true);
       return new PoolingDataSource(objectPool);
     } else if ("hikaricp".equals(connectionPooler)) {
-      HikariConfig config = new HikariConfig();
-      config.setMaximumPoolSize(maxPoolSize);
-      config.setJdbcUrl(driverUrl);
-      config.setUsername(user);
-      config.setPassword(passwd);
-      //https://github.com/brettwooldridge/HikariCP
-      config.setConnectionTimeout(getConnectionTimeoutMs);
-
-      return new HikariDataSource(config);
+      return new HikariCPDataSourceProvider().create(conf);
     } else if ("none".equals(connectionPooler)) {
       LOG.info("Choosing not to pool JDBC connections");
       return new NoPoolConnectionPool(conf);

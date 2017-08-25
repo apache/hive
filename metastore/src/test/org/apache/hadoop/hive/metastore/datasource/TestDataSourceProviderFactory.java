@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import com.jolbox.bonecp.BoneCPDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Assert;
 import org.junit.Before;
@@ -103,5 +104,64 @@ public class TestDataSourceProviderFactory {
     DataSource ds = dsp.create(conf);
     Assert.assertTrue(ds instanceof BoneCPDataSource);
     Assert.assertEquals(true, ((BoneCPDataSource)ds).isDisableJMX());
+  }
+
+  @Test
+  public void testCreateHikariCpDataSource() throws SQLException {
+
+    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    // This is needed to prevent the HikariDataSource from trying to connect to the DB
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+  }
+
+  @Test
+  public void testSetHikariCpStringProperty() throws SQLException {
+
+    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".connectionInitSql", "select 1 from dual");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals("select 1 from dual", ((HikariDataSource)ds).getConnectionInitSql());
+  }
+
+  @Test
+  public void testSetHikariCpNumberProperty() throws SQLException {
+
+    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".idleTimeout", "59999");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals(59999L, ((HikariDataSource)ds).getIdleTimeout());
+  }
+
+  @Test
+  public void testSetHikariCpBooleanProperty() throws SQLException {
+
+    conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".allowPoolSuspension", "false");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals(false, ((HikariDataSource)ds).isAllowPoolSuspension());
   }
 }
