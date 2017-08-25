@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,13 +21,16 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.Key;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hive.common.util.BloomFilter;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -46,15 +49,15 @@ public class TestAggregateStatsCache {
   static int NUM_COLS = 5;
   static int MAX_CACHE_NODES = 10;
   static int MAX_PARTITIONS_PER_CACHE_NODE = 10;
-  static String TIME_TO_LIVE = "20s";
-  static String MAX_WRITER_WAIT = "1s";
-  static String MAX_READER_WAIT = "1s";
-  static float FALSE_POSITIVE_PROBABILITY = (float) 0.01;
-  static float MAX_VARIANCE = (float) 0.5;
+  static long TIME_TO_LIVE = 2;
+  static long MAX_WRITER_WAIT = 1;
+  static long MAX_READER_WAIT = 1;
+  static double FALSE_POSITIVE_PROBABILITY = 0.01;
+  static double MAX_VARIANCE = 0.5;
   static AggregateStatsCache cache;
-  static List<String> tables = new ArrayList<String>();
-  static List<String> tabParts = new ArrayList<String>();
-  static List<String> tabCols = new ArrayList<String>();
+  static List<String> tables = new ArrayList<>();
+  static List<String> tabParts = new ArrayList<>();
+  static List<String> tabCols = new ArrayList<>();
 
   @BeforeClass
   public static void beforeTest() {
@@ -91,20 +94,18 @@ public class TestAggregateStatsCache {
 
   @Before
   public void setUp() {
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
-        MAX_CACHE_NODES);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(conf, ConfVars.AGGREGATE_STATS_CACHE_SIZE, MAX_CACHE_NODES);
+    MetastoreConf.setLongVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
         MAX_PARTITIONS_PER_CACHE_NODE);
-    hiveConf.setFloatVar(
-        HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP,
-        FALSE_POSITIVE_PROBABILITY);
-    hiveConf.setFloatVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE,
-        MAX_VARIANCE);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL, TIME_TO_LIVE);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT, MAX_WRITER_WAIT);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT, MAX_READER_WAIT);
-    cache = AggregateStatsCache.getInstance(hiveConf);
+    MetastoreConf.setDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_FPP, FALSE_POSITIVE_PROBABILITY);
+    MetastoreConf.setDoubleVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_VARIANCE, MAX_VARIANCE);
+    MetastoreConf.setTimeVar(conf, ConfVars.AGGREGATE_STATS_CACHE_TTL, TIME_TO_LIVE, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
+        MAX_WRITER_WAIT, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
+        MAX_READER_WAIT, TimeUnit.SECONDS);
+    cache = AggregateStatsCache.getInstance(conf);
   }
 
   @After
@@ -204,10 +205,10 @@ public class TestAggregateStatsCache {
     // Now add to cache
     cache.add(DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
 
-    // Sleep for 30 seconds
-    Thread.sleep(30000);
+    // Sleep for 3 seconds
+    Thread.sleep(3000);
 
-    // Get should fail now (since TTL is 20s) and we've snoozed for 30 seconds
+    // Get should fail now (since TTL is 2s) and we've snoozed for 3 seconds
     AggrColStats aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
   }
@@ -227,7 +228,7 @@ public class TestAggregateStatsCache {
     if ((minPart < 1) || (maxPart > NUM_PARTS)) {
       throw new Exception("tabParts does not have these partition numbers");
     }
-    List<String> partNames = new ArrayList<String>();
+    List<String> partNames = new ArrayList<>();
     for (int i = minPart; i <= maxPart; i++) {
       String partName = tabParts.get(i-1);
       partNames.add(tabName + partName);
