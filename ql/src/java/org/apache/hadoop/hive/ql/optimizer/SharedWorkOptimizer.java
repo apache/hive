@@ -443,8 +443,8 @@ public class SharedWorkOptimizer extends Transform {
         Set<Operator<?>> ascendants =
             findAscendantWorkOperators(pctx, optimizerCache, op);
         if (ascendants.contains(tsOp2)) {
-          dppsOp1.remove(i);
-          i--;
+          // This should not happen, we cannot merge
+          return false;
         }
       }
     }
@@ -454,8 +454,8 @@ public class SharedWorkOptimizer extends Transform {
         Set<Operator<?>> ascendants =
             findAscendantWorkOperators(pctx, optimizerCache, op);
         if (ascendants.contains(tsOp1)) {
-          dppsOp2.remove(i);
-          i--;
+          // This should not happen, we cannot merge
+          return false;
         }
       }
     }
@@ -464,9 +464,9 @@ public class SharedWorkOptimizer extends Transform {
       return false;
     }
     // Check if DPP branches are equal
+    BitSet bs = new BitSet();
     for (int i = 0; i < dppsOp1.size(); i++) {
       Operator<?> dppOp1 = dppsOp1.get(i);
-      BitSet bs = new BitSet();
       for (int j = 0; j < dppsOp2.size(); j++) {
         if (!bs.get(j)) {
           // If not visited yet
@@ -478,7 +478,7 @@ public class SharedWorkOptimizer extends Transform {
           }
         }
       }
-      if (bs.cardinality() == i) {
+      if (bs.cardinality() < i + 1) {
         return false;
       }
     }
@@ -530,7 +530,6 @@ public class SharedWorkOptimizer extends Transform {
         if (currentOp1.getChildOperators().size() > 1 ||
                 currentOp2.getChildOperators().size() > 1) {
           // TODO: Support checking multiple child operators to merge further.
-          discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableInputOps));
           discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableOps));
           discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps, discardableInputOps));
           return new SharedResult(retainableOps, discardableOps, discardableInputOps, dataSize, maxDataSize);
@@ -539,7 +538,6 @@ public class SharedWorkOptimizer extends Transform {
         currentOp2 = currentOp2.getChildOperators().get(0);
       } else {
         // Bail out
-        discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableInputOps));
         discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, discardableOps));
         discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps, discardableInputOps));
         return new SharedResult(retainableOps, discardableOps, discardableInputOps, dataSize, maxDataSize);
