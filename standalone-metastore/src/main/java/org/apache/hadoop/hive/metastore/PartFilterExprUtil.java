@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.metastore;
 
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
@@ -47,7 +49,12 @@ public class PartFilterExprUtil {
     try {
       filter = expressionProxy.convertExprToFilter(expr);
     } catch (MetaException ex) {
-      throw new IMetaStoreClient.IncompatibleMetastoreException(ex.getMessage());
+      // TODO - for now we have construct this by reflection because IMetaStoreClient can't be
+      // moved until after HiveMetaStore is moved, which can't be moved until this is moved.
+      Class<? extends MetaException> exClass = JavaUtils.getClass(
+          "org.apache.hadoop.hive.metastore.IMetaStoreClient.IncompatibleMetastoreException",
+          MetaException.class);
+      throw JavaUtils.newInstance(exClass, new Class<?>[]{String.class}, new Object[]{ex.getMessage()});
     }
 
     // Make a tree out of the filter.
@@ -68,12 +75,12 @@ public class PartFilterExprUtil {
    * @return The partition expression proxy.
    */
   public static PartitionExpressionProxy createExpressionProxy(Configuration conf) {
-    String className = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS);
+    String className = MetastoreConf.getVar(conf, ConfVars.EXPRESSION_PROXY_CLASS);
     try {
       @SuppressWarnings("unchecked")
       Class<? extends PartitionExpressionProxy> clazz =
-          (Class<? extends PartitionExpressionProxy>)MetaStoreUtils.getClass(className);
-      return MetaStoreUtils.newInstance(
+           JavaUtils.getClass(className, PartitionExpressionProxy.class);
+      return JavaUtils.newInstance(
           clazz, new Class<?>[0], new Object[0]);
     } catch (MetaException e) {
       LOG.error("Error loading PartitionExpressionProxy", e);
