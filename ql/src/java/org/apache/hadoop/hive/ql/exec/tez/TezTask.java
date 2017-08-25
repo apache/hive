@@ -548,11 +548,7 @@ public class TezTask extends Task<TezWork> {
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
 
-        // close the old one, but keep the tmp files around
-        // TODO Why is the session being create using a conf instance belonging to TezTask
-        //      - instead of the session conf instance.
-        TezSessionPoolManager.getInstance().reopenSession(
-            sessionState, this.conf, inputOutputJars, true);
+        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
         console.printInfo("Session re-established.");
 
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -562,8 +558,7 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
-        TezSessionPoolManager.getInstance().reopenSession(sessionState, this.conf, inputOutputJars,
-            true);
+        TezSessionPoolManager.getInstance().reopenSession(sessionState, conf);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.

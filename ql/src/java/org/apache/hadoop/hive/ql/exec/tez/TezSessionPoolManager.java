@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.conf.Configuration;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
@@ -563,22 +565,24 @@ public class TezSessionPoolManager {
   }
 
   /** Reopens the session that was found to not be running. */
-  public void reopenSession(TezSessionState sessionState, HiveConf conf,
-      String[] additionalFiles, boolean keepTmpDir) throws Exception {
+  public void reopenSession(TezSessionState sessionState, Configuration conf) throws Exception {
     HiveConf sessionConf = sessionState.getConf();
-    if (sessionConf != null && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) != null) {
-      // user has explicitly specified queue name
-      conf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME));
-    } else {
+    // TODO: when will sessionConf be null, other than tests? Set in open. Throw?
+    if (sessionConf == null) {
+      LOG.warn("Session configuration is null for " + sessionState);
       // default queue name when the initial session was created
-      if (sessionState.getQueueName() != null) {
-        conf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
-      }
+      sessionConf = new HiveConf(conf, TezSessionPoolManager.class);
     }
+    if (sessionState.getQueueName() != null && sessionConf.get(TezConfiguration.TEZ_QUEUE_NAME) == null) {
+      sessionConf.set(TezConfiguration.TEZ_QUEUE_NAME, sessionState.getQueueName());
+    }
+    Set<String> oldAdditionalFiles = sessionState.getAdditionalFilesNotFromConf();
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
-    sessionState.close(keepTmpDir); // Clean up stuff.
-    sessionState.open(conf, additionalFiles);
+    // Close the old one, but keep the tmp files around.
+    sessionState.close(true);
+    // TODO: should we reuse scratchDir too?
+    sessionState.open(sessionConf, oldAdditionalFiles, null);
   }
 
   public void closeNonDefaultSessions(boolean keepTmpDir) throws Exception {
