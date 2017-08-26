@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -93,7 +94,7 @@ public class CompactorMR {
   static final private String IS_MAJOR = "hive.compactor.is.major";
   static final private String IS_COMPRESSED = "hive.compactor.is.compressed";
   static final private String TABLE_PROPS = "hive.compactor.table.props";
-  static final private String NUM_BUCKETS = "hive.compactor.num.buckets";
+  static final private String NUM_BUCKETS = hive_metastoreConstants.BUCKET_COUNT;
   static final private String BASE_DIR = "hive.compactor.base.dir";
   static final private String DELTA_DIRS = "hive.compactor.delta.dirs";
   static final private String DIRS_TO_SEARCH = "hive.compactor.dirs.to.search";

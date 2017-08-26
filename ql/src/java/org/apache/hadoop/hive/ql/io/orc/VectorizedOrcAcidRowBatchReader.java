@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
@@ -357,7 +358,7 @@ public class VectorizedOrcAcidRowBatchReader
           int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
           String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
           this.validTxnList = (txnString == null) ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
-          OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isCompacting(false);
+          OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
           assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
           this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
                                                       validTxnList, readerOptions, deleteDeltas,
@@ -530,6 +531,9 @@ public class VectorizedOrcAcidRowBatchReader
      * For every call to next(), it returns the next smallest record id in the file if available.
      * Internally, the next() buffers a row batch and maintains an index pointer, reading the
      * next batch when the previous batch is exhausted.
+     *
+     * For unbucketed tables this will currently return all delete events.  Once we trust that
+     * the N in bucketN for "base" spit is reliable, all delete events not matching N can be skipped.
      */
     static class DeleteReaderValue {
       private VectorizedRowBatch batch;
@@ -538,9 +542,10 @@ public class VectorizedOrcAcidRowBatchReader
       private final int bucketForSplit; // The bucket value should be same for all the records.
       private final ValidTxnList validTxnList;
       private boolean isBucketPropertyRepeating;
+      private final boolean isBucketedTable;
 
       public DeleteReaderValue(Reader deleteDeltaReader, Reader.Options readerOptions, int bucket,
-          ValidTxnList validTxnList) throws IOException {
+          ValidTxnList validTxnList, boolean isBucketedTable) throws IOException {
         this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions);
         this.bucketForSplit = bucket;
         this.batch = deleteDeltaReader.getSchema().createRowBatch();
@@ -549,6 +554,7 @@ public class VectorizedOrcAcidRowBatchReader
         }
         this.indexPtrInBatch = 0;
         this.validTxnList = validTxnList;
+        this.isBucketedTable = isBucketedTable;
         checkBucketId();//check 1st batch
       }
 
@@ -615,6 +621,13 @@ public class VectorizedOrcAcidRowBatchReader
        * either the split computation got messed up or we found some corrupted records.
        */
       private void checkBucketId(int bucketPropertyFromRecord) throws IOException {
+        if(!isBucketedTable) {
+          /**
+           * in this case a file inside a delete_delta_x_y/bucketN may contain any value for
+           * bucketId in {@link RecordIdentifier#getBucketProperty()}
+           */
+          return;
+        }
         int bucketIdFromRecord = BucketCodec.determineVersion(bucketPropertyFromRecord)
           .decodeWriterId(bucketPropertyFromRecord);
         if(bucketIdFromRecord != bucketForSplit) {
@@ -686,14 +699,16 @@ public class VectorizedOrcAcidRowBatchReader
       this.rowIds = null;
       this.compressedOtids = null;
       int maxEventsInMemory = HiveConf.getIntVar(conf, ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY);
+      final boolean isBucketedTable  = conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
 
       try {
         final Path[] deleteDeltaDirs = getDeleteDeltaDirsFromSplit(orcSplit);
         if (deleteDeltaDirs.length > 0) {
           int totalDeleteEventCount = 0;
           for (Path deleteDeltaDir : deleteDeltaDirs) {
-            Path deleteDeltaFile = AcidUtils.createBucketFile(deleteDeltaDir, bucket);
-            FileSystem fs = deleteDeltaFile.getFileSystem(conf);
+            FileSystem fs = deleteDeltaDir.getFileSystem(conf);
+            for(Path deleteDeltaFile : OrcRawRecordMerger.getDeltaFiles(deleteDeltaDir, bucket, conf,
+              new OrcRawRecordMerger.Options().isCompacting(false), isBucketedTable)) {
             // NOTE: Calling last flush length below is more for future-proofing when we have
             // streaming deletes. But currently we don't support streaming deletes, and this can
             // be removed if this becomes a performance issue.
@@ -721,7 +736,7 @@ public class VectorizedOrcAcidRowBatchReader
                 throw new DeleteEventsOverflowMemoryException();
               }
               DeleteReaderValue deleteReaderValue = new DeleteReaderValue(deleteDeltaReader,
-                  readerOptions, bucket, validTxnList);
+                  readerOptions, bucket, validTxnList, isBucketedTable);
               DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
               if (deleteReaderValue.next(deleteRecordKey)) {
                 sortMerger.put(deleteRecordKey, deleteReaderValue);
@@ -729,6 +744,7 @@ public class VectorizedOrcAcidRowBatchReader
                 deleteReaderValue.close();
               }
             }
+          }
           }
           if (totalDeleteEventCount > 0) {
             // Initialize the rowId array when we have some delete events.

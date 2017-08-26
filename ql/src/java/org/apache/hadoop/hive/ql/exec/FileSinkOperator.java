@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
@@ -285,6 +287,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient int numFiles;
   protected transient boolean multiFileSpray;
   protected transient final Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
+  private transient boolean isBucketed = false;
 
   private transient ObjectInspector[] partitionObjectInspectors;
   protected transient HivePartitioner<HiveKey, Object> prtner;
@@ -345,6 +348,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       isNativeTable = !conf.getTableInfo().isNonNative();
       isTemporary = conf.isTemporary();
       multiFileSpray = conf.isMultiFileSpray();
+      this.isBucketed = hconf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
       totalFiles = conf.getTotalFiles();
       numFiles = conf.getNumFiles();
       dpCtx = conf.getDynPartCtx();
@@ -791,9 +795,23 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           * Hive.copyFiles() will make one of them bucket_N_copy_M in the final location.  The
           * reset of acid (read path) doesn't know how to handle copy_N files except for 'original'
           * files (HIVE-16177)*/
+          int writerId = -1;
+          if(!isBucketed) {
+            assert !multiFileSpray;
+            assert writerOffset == 0;
+            /**For un-bucketed tables, Deletes with ROW__IDs with different 'bucketNum' values can
+            * be written to the same bucketN file.
+            * N in this case is writerId and there is no relationship
+            * between the file name and any property of the data in it.  Inserts will be written
+            * to bucketN file such that all {@link RecordIdentifier#getBucketProperty()} indeed
+            * contain writerId=N.
+            * Since taskId is unique (at least per statementId and thus
+            * per [delete_]delta_x_y_stmtId/) there will not be any copy_N files.*/
+            writerId = Integer.parseInt(Utilities.getTaskIdFromFilename(taskId));
+          }
           fpaths.updaters[writerOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-            jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[writerOffset],
-            rowInspector, reporter, 0);
+            jc, conf.getTableInfo(), writerId >= 0 ? writerId : bucketNum, conf,
+            fpaths.outPaths[writerOffset], rowInspector, reporter, 0);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
               fpaths.outPaths[writerOffset]);

@@ -964,6 +964,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final boolean allowSyntheticFileIds;
     private final boolean isDefaultFs;
 
+    /**
+     * @param dir - root of partition dir
+     */
     public BISplitStrategy(Context context, FileSystem fs, Path dir,
         List<HdfsFileStatusWithId> fileStatuses, boolean isOriginal, List<DeltaMetaData> deltas,
         boolean[] covered, boolean allowSyntheticFileIds, boolean isDefaultFs) {
@@ -996,7 +999,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             }
             OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, entry.getKey(),
                 entry.getValue().getLength(), entry.getValue().getHosts(), null, isOriginal, true,
-                deltas, -1, logicalLen);
+                deltas, -1, logicalLen, dir);
             splits.add(orcSplit);
           }
         }
@@ -1017,18 +1020,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * ACID split strategy is used when there is no base directory (when transactions are enabled).
    */
   static class ACIDSplitStrategy implements SplitStrategy<OrcSplit> {
-    private Path dir;
+    Path dir;
     private List<DeltaMetaData> deltas;
-    private boolean[] covered;
-    private int numBuckets;
     private AcidOperationalProperties acidOperationalProperties;
-
+    /**
+     * @param dir root of partition dir
+     */
     ACIDSplitStrategy(Path dir, int numBuckets, List<DeltaMetaData> deltas, boolean[] covered,
         AcidOperationalProperties acidOperationalProperties) {
       this.dir = dir;
-      this.numBuckets = numBuckets;
       this.deltas = deltas;
-      this.covered = covered;
       this.acidOperationalProperties = acidOperationalProperties;
     }
 
@@ -1234,6 +1235,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final UserGroupInformation ugi;
     private final boolean allowSyntheticFileIds;
     private SchemaEvolution evolution;
+    //this is the root of the partition in which the 'file' is located
+    private final Path rootDir;
 
     public SplitGenerator(SplitInfo splitInfo, UserGroupInformation ugi,
         boolean allowSyntheticFileIds, boolean isDefaultFs) throws IOException {
@@ -1250,6 +1253,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.isOriginal = splitInfo.isOriginal;
       this.deltas = splitInfo.deltas;
       this.hasBase = splitInfo.hasBase;
+      this.rootDir = splitInfo.dir;
       this.projColsUncompressedSize = -1;
       this.deltaSplits = splitInfo.getSplits();
       this.allowSyntheticFileIds = allowSyntheticFileIds;
@@ -1361,7 +1365,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         fileKey = new SyntheticFileId(file);
       }
       return new OrcSplit(file.getPath(), fileKey, offset, length, hosts,
-          orcTail, isOriginal, hasBase, deltas, scaledProjSize, fileLen);
+          orcTail, isOriginal, hasBase, deltas, scaledProjSize, fileLen, rootDir);
     }
 
     private static final class OffsetAndLength { // Java cruft; pair of long.
@@ -1641,7 +1645,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       pathFutures.add(ecs.submit(fileGenerator));
     }
 
-    boolean isTransactionalTableScan =
+    boolean isTransactionalTableScan =//this never seems to be set correctly
         HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
     boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
     TypeDescription readerSchema =
@@ -1932,16 +1936,17 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     final OrcSplit split = (OrcSplit) inputSplit;
     final Path path = split.getPath();
-
     Path root;
     if (split.hasBase()) {
       if (split.isOriginal()) {
-        root = path.getParent();
+        root = split.getRootDir();
       } else {
         root = path.getParent().getParent();
+        assert root.equals(split.getRootDir()) : "root mismatch: baseDir=" + split.getRootDir() +
+          " path.p.p=" + root;
       }
-    } else {//here path is a delta/ but above it's a partition/
-      root = path;
+    } else {
+      throw new IllegalStateException("Split w/o base: " + path);
     }
 
     // Retrieve the acidOperationalProperties for the table, initialized in HiveInputFormat.
@@ -2036,21 +2041,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         return records.getProgress();
       }
     };
-  }
-  private static Path findOriginalBucket(FileSystem fs,
-                                 Path directory,
-                                 int bucket) throws IOException {
-    for(FileStatus stat: fs.listStatus(directory)) {
-      if(stat.getLen() <= 0) {
-        continue;
-      }
-      AcidOutputFormat.Options bucketInfo =
-        AcidUtils.parseBaseOrDeltaBucketFilename(stat.getPath(), fs.getConf());
-      if(bucketInfo.getBucketId() == bucket) {
-        return stat.getPath();
-      }
-    }
-    throw new IllegalArgumentException("Can't find bucket " + bucket + " in " + directory);
   }
 
   static Reader.Options createOptionsForReader(Configuration conf) {
@@ -2275,20 +2265,22 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                            ) throws IOException {
     Reader reader = null;
     boolean isOriginal = false;
-    if (baseDirectory != null) {
-      Path bucketFile;
+    if (baseDirectory != null) {//this is NULL for minor compaction
+      Path bucketFile = null;
       if (baseDirectory.getName().startsWith(AcidUtils.BASE_PREFIX)) {
         bucketFile = AcidUtils.createBucketFile(baseDirectory, bucket);
       } else {
+        /**we don't know which file to start reading -
+         * {@link OrcRawRecordMerger.OriginalReaderPairToCompact} does*/
         isOriginal = true;
-        bucketFile = findOriginalBucket(baseDirectory.getFileSystem(conf),
-            baseDirectory, bucket);
       }
-      reader = OrcFile.createReader(bucketFile, OrcFile.readerOptions(conf));
+      if(bucketFile != null) {
+        reader = OrcFile.createReader(bucketFile, OrcFile.readerOptions(conf));
+      }
     }
     OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options()
       .isCompacting(true)
-      .rootPath(baseDirectory);
+      .rootPath(baseDirectory).isMajorCompaction(baseDirectory != null);
     return new OrcRawRecordMerger(conf, collapseEvents, reader, isOriginal,
         bucket, validTxnList, new Reader.Options(), deltaDirectory, mergerOptions);
   }

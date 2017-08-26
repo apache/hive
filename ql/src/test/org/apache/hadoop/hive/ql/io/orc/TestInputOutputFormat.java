@@ -3420,6 +3420,7 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("hasFooter=false"));
       assertTrue(split.toString().contains("hasBase=true"));
       assertTrue(split.toString().contains("deltas=0"));
+      assertTrue(split.toString().contains("isOriginal=true"));
       if (split instanceof OrcSplit) {
         assertFalse("No footer serialize test for non-vector reader, hasFooter is not expected in" +
             " orc splits.", ((OrcSplit) split).hasFooter());
@@ -3435,11 +3436,13 @@ public class TestInputOutputFormat {
     }
     // call-1: open to read footer - split 1 => mock:/mocktable5/0_0
     // call-2: open to read data - split 1 => mock:/mocktable5/0_0
-    // call-3: open to read footer - split 2 => mock:/mocktable5/0_1
-    // call-4: open to read data - split 2 => mock:/mocktable5/0_1
-    // call-5: AcidUtils.getAcidState - getLen() mock:/mocktable5/0_0
-    // call-6: AcidUtils.getAcidState - getLen() mock:/mocktable5/0_1
-    assertEquals(6, readOpsDelta);
+    // call-3: getAcidState - split 1 => mock:/mocktable5 (to compute offset for original read)
+    // call-4: open to read footer - split 2 => mock:/mocktable5/0_1
+    // call-5: open to read data - split 2 => mock:/mocktable5/0_1
+    // call-6: getAcidState - split 2 => mock:/mocktable5 (to compute offset for original read)
+    // call-7: open to read footer - split 2 => mock:/mocktable5/0_0 (to get row count)
+    // call-8: file status - split 2 => mock:/mocktable5/0_0
+    assertEquals(8, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3498,6 +3501,7 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("hasFooter=true"));
       assertTrue(split.toString().contains("hasBase=true"));
       assertTrue(split.toString().contains("deltas=0"));
+      assertTrue(split.toString().contains("isOriginal=true"));
       if (split instanceof OrcSplit) {
         assertTrue("Footer serialize test for ACID reader, hasFooter is expected in" +
             " orc splits.", ((OrcSplit) split).hasFooter());
@@ -3512,10 +3516,12 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: open to read data - split 1 => mock:/mocktable6/0_0
-    // call-2: open to read data - split 2 => mock:/mocktable6/0_1
-    // call-3: AcidUtils.getAcidState - getLen() mock:/mocktable6/0_0
-    // call-4: AcidUtils.getAcidState - getLen() mock:/mocktable6/0_1
-    assertEquals(4, readOpsDelta);
+    // call-2: AcidUtils.getAcidState - split 1 => ls mock:/mocktable6
+    // call-3: open to read data - split 2 => mock:/mocktable6/0_1
+    // call-4: AcidUtils.getAcidState - split 2 => ls mock:/mocktable6
+    // call-5: read footer - split 2 => mock:/mocktable6/0_0 (to get offset since it's original file)
+    // call-6: file stat - split 2 => mock:/mocktable6/0_0
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3883,7 +3889,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
     OrcSplit split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
@@ -3911,7 +3917,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2,3");
     split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
     inputFormat = new OrcInputFormat();
     reader = inputFormat.getReader(split, new AcidInputFormat.Options(conf));
     record = 0;

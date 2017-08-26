@@ -304,8 +304,8 @@ public class TestTxnCommands2 {
     // 1. Insert five rows to Non-ACID table.
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,2),(3,4),(5,6),(7,8),(9,10)");
 
-    // 2. Convert NONACIDORCTBL to ACID table.
-    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    // 2. Convert NONACIDORCTBL to ACID table.  //todo: remove trans_prop after HIVE-17089
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')");
     runStatementOnDriver("update " + Table.NONACIDORCTBL + " set b = b*2 where b in (4,10)");
     runStatementOnDriver("delete from " + Table.NONACIDORCTBL + " where a = 7");
 
@@ -331,6 +331,7 @@ public class TestTxnCommands2 {
   /**
    * see HIVE-16177
    * See also {@link TestTxnCommands#testNonAcidToAcidConversion01()}
+   * {@link TestTxnNoBuckets#testCTAS()}
    */
   @Test
   public void testNonAcidToAcidConversion02() throws Exception {
@@ -341,8 +342,8 @@ public class TestTxnCommands2 {
     //create 1 row in a file 000001_0_copy2 (and empty 000000_0_copy2?)
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,6)");
 
-    //convert the table to Acid
-    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true')");
+    //convert the table to Acid  //todo: remove trans_prop after HIVE-17089
+    runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " SET TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')");
     List<String> rs1 = runStatementOnDriver("describe "+ Table.NONACIDORCTBL);
     //create a some of delta directories
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(0,15),(1,16)");
@@ -361,6 +362,7 @@ public class TestTxnCommands2 {
      * All ROW__IDs are unique on read after conversion to acid 
      * ROW__IDs are exactly the same before and after compaction
      * Also check the file name (only) after compaction for completeness
+     * Note: order of rows in a file ends up being the reverse of order in values clause (why?!)
      */
     String[][] expected = {
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t13",  "bucket_00000"},
@@ -2022,7 +2024,7 @@ public class TestTxnCommands2 {
   }
   static String makeValuesClause(int[][] rows) {
     assert rows.length > 0;
-    StringBuilder sb = new StringBuilder("values");
+    StringBuilder sb = new StringBuilder(" values");
     for(int[] row : rows) {
       assert row.length > 0;
       if(row.length > 1) {

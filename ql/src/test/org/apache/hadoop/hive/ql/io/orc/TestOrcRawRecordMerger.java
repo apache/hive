@@ -826,12 +826,9 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     //now run as if it's a minor Compaction so we don't collapse events
-    //it's not exactly like minor compaction since MC would not have a baseReader
     //here there is only 1 "split" since we only have data for 1 bucket
-    baseReader = OrcFile.createReader(basePath,
-      OrcFile.readerOptions(conf));
     merger =
-      new OrcRawRecordMerger(conf, false, baseReader, false, BUCKET,
+      new OrcRawRecordMerger(conf, false, null, false, BUCKET,
         createMaximalTxnList(), new Reader.Options(),
         AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options().isCompacting(true));
     assertEquals(null, merger.getMinKey());
@@ -844,10 +841,68 @@ public class TestOrcRawRecordMerger {
     assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 2, 200), id);
+    assertNull(OrcRecordUpdater.getRow(event));
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 3, 200), id);
+    assertNull(OrcRecordUpdater.getRow(event));
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 7, 200), id);
+    assertNull(OrcRecordUpdater.getRow(event));
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 8, 200), id);
+    assertNull(OrcRecordUpdater.getRow(event));
+
+    //data from delta_200_200
+    assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
       OrcRecordUpdater.getOperation(event));
-    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 0, 0), id);
-    assertEquals("first", getValue(event));
+    assertEquals(new ReaderKey(200, BUCKET_PROPERTY, 0, 200), id);
+    assertEquals("update 1", getValue(event));
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(200, BUCKET_PROPERTY, 1, 200), id);
+    assertEquals("update 2", getValue(event));
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(200, BUCKET_PROPERTY, 2, 200), id);
+    assertEquals("update 3", getValue(event));
+
+    assertEquals(false, merger.next(id, event));
+    merger.close();
+
+    //now run as if it's a major Compaction so we collapse events
+    //here there is only 1 "split" since we only have data for 1 bucket
+    baseReader = OrcFile.createReader(basePath,
+      OrcFile.readerOptions(conf));
+    merger =
+      new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
+        createMaximalTxnList(), new Reader.Options(),
+        AcidUtils.getPaths(directory.getCurrentDirectories()), new OrcRawRecordMerger.Options()
+        .isCompacting(true).isMajorCompaction(true));
+    assertEquals(null, merger.getMinKey());
+    assertEquals(null, merger.getMaxKey());
+
+    assertEquals(true, merger.next(id, event));
+    assertEquals(OrcRecordUpdater.DELETE_OPERATION,
+      OrcRecordUpdater.getOperation(event));
+    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 0, 200), id);
+    assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
@@ -862,22 +917,10 @@ public class TestOrcRawRecordMerger {
     assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
-    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
-      OrcRecordUpdater.getOperation(event));
-    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 2, 0), id);
-    assertEquals("third", getValue(event));
-
-    assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
       OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 3, 200), id);
     assertNull(OrcRecordUpdater.getRow(event));
-
-    assertEquals(true, merger.next(id, event));
-    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
-      OrcRecordUpdater.getOperation(event));
-    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 3, 0), id);
-    assertEquals("fourth", getValue(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
@@ -904,22 +947,10 @@ public class TestOrcRawRecordMerger {
     assertNull(OrcRecordUpdater.getRow(event));
 
     assertEquals(true, merger.next(id, event));
-    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
-      OrcRecordUpdater.getOperation(event));
-    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 7, 0), id);
-    assertEquals("eighth", getValue(event));
-
-    assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.DELETE_OPERATION,
       OrcRecordUpdater.getOperation(event));
     assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 8, 200), id);
     assertNull(OrcRecordUpdater.getRow(event));
-
-    assertEquals(true, merger.next(id, event));
-    assertEquals(OrcRecordUpdater.INSERT_OPERATION,
-      OrcRecordUpdater.getOperation(event));
-    assertEquals(new ReaderKey(0, BUCKET_PROPERTY, 8, 0), id);
-    assertEquals("ninth", getValue(event));
 
     assertEquals(true, merger.next(id, event));
     assertEquals(OrcRecordUpdater.INSERT_OPERATION,
@@ -948,7 +979,6 @@ public class TestOrcRawRecordMerger {
 
     assertEquals(false, merger.next(id, event));
     merger.close();
-
 
     // try ignoring the 200 transaction and make sure it works still
     ValidTxnList txns = new ValidReadTxnList("2000:200:200");

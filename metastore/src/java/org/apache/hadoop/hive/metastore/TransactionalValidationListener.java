@@ -98,23 +98,6 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         // that will use it down below.
       }
     }
-    if (transactionalValuePresent) {
-      //normalize prop name
-      parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);
-    }
-    if ("true".equalsIgnoreCase(transactionalValue)) {
-      if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
-            " format (such as ORC)");
-      }
-
-      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
-        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
-            " cannot be declared transactional because it's an external table");
-      }
-      hasValidTransactionalValue = true;
-    }
-
     Table oldTable = context.getOldTable();
     String oldTransactionalValue = null;
     String oldTransactionalPropertiesValue = null;
@@ -126,6 +109,24 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
         oldTransactionalPropertiesValue = oldTable.getParameters().get(key);
       }
     }
+
+    if (transactionalValuePresent) {
+      //normalize prop name
+      parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, transactionalValue);
+    }
+    if ("true".equalsIgnoreCase(transactionalValue) && !"true".equalsIgnoreCase(oldTransactionalValue)) {
+      //only need to check conformance if alter table enabled aicd
+      if (!conformToAcid(newTable)) {
+        throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
+      }
+
+      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+        throw new MetaException(newTable.getDbName() + "." + newTable.getTableName() +
+            " cannot be declared transactional because it's an external table");
+      }
+      hasValidTransactionalValue = true;
+    }
+
 
 
     if (oldTransactionalValue == null ? transactionalValue == null
@@ -195,8 +196,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
 
     if ("true".equalsIgnoreCase(transactionalValue)) {
       if (!conformToAcid(newTable)) {
-        throw new MetaException("The table must be bucketed and stored using an ACID compliant" +
-            " format (such as ORC)");
+        throw new MetaException("The table must be stored using an ACID compliant format (such as ORC)");
       }
 
       if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
@@ -214,14 +214,12 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     throw new MetaException("'transactional' property of TBLPROPERTIES may only have value 'true'");
   }
 
-  // Check if table is bucketed and InputFormatClass/OutputFormatClass should implement
-  // AcidInputFormat/AcidOutputFormat
+  /**
+   * Check that InputFormatClass/OutputFormatClass should implement
+   * AcidInputFormat/AcidOutputFormat
+   */
   private boolean conformToAcid(Table table) throws MetaException {
     StorageDescriptor sd = table.getSd();
-    if (sd.getBucketColsSize() < 1) {
-      return false;
-    }
-
     try {
       Class inputFormatClass = Class.forName(sd.getInputFormat());
       Class outputFormatClass = Class.forName(sd.getOutputFormat());

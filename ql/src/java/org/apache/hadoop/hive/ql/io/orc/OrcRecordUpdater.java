@@ -243,7 +243,8 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     if (options.getMinimumTransactionId() != options.getMaximumTransactionId()
         && !options.isWritingBase()){
-      flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), true, 8,
+      //throw if file already exists as that should never happen
+      flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), false, 8,
           options.getReporter());
       flushLengths.writeLong(0);
       OrcInputFormat.SHIMS.hflush(flushLengths);
@@ -349,6 +350,12 @@ public class OrcRecordUpdater implements RecordUpdater {
       return newInspector;
     }
   }
+
+  /**
+   * The INSERT event always uses {@link #bucket} that this {@link RecordUpdater} was created with
+   * thus even for unbucketed tables, the N in bucket_N file name matches writerId/bucketId even for
+   * late split
+   */
   private void addSimpleEvent(int operation, long currentTransaction, long rowId, Object row)
       throws IOException {
     this.operation.set(operation);
@@ -394,6 +401,11 @@ public class OrcRecordUpdater implements RecordUpdater {
     Integer currentBucket = null;
 
     if (operation == DELETE_OPERATION || operation == UPDATE_OPERATION) {
+      /**
+       * make sure bucketProperty in the delete event is from the {@link row} rather than whatever
+       * {@link this#bucket} is.  For bucketed tables, the 2 must agree on bucketId encoded in it
+       * not for necessarily the whole value.  For unbucketed tables there is no relationship.
+       */
       currentBucket = setBucket(bucketInspector.get(
         recIdInspector.getStructFieldData(rowValue, bucketField)), operation);
       // Initialize a deleteEventWriter if not yet done. (Lazy initialization)

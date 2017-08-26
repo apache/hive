@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -29,7 +31,6 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   private final RecordIdentifier maxKey;
   // an extra value so that we can return it while reading ahead
   private OrcStruct extraValue;
-
   /**
    * A RecordIdentifier extended with the current transaction id. This is the
    * key of our merge sort with the originalTransaction, bucket, and rowId
@@ -294,9 +294,15 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * Running multiple Insert statements on the same partition (of non acid table) creates files
    * like so: 00000_0, 00000_0_copy1, 00000_0_copy2, etc.  So the OriginalReaderPair must treat all
    * of these files as part of a single logical bucket file.
+   *
+   * Also, for unbucketed (non acid) tables, there are no guarantees where data files may be placed.
+   * For example, CTAS+Tez+Union creates subdirs 1/, 2/, etc for each leg of the Union.  Thus the
+   * data file need not be an immediate child of partition dir.  All files for a given writerId are
+   * treated as one logical unit to assign {@link RecordIdentifier}s to them consistently.
    * 
    * For Compaction, where each split includes the whole bucket, this means reading over all the
    * files in order to assign ROW__ID.rowid in one sequence for the entire logical bucket.
+   * For unbucketed tables, a Compaction split is all files written by a given writerId.
    *
    * For a read after the table is marked transactional but before it's rewritten into a base/
    * by compaction, each of the original files may be split into many pieces.  For each split we
@@ -305,7 +311,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * split of the original file and used to filter rows from all the deltas.  The ROW__ID.rowid for
    * the rows of the 'original' file of course, must be assigned from the beginning of logical
    * bucket.  The last split of the logical bucket, i.e. the split that has the end of last file,
-   * should include all insert events from deltas.
+   * should include all insert events from deltas (last sentence is obsolete for Acid 2: HIVE-17320)
    */
   private static abstract class OriginalReaderPair implements ReaderPair {
     OrcStruct nextRecord;
@@ -407,18 +413,18 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       RecordIdentifier newMaxKey = maxKey;
       recordReader = reader.rowsOptions(options);
       /**
-       * Logically each bucket consists of 0000_0, 0000_0_copy_1... 0000_0_copyN. etc  We don't
-       * know N a priori so if this is true, then the current split is from 0000_0_copyN file.
+       * Logically each bucket consists of 0000_0, 0000_0_copy_1... 0000_0_copy_N. etc  We don't
+       * know N a priori so if this is true, then the current split is from 0000_0_copy_N file.
        * It's needed to correctly set maxKey.  In particular, set maxKey==null if this split
        * is the tail of the last file for this logical bucket to include all deltas written after
-       * non-acid to acid table conversion.
+       * non-acid to acid table conversion (todo: HIVE-17320).
+       * Also, see comments at {@link OriginalReaderPair} about unbucketed tables.
        */
-      boolean isLastFileForThisBucket = false;
+      boolean isLastFileForThisBucket = true;
       boolean haveSeenCurrentFile = false;
       long rowIdOffsetTmp = 0;
-      if (mergerOptions.getCopyIndex() > 0) {
+      {
         //the split is from something other than the 1st file of the logical bucket - compute offset
-
         AcidUtils.Directory directoryState = AcidUtils.getAcidState(mergerOptions.getRootPath(),
           conf, validTxnList, false, true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
@@ -465,23 +471,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           }
           if (maxKey != null) {
             maxKey.setRowId(maxKey.getRowId() + rowIdOffset);
-          }
-        }
-      } else {
-        rowIdOffset = 0;
-        isLastFileForThisBucket = true;
-        AcidUtils.Directory directoryState = AcidUtils.getAcidState(mergerOptions.getRootPath(),
-          conf, validTxnList, false, true);
-        int numFilesInBucket = 0;
-        for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
-          AcidOutputFormat.Options bucketOptions =
-            AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
-          if (bucketOptions.getBucketId() == bucketId) {
-            numFilesInBucket++;
-            if (numFilesInBucket > 1) {
-              isLastFileForThisBucket = false;
-              break;
-            }
           }
         }
       }
@@ -651,6 +640,12 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   }
   /**
    * Find the key range for original bucket files.
+   * For unbucketed tables the insert event data is still written to bucket_N file except that
+   * N is just a writer ID - it still matches {@link RecordIdentifier#getBucketProperty()}.  For
+   * 'original' files (ubucketed) the same applies.  A file 000000_0 encodes a taskId/wirterId and
+   * at read time we synthesize {@link RecordIdentifier#getBucketProperty()} to match the file name
+   * and so the same bucketProperty is used here to create minKey/maxKey, i.e. these keys are valid
+   * to filter data from delete_delta files even for unbucketed tables.
    * @param reader the reader
    * @param bucket the bucket number we are reading
    * @param options the options for reading with
@@ -740,7 +735,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    */
   static Reader.Options createEventOptions(Reader.Options options) {
     Reader.Options result = options.clone();
-    //result.range(options.getOffset(), Long.MAX_VALUE);WTF?
     result.include(options.getInclude());
 
     // slide the column names down by 6 for the name array
@@ -755,11 +749,17 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     return result;
   }
 
+  /**
+   * {@link OrcRawRecordMerger} Acid reader is used slightly differently in various contexts.
+   * This makes the "context" explicit.
+   */
   static class Options {
     private int copyIndex = 0;
     private boolean isCompacting = false;
     private Path bucketPath;
     private Path rootPath;
+    private boolean isMajorCompaction = false;
+    private boolean isDeleteReader = false;
     Options copyIndex(int copyIndex) {
       assert copyIndex >= 0;
       this.copyIndex = copyIndex;
@@ -767,6 +767,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     }
     Options isCompacting(boolean isCompacting) {
       this.isCompacting = isCompacting;
+      assert !isDeleteReader;
       return this;
     }
     Options bucketPath(Path bucketPath) {
@@ -775,6 +776,16 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     }
     Options rootPath(Path rootPath) {
       this.rootPath = rootPath;
+      return this;
+    }
+    Options isMajorCompaction(boolean isMajor) {
+      this.isMajorCompaction = isMajor;
+      assert !isDeleteReader;
+      return this;
+    }
+    Options isDeleteReader(boolean isDeleteReader) {
+      this.isDeleteReader = isDeleteReader;
+      assert !isCompacting;
       return this;
     }
     /**
@@ -788,7 +799,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     }
     /**
      * Full path to the data file
-     * @return
      */
     Path getBucketPath() {
       return bucketPath;
@@ -797,6 +807,22 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * Partition folder (Table folder if not partitioned)
      */
     Path getRootPath()  { return rootPath; }
+    /**
+     * @return true if major compaction, false if minor
+     */
+    boolean isMajorCompaction() {
+      return isMajorCompaction && isCompacting;
+    }
+    boolean isMinorCompaction() {
+      return !isMajorCompaction && isCompacting;
+    }
+    /**
+     * true if this is only processing delete deltas to load in-memory table for
+     * vectorized reader
+     */
+    boolean isDeleteReader() {
+      return isDeleteReader;
+    }
   }
   /**
    * Create a reader that merge sorts the ACID events together.
@@ -820,6 +846,39 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     this.offset = options.getOffset();
     this.length = options.getLength();
     this.validTxnList = validTxnList;
+    /**
+     * @since Hive 3.0
+     * With split update (HIVE-14035) we have base/, delta/ and delete_delta/ - the latter only
+     * has Delete events and the others only have Insert events.  Thus {@link #baseReader} is
+     * a split of a file in base/ or delta/.
+     *
+     * For Compaction, each split (for now) is a logical bucket, i.e. all files from base/ + delta(s)/
+     * for a given bucket ID and delete_delta(s)/
+     *
+     * For bucketed tables, the data files are named bucket_N and all rows in this file are such
+     * that {@link org.apache.hadoop.hive.ql.io.BucketCodec#decodeWriterId(int)} of
+     * {@link RecordIdentifier#getBucketProperty()} is N.  This is currently true for all types of
+     * files but may not be true for for delete_delta/ files in the future.
+     *
+     * For un-bucketed tables, the system is designed so that it works when there is no relationship
+     * between delete_delta file name (bucket_N) and the value of {@link RecordIdentifier#getBucketProperty()}.
+     * (Later we this maybe optimized to take advantage of situations where it is known that
+     * bucket_N matches bucketProperty().)  This implies that for a given {@link baseReader} all
+     * files in delete_delta/ have to be opened ({@link ReaderPair} created).  Insert events are
+     * still written such that N in file name (writerId) matches what's in bucketProperty().
+     *
+     * Compactor for un-bucketed tables works exactly the same as for bucketed ones though it
+     * should be optimized (see HIVE-17206).  In particular, each split is a set of files
+     * created by a writer with the same writerId, i.e. all bucket_N files across base/ &
+     * deleta/ for the same N. Unlike bucketed tables, there is no relationship between
+     * any values in user columns to file name.
+     * The maximum N is determined by the number of writers the system chose for the the "largest"
+     * write into a given partition.
+     *
+     * In both cases, Compactor should be changed so that Minor compaction is run very often and
+     * only compacts delete_delta/.  Major compaction can do what it does now.
+     */
+    boolean isBucketed = conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
 
     TypeDescription typeDescr =
         OrcInputFormat.getDesiredRowTypeDescr(conf, true, Integer.MAX_VALUE);
@@ -829,16 +888,26 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
 
     // modify the options to reflect the event instead of the base row
     Reader.Options eventOptions = createEventOptions(options);
-    if (reader == null) {
+    if((mergerOptions.isCompacting() && mergerOptions.isMinorCompaction()) ||
+      mergerOptions.isDeleteReader()) {
+      //for minor compaction, there is no progress report and we don't filter deltas
       baseReader = null;
       minKey = maxKey = null;
+      assert reader == null : "unexpected input reader during minor compaction: " +
+        mergerOptions.getRootPath();
     } else {
       KeyInterval keyInterval;
-      // find the min/max based on the offset and length (and more for 'original')
-      if (isOriginal) {
-        keyInterval = discoverOriginalKeyBounds(reader, bucket, options, conf);
+      if (mergerOptions.isCompacting()) {
+        assert mergerOptions.isMajorCompaction();
+        //compaction doesn't filter deltas but *may* have a reader for 'base'
+        keyInterval = new KeyInterval(null, null);
       } else {
-        keyInterval = discoverKeyBounds(reader, options);
+        // find the min/max based on the offset and length (and more for 'original')
+        if (isOriginal) {
+          keyInterval = discoverOriginalKeyBounds(reader, bucket, options, conf);
+        } else {
+          keyInterval = discoverKeyBounds(reader, options);
+        }
       }
       LOG.info("min key = " + keyInterval.getMinKey() + ", max key = " + keyInterval.getMaxKey());
       // use the min/max instead of the byte range
@@ -849,8 +918,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
         if(mergerOptions.isCompacting()) {
           pair = new OriginalReaderPairToCompact(key, bucket, options, mergerOptions,
             conf, validTxnList);
-        }
-        else {
+        } else {
           pair = new OriginalReaderPairToRead(key, reader, bucket, keyInterval.getMinKey(),
             keyInterval.getMaxKey(), options, mergerOptions, conf, validTxnList);
         }
@@ -868,35 +936,31 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       baseReader = pair.getRecordReader();
     }
 
-    // we always want to read all of the deltas
-    eventOptions.range(0, Long.MAX_VALUE);
     if (deltaDirectory != null) {
+      /*whatever SARG maybe applicable to base it's not applicable to delete_delta since it has no
+      * user columns
+      * HIVE-17320: we should compute a SARG to push down min/max key to delete_delta*/
+      Reader.Options deltaEventOptions = eventOptions.clone()
+        .searchArgument(null, null).range(0, Long.MAX_VALUE);
       for(Path delta: deltaDirectory) {
         if(!mergerOptions.isCompacting() && !AcidUtils.isDeleteDelta(delta)) {
           //all inserts should be in baseReader for normal read so this should always be delete delta if not compacting
           throw new IllegalStateException(delta + " is not delete delta and is not compacting.");
         }
         ReaderKey key = new ReaderKey();
-        Path deltaFile = AcidUtils.createBucketFile(delta, bucket);
         AcidUtils.ParsedDelta deltaDir = AcidUtils.parsedDelta(delta);
-        FileSystem fs = deltaFile.getFileSystem(conf);
-        long length = OrcAcidUtils.getLastFlushLength(fs, deltaFile);
-        if (length != -1 && fs.exists(deltaFile)) {
-          Reader deltaReader = OrcFile.createReader(deltaFile,
-              OrcFile.readerOptions(conf).maxLength(length));
-          Reader.Options deltaEventOptions = null;
-          if(eventOptions.getSearchArgument() != null) {
-            // Turn off the sarg before pushing it to delta.  We never want to push a sarg to a delta as
-            // it can produce wrong results (if the latest valid version of the record is filtered out by
-            // the sarg) or ArrayOutOfBounds errors (when the sarg is applied to a delete record)
-            // unless the delta only has insert events
-            AcidStats acidStats = OrcAcidUtils.parseAcidStats(deltaReader);
-            if(acidStats.deletes > 0 || acidStats.updates > 0) {
-              deltaEventOptions = eventOptions.clone().searchArgument(null, null);
-            }
+        for (Path deltaFile : getDeltaFiles(delta, bucket, conf, mergerOptions, isBucketed)) {
+          FileSystem fs = deltaFile.getFileSystem(conf);
+          if(!fs.exists(deltaFile)) {
+            continue;
           }
+          /* side files are only created by streaming ingest.  If this is a compaction, we may
+          * have an insert delta/ here with side files there because the original writer died.*/
+          long length = AcidUtils.getLogicalLength(fs, fs.getFileStatus(deltaFile));
+          assert length >= 0;
+          Reader deltaReader = OrcFile.createReader(deltaFile, OrcFile.readerOptions(conf).maxLength(length));
           ReaderPairAcid deltaPair = new ReaderPairAcid(key, deltaReader, minKey, maxKey,
-            deltaEventOptions != null ? deltaEventOptions : eventOptions, deltaDir.getStatementId());
+            deltaEventOptions, deltaDir.getStatementId());
           if (deltaPair.nextRecord() != null) {
             readers.put(key, deltaPair);
           }
@@ -921,6 +985,59 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
     }
   }
 
+  /**
+   * This determines the set of {@link ReaderPairAcid} to create for a given delta/.
+   * For unbucketed tables {@code bucket} can be thought of as a write tranche.
+   */
+  static Path[] getDeltaFiles(Path deltaDirectory, int bucket, Configuration conf,
+                              Options mergerOptions, boolean isBucketed) throws IOException {
+    if(isBucketed) {
+      /**
+       * for bucketed tables (for now) we always trust that the N in bucketN file name means that
+       * all records have {@link RecordIdentifier#getBucketProperty()} encoding bucketId = N.  This
+       * means that a delete event in bucketN can only modify an insert in another bucketN file for
+       * the same N. (Down the road we may trust it only in certain delta dirs)
+       *
+       * Compactor takes all types of deltas for a given bucket.  For regular read, any file that
+       * contains (only) insert events is treated as base and only
+       * delete_delta/ are treated as deltas.
+       */
+        assert (!mergerOptions.isCompacting &&
+          deltaDirectory.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
+        ) || mergerOptions.isCompacting : "Unexpected delta: " + deltaDirectory;
+      Path deltaFile = AcidUtils.createBucketFile(deltaDirectory, bucket);
+      return new Path[]{deltaFile};
+    }
+    /**
+     * For unbucketed tables insert events are also stored in bucketN files but here N is
+     * the writer ID.  We can trust that N matches info in {@link RecordIdentifier#getBucketProperty()}
+     * delta_x_y but it's not required since we can't trust N for delete_delta_x_x/bucketN.
+     * Thus we always have to take all files in a delete_delta.
+     * For regular read, any file that has (only) insert events is treated as base so
+     * {@link deltaDirectory} can only be delete_delta and so we take all files in it.
+     * For compacting, every split contains base/bN + delta(s)/bN + delete_delta(s){all buckets} for
+     * a given N.
+     */
+    if(deltaDirectory.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+      //it's not wrong to take all delete events for bucketed tables but it's more efficient
+      //to only take those that belong to the 'bucket' assuming we trust the file name
+      //un-bucketed table - get all files
+      FileSystem fs = deltaDirectory.getFileSystem(conf);
+      FileStatus[] dataFiles = fs.listStatus(deltaDirectory, AcidUtils.bucketFileFilter);
+      Path[] deltaFiles = new Path[dataFiles.length];
+      int i = 0;
+      for (FileStatus stat : dataFiles) {
+        deltaFiles[i++] = stat.getPath();
+      }//todo: need a test where we actually have more than 1 file
+      return deltaFiles;
+    }
+    //if here it must be delta_x_y - insert events only, so we must be compacting
+    assert mergerOptions.isCompacting() : "Expected to be called as part of compaction";
+    Path deltaFile = AcidUtils.createBucketFile(deltaDirectory, bucket);
+    return new Path[] {deltaFile};
+
+  }
+  
   @VisibleForTesting
   RecordIdentifier getMinKey() {
     return minKey;

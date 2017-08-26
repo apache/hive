@@ -30,7 +30,7 @@ partition. Once data is committed it becomes immediately visible to
 all Hive queries initiated subsequently.</p>
 
 <p>
-This API is intended for streaming clients such as Flume and Storm,
+This API is intended for streaming clients such as NiFi, Flume and Storm,
 which continuously generate data. Streaming support is built on top of
 ACID based insert/update support in Hive.</p>
 
@@ -56,10 +56,7 @@ A few things are currently required to use streaming.
 <ol>
   <li> Currently, only ORC storage format is supported. So 
     '<b>stored as orc</b>' must be specified during table creation.</li>
-  <li> The hive table must be bucketed, but not sorted. So something like 
-    '<b>clustered by (<i>colName</i>) into <i>10</i> buckets</b>' must 
-    be specified during table creation. The number of buckets
-    is ideally the same as the number of streaming writers.</li>
+  <li> The hive table may be bucketed but must not be sorted. </li>
   <li> User of the client streaming process must have the necessary 
     permissions to write to the table or partition and create partitions in
     the table.</li>
@@ -67,7 +64,6 @@ A few things are currently required to use streaming.
     <ol>
       <li><b>hive.input.format =
              org.apache.hadoop.hive.ql.io.HiveInputFormat</b></li>
-      <li><b>hive.vectorized.execution.enabled = false</b></li>
     </ol></li>
   The above client settings are a temporary requirement and the intention is to
   drop the need for them in the near future.
@@ -165,8 +161,21 @@ additional implementations of the <b>RecordWriter</b> interface.
 - Delimited text input.</li>
 <li> <a href="StrictJsonWriter.html"><b>StrictJsonWriter</b></a> 
 - JSON text input.</li>
+  <li> <a href="StrictRegexWriter.html"><b>StrictRegexWriter</b></a>
+    - text input with regex.</li>
 </ul></p>
 
+<h2>Performance, Concurrency, Etc.</h2>
+<p>
+  Each StreamingConnection is writing data at the rate the underlying
+  FileSystem can accept it.  If that is not sufficient, multiple StreamingConnection objects can
+  be created concurrently.
+</p>
+<p>
+  Each StreamingConnection can have at most 1 outstanding TransactionBatch and each TransactionBatch
+  may have at most 2 threads operaing on it.
+  See <a href="TransactionBatch.html"><b>TransactionBatch</b></a>
+</p>
 </body>
 
 </html>
