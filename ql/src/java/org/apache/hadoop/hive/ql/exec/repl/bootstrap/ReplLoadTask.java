@@ -199,7 +199,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private Task<? extends Serializable> createEndReplLogTask(Context context, Scope scope,
                                                   ReplLogger replLogger) throws SemanticException {
     Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata.getParameters());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (null == scope.rootTasks) {
       scope.rootTasks.add(replLogTask);

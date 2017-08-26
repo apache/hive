@@ -19,13 +19,13 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
+import java.util.Map;
 
 
 /**
@@ -71,10 +71,10 @@ public class ReplStateLogWork implements Serializable {
     this.functionName = functionName;
   }
 
-  public ReplStateLogWork(ReplLogger replLogger, Database db) {
+  public ReplStateLogWork(ReplLogger replLogger, Map<String,String> dbProps) {
     this.logType = LOG_TYPE.END;
     this.replLogger = replLogger;
-    this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(db.getParameters());
+    this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
   }
 
   public void replStateLog() {

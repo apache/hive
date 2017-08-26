@@ -332,7 +332,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ReplLogger replLogger = new IncrementalLoadLogger(dbNameOrPattern,
                 loadPath.toString(), dirsInLoadPath.length);
-        String actualDbName = (StringUtils.isEmpty(dbNameOrPattern)) ? null : dbNameOrPattern;
 
         for (FileStatus dir : dirsInLoadPath){
           LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
@@ -364,11 +363,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           List<Task<? extends Serializable>> evTasks = analyzeEventLoad(context);
 
           if ((evTasks != null) && (!evTasks.isEmpty())){
-            // If the DB name is not input, then need to get it from the event
-            if (actualDbName == null) {
-              actualDbName = context.dbName;
-            }
-
             ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
                                                           dir.getPath().getName(),
                                                           eventDmd.getDumpType().toString());
@@ -385,9 +379,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // If any event is there and db name is known, then dump the start and end logs
-        if (!StringUtils.isEmpty(actualDbName) && (evTaskRoot != taskChainTail)) {
-          ReplStateLogWork replStateLogWork
-                  = new ReplStateLogWork(replLogger, db.getDatabase(actualDbName));
+        if (evTaskRoot != taskChainTail) {
+          Map<String, String> dbProps = new HashMap<>();
+          dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(dmd.getEventTo()));
+          ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
           Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
           taskChainTail.addDependentTask(barrierTask);
           LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
@@ -408,7 +403,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<Task<? extends Serializable>> analyzeEventLoad(
           MessageHandler.Context context)
       throws SemanticException {
-
     MessageHandler messageHandler = context.dmd.getDumpType().handler();
     List<Task<? extends Serializable>> tasks = messageHandler.handle(context);
 
@@ -418,10 +412,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.debug("Added {}:{} as a precursor of {}:{}",
                 context.precursor.getClass(), context.precursor.getId(), t.getClass(), t.getId());
       }
-    }
-
-    if (context.isDbNameEmpty()) {
-      context.dbName = messageHandler.getUpdatedMetadata().getDatabase();
     }
 
     inputs.addAll(messageHandler.readEntities());
