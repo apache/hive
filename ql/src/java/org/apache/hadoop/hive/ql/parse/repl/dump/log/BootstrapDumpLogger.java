@@ -46,7 +46,7 @@ public class BootstrapDumpLogger extends ReplLogger {
   @Override
   public void startLog() {
     (new BootstrapDumpBegin(dbName, estimatedNumTables, estimatedNumFunctions))
-            .log(LogTag.REPL_START);
+            .log(LogTag.START);
   }
 
   @Override
@@ -66,6 +66,6 @@ public class BootstrapDumpLogger extends ReplLogger {
   @Override
   public void endLog(String lastReplId) {
     (new BootstrapDumpEnd(dbName, tableSeqNo, functionSeqNo, dumpDir, lastReplId))
-            .log(LogTag.REPL_END);
+            .log(LogTag.END);
   }
 }

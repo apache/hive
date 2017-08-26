@@ -41,7 +41,7 @@ public class BootstrapLoadLogger extends ReplLogger {
 
   @Override
   public void startLog() {
-    (new BootstrapLoadBegin(dbName, dumpDir, numTables, numFunctions)).log(LogTag.REPL_START);
+    (new BootstrapLoadBegin(dbName, dumpDir, numTables, numFunctions)).log(LogTag.START);
   }
 
   @Override
@@ -61,6 +61,6 @@ public class BootstrapLoadLogger extends ReplLogger {
   @Override
   public void endLog(String lastReplId) {
     (new BootstrapLoadEnd(dbName, numTables, numFunctions, dumpDir, lastReplId))
-            .log(LogTag.REPL_END);
+            .log(LogTag.END);
   }
 }

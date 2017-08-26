@@ -38,7 +38,7 @@ public class IncrementalLoadLogger extends ReplLogger {
 
   @Override
   public void startLog() {
-    (new IncrementalLoadBegin(dbName, dumpDir, numEvents)).log(LogTag.REPL_START);
+    (new IncrementalLoadBegin(dbName, dumpDir, numEvents)).log(LogTag.START);
   }
 
   @Override
@@ -50,6 +50,6 @@ public class IncrementalLoadLogger extends ReplLogger {
 
   @Override
   public void endLog(String lastReplId) {
-    (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.REPL_END);
+    (new IncrementalLoadEnd(dbName, numEvents, dumpDir, lastReplId)).log(LogTag.END);
   }
 }

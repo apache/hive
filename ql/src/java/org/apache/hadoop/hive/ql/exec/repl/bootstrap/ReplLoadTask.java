@@ -112,7 +112,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableContext tableContext =
               new TableContext(dbTracker, work.dbNameToLoadIn, work.tableNameToLoadIn);
           TableEvent tableEvent = (TableEvent) next;
-          LoadTable loadTable = new LoadTable(tableEvent, context, tableContext, loadTaskTracker);
+          LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
+                                              tableContext, loadTaskTracker);
           tableTracker = loadTable.tasks();
           if (!scope.database) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -129,20 +130,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, loadTaskTracker, tableEvent, work.dbNameToLoadIn,
-                  tableContext);
+              new LoadPartitions(context, iterator.replLogger(), loadTaskTracker, tableEvent,
+                      work.dbNameToLoadIn, tableContext);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
           tableTracker.debugLog("table");
           partitionsTracker.debugLog("partitions for table");
-
-          if (!loadTaskTracker.hasReplicationState()) {
-            // Add ReplStateLogTask only if no pending table load tasks left for next cycle
-            ImportTableDesc tableDesc = loadPartitions.tableDesc();
-            loadTaskTracker.updateTaskCount(createTableReplLogTask(tableTracker.tasks(),
-                    iterator.replLogger(), tableDesc.getTableName(), tableDesc.tableType()));
-          }
           break;
         }
         case Partition: {
@@ -154,9 +148,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn,
               work.tableNameToLoadIn);
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, tableContext, loadTaskTracker, event.asTableEvent(),
-                  work.dbNameToLoadIn,
-                  event.lastPartitionReplicated());
+              new LoadPartitions(context, iterator.replLogger(), tableContext, loadTaskTracker,
+                      event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
           /*
                the tableTracker here should be a new instance and not an existing one as this can
                only happen when we break in between loading partitions.
@@ -165,18 +158,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
           partitionsTracker.debugLog("partitions");
-
-          if (!loadTaskTracker.hasReplicationState()) {
-            // Add ReplStateLogTask only if no pending table load tasks left for next cycle
-            ImportTableDesc tableDesc = loadPartitions.tableDesc();
-            loadTaskTracker.updateTaskCount(createTableReplLogTask(partitionsTracker.tasks(),
-                    iterator.replLogger(), tableDesc.getTableName(), tableDesc.tableType()));
-          }
           break;
         }
         case Function: {
-          LoadFunction loadFunction =
-              new LoadFunction(context, (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
+          LoadFunction loadFunction = new LoadFunction(context, iterator.replLogger(),
+                                              (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
           TaskTracker functionsTracker = loadFunction.tasks();
           if (!scope.database) {
             scope.rootTasks.addAll(functionsTracker.tasks());
@@ -185,16 +171,12 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           }
           loadTaskTracker.update(functionsTracker);
           functionsTracker.debugLog("functions");
-
-          // Add ReplStateLogTask as function load tasks are always fully added in current cycle
-          loadTaskTracker.updateTaskCount(createFunctionReplLogTask(functionsTracker.tasks(),
-                  iterator.replLogger(), loadFunction.functionName()));
           break;
         }
         }
 
         if (!iterator.currentDbHasNext()) {
-          loadTaskTracker.updateTaskCount(createEndReplLogTask(context, scope, iterator.replLogger()));
+          createEndReplLogTask(context, scope, iterator.replLogger());
         }
       }
       boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState();
@@ -214,26 +196,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return 0;
   }
 
-  private Task<? extends Serializable> createTableReplLogTask(
-          List<Task<? extends Serializable>> tableTasks,
-          ReplLogger replLogger, String tableName, TableType tableType) {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, tableName, tableType);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
-    dependency(tableTasks, replLogTask);
-    return replLogTask;
-  }
-
-  private Task<? extends Serializable> createFunctionReplLogTask(
-          List<Task<? extends Serializable>> functionTasks,
-          ReplLogger replLogger, String functionName) {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
-    dependency(functionTasks, replLogTask);
-    return replLogTask;
-  }
-
   private Task<? extends Serializable> createEndReplLogTask(Context context, Scope scope,
-                                                            ReplLogger replLogger) throws SemanticException {
+                                                  ReplLogger replLogger) throws SemanticException {
     Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
@@ -302,7 +266,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   /**
    * add the dependency to the leaf node
    */
-  private boolean dependency(List<Task<? extends Serializable>> tasks, Task<?> tailTask) {
+  public static boolean dependency(List<Task<? extends Serializable>> tasks, Task<?> tailTask) {
     if (tasks == null || tasks.isEmpty()) {
       return true;
     }

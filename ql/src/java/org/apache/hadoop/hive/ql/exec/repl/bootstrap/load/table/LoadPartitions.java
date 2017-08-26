@@ -26,8 +26,10 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
@@ -59,6 +62,7 @@ public class LoadPartitions {
   private static Logger LOG = LoggerFactory.getLogger(LoadPartitions.class);
 
   private final Context context;
+  private final ReplLogger replLogger;
   private final TableContext tableContext;
   private final TableEvent event;
   private final TaskTracker tracker;
@@ -67,17 +71,19 @@ public class LoadPartitions {
   private final ImportTableDesc tableDesc;
   private Table table;
 
-  public LoadPartitions(Context context, TaskTracker tableTracker, TableEvent event,
-      String dbNameToLoadIn, TableContext tableContext) throws HiveException, IOException {
-    this(context, tableContext, tableTracker, event, dbNameToLoadIn, null);
+  public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker,
+                        TableEvent event, String dbNameToLoadIn,
+                        TableContext tableContext) throws HiveException, IOException {
+    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null);
   }
 
-  public LoadPartitions(Context context, TableContext tableContext, TaskTracker limiter,
-      TableEvent event, String dbNameToLoadIn, AddPartitionDesc lastReplicatedPartition)
-      throws HiveException, IOException {
+  public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext,
+                        TaskTracker limiter, TableEvent event, String dbNameToLoadIn,
+                        AddPartitionDesc lastReplicatedPartition) throws HiveException, IOException {
     this.tracker = new TaskTracker(limiter);
     this.event = event;
     this.context = context;
+    this.replLogger = replLogger;
     this.lastReplicatedPartition = lastReplicatedPartition;
     this.tableContext = tableContext;
 
@@ -98,8 +104,15 @@ public class LoadPartitions {
     }
   }
 
-  public ImportTableDesc tableDesc() {
-    return tableDesc;
+  private void createTableReplLogTask() throws SemanticException {
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,
+                                            tableDesc.getTableName(), tableDesc.tableType());
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
+    if (tracker.tasks().isEmpty()) {
+      tracker.addTask(replLogTask);
+    } else {
+      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+    }
   }
 
   public TaskTracker tasks() throws SemanticException {
@@ -117,7 +130,11 @@ public class LoadPartitions {
         table = new Table(tableDesc.getDatabaseName(), tableDesc.getTableName());
         if (isPartitioned(tableDesc)) {
           updateReplicationState(initialReplicationState());
-          return forNewTable();
+          if (!forNewTable().hasReplicationState()) {
+            // Add ReplStateLogTask only if no pending table load tasks left for next cycle
+            createTableReplLogTask();
+          }
+          return tracker;
         }
       } else {
         // existing
@@ -126,7 +143,11 @@ public class LoadPartitions {
           List<AddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
           if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
             updateReplicationState(initialReplicationState());
-            return forExistingTable(lastReplicatedPartition);
+            if (!forExistingTable(lastReplicatedPartition).hasReplicationState()) {
+              // Add ReplStateLogTask only if no pending table load tasks left for next cycle
+              createTableReplLogTask();
+            }
+            return tracker;
           }
         }
       }
@@ -153,7 +174,7 @@ public class LoadPartitions {
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       AddPartitionDesc addPartitionDesc = iterator.next();
       tracker.addTask(addSinglePartition(table, addPartitionDesc));
-      if (iterator.hasNext()) {
+      if (iterator.hasNext() && !tracker.canAddMoreTasks()) {
         ReplicationState currentReplicationState =
                 new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
         updateReplicationState(currentReplicationState);

@@ -37,19 +37,19 @@ public abstract class ReplState {
   }
 
   public enum LogTag {
-    REPL_START,
+    START,
     TABLE_DUMP,
     FUNCTION_DUMP,
     EVENT_DUMP,
     TABLE_LOAD,
     FUNCTION_LOAD,
     EVENT_LOAD,
-    REPL_END
+    END
   }
 
   public void log(LogTag tag) {
     try {
-      REPL_LOG.info("{}: {}", tag.name(), mapper.writeValueAsString(this));
+      REPL_LOG.info("REPL::{}: {}", tag.name(), mapper.writeValueAsString(this));
     } catch (Exception exception) {
       REPL_LOG.error("Could not serialize REPL log: {}", exception.getMessage());
     }
