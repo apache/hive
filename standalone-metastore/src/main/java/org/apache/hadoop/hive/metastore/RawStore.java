@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,8 +26,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -76,10 +76,10 @@ public interface RawStore extends Configurable {
    */
   @Target(value = ElementType.METHOD)
   @Retention(value = RetentionPolicy.RUNTIME)
-  public @interface CanNotRetry {
+  @interface CanNotRetry {
   }
 
-  public abstract void shutdown();
+  void shutdown();
 
   /**
    * Opens a new one or the one already created Every call of this function must
@@ -88,7 +88,7 @@ public interface RawStore extends Configurable {
    * @return an active transaction
    */
 
-  public abstract boolean openTransaction();
+  boolean openTransaction();
 
   /**
    * if this is the commit of the first open call then an actual commit is
@@ -97,77 +97,77 @@ public interface RawStore extends Configurable {
    * @return true or false
    */
   @CanNotRetry
-  public abstract boolean commitTransaction();
+  boolean commitTransaction();
 
-  public boolean isActiveTransaction();
+  boolean isActiveTransaction();
 
   /**
    * Rolls back the current transaction if it is active
    */
   @CanNotRetry
-  public abstract void rollbackTransaction();
+  void rollbackTransaction();
 
-  public abstract void createDatabase(Database db)
+  void createDatabase(Database db)
       throws InvalidObjectException, MetaException;
 
-  public abstract Database getDatabase(String name)
+  Database getDatabase(String name)
       throws NoSuchObjectException;
 
-  public abstract boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException;
+  boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException;
 
-  public abstract boolean alterDatabase(String dbname, Database db) throws NoSuchObjectException, MetaException;
+  boolean alterDatabase(String dbname, Database db) throws NoSuchObjectException, MetaException;
 
-  public abstract List<String> getDatabases(String pattern) throws MetaException;
+  List<String> getDatabases(String pattern) throws MetaException;
 
-  public abstract List<String> getAllDatabases() throws MetaException;
+  List<String> getAllDatabases() throws MetaException;
 
-  public abstract boolean createType(Type type);
+  boolean createType(Type type);
 
-  public abstract Type getType(String typeName);
+  Type getType(String typeName);
 
-  public abstract boolean dropType(String typeName);
+  boolean dropType(String typeName);
 
-  public abstract void createTable(Table tbl) throws InvalidObjectException,
+  void createTable(Table tbl) throws InvalidObjectException,
       MetaException;
 
-  public abstract boolean dropTable(String dbName, String tableName)
+  boolean dropTable(String dbName, String tableName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
-  public abstract Table getTable(String dbName, String tableName)
+  Table getTable(String dbName, String tableName)
       throws MetaException;
 
-  public abstract boolean addPartition(Partition part)
+  boolean addPartition(Partition part)
       throws InvalidObjectException, MetaException;
 
-  public abstract boolean addPartitions(String dbName, String tblName, List<Partition> parts)
+  boolean addPartitions(String dbName, String tblName, List<Partition> parts)
       throws InvalidObjectException, MetaException;
 
-  public abstract boolean addPartitions(String dbName, String tblName, PartitionSpecProxy partitionSpec, boolean ifNotExists)
+  boolean addPartitions(String dbName, String tblName, PartitionSpecProxy partitionSpec, boolean ifNotExists)
       throws InvalidObjectException, MetaException;
 
-  public abstract Partition getPartition(String dbName, String tableName,
+  Partition getPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException, NoSuchObjectException;
 
-  public abstract boolean doesPartitionExist(String dbName, String tableName,
+  boolean doesPartitionExist(String dbName, String tableName,
       List<String> part_vals) throws MetaException, NoSuchObjectException;
 
-  public abstract boolean dropPartition(String dbName, String tableName,
+  boolean dropPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
       InvalidInputException;
 
-  public abstract List<Partition> getPartitions(String dbName,
+  List<Partition> getPartitions(String dbName,
       String tableName, int max) throws MetaException, NoSuchObjectException;
 
-  public abstract void alterTable(String dbname, String name, Table newTable)
+  void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
 
-  public List<String> getTables(String dbName, String pattern)
+  List<String> getTables(String dbName, String pattern)
       throws MetaException;
 
-  public List<String> getTables(String dbName, String pattern, TableType tableType)
+  List<String> getTables(String dbName, String pattern, TableType tableType)
       throws MetaException;
 
-  public List<TableMeta> getTableMeta(
+  List<TableMeta> getTableMeta(
       String dbNames, String tableNames, List<String> tableTypes) throws MetaException;
 
   /**
@@ -180,10 +180,10 @@ public interface RawStore extends Configurable {
    *         If there are duplicate names, only one instance of the table will be returned
    * @throws MetaException
    */
-  public List<Table> getTableObjectsByName(String dbname, List<String> tableNames)
+  List<Table> getTableObjectsByName(String dbname, List<String> tableNames)
       throws MetaException, UnknownDBException;
 
-  public List<String> getAllTables(String dbName) throws MetaException;
+  List<String> getAllTables(String dbName) throws MetaException;
 
   /**
    * Gets a list of tables based on a filter string and filter type.
@@ -197,127 +197,127 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    * @throws UnknownDBException
    */
-  public abstract List<String> listTableNamesByFilter(String dbName,
+  List<String> listTableNamesByFilter(String dbName,
       String filter, short max_tables) throws MetaException, UnknownDBException;
 
-  public abstract List<String> listPartitionNames(String db_name,
+  List<String> listPartitionNames(String db_name,
       String tbl_name, short max_parts) throws MetaException;
 
-  public abstract PartitionValuesResponse listPartitionValues(String db_name, String tbl_name,
-                                                              List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending,
-                                                              List<FieldSchema> order, long maxParts) throws MetaException;
+  PartitionValuesResponse listPartitionValues(String db_name, String tbl_name,
+                                              List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending,
+                                              List<FieldSchema> order, long maxParts) throws MetaException;
 
-  public abstract List<String> listPartitionNamesByFilter(String db_name,
+  List<String> listPartitionNamesByFilter(String db_name,
       String tbl_name, String filter, short max_parts) throws MetaException;
 
-  public abstract void alterPartition(String db_name, String tbl_name, List<String> part_vals,
+  void alterPartition(String db_name, String tbl_name, List<String> part_vals,
       Partition new_part) throws InvalidObjectException, MetaException;
 
-  public abstract void alterPartitions(String db_name, String tbl_name,
+  void alterPartitions(String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts)
       throws InvalidObjectException, MetaException;
 
-  public abstract boolean addIndex(Index index)
+  boolean addIndex(Index index)
       throws InvalidObjectException, MetaException;
 
-  public abstract Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
+  Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
-  public abstract boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
+  boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
 
-  public abstract List<Index> getIndexes(String dbName,
+  List<Index> getIndexes(String dbName,
       String origTableName, int max) throws MetaException;
 
-  public abstract List<String> listIndexNames(String dbName,
+  List<String> listIndexNames(String dbName,
       String origTableName, short max) throws MetaException;
 
-  public abstract void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
+  void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException;
 
-  public abstract List<Partition> getPartitionsByFilter(
+  List<Partition> getPartitionsByFilter(
       String dbName, String tblName, String filter, short maxParts)
       throws MetaException, NoSuchObjectException;
 
-  public abstract boolean getPartitionsByExpr(String dbName, String tblName,
+  boolean getPartitionsByExpr(String dbName, String tblName,
       byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
       throws TException;
 
-  public abstract int getNumPartitionsByFilter(String dbName, String tblName, String filter)
+  int getNumPartitionsByFilter(String dbName, String tblName, String filter)
     throws MetaException, NoSuchObjectException;
 
-  public abstract int getNumPartitionsByExpr(String dbName, String tblName, byte[] expr) throws MetaException, NoSuchObjectException;
+  int getNumPartitionsByExpr(String dbName, String tblName, byte[] expr) throws MetaException, NoSuchObjectException;
 
-  public abstract List<Partition> getPartitionsByNames(
+  List<Partition> getPartitionsByNames(
       String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException;
 
-  public abstract Table markPartitionForEvent(String dbName, String tblName, Map<String,String> partVals, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
+  Table markPartitionForEvent(String dbName, String tblName, Map<String,String> partVals, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
 
-  public abstract boolean isPartitionMarkedForEvent(String dbName, String tblName, Map<String, String> partName, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
+  boolean isPartitionMarkedForEvent(String dbName, String tblName, Map<String, String> partName, PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException;
 
-  public abstract boolean addRole(String rowName, String ownerName)
+  boolean addRole(String rowName, String ownerName)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  public abstract boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;
+  boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;
 
-  public abstract boolean grantRole(Role role, String userName, PrincipalType principalType,
+  boolean grantRole(Role role, String userName, PrincipalType principalType,
       String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
-  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType,
+  boolean revokeRole(Role role, String userName, PrincipalType principalType,
       boolean grantOption) throws MetaException, NoSuchObjectException;
 
-  public abstract PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
+  PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException;
 
-  public abstract PrincipalPrivilegeSet getDBPrivilegeSet (String dbName, String userName,
+  PrincipalPrivilegeSet getDBPrivilegeSet (String dbName, String userName,
       List<String> groupNames)  throws InvalidObjectException, MetaException;
 
-  public abstract PrincipalPrivilegeSet getTablePrivilegeSet (String dbName, String tableName,
+  PrincipalPrivilegeSet getTablePrivilegeSet (String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
 
-  public abstract PrincipalPrivilegeSet getPartitionPrivilegeSet (String dbName, String tableName,
+  PrincipalPrivilegeSet getPartitionPrivilegeSet (String dbName, String tableName,
       String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
 
-  public abstract PrincipalPrivilegeSet getColumnPrivilegeSet (String dbName, String tableName, String partitionName,
+  PrincipalPrivilegeSet getColumnPrivilegeSet (String dbName, String tableName, String partitionName,
       String columnName, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
 
-  public abstract List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
+  List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType);
 
-  public abstract List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
+  List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName);
 
-  public abstract List<HiveObjectPrivilege> listAllTableGrants(
+  List<HiveObjectPrivilege> listAllTableGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName);
 
-  public abstract List<HiveObjectPrivilege> listPrincipalPartitionGrants(
+  List<HiveObjectPrivilege> listPrincipalPartitionGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, List<String> partValues, String partName);
 
-  public abstract List<HiveObjectPrivilege> listPrincipalTableColumnGrants(
+  List<HiveObjectPrivilege> listPrincipalTableColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String columnName);
 
-  public abstract List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(
+  List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, List<String> partValues, String partName, String columnName);
 
-  public abstract boolean grantPrivileges (PrivilegeBag privileges)
+  boolean grantPrivileges (PrivilegeBag privileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  public abstract boolean revokePrivileges  (PrivilegeBag privileges, boolean grantOption)
+  boolean revokePrivileges  (PrivilegeBag privileges, boolean grantOption)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
-  public abstract org.apache.hadoop.hive.metastore.api.Role getRole(
+  org.apache.hadoop.hive.metastore.api.Role getRole(
       String roleName) throws NoSuchObjectException;
 
-  public List<String> listRoleNames();
+  List<String> listRoleNames();
 
-  public List<Role> listRoles(String principalName,
+  List<Role> listRoles(String principalName,
       PrincipalType principalType);
 
-  public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+  List<RolePrincipalGrant> listRolesWithGrants(String principalName,
                                                       PrincipalType principalType);
 
 
@@ -326,14 +326,14 @@ public interface RawStore extends Configurable {
    * @param roleName
    * @return
    */
-  public List<RolePrincipalGrant> listRoleMembers(String roleName);
+  List<RolePrincipalGrant> listRoleMembers(String roleName);
 
 
-  public abstract Partition getPartitionWithAuth(String dbName, String tblName,
+  Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
-  public abstract List<Partition> getPartitionsWithAuth(String dbName,
+  List<Partition> getPartitionsWithAuth(String dbName,
       String tblName, short maxParts, String userName, List<String> groupNames)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
 
@@ -352,7 +352,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public abstract List<String> listPartitionNamesPs(String db_name, String tbl_name,
+  List<String> listPartitionNamesPs(String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
       throws MetaException, NoSuchObjectException;
 
@@ -377,7 +377,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException
    * @throws InvalidObjectException
    */
-  public abstract List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
+  List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException;
 
@@ -389,7 +389,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException
    * @throws InvalidInputException
    */
-  public abstract boolean updateTableColumnStatistics(ColumnStatistics colStats)
+  boolean updateTableColumnStatistics(ColumnStatistics colStats)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /** Persists the given column statistics object to the metastore
@@ -402,7 +402,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException
    * @throws InvalidInputException
    */
-  public abstract boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,
      List<String> partVals)
      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
@@ -418,14 +418,14 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    *
    */
-  public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
+  ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
     List<String> colName) throws MetaException, NoSuchObjectException;
 
   /**
    * Returns the relevant column statistics for given columns in given partitions in a given
    * table in a given database if such statistics exist.
    */
-  public abstract List<ColumnStatistics> getPartitionColumnStatistics(
+  List<ColumnStatistics> getPartitionColumnStatistics(
      String dbName, String tblName, List<String> partNames, List<String> colNames)
       throws MetaException, NoSuchObjectException;
 
@@ -446,7 +446,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException
    */
 
-  public abstract boolean deletePartitionColumnStatistics(String dbName, String tableName,
+  boolean deletePartitionColumnStatistics(String dbName, String tableName,
       String partName, List<String> partVals, String colName)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
@@ -465,34 +465,34 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException
    */
 
-  public abstract boolean deleteTableColumnStatistics(String dbName, String tableName,
+  boolean deleteTableColumnStatistics(String dbName, String tableName,
     String colName)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
-  public abstract long cleanupEvents();
+  long cleanupEvents();
 
-  public abstract boolean addToken(String tokenIdentifier, String delegationToken);
+  boolean addToken(String tokenIdentifier, String delegationToken);
 
-  public abstract boolean removeToken(String tokenIdentifier);
+  boolean removeToken(String tokenIdentifier);
 
-  public abstract String getToken(String tokenIdentifier);
+  String getToken(String tokenIdentifier);
 
-  public abstract List<String> getAllTokenIdentifiers();
+  List<String> getAllTokenIdentifiers();
 
-  public abstract int addMasterKey(String key) throws MetaException;
+  int addMasterKey(String key) throws MetaException;
 
-  public abstract void updateMasterKey(Integer seqNo, String key)
+  void updateMasterKey(Integer seqNo, String key)
      throws NoSuchObjectException, MetaException;
 
-  public abstract boolean removeMasterKey(Integer keySeq);
+  boolean removeMasterKey(Integer keySeq);
 
-  public abstract String[] getMasterKeys();
+  String[] getMasterKeys();
 
-  public abstract void verifySchema() throws MetaException;
+  void verifySchema() throws MetaException;
 
-  public abstract String getMetaStoreSchemaVersion() throws  MetaException;
+  String getMetaStoreSchemaVersion() throws  MetaException;
 
-  public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+  abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
 
   void dropPartitions(String dbName, String tblName, List<String> partNames)
       throws MetaException, NoSuchObjectException;
@@ -533,7 +533,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException
    * @throws MetaException
    */
-  public void createFunction(Function func)
+  void createFunction(Function func)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -544,7 +544,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException
    * @throws MetaException
    */
-  public void alterFunction(String dbName, String funcName, Function newFunction)
+  void alterFunction(String dbName, String funcName, Function newFunction)
       throws InvalidObjectException, MetaException;
 
   /**
@@ -556,7 +556,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException
    * @throws InvalidInputException
    */
-  public void dropFunction(String dbName, String funcName)
+  void dropFunction(String dbName, String funcName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
   /**
@@ -566,14 +566,14 @@ public interface RawStore extends Configurable {
    * @return
    * @throws MetaException
    */
-  public Function getFunction(String dbName, String funcName) throws MetaException;
+  Function getFunction(String dbName, String funcName) throws MetaException;
 
   /**
    * Retrieve all functions.
    * @return
    * @throws MetaException
    */
-  public List<Function> getAllFunctions() throws MetaException;
+  List<Function> getAllFunctions() throws MetaException;
 
   /**
    * Retrieve list of function names based on name pattern.
@@ -582,9 +582,9 @@ public interface RawStore extends Configurable {
    * @return
    * @throws MetaException
    */
-  public List<String> getFunctions(String dbName, String pattern) throws MetaException;
+  List<String> getFunctions(String dbName, String pattern) throws MetaException;
 
-  public AggrStats get_aggr_stats_for(String dbName, String tblName,
+  AggrStats get_aggr_stats_for(String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
@@ -597,7 +597,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
+  Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException;
 
   /**
@@ -605,20 +605,20 @@ public interface RawStore extends Configurable {
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId
    */
-  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst);
+  NotificationEventResponse getNextNotification(NotificationEventRequest rqst);
 
 
   /**
    * Add a notification entry.  This should only be called from inside the metastore
    * @param event the notification to add
    */
-  public void addNotificationEvent(NotificationEvent event);
+  void addNotificationEvent(NotificationEvent event);
 
   /**
    * Remove older notification events.
    * @param olderThan Remove any events older than a given number of seconds
    */
-  public void cleanNotificationEvents(int olderThan);
+  void cleanNotificationEvents(int olderThan);
 
   /**
    * Get the last issued notification event id.  This is intended for use by the export command
@@ -626,7 +626,7 @@ public interface RawStore extends Configurable {
    * and determine which notification events happened before or after the export.
    * @return
    */
-  public CurrentNotificationEventId getCurrentNotificationEventId();
+  CurrentNotificationEventId getCurrentNotificationEventId();
 
   /**
    * Get the number of events corresponding to given database with fromEventId.
@@ -639,7 +639,7 @@ public interface RawStore extends Configurable {
    * Flush any catalog objects held by the metastore implementation.  Note that this does not
    * flush statistics objects.  This should be called at the beginning of each query.
    */
-  public void flushCache();
+  void flushCache();
 
   /**
    * @param fileIds List of file IDs from the filesystem.
@@ -699,7 +699,7 @@ public interface RawStore extends Configurable {
   @InterfaceStability.Evolving
   int getDatabaseCount() throws MetaException;
 
-  public abstract List<SQLPrimaryKey> getPrimaryKeys(String db_name,
+  List<SQLPrimaryKey> getPrimaryKeys(String db_name,
     String tbl_name) throws MetaException;
 
   /**
@@ -714,14 +714,14 @@ public interface RawStore extends Configurable {
    * matches the arguments the results here will be all mixed together into a single list.
    * @throws MetaException if something goes wrong.
    */
-  public abstract List<SQLForeignKey> getForeignKeys(String parent_db_name,
+  List<SQLForeignKey> getForeignKeys(String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;
 
-  public abstract List<SQLUniqueConstraint> getUniqueConstraints(String db_name,
+  List<SQLUniqueConstraint> getUniqueConstraints(String db_name,
     String tbl_name) throws MetaException;
 
-  public abstract List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
+  List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
     String tbl_name) throws MetaException;
 
   List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -41,7 +40,8 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.PartitionWrapper;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.StorageDescriptorWrapper;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.TableWrapper;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ public class SharedCache {
 
   public synchronized void addDatabaseToCache(String dbName, Database db) {
     Database dbCopy = db.deepCopy();
-    dbCopy.setName(HiveStringUtils.normalizeIdentifier(dbName));
+    dbCopy.setName(StringUtils.normalizeIdentifier(dbName));
     databaseCache.put(dbName, dbCopy);
   }
 
@@ -104,11 +104,11 @@ public class SharedCache {
 
   public synchronized void addTableToCache(String dbName, String tblName, Table tbl) {
     Table tblCopy = tbl.deepCopy();
-    tblCopy.setDbName(HiveStringUtils.normalizeIdentifier(dbName));
-    tblCopy.setTableName(HiveStringUtils.normalizeIdentifier(tblName));
+    tblCopy.setDbName(StringUtils.normalizeIdentifier(dbName));
+    tblCopy.setTableName(StringUtils.normalizeIdentifier(tblName));
     if (tblCopy.getPartitionKeys() != null) {
       for (FieldSchema fs : tblCopy.getPartitionKeys()) {
-        fs.setName(HiveStringUtils.normalizeIdentifier(fs.getName()));
+        fs.setName(StringUtils.normalizeIdentifier(fs.getName()));
       }
     }
     TableWrapper wrapper;
@@ -174,8 +174,8 @@ public class SharedCache {
 
   public synchronized void alterTableInCache(String dbName, String tblName, Table newTable) {
     removeTableFromCache(dbName, tblName);
-    addTableToCache(HiveStringUtils.normalizeIdentifier(newTable.getDbName()),
-        HiveStringUtils.normalizeIdentifier(newTable.getTableName()), newTable);
+    addTableToCache(StringUtils.normalizeIdentifier(newTable.getDbName()),
+        StringUtils.normalizeIdentifier(newTable.getTableName()), newTable);
   }
 
   public synchronized void alterTableInPartitionCache(String dbName, String tblName,
@@ -184,10 +184,10 @@ public class SharedCache {
       List<Partition> partitions = listCachedPartitions(dbName, tblName, -1);
       for (Partition part : partitions) {
         removePartitionFromCache(part.getDbName(), part.getTableName(), part.getValues());
-        part.setDbName(HiveStringUtils.normalizeIdentifier(newTable.getDbName()));
-        part.setTableName(HiveStringUtils.normalizeIdentifier(newTable.getTableName()));
-        addPartitionToCache(HiveStringUtils.normalizeIdentifier(newTable.getDbName()),
-            HiveStringUtils.normalizeIdentifier(newTable.getTableName()), part);
+        part.setDbName(StringUtils.normalizeIdentifier(newTable.getDbName()));
+        part.setTableName(StringUtils.normalizeIdentifier(newTable.getTableName()));
+        addPartitionToCache(StringUtils.normalizeIdentifier(newTable.getDbName()),
+            StringUtils.normalizeIdentifier(newTable.getTableName()), part);
       }
     }
   }
@@ -199,7 +199,7 @@ public class SharedCache {
       Iterator<Entry<String, ColumnStatisticsObj>> iterator =
           tableColStatsCache.entrySet().iterator();
       Map<String, ColumnStatisticsObj> newTableColStats =
-          new HashMap<String, ColumnStatisticsObj>();
+          new HashMap<>();
       while (iterator.hasNext()) {
         Entry<String, ColumnStatisticsObj> entry = iterator.next();
         String key = entry.getKey();
@@ -219,8 +219,7 @@ public class SharedCache {
       Table newTable) {
     if (!dbName.equals(newTable.getDbName()) || !tblName.equals(newTable.getTableName())) {
       List<Partition> partitions = listCachedPartitions(dbName, tblName, -1);
-      Map<String, ColumnStatisticsObj> newPartitionColStats =
-          new HashMap<String, ColumnStatisticsObj>();
+      Map<String, ColumnStatisticsObj> newPartitionColStats = new HashMap<>();
       for (Partition part : partitions) {
         String oldPartialPartitionKey =
             CacheUtils.buildKeyWithDelimit(dbName, tblName, part.getValues());
@@ -371,15 +370,14 @@ public class SharedCache {
   public synchronized void alterPartitionInCache(String dbName, String tblName,
       List<String> partVals, Partition newPart) {
     removePartitionFromCache(dbName, tblName, partVals);
-    addPartitionToCache(HiveStringUtils.normalizeIdentifier(newPart.getDbName()),
-        HiveStringUtils.normalizeIdentifier(newPart.getTableName()), newPart);
+    addPartitionToCache(StringUtils.normalizeIdentifier(newPart.getDbName()),
+        StringUtils.normalizeIdentifier(newPart.getTableName()), newPart);
   }
 
   public synchronized void alterPartitionInColStatsCache(String dbName, String tblName,
       List<String> partVals, Partition newPart) {
     String oldPartialPartitionKey = CacheUtils.buildKeyWithDelimit(dbName, tblName, partVals);
-    Map<String, ColumnStatisticsObj> newPartitionColStats =
-        new HashMap<String, ColumnStatisticsObj>();
+    Map<String, ColumnStatisticsObj> newPartitionColStats = new HashMap<>();
     Iterator<Entry<String, ColumnStatisticsObj>> iterator =
         partitionColStatsCache.entrySet().iterator();
     while (iterator.hasNext()) {
@@ -389,8 +387,8 @@ public class SharedCache {
       if (key.toLowerCase().startsWith(oldPartialPartitionKey.toLowerCase())) {
         Object[] decomposedKey = CacheUtils.splitPartitionColStats(key);
         String newKey =
-            CacheUtils.buildKey(HiveStringUtils.normalizeIdentifier(newPart.getDbName()),
-                HiveStringUtils.normalizeIdentifier(newPart.getTableName()), newPart.getValues(),
+            CacheUtils.buildKey(StringUtils.normalizeIdentifier(newPart.getDbName()),
+                StringUtils.normalizeIdentifier(newPart.getTableName()), newPart.getValues(),
                 (String) decomposedKey[3]);
         newPartitionColStats.put(newKey, colStatObj);
         iterator.remove();

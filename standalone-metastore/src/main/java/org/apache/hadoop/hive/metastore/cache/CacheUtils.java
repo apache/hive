@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,14 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.PartitionWrapper;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.TableWrapper;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 public class CacheUtils {
   private static final String delimit = "\u0001";
@@ -79,7 +78,7 @@ public class CacheUtils {
     String[] comps = key.split(delimit);
     result[0] = comps[0];
     result[1] = comps[1];
-    List<String> vals = new ArrayList<String>();
+    List<String> vals = new ArrayList<>();
     for (int i=2;i<comps.length-2;i++) {
       vals.add(comps[i]);
     }
@@ -93,14 +92,14 @@ public class CacheUtils {
     if (wrapper.getSdHash()!=null) {
       StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
       if (sdCopy.getBucketCols()==null) {
-        sdCopy.setBucketCols(new ArrayList<String>());
+        sdCopy.setBucketCols(new ArrayList<>());
       }
       if (sdCopy.getSortCols()==null) {
-        sdCopy.setSortCols(new ArrayList<Order>());
+        sdCopy.setSortCols(new ArrayList<>());
       }
       if (sdCopy.getSkewedInfo()==null) {
-        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
-            new ArrayList<List<String>>(), new HashMap<List<String>,String>()));
+        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<>(),
+            new ArrayList<>(), new HashMap<>()));
       }
       sdCopy.setLocation(wrapper.getLocation());
       sdCopy.setParameters(wrapper.getParameters());
@@ -114,14 +113,14 @@ public class CacheUtils {
     if (wrapper.getSdHash()!=null) {
       StorageDescriptor sdCopy = sharedCache.getSdFromCache(wrapper.getSdHash()).deepCopy();
       if (sdCopy.getBucketCols()==null) {
-        sdCopy.setBucketCols(new ArrayList<String>());
+        sdCopy.setBucketCols(new ArrayList<>());
       }
       if (sdCopy.getSortCols()==null) {
-        sdCopy.setSortCols(new ArrayList<Order>());
+        sdCopy.setSortCols(new ArrayList<>());
       }
       if (sdCopy.getSkewedInfo()==null) {
-        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
-            new ArrayList<List<String>>(), new HashMap<List<String>,String>()));
+        sdCopy.setSkewedInfo(new SkewedInfo(new ArrayList<>(),
+            new ArrayList<>(), new HashMap<>()));
       }
       sdCopy.setLocation(wrapper.getLocation());
       sdCopy.setParameters(wrapper.getParameters());
@@ -135,7 +134,7 @@ public class CacheUtils {
     for (String subpattern : subpatterns) {
       subpattern = "(?i)" + subpattern.replaceAll("\\?", ".{1}").replaceAll("\\*", ".*")
           .replaceAll("\\^", "\\\\^").replaceAll("\\$", "\\\\$");
-      if (Pattern.matches(subpattern, HiveStringUtils.normalizeIdentifier(name))) {
+      if (Pattern.matches(subpattern, StringUtils.normalizeIdentifier(name))) {
         return true;
       }
     }

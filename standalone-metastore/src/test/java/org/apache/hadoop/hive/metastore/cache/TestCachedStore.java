@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TestObjectStore.MockPartitionExpressionProxy;
@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,9 +57,9 @@ public class TestCachedStore {
 
   @Before
   public void setUp() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname, true);
-    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS,
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
         MockPartitionExpressionProxy.class.getName());
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
@@ -88,7 +89,7 @@ public class TestCachedStore {
     String dbName = "testDatabaseOps";
     String dbDescription = "testDatabaseOps";
     String dbLocation = "file:/tmp";
-    Map<String, String> dbParams = new HashMap<String, String>();
+    Map<String, String> dbParams = new HashMap<>();
     String dbOwner = "user1";
     Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
@@ -179,7 +180,7 @@ public class TestCachedStore {
     String dbName = "testTableOps";
     String dbDescription = "testTableOps";
     String dbLocation = "file:/tmp";
-    Map<String, String> dbParams = new HashMap<String, String>();
+    Map<String, String> dbParams = new HashMap<>();
     String dbOwner = "user1";
     Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
@@ -193,18 +194,18 @@ public class TestCachedStore {
     String serdeLocation = "file:/tmp";
     FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
     FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
-    Map<String, String> serdeParams = new HashMap<String, String>();
-    Map<String, String> tblParams = new HashMap<String, String>();
-    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<String, String>());
+    Map<String, String> serdeParams = new HashMap<>();
+    Map<String, String> tblParams = new HashMap<>();
+    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
     sd.setStoredAsSubDirectories(false);
     Table tbl =
-        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
     objectStore.createTable(tbl);
     tbl = objectStore.getTable(dbName, tblName);
@@ -221,7 +222,7 @@ public class TestCachedStore {
     // Add a new table via CachedStore
     String tblName1 = "tbl1";
     Table tbl1 =
-        new Table(tblName1, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+        new Table(tblName1, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
     cachedStore.createTable(tbl1);
     tbl1 = cachedStore.getTable(dbName, tblName1);
@@ -233,7 +234,7 @@ public class TestCachedStore {
     // Add a new table via ObjectStore
     String tblName2 = "tbl2";
     Table tbl2 =
-        new Table(tblName2, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+        new Table(tblName2, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
     objectStore.createTable(tbl2);
     tbl2 = objectStore.getTable(dbName, tblName2);
@@ -241,7 +242,7 @@ public class TestCachedStore {
     // Alter table "tbl" via ObjectStore
     tblOwner = "user2";
     tbl =
-        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
     objectStore.alterTable(dbName, tblName, tbl);
     tbl = objectStore.getTable(dbName, tblName);
@@ -283,7 +284,7 @@ public class TestCachedStore {
     String dbName = "testPartitionOps";
     String dbDescription = "testPartitionOps";
     String dbLocation = "file:/tmp";
-    Map<String, String> dbParams = new HashMap<String, String>();
+    Map<String, String> dbParams = new HashMap<>();
     String dbOwner = "user1";
     Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
@@ -297,17 +298,17 @@ public class TestCachedStore {
     String serdeLocation = "file:/tmp";
     FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
     FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
-    Map<String, String> serdeParams = new HashMap<String, String>();
-    Map<String, String> tblParams = new HashMap<String, String>();
+    Map<String, String> serdeParams = new HashMap<>();
+    Map<String, String> tblParams = new HashMap<>();
     SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
     FieldSchema ptnCol1 = new FieldSchema("part1", "string", "string partition column");
-    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
+    List<FieldSchema> ptnCols = new ArrayList<>();
     ptnCols.add(ptnCol1);
     Table tbl =
         new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, ptnCols, tblParams, null, null,
@@ -315,7 +316,7 @@ public class TestCachedStore {
     objectStore.createTable(tbl);
     tbl = objectStore.getTable(dbName, tblName);
     final String ptnColVal1 = "aaa";
-    Map<String, String> partParams = new HashMap<String, String>();
+    Map<String, String> partParams = new HashMap<>();
     Partition ptn1 =
         new Partition(Arrays.asList(ptnColVal1), dbName, tblName, 0, 0, sd, partParams);
     objectStore.addPartition(ptn1);
@@ -384,7 +385,7 @@ public class TestCachedStore {
     String dbName = "testTableColStatsOps";
     String dbDescription = "testTableColStatsOps";
     String dbLocation = "file:/tmp";
-    Map<String, String> dbParams = new HashMap<String, String>();
+    Map<String, String> dbParams = new HashMap<>();
     String dbOwner = "user1";
     Database db = new Database(dbName, dbDescription, dbLocation, dbParams);
     db.setOwnerName(dbOwner);
@@ -413,18 +414,18 @@ public class TestCachedStore {
     long col3NumTrues = 100;
     long col3NumFalses = 30;
     long col3Nulls = 10;
-    final List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    final List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
     cols.add(col3);
-    Map<String, String> serdeParams = new HashMap<String, String>();
-    Map<String, String> tblParams = new HashMap<String, String>();
+    Map<String, String> serdeParams = new HashMap<>();
+    Map<String, String> tblParams = new HashMap<>();
     final SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
     Table tbl =
-        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<FieldSchema>(), tblParams,
+        new Table(tblName, dbName, tblOwner, 0, 0, 0, sd, new ArrayList<>(), tblParams,
             null, null, TableType.MANAGED_TABLE.toString());
     objectStore.createTable(tbl);
     tbl = objectStore.getTable(dbName, tblName);
@@ -432,7 +433,7 @@ public class TestCachedStore {
     // Add ColumnStatistics for tbl to metastore DB via ObjectStore
     ColumnStatistics stats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
 
     // Col1
     ColumnStatisticsData data1 = new ColumnStatisticsData();
@@ -530,53 +531,53 @@ public class TestCachedStore {
   public void testSharedStoreTable() {
     Table tbl1 = new Table();
     StorageDescriptor sd1 = new StorageDescriptor();
-    List<FieldSchema> cols1 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols1 = new ArrayList<>();
     cols1.add(new FieldSchema("col1", "int", ""));
-    Map<String, String> params1 = new HashMap<String, String>();
+    Map<String, String> params1 = new HashMap<>();
     params1.put("key", "value");
     sd1.setCols(cols1);
     sd1.setParameters(params1);
     sd1.setLocation("loc1");
     tbl1.setSd(sd1);
-    tbl1.setPartitionKeys(new ArrayList<FieldSchema>());
+    tbl1.setPartitionKeys(new ArrayList<>());
 
     Table tbl2 = new Table();
     StorageDescriptor sd2 = new StorageDescriptor();
-    List<FieldSchema> cols2 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols2 = new ArrayList<>();
     cols2.add(new FieldSchema("col1", "int", ""));
-    Map<String, String> params2 = new HashMap<String, String>();
+    Map<String, String> params2 = new HashMap<>();
     params2.put("key", "value");
     sd2.setCols(cols2);
     sd2.setParameters(params2);
     sd2.setLocation("loc2");
     tbl2.setSd(sd2);
-    tbl2.setPartitionKeys(new ArrayList<FieldSchema>());
+    tbl2.setPartitionKeys(new ArrayList<>());
 
     Table tbl3 = new Table();
     StorageDescriptor sd3 = new StorageDescriptor();
-    List<FieldSchema> cols3 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols3 = new ArrayList<>();
     cols3.add(new FieldSchema("col3", "int", ""));
-    Map<String, String> params3 = new HashMap<String, String>();
+    Map<String, String> params3 = new HashMap<>();
     params3.put("key2", "value2");
     sd3.setCols(cols3);
     sd3.setParameters(params3);
     sd3.setLocation("loc3");
     tbl3.setSd(sd3);
-    tbl3.setPartitionKeys(new ArrayList<FieldSchema>());
+    tbl3.setPartitionKeys(new ArrayList<>());
 
     Table newTbl1 = new Table();
     newTbl1.setDbName("db2");
     newTbl1.setTableName("tbl1");
     StorageDescriptor newSd1 = new StorageDescriptor();
-    List<FieldSchema> newCols1 = new ArrayList<FieldSchema>();
+    List<FieldSchema> newCols1 = new ArrayList<>();
     newCols1.add(new FieldSchema("newcol1", "int", ""));
-    Map<String, String> newParams1 = new HashMap<String, String>();
+    Map<String, String> newParams1 = new HashMap<>();
     newParams1.put("key", "value");
     newSd1.setCols(newCols1);
     newSd1.setParameters(params1);
     newSd1.setLocation("loc1");
     newTbl1.setSd(newSd1);
-    newTbl1.setPartitionKeys(new ArrayList<FieldSchema>());
+    newTbl1.setPartitionKeys(new ArrayList<>());
 
     sharedCache.addTableToCache("db1", "tbl1", tbl1);
     sharedCache.addTableToCache("db1", "tbl2", tbl2);
@@ -607,9 +608,9 @@ public class TestCachedStore {
   public void testSharedStorePartition() {
     Partition part1 = new Partition();
     StorageDescriptor sd1 = new StorageDescriptor();
-    List<FieldSchema> cols1 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols1 = new ArrayList<>();
     cols1.add(new FieldSchema("col1", "int", ""));
-    Map<String, String> params1 = new HashMap<String, String>();
+    Map<String, String> params1 = new HashMap<>();
     params1.put("key", "value");
     sd1.setCols(cols1);
     sd1.setParameters(params1);
@@ -619,9 +620,9 @@ public class TestCachedStore {
 
     Partition part2 = new Partition();
     StorageDescriptor sd2 = new StorageDescriptor();
-    List<FieldSchema> cols2 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols2 = new ArrayList<>();
     cols2.add(new FieldSchema("col1", "int", ""));
-    Map<String, String> params2 = new HashMap<String, String>();
+    Map<String, String> params2 = new HashMap<>();
     params2.put("key", "value");
     sd2.setCols(cols2);
     sd2.setParameters(params2);
@@ -631,9 +632,9 @@ public class TestCachedStore {
 
     Partition part3 = new Partition();
     StorageDescriptor sd3 = new StorageDescriptor();
-    List<FieldSchema> cols3 = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols3 = new ArrayList<>();
     cols3.add(new FieldSchema("col3", "int", ""));
-    Map<String, String> params3 = new HashMap<String, String>();
+    Map<String, String> params3 = new HashMap<>();
     params3.put("key2", "value2");
     sd3.setCols(cols3);
     sd3.setParameters(params3);
@@ -645,9 +646,9 @@ public class TestCachedStore {
     newPart1.setDbName("db1");
     newPart1.setTableName("tbl1");
     StorageDescriptor newSd1 = new StorageDescriptor();
-    List<FieldSchema> newCols1 = new ArrayList<FieldSchema>();
+    List<FieldSchema> newCols1 = new ArrayList<>();
     newCols1.add(new FieldSchema("newcol1", "int", ""));
-    Map<String, String> newParams1 = new HashMap<String, String>();
+    Map<String, String> newParams1 = new HashMap<>();
     newParams1.put("key", "value");
     newSd1.setCols(newCols1);
     newSd1.setParameters(params1);
@@ -688,35 +689,35 @@ public class TestCachedStore {
     Database db = new Database(dbName, null, "some_location", null);
     cachedStore.createDatabase(db);
 
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema(colName, "int", null));
-    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<String, String>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
             null, null, null);
 
     Table tbl =
-        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<String, String>(),
+        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<>(),
             null, null, TableType.MANAGED_TABLE.toString());
     cachedStore.createTable(tbl);
 
-    List<String> partVals1 = new ArrayList<String>();
+    List<String> partVals1 = new ArrayList<>();
     partVals1.add("1");
-    List<String> partVals2 = new ArrayList<String>();
+    List<String> partVals2 = new ArrayList<>();
     partVals2.add("2");
 
     Partition ptn1 =
-        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn1);
     Partition ptn2 =
-        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn2);
 
     ColumnStatistics stats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
     statsDesc.setPartName("col");
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
 
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
@@ -734,9 +735,9 @@ public class TestCachedStore {
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1);
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
 
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<>();
     colNames.add(colName);
-    List<String> aggrPartVals = new ArrayList<String>();
+    List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
     AggrStats aggrStats = cachedStore.get_aggr_stats_for(dbName, tblName, aggrPartVals, colNames);
@@ -754,35 +755,35 @@ public class TestCachedStore {
     Database db = new Database(dbName, null, "some_location", null);
     cachedStore.createDatabase(db);
     
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema(colName, "int", null));
-    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<String, String>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
             null, null, null);
     
     Table tbl =
-        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<String, String>(),
+        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<>(),
             null, null, TableType.MANAGED_TABLE.toString());
     cachedStore.createTable(tbl);
     
-    List<String> partVals1 = new ArrayList<String>();
+    List<String> partVals1 = new ArrayList<>();
     partVals1.add("1");
-    List<String> partVals2 = new ArrayList<String>();
+    List<String> partVals2 = new ArrayList<>();
     partVals2.add("2");
     
     Partition ptn1 =
-        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn1);
     Partition ptn2 =
-        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn2);
     
     ColumnStatistics stats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
     statsDesc.setPartName("col");
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
     
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
@@ -802,9 +803,9 @@ public class TestCachedStore {
     longStats.setNumDVs(40);
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
     
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<>();
     colNames.add(colName);
-    List<String> aggrPartVals = new ArrayList<String>();
+    List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
     AggrStats aggrStats = cachedStore.get_aggr_stats_for(dbName, tblName, aggrPartVals, colNames);
@@ -824,35 +825,35 @@ public class TestCachedStore {
     Database db = new Database(dbName, null, "some_location", null);
     cachedStore.createDatabase(db);
     
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema(colName, "int", null));
-    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<String, String>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
             null, null, null);
     
     Table tbl =
-        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<String, String>(),
+        new Table(tblName, dbName, null, 0, 0, 0, sd, partCols, new HashMap<>(),
             null, null, TableType.MANAGED_TABLE.toString());
     cachedStore.createTable(tbl);
     
-    List<String> partVals1 = new ArrayList<String>();
+    List<String> partVals1 = new ArrayList<>();
     partVals1.add("1");
-    List<String> partVals2 = new ArrayList<String>();
+    List<String> partVals2 = new ArrayList<>();
     partVals2.add("2");
     
     Partition ptn1 =
-        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals1, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn1);
     Partition ptn2 =
-        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<String, String>());
+        new Partition(partVals2, dbName, tblName, 0, 0, sd, new HashMap<>());
     cachedStore.addPartition(ptn2);
     
     ColumnStatistics stats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, dbName, tblName);
     statsDesc.setPartName("col");
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
     
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj colStats = new ColumnStatisticsObj(colName, "int", data);
@@ -886,9 +887,9 @@ public class TestCachedStore {
     
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2);
     
-    List<String> colNames = new ArrayList<String>();
+    List<String> colNames = new ArrayList<>();
     colNames.add(colName);
-    List<String> aggrPartVals = new ArrayList<String>();
+    List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
     AggrStats aggrStats = cachedStore.get_aggr_stats_for(dbName, tblName, aggrPartVals, colNames);

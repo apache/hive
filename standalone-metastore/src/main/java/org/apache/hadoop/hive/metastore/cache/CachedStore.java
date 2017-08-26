@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,13 +32,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.FileMetadataHandler;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -86,8 +82,12 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,12 +216,11 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public void setConf(Configuration conf) {
-    String rawStoreClassName = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHED_RAW_STORE_IMPL,
+    String rawStoreClassName = MetastoreConf.getVar(conf, ConfVars.CACHED_RAW_STORE_IMPL,
         ObjectStore.class.getName());
     if (rawStore == null) {
       try {
-        rawStore = ((Class<? extends RawStore>) MetaStoreUtils.getClass(
-            rawStoreClassName)).newInstance();
+        rawStore = (JavaUtils.getClass(rawStoreClassName, RawStore.class)).newInstance();
       } catch (Exception e) {
         throw new RuntimeException("Cannot instantiate " + rawStoreClassName, e);
       }
@@ -245,17 +244,17 @@ public class CachedStore implements RawStore, Configurable {
     SharedCache sharedCache = sharedCacheWrapper.getUnsafe();
     for (String dbName : dbNames) {
       Database db = rawStore.getDatabase(dbName);
-      sharedCache.addDatabaseToCache(HiveStringUtils.normalizeIdentifier(dbName), db);
+      sharedCache.addDatabaseToCache(StringUtils.normalizeIdentifier(dbName), db);
       List<String> tblNames = rawStore.getAllTables(dbName);
       for (String tblName : tblNames) {
         Table table = rawStore.getTable(dbName, tblName);
-        sharedCache.addTableToCache(HiveStringUtils.normalizeIdentifier(dbName),
-            HiveStringUtils.normalizeIdentifier(tblName), table);
+        sharedCache.addTableToCache(StringUtils.normalizeIdentifier(dbName),
+            StringUtils.normalizeIdentifier(tblName), table);
         Deadline.startTimer("getPartitions");
         List<Partition> partitions = rawStore.getPartitions(dbName, tblName, Integer.MAX_VALUE);
         Deadline.stopTimer();
         for (Partition partition : partitions) {
-          sharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(dbName),
+          sharedCache.addPartitionToCache(StringUtils.normalizeIdentifier(dbName),
               HiveStringUtils.normalizeIdentifier(tblName), partition);
         }
         // Cache partition column stats
@@ -273,8 +272,8 @@ public class CachedStore implements RawStore, Configurable {
             rawStore.getTableColumnStatistics(dbName, tblName, colNames);
         Deadline.stopTimer();
         if ((tableColStats != null) && (tableColStats.getStatsObjSize() > 0)) {
-          sharedCache.addTableColStatsToCache(HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
+          sharedCache.addTableColStatsToCache(StringUtils.normalizeIdentifier(dbName),
+              StringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
         }
       }
     }
@@ -292,10 +291,9 @@ public class CachedStore implements RawStore, Configurable {
           return t;
         }
       });
-      if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
+      if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
         cacheRefreshPeriod =
-            HiveConf.getTimeVar(conf,
-                HiveConf.ConfVars.METASTORE_CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY,
+            MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY,
                 TimeUnit.MILLISECONDS);
       }
       LOG.info("CachedStore: starting cache update service (run every " + cacheRefreshPeriod + "ms");
@@ -397,7 +395,7 @@ public class CachedStore implements RawStore, Configurable {
 
     private void updateDatabases(RawStore rawStore, List<String> dbNames) {
       // Prepare the list of databases
-      List<Database> databases = new ArrayList<Database>();
+      List<Database> databases = new ArrayList<>();
       for (String dbName : dbNames) {
         Database db;
         try {
@@ -426,13 +424,13 @@ public class CachedStore implements RawStore, Configurable {
 
     // Update the cached table objects
     private void updateTables(RawStore rawStore, String dbName) {
-      List<Table> tables = new ArrayList<Table>();
+      List<Table> tables = new ArrayList<>();
       try {
         List<String> tblNames = rawStore.getAllTables(dbName);
         for (String tblName : tblNames) {
           Table table =
-              rawStore.getTable(HiveStringUtils.normalizeIdentifier(dbName),
-                  HiveStringUtils.normalizeIdentifier(tblName));
+              rawStore.getTable(StringUtils.normalizeIdentifier(dbName),
+                  StringUtils.normalizeIdentifier(tblName));
           tables.add(table);
         }
         if (tableCacheLock.writeLock().tryLock()) {
@@ -465,8 +463,8 @@ public class CachedStore implements RawStore, Configurable {
             return;
           }
           sharedCacheWrapper.getUnsafe().refreshPartitions(
-              HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), partitions);
+              StringUtils.normalizeIdentifier(dbName),
+              StringUtils.normalizeIdentifier(tblName), partitions);
         }
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to read partitions of table: " + tblName, e);
@@ -495,8 +493,8 @@ public class CachedStore implements RawStore, Configurable {
               return;
             }
             sharedCacheWrapper.getUnsafe().refreshTableColStats(
-                HiveStringUtils.normalizeIdentifier(dbName),
-                HiveStringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
+                StringUtils.normalizeIdentifier(dbName),
+                StringUtils.normalizeIdentifier(tblName), tableColStats.getStatsObj());
           }
         }
       } catch (MetaException | NoSuchObjectException e) {
@@ -524,8 +522,8 @@ public class CachedStore implements RawStore, Configurable {
               return;
             }
             sharedCacheWrapper.getUnsafe().refreshPartitionColStats(
-                HiveStringUtils.normalizeIdentifier(dbName),
-                HiveStringUtils.normalizeIdentifier(tblName), colStatsPerPartition);
+                StringUtils.normalizeIdentifier(dbName),
+                StringUtils.normalizeIdentifier(tblName), colStatsPerPartition);
           }
         }
       } catch (MetaException | NoSuchObjectException e) {
@@ -578,7 +576,7 @@ public class CachedStore implements RawStore, Configurable {
       // Wait if background cache update is happening
       databaseCacheLock.readLock().lock();
       isDatabaseCacheDirty.set(true);
-      sharedCache.addDatabaseToCache(HiveStringUtils.normalizeIdentifier(db.getName()),
+      sharedCache.addDatabaseToCache(StringUtils.normalizeIdentifier(db.getName()),
           db.deepCopy());
     } finally {
       databaseCacheLock.readLock().unlock();
@@ -596,7 +594,7 @@ public class CachedStore implements RawStore, Configurable {
     } catch (MetaException e) {
       throw new RuntimeException(e); // TODO: why doesn't getDatabase throw MetaEx?
     }
-    Database db = sharedCache.getDatabaseFromCache(HiveStringUtils.normalizeIdentifier(dbName));
+    Database db = sharedCache.getDatabaseFromCache(StringUtils.normalizeIdentifier(dbName));
     if (db == null) {
       throw new NoSuchObjectException();
     }
@@ -613,7 +611,7 @@ public class CachedStore implements RawStore, Configurable {
         // Wait if background cache update is happening
         databaseCacheLock.readLock().lock();
         isDatabaseCacheDirty.set(true);
-        sharedCache.removeDatabaseFromCache(HiveStringUtils.normalizeIdentifier(dbname));
+        sharedCache.removeDatabaseFromCache(StringUtils.normalizeIdentifier(dbname));
       } finally {
         databaseCacheLock.readLock().unlock();
       }
@@ -632,7 +630,7 @@ public class CachedStore implements RawStore, Configurable {
         // Wait if background cache update is happening
         databaseCacheLock.readLock().lock();
         isDatabaseCacheDirty.set(true);
-        sharedCache.alterDatabaseInCache(HiveStringUtils.normalizeIdentifier(dbName), db);
+        sharedCache.alterDatabaseInCache(StringUtils.normalizeIdentifier(dbName), db);
       } finally {
         databaseCacheLock.readLock().unlock();
       }
@@ -648,7 +646,7 @@ public class CachedStore implements RawStore, Configurable {
     }
     List<String> results = new ArrayList<String>();
     for (String dbName : sharedCache.listCachedDatabases()) {
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      dbName = StringUtils.normalizeIdentifier(dbName);
       if (CacheUtils.matches(dbName, pattern)) {
         results.add(dbName);
       }
@@ -708,8 +706,8 @@ public class CachedStore implements RawStore, Configurable {
       // Wait if background cache update is happening
       tableCacheLock.readLock().lock();
       isTableCacheDirty.set(true);
-      sharedCache.addTableToCache(HiveStringUtils.normalizeIdentifier(tbl.getDbName()),
-          HiveStringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
+      sharedCache.addTableToCache(StringUtils.normalizeIdentifier(tbl.getDbName()),
+          StringUtils.normalizeIdentifier(tbl.getTableName()), tbl);
     } finally {
       tableCacheLock.readLock().unlock();
     }
@@ -727,8 +725,8 @@ public class CachedStore implements RawStore, Configurable {
         // Wait if background table cache update is happening
         tableCacheLock.readLock().lock();
         isTableCacheDirty.set(true);
-        sharedCache.removeTableFromCache(HiveStringUtils.normalizeIdentifier(dbName),
-            HiveStringUtils.normalizeIdentifier(tableName));
+        sharedCache.removeTableFromCache(StringUtils.normalizeIdentifier(dbName),
+            StringUtils.normalizeIdentifier(tableName));
       } finally {
         tableCacheLock.readLock().unlock();
       }
@@ -737,8 +735,8 @@ public class CachedStore implements RawStore, Configurable {
         // Wait if background table col stats cache update is happening
         tableColStatsCacheLock.readLock().lock();
         isTableColStatsCacheDirty.set(true);
-        sharedCache.removeTableColStatsFromCache(HiveStringUtils.normalizeIdentifier(dbName),
-            HiveStringUtils.normalizeIdentifier(tableName));
+        sharedCache.removeTableColStatsFromCache(StringUtils.normalizeIdentifier(dbName),
+            StringUtils.normalizeIdentifier(tableName));
       } finally {
         tableColStatsCacheLock.readLock().unlock();
       }
@@ -752,8 +750,8 @@ public class CachedStore implements RawStore, Configurable {
     if (sharedCache == null) {
       return rawStore.getTable(dbName, tableName);
     }
-    Table tbl = sharedCache.getTableFromCache(HiveStringUtils.normalizeIdentifier(dbName),
-        HiveStringUtils.normalizeIdentifier(tableName));
+    Table tbl = sharedCache.getTableFromCache(StringUtils.normalizeIdentifier(dbName),
+        StringUtils.normalizeIdentifier(tableName));
     if (tbl != null) {
       tbl.unsetPrivileges();
       tbl.setRewriteEnabled(tbl.isRewriteEnabled());
@@ -771,8 +769,8 @@ public class CachedStore implements RawStore, Configurable {
         // Wait if background cache update is happening
         partitionCacheLock.readLock().lock();
         isPartitionCacheDirty.set(true);
-        sharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(part.getDbName()),
-            HiveStringUtils.normalizeIdentifier(part.getTableName()), part);
+        sharedCache.addPartitionToCache(StringUtils.normalizeIdentifier(part.getDbName()),
+            StringUtils.normalizeIdentifier(part.getTableName()), part);
       } finally {
         partitionCacheLock.readLock().unlock();
       }
@@ -792,8 +790,8 @@ public class CachedStore implements RawStore, Configurable {
         partitionCacheLock.readLock().lock();
         isPartitionCacheDirty.set(true);
         for (Partition part : parts) {
-          sharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), part);
+          sharedCache.addPartitionToCache(StringUtils.normalizeIdentifier(dbName),
+              StringUtils.normalizeIdentifier(tblName), part);
         }
       } finally {
         partitionCacheLock.readLock().unlock();
@@ -816,8 +814,8 @@ public class CachedStore implements RawStore, Configurable {
         PartitionSpecProxy.PartitionIterator iterator = partitionSpec.getPartitionIterator();
         while (iterator.hasNext()) {
           Partition part = iterator.next();
-          sharedCache.addPartitionToCache(HiveStringUtils.normalizeIdentifier(dbName),
-              HiveStringUtils.normalizeIdentifier(tblName), part);
+          sharedCache.addPartitionToCache(StringUtils.normalizeIdentifier(dbName),
+              StringUtils.normalizeIdentifier(tblName), part);
         }
       } finally {
         partitionCacheLock.readLock().unlock();
@@ -834,8 +832,8 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getPartition(dbName, tableName, part_vals);
     }
     Partition part =
-        sharedCache.getPartitionFromCache(HiveStringUtils.normalizeIdentifier(dbName),
-            HiveStringUtils.normalizeIdentifier(tableName), part_vals);
+        sharedCache.getPartitionFromCache(StringUtils.normalizeIdentifier(dbName),
+            StringUtils.normalizeIdentifier(tableName), part_vals);
     if (part != null) {
       part.unsetPrivileges();
     } else {
@@ -851,8 +849,8 @@ public class CachedStore implements RawStore, Configurable {
     if (sharedCache == null) {
       return rawStore.doesPartitionExist(dbName, tableName, part_vals);
     }
-    return sharedCache.existPartitionFromCache(HiveStringUtils.normalizeIdentifier(dbName),
-        HiveStringUtils.normalizeIdentifier(tableName), part_vals);
+    return sharedCache.existPartitionFromCache(StringUtils.normalizeIdentifier(dbName),
+        StringUtils.normalizeIdentifier(tableName), part_vals);
   }
 
   @Override
@@ -1172,7 +1170,7 @@ public class CachedStore implements RawStore, Configurable {
       result.add(Warehouse.makePartName(table.getPartitionKeys(), part.getValues()));
     }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
-      defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+      defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     }
     return expressionProxy.filterPartitionsByExpr(
         table.getPartitionKeys(), expr, defaultPartName, result);
@@ -1240,7 +1238,7 @@ public class CachedStore implements RawStore, Configurable {
 
   private static List<String> partNameToVals(String name) {
     if (name == null) return null;
-    List<String> vals = new ArrayList<String>();
+    List<String> vals = new ArrayList<>();
     String[] kvp = name.split("/");
     for (String kv : kvp) {
       vals.add(FileUtils.unescapePathName(kv.substring(kv.indexOf('=') + 1)));
@@ -1592,7 +1590,7 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getTableColumnStatistics(dbName, tableName, colNames);
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
-    List<ColumnStatisticsObj> colStatObjs = new ArrayList<ColumnStatisticsObj>();
+    List<ColumnStatisticsObj> colStatObjs = new ArrayList<>();
     for (String colName : colNames) {
       String colStatsCacheKey =
           CacheUtils.buildKey(HiveStringUtils.normalizeIdentifier(dbName),

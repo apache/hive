@@ -33,9 +33,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.jolbox</groupId>
-      <artifactId>bonecp</artifactId>
-      <version>${bonecp.version}</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.new.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.joshelser</groupId>
@@ -51,6 +51,11 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>${protobuf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jolbox</groupId>
+      <artifactId>bonecp</artifactId>
+      <version>${bonecp.version}</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>

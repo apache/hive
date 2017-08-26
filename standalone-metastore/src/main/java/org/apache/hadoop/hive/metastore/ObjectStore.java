@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -65,16 +66,12 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -129,6 +126,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
@@ -166,10 +164,11 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
@@ -207,7 +206,7 @@ public class ObjectStore implements RawStore, Configurable {
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class.getName());
 
-  private static enum TXN_STATUS {
+  private enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
   }
 
@@ -216,7 +215,7 @@ public class ObjectStore implements RawStore, Configurable {
   private static final String USER;
   private static final String JDO_PARAM = ":param";
   static {
-    Map<String, Class> map = new HashMap<String, Class>();
+    Map<String, Class> map = new HashMap<>();
     map.put("table", MTable.class);
     map.put("storagedescriptor", MStorageDescriptor.class);
     map.put("serdeinfo", MSerDeInfo.class);
@@ -247,7 +246,7 @@ public class ObjectStore implements RawStore, Configurable {
   private SQLGenerator sqlGenerator = null;
   private MetaStoreDirectSql directSql = null;
   private PartitionExpressionProxy expressionProxy = null;
-  private Configuration hiveConf;
+  private Configuration conf;
   private volatile int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
@@ -278,7 +277,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Configuration getConf() {
-    return hiveConf;
+    return conf;
   }
 
   /**
@@ -295,7 +294,7 @@ public class ObjectStore implements RawStore, Configurable {
     pmfPropLock.lock();
     try {
       isInitialized = false;
-      hiveConf = conf;
+      this.conf = conf;
       configureSSL(conf);
       Properties propsFromConf = getDataSourceProps(conf);
       boolean propsChanged = !propsFromConf.equals(prop);
@@ -326,7 +325,7 @@ public class ObjectStore implements RawStore, Configurable {
       initialize(propsFromConf);
 
       String partitionValidationRegex =
-          hiveConf.get(HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN.name());
+          MetastoreConf.getVar(this.conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN);
       if (partitionValidationRegex != null && !partitionValidationRegex.isEmpty()) {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
@@ -361,10 +360,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("nls")
   private void initialize(Properties dsProps) {
-    int retryLimit = HiveConf.getIntVar(hiveConf,
-        HiveConf.ConfVars.HMSHANDLERATTEMPTS);
-    long retryInterval = HiveConf.getTimeVar(hiveConf,
-        HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
+    int retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
+    long retryInterval = MetastoreConf.getTimeVar(conf,
+        ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
     int numTries = retryLimit;
 
     while (numTries > 0){
@@ -400,7 +398,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private static final Set<Class<? extends Throwable>> retriableExceptionClasses =
-      new HashSet<Class<? extends Throwable>>(Arrays.asList(JDOCanRetryException.class));
+      new HashSet<>(Arrays.asList(JDOCanRetryException.class));
   /**
    * Helper function for initialize to determine if we should retry an exception.
    * We return true if the exception is of a known type of retriable exceptions, or if one
@@ -444,13 +442,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
     isInitialized = pm != null;
     if (isInitialized) {
-      expressionProxy = createExpressionProxy(hiveConf);
-      if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)) {
+      expressionProxy = createExpressionProxy(conf);
+      if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
         String schema = prop.getProperty("javax.jdo.mapping.Schema");
         if (schema != null && schema.isEmpty()) {
           schema = null;
         }
-        directSql = new MetaStoreDirectSql(pm, hiveConf, schema);
+        directSql = new MetaStoreDirectSql(pm, conf, schema);
       }
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
@@ -465,13 +463,12 @@ public class ObjectStore implements RawStore, Configurable {
    * @return The partition expression proxy.
    */
   private static PartitionExpressionProxy createExpressionProxy(Configuration conf) {
-    String className = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS);
+    String className = MetastoreConf.getVar(conf, ConfVars.EXPRESSION_PROXY_CLASS);
     try {
       @SuppressWarnings("unchecked")
       Class<? extends PartitionExpressionProxy> clazz =
-          (Class<? extends PartitionExpressionProxy>)MetaStoreUtils.getClass(className);
-      return MetaStoreUtils.newInstance(
-          clazz, new Class<?>[0], new Object[0]);
+           JavaUtils.getClass(className, PartitionExpressionProxy.class);
+      return JavaUtils.newInstance(clazz, new Class<?>[0], new Object[0]);
     } catch (MetaException e) {
       LOG.error("Error loading PartitionExpressionProxy", e);
       throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
@@ -484,7 +481,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private static void configureSSL(Configuration conf) {
     // SSL support
-    String sslPropString = conf.get(HiveConf.ConfVars.METASTORE_DBACCESS_SSL_PROPS.varname);
+    String sslPropString = MetastoreConf.getVar(conf, ConfVars.DBACCESS_SSL_PROPS);
     if (org.apache.commons.lang.StringUtils.isNotEmpty(sslPropString)) {
       LOG.info("Metastore setting SSL properties of the connection to backed DB");
       for (String sslProp : sslPropString.split(",")) {
@@ -492,7 +489,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (pair != null && pair.length == 2) {
           System.setProperty(pair[0].trim(), pair[1].trim());
         } else {
-          LOG.warn("Invalid metastore property value for " + HiveConf.ConfVars.METASTORE_DBACCESS_SSL_PROPS);
+          LOG.warn("Invalid metastore property value for " + ConfVars.DBACCESS_SSL_PROPS);
         }
       }
     }
@@ -507,23 +504,20 @@ public class ObjectStore implements RawStore, Configurable {
     Properties prop = new Properties();
     correctAutoStartMechanism(conf);
 
-    Iterator<Map.Entry<String, String>> iter = conf.iterator();
-    while (iter.hasNext()) {
-      Map.Entry<String, String> e = iter.next();
-      if (e.getKey().contains("datanucleus") || e.getKey().contains("jdo")) {
-        Object prevVal = prop.setProperty(e.getKey(), conf.get(e.getKey()));
-        if (LOG.isDebugEnabled()
-            && !e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname)) {
-          LOG.debug("Overriding " + e.getKey() + " value " + prevVal
-              + " from  jpox.properties with " + e.getValue());
-        }
+    for (ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
+      String confVal = MetastoreConf.getAsString(conf, var);
+      Object prevVal = prop.setProperty(var.varname, confVal);
+      if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(var.varname)) {
+        LOG.debug("Overriding " + var.varname + " value " + prevVal
+            + " from  jpox.properties with " + confVal);
       }
     }
     // Password may no longer be in the conf, use getPassword()
     try {
       String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
       if (passwd != null && !passwd.isEmpty()) {
-        prop.setProperty(HiveConf.ConfVars.METASTOREPWD.varname, passwd);
+        // We can get away with the use of varname here because varname == hiveName for PWD
+        prop.setProperty(ConfVars.PWD.varname, passwd);
       }
     } catch (IOException err) {
       throw new RuntimeException("Error getting metastore password: " + err.getMessage(), err);
@@ -531,7 +525,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (LOG.isDebugEnabled()) {
       for (Entry<Object, Object> e : prop.entrySet()) {
-        if (!e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname)) {
+        if (MetastoreConf.isPrintable(e.getKey().toString())) {
           LOG.debug(e.getKey() + " = " + e.getValue());
         }
       }
@@ -561,7 +555,7 @@ public class ObjectStore implements RawStore, Configurable {
   private static synchronized PersistenceManagerFactory getPMF() {
     if (pmf == null) {
 
-      HiveConf conf = new HiveConf(ObjectStore.class);
+      Configuration conf = MetastoreConf.newMetastoreConf();
       DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
       if (dsp == null) {
         pmf = JDOHelper.getPersistenceManagerFactory(prop);
@@ -583,7 +577,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       DataStoreCache dsc = pmf.getDataStoreCache();
       if (dsc != null) {
-        String objTypes = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES);
+        String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
         LOG.info("Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"" + objTypes + "\"");
         if (objTypes != null && objTypes.length() > 0) {
           objTypes = objTypes.toLowerCase();
@@ -752,7 +746,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      name = HiveStringUtils.normalizeIdentifier(name);
+      name = normalizeIdentifier(name);
       query = pm.newQuery(MDatabase.class, "name == dbname");
       query.declareParameters("java.lang.String dbname");
       query.setUnique(true);
@@ -868,7 +862,7 @@ public class ObjectStore implements RawStore, Configurable {
   public boolean dropDatabase(String dbname) throws NoSuchObjectException, MetaException {
     boolean success = false;
     LOG.info("Dropping database " + dbname + " along with all tables");
-    dbname = HiveStringUtils.normalizeIdentifier(dbname);
+    dbname = normalizeIdentifier(dbname);
     QueryWrapper queryWrapper = new QueryWrapper();
     try {
       openTransaction();
@@ -910,7 +904,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setResult("name");
       query.setOrdering("name ascending");
       Collection names = (Collection) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
-      databases = new ArrayList<String>();
+      databases = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         databases.add((String) i.next());
       }
@@ -933,7 +927,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       query = pm.newQuery(queryStr);
       query.setResult("name");
-      databases = new ArrayList<String>((Collection<String>) query.execute());
+      databases = new ArrayList<>((Collection<String>) query.execute());
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, query);
@@ -943,7 +937,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private MType getMType(Type type) {
-    List<MFieldSchema> fields = new ArrayList<MFieldSchema>();
+    List<MFieldSchema> fields = new ArrayList<>();
     if (type.getFields() != null) {
       for (FieldSchema field : type.getFields()) {
         fields.add(new MFieldSchema(field.getName(), field.getType(), field
@@ -954,7 +948,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Type getType(MType mtype) {
-    List<FieldSchema> fields = new ArrayList<FieldSchema>();
+    List<FieldSchema> fields = new ArrayList<>();
     if (mtype.getFields() != null) {
       for (MFieldSchema field : mtype.getFields()) {
         fields.add(new FieldSchema(field.getName(), field.getType(), field
@@ -1068,7 +1062,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mtbl);
 
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
-      List<Object> toPersistPrivObjs = new ArrayList<Object>();
+      List<Object> toPersistPrivObjs = new ArrayList<>();
       if (principalPrivs != null) {
         int now = (int)(System.currentTimeMillis()/1000);
 
@@ -1182,11 +1176,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName
     (String dbName, String tableName, String constraintname) {
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    constraintname = constraintname!=null?HiveStringUtils.normalizeIdentifier(constraintname):null;
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    constraintname = constraintname!=null?normalizeIdentifier(constraintname):null;
     List<MConstraint> mConstraints = null;
-    List<String> constraintNames = new ArrayList<String>();
+    List<String> constraintNames = new ArrayList<>();
     Query query = null;
 
     try {
@@ -1212,7 +1206,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter("param.contains(constraintName)");
       query.declareParameters("java.util.Collection param");
       Collection<?> constraints = (Collection<?>)query.execute(constraintNames);
-      mConstraints = new ArrayList<MConstraint>();
+      mConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currConstraint = (MConstraint) i.next();
         mConstraints.add(currConstraint);
@@ -1253,7 +1247,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<String> tbls = null;
     try {
       openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      dbName = normalizeIdentifier(dbName);
       // Take the pattern and split it on the | to get all the composing
       // patterns
       List<String> parameterVals = new ArrayList<>();
@@ -1271,7 +1265,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setResult("tableName");
       query.setOrdering("tableName ascending");
       Collection names = (Collection) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
-      tbls = new ArrayList<String>();
+      tbls = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         tbls.add((String) i.next());
       }
@@ -1320,7 +1314,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     boolean commited = false;
     Query query = null;
-    List<TableMeta> metas = new ArrayList<TableMeta>();
+    List<TableMeta> metas = new ArrayList<>();
     try {
       openTransaction();
       // Take the pattern and split it on the | to get all the composing
@@ -1359,7 +1353,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private StringBuilder appendPatternCondition(StringBuilder builder,
       String fieldName, String elements, List<String> parameters) {
-      elements = HiveStringUtils.normalizeIdentifier(elements);
+      elements = normalizeIdentifier(elements);
     return appendCondition(builder, fieldName, elements.split("\\|"), true, parameters);
   }
 
@@ -1418,8 +1412,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      db = HiveStringUtils.normalizeIdentifier(db);
-      table = HiveStringUtils.normalizeIdentifier(table);
+      db = normalizeIdentifier(db);
+      table = normalizeIdentifier(table);
       query = pm.newQuery(MTable.class, "tableName == table && database.name == db");
       query.declareParameters("java.lang.String table, java.lang.String db");
       query.setUnique(true);
@@ -1447,13 +1441,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Table> getTableObjectsByName(String db, List<String> tbl_names) throws MetaException,
       UnknownDBException {
-    List<Table> tables = new ArrayList<Table>();
+    List<Table> tables = new ArrayList<>();
     boolean committed = false;
     Query dbExistsQuery = null;
     Query query = null;
     try {
       openTransaction();
-      db = HiveStringUtils.normalizeIdentifier(db);
+      db = normalizeIdentifier(db);
       dbExistsQuery = pm.newQuery(MDatabase.class, "name == db");
       dbExistsQuery.declareParameters("java.lang.String db");
       dbExistsQuery.setUnique(true);
@@ -1463,9 +1457,9 @@ public class ObjectStore implements RawStore, Configurable {
         throw new UnknownDBException("Could not find database " + db);
       }
 
-      List<String> lowered_tbl_names = new ArrayList<String>();
+      List<String> lowered_tbl_names = new ArrayList<>();
       for (String t : tbl_names) {
-        lowered_tbl_names.add(HiveStringUtils.normalizeIdentifier(t));
+        lowered_tbl_names.add(normalizeIdentifier(t));
       }
       query = pm.newQuery(MTable.class);
       query.setFilter("database.name == db && tbl_names.contains(tableName)");
@@ -1492,7 +1486,7 @@ public class ObjectStore implements RawStore, Configurable {
   /** Makes shallow copy of a map to avoid DataNucleus mucking with our objects. */
   private Map<String, String> convertMap(Map<String, String> dnMap) {
     return MetaStoreUtils.trimMapNulls(dnMap,
-        HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
+        MetastoreConf.getBoolVar(getConf(), ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
   }
 
   private Table convertToTable(MTable mtbl) throws MetaException {
@@ -1549,7 +1543,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     // A new table is always created with a new column descriptor
-    return new MTable(HiveStringUtils.normalizeIdentifier(tbl.getTableName()), mdb,
+    return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
@@ -1560,7 +1554,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
     List<MFieldSchema> mkeys = null;
     if (keys != null) {
-      mkeys = new ArrayList<MFieldSchema>(keys.size());
+      mkeys = new ArrayList<>(keys.size());
       for (FieldSchema part : keys) {
         mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
             part.getType(), part.getComment()));
@@ -1572,7 +1566,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<FieldSchema> convertToFieldSchemas(List<MFieldSchema> mkeys) {
     List<FieldSchema> keys = null;
     if (mkeys != null) {
-      keys = new ArrayList<FieldSchema>(mkeys.size());
+      keys = new ArrayList<>(mkeys.size());
       for (MFieldSchema part : mkeys) {
         keys.add(new FieldSchema(part.getName(), part.getType(), part
             .getComment()));
@@ -1584,9 +1578,9 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MOrder> convertToMOrders(List<Order> keys) {
     List<MOrder> mkeys = null;
     if (keys != null) {
-      mkeys = new ArrayList<MOrder>(keys.size());
+      mkeys = new ArrayList<>(keys.size());
       for (Order part : keys) {
-        mkeys.add(new MOrder(HiveStringUtils.normalizeIdentifier(part.getCol()), part.getOrder()));
+        mkeys.add(new MOrder(normalizeIdentifier(part.getCol()), part.getOrder()));
       }
     }
     return mkeys;
@@ -1595,7 +1589,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<Order> convertToOrders(List<MOrder> mkeys) {
     List<Order> keys = null;
     if (mkeys != null) {
-      keys = new ArrayList<Order>(mkeys.size());
+      keys = new ArrayList<>(mkeys.size());
       for (MOrder part : mkeys) {
         keys.add(new Order(part.getCol(), part.getOrder()));
       }
@@ -1667,9 +1661,9 @@ public class ObjectStore implements RawStore, Configurable {
   private List<List<String>> convertToSkewedValues(List<MStringList> mLists) {
     List<List<String>> lists = null;
     if (mLists != null) {
-      lists = new ArrayList<List<String>>(mLists.size());
+      lists = new ArrayList<>(mLists.size());
       for (MStringList element : mLists) {
-        lists.add(new ArrayList<String>(element.getInternalList()));
+        lists.add(new ArrayList<>(element.getInternalList()));
       }
     }
     return lists;
@@ -1678,7 +1672,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MStringList> convertToMStringLists(List<List<String>> mLists) {
     List<MStringList> lists = null ;
     if (null != mLists) {
-      lists = new ArrayList<MStringList>();
+      lists = new ArrayList<>();
       for (List<String> mList : mLists) {
         lists.add(new MStringList(mList));
       }
@@ -1694,10 +1688,10 @@ public class ObjectStore implements RawStore, Configurable {
   private Map<List<String>, String> covertToSkewedMap(Map<MStringList, String> mMap) {
     Map<List<String>, String> map = null;
     if (mMap != null) {
-      map = new HashMap<List<String>, String>(mMap.size());
+      map = new HashMap<>(mMap.size());
       Set<MStringList> keys = mMap.keySet();
       for (MStringList key : keys) {
-        map.put(new ArrayList<String>(key.getInternalList()), mMap.get(key));
+        map.put(new ArrayList<>(key.getInternalList()), mMap.get(key));
       }
     }
     return map;
@@ -1711,7 +1705,7 @@ public class ObjectStore implements RawStore, Configurable {
   private Map<MStringList, String> covertToMapMStringList(Map<List<String>, String> mMap) {
     Map<MStringList, String> map = null;
     if (mMap != null) {
-      map = new HashMap<MStringList, String>(mMap.size());
+      map = new HashMap<>(mMap.size());
       Set<List<String>> keys = mMap.keySet();
       for (List<String> key : keys) {
         map.put(new MStringList(key), mMap.get(key));
@@ -1776,7 +1770,7 @@ public class ObjectStore implements RawStore, Configurable {
         tabGrants = this.listAllTableGrants(dbName, tblName);
         tabColumnGrants = this.listTableAllColumnGrants(dbName, tblName);
       }
-      List<Object> toPersist = new ArrayList<Object>();
+      List<Object> toPersist = new ArrayList<>();
       for (Partition part : parts) {
         if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
           throw new MetaException("Partition does not belong to target table "
@@ -1904,7 +1898,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mpart);
 
       int now = (int)(System.currentTimeMillis()/1000);
-      List<Object> toPersist = new ArrayList<Object>();
+      List<Object> toPersist = new ArrayList<>();
       if (tabGrants != null) {
         for (MTablePrivilege tab: tabGrants) {
           MPartitionPrivilege partGrant = new MPartitionPrivilege(tab
@@ -1961,8 +1955,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      tableName = HiveStringUtils.normalizeIdentifier(tableName);
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
       MTable mtbl = getMTable(dbName, tableName);
       if (mtbl == null) {
         commited = commitTransaction();
@@ -2128,7 +2122,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       if (part != null) {
         List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
-        List<String> colNames = new ArrayList<String>();
+        List<String> colNames = new ArrayList<>();
         for (MFieldSchema col: schemas) {
           colNames.add(col.getName());
         }
@@ -2211,7 +2205,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       List<MPartition> mparts = listMPartitions(dbName, tblName, max, queryWrapper);
-      List<Partition> parts = new ArrayList<Partition>(mparts.size());
+      List<Partition> parts = new ArrayList<>(mparts.size());
       if (mparts != null && mparts.size()>0) {
         for (MPartition mpart : mparts) {
           MTable mtbl = mpart.getTable();
@@ -2277,7 +2271,7 @@ public class ObjectStore implements RawStore, Configurable {
       return dest;
     }
     if (dest == null) {
-      dest = new ArrayList<Partition>(src.size());
+      dest = new ArrayList<>(src.size());
     }
     for (MPartition mp : src) {
       dest.add(convertToPart(mp));
@@ -2288,7 +2282,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<Partition> convertToParts(String dbName, String tblName, List<MPartition> mparts)
       throws MetaException {
-    List<Partition> parts = new ArrayList<Partition>(mparts.size());
+    List<Partition> parts = new ArrayList<>(mparts.size());
     for (MPartition mp : mparts) {
       parts.add(convertToPart(dbName, tblName, mp));
       Deadline.checkTimeout();
@@ -2560,9 +2554,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {
-    List<String> pns = new ArrayList<String>();
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    List<String> pns = new ArrayList<>();
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
     Query query =
         pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
             + "where table.database.name == t1 && table.tableName == t2 "
@@ -2601,8 +2595,8 @@ public class ObjectStore implements RawStore, Configurable {
   private Collection getPartitionPsQueryResults(String dbName, String tableName,
       List<String> part_vals, short max_parts, String resultsCol, QueryWrapper queryWrapper)
       throws MetaException, NoSuchObjectException {
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
     Table table = getTable(dbName, tableName);
     if (table == null) {
       throw new NoSuchObjectException(dbName + "." + tableName + " table not found");
@@ -2646,7 +2640,7 @@ public class ObjectStore implements RawStore, Configurable {
   public List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
-    List<Partition> partitions = new ArrayList<Partition>();
+    List<Partition> partitions = new ArrayList<>();
     boolean success = false;
     QueryWrapper queryWrapper = new QueryWrapper();
 
@@ -2679,7 +2673,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listPartitionNamesPs(String dbName, String tableName,
       List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
-    List<String> partitionNames = new ArrayList<String>();
+    List<String> partitionNames = new ArrayList<>();
     boolean success = false;
     QueryWrapper queryWrapper = new QueryWrapper();
 
@@ -2705,8 +2699,8 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("Executing listMPartitions");
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      tableName = HiveStringUtils.normalizeIdentifier(tableName);
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
       Query query = queryWrapper.query = pm.newQuery(MPartition.class, "table.tableName == t1 && table.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       query.setOrdering("partitionName ascending");
@@ -2773,7 +2767,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         }
         // We couldn't do SQL filter pushdown. Get names via normal means.
-        List<String> partNames = new LinkedList<String>();
+        List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
             ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
         return directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
@@ -2789,7 +2783,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         if (result == null) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
-          List<String> partNames = new ArrayList<String>();
+          List<String> partNames = new ArrayList<>();
           hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
               ctx.getTable(), expr, defaultPartitionName, maxParts, partNames));
           result = getPartitionsViaOrmFilter(dbName, tblName, partNames);
@@ -2816,7 +2810,7 @@ public class ObjectStore implements RawStore, Configurable {
     result.addAll(getPartitionNamesNoTxn(
         table.getDbName(), table.getTableName(), maxParts));
     if (defaultPartName == null || defaultPartName.isEmpty()) {
-      defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+      defaultPartName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
     }
     return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
@@ -2833,7 +2827,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private List<Partition> getPartitionsViaOrmFilter(Table table, ExpressionTree tree,
       short maxParts, boolean isValidatedFilter) throws MetaException {
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = new HashMap<>();
     String jdoFilter =
         makeQueryFilterString(table.getDbName(), table, tree, params, isValidatedFilter);
     if (jdoFilter == null) {
@@ -2861,7 +2855,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private Integer getNumPartitionsViaOrmFilter(Table table, ExpressionTree tree, boolean isValidatedFilter)
     throws MetaException {
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = new HashMap<>();
     String jdoFilter = makeQueryFilterString(table.getDbName(), table, tree, params, isValidatedFilter);
     if (jdoFilter == null) {
       assert !isValidatedFilter;
@@ -2890,7 +2884,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<Partition> getPartitionsViaOrmFilter(
       String dbName, String tblName, List<String> partNames) throws MetaException {
     if (partNames.isEmpty()) {
-      return new ArrayList<Partition>();
+      return new ArrayList<>();
     }
     ObjectPair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(dbName, tblName, partNames);
@@ -2933,7 +2927,7 @@ public class ObjectStore implements RawStore, Configurable {
     @SuppressWarnings("unchecked")
     List<MStorageDescriptor> sds = (List<MStorageDescriptor>)query.executeWithMap(
         queryWithParams.getSecond());
-    HashSet<MColumnDescriptor> candidateCds = new HashSet<MColumnDescriptor>();
+    HashSet<MColumnDescriptor> candidateCds = new HashSet<>();
     for (MStorageDescriptor sd : sds) {
       if (sd != null && sd.getCD() != null) {
         candidateCds.add(sd.getCD());
@@ -2950,7 +2944,7 @@ public class ObjectStore implements RawStore, Configurable {
       String tblName, List<String> partNames) {
     StringBuilder sb = new StringBuilder("table.tableName == t1 && table.database.name == t2 && (");
     int n = 0;
-    Map<String, String> params = new HashMap<String, String>();
+    Map<String, String> params = new HashMap<>();
     for (Iterator<String> itr = partNames.iterator(); itr.hasNext();) {
       String pn = "p" + n;
       n++;
@@ -2964,10 +2958,10 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = pm.newQuery();
     query.setFilter(sb.toString());
     LOG.debug(" JDOQL filter is " + sb.toString());
-    params.put("t1", HiveStringUtils.normalizeIdentifier(tblName));
-    params.put("t2", HiveStringUtils.normalizeIdentifier(dbName));
+    params.put("t1", normalizeIdentifier(tblName));
+    params.put("t2", normalizeIdentifier(dbName));
     query.declareParameters(makeParameterDeclarationString(params));
-    return new ObjectPair<Query, Map<String, String>>(query, params);
+    return new ObjectPair<>(query, params);
   }
 
   @Override
@@ -2991,9 +2985,9 @@ public class ObjectStore implements RawStore, Configurable {
         throws MetaException {
       assert allowSql || allowJdo;
       this.allowJdo = allowJdo;
-      this.dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      this.dbName = normalizeIdentifier(dbName);
       if (tblName != null){
-        this.tblName = HiveStringUtils.normalizeIdentifier(tblName);
+        this.tblName = normalizeIdentifier(tblName);
       } else {
         // tblName can be null in cases of Helper being used at a higher
         // abstraction level, such as with datbases
@@ -3006,8 +3000,8 @@ public class ObjectStore implements RawStore, Configurable {
       // SQL usage inside a larger transaction (e.g. droptable) may not be desirable because
       // some databases (e.g. Postgres) abort the entire transaction when any query fails, so
       // the fallback from failed SQL to JDO is not possible.
-      boolean isConfigEnabled = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
-          && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
+      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)
+          && (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL_DDL) || !isInTxn);
       if (isConfigEnabled && directSql == null) {
         directSql = new MetaStoreDirectSql(pm, getConf());
       }
@@ -3227,7 +3221,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
-      };
+      }
 
       @Override
       protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
@@ -3279,7 +3273,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
         if (numPartitions == null) {
-          List<String> filteredPartNames = new ArrayList<String>();
+          List<String> filteredPartNames = new ArrayList<>();
           getPartitionNamesPrunedByExprNoTxn(ctx.getTable(), tempExpr, "", (short) -1, filteredPartNames);
           numPartitions = filteredPartNames.size();
         }
@@ -3300,7 +3294,7 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected boolean canUseDirectSql(GetHelper<List<Partition>> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), tree, filter);
-      };
+      }
 
       @Override
       protected List<Partition> getSqlResult(GetHelper<List<Partition>> ctx) throws MetaException {
@@ -3414,12 +3408,12 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException {
     boolean success = false;
     Query query = null;
-    List<String> tableNames = new ArrayList<String>();
+    List<String> tableNames = new ArrayList<>();
     try {
       openTransaction();
       LOG.debug("Executing listTableNamesByFilter");
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      Map<String, Object> params = new HashMap<String, Object>();
+      dbName = normalizeIdentifier(dbName);
+      Map<String, Object> params = new HashMap<>();
       String queryFilterString = makeQueryFilterString(dbName, null, filter, params);
       query = pm.newQuery(MTable.class);
       query.declareImports("import java.lang.String");
@@ -3438,11 +3432,11 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter(queryFilterString);
       Collection names = (Collection)query.executeWithMap(params);
       // have to emulate "distinct", otherwise tables with the same name may be returned
-      Set<String> tableNamesSet = new HashSet<String>();
+      Set<String> tableNamesSet = new HashSet<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         tableNamesSet.add((String) i.next());
       }
-      tableNames = new ArrayList<String>(tableNamesSet);
+      tableNames = new ArrayList<>(tableNamesSet);
       LOG.debug("Done executing query for listTableNamesByFilter");
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for listTableNamesByFilter");
@@ -3457,19 +3451,19 @@ public class ObjectStore implements RawStore, Configurable {
       short maxParts) throws MetaException {
     boolean success = false;
     Query query = null;
-    List<String> partNames = new ArrayList<String>();
+    List<String> partNames = new ArrayList<>();
     try {
       openTransaction();
       LOG.debug("Executing listMPartitionNamesByFilter");
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      tableName = HiveStringUtils.normalizeIdentifier(tableName);
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
       MTable mtable = getMTable(dbName, tableName);
       if (mtable == null) {
         // To be consistent with the behavior of listPartitionNames, if the
         // table or db does not exist, we return an empty list
         return partNames;
       }
-      Map<String, Object> params = new HashMap<String, Object>();
+      Map<String, Object> params = new HashMap<>();
       String queryFilterString = makeQueryFilterString(dbName, mtable, filter, params);
       query =
           pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
@@ -3485,7 +3479,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setOrdering("partitionName ascending");
       query.setResult("partitionName");
       Collection names = (Collection) query.executeWithMap(params);
-      partNames = new ArrayList<String>();
+      partNames = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         partNames.add((String) i.next());
       }
@@ -3504,8 +3498,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     try {
       openTransaction();
-      name = HiveStringUtils.normalizeIdentifier(name);
-      dbname = HiveStringUtils.normalizeIdentifier(dbname);
+      name = normalizeIdentifier(name);
+      dbname = normalizeIdentifier(dbname);
       MTable newt = convertToMTable(newTable);
       if (newt == null) {
         throw new InvalidObjectException("new table is invalid");
@@ -3518,7 +3512,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       // For now only alter name, owner, parameters, cols, bucketcols are allowed
       oldt.setDatabase(newt.getDatabase());
-      oldt.setTableName(HiveStringUtils.normalizeIdentifier(newt.getTableName()));
+      oldt.setTableName(normalizeIdentifier(newt.getTableName()));
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
       // Fully copy over the contents of the new SD into the old SD,
@@ -3547,9 +3541,9 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     try {
       openTransaction();
-      name = HiveStringUtils.normalizeIdentifier(name);
-      baseTblName = HiveStringUtils.normalizeIdentifier(baseTblName);
-      dbname = HiveStringUtils.normalizeIdentifier(dbname);
+      name = normalizeIdentifier(name);
+      baseTblName = normalizeIdentifier(baseTblName);
+      dbname = normalizeIdentifier(dbname);
       MIndex newi = convertToMIndex(newIndex);
       if (newi == null) {
         throw new InvalidObjectException("new index is invalid");
@@ -3574,8 +3568,8 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
       Partition newPart) throws InvalidObjectException, MetaException {
-    name = HiveStringUtils.normalizeIdentifier(name);
-    dbname = HiveStringUtils.normalizeIdentifier(dbname);
+    name = normalizeIdentifier(name);
+    dbname = normalizeIdentifier(dbname);
     MPartition oldp = getMPartition(dbname, name, part_vals);
     MPartition newp = convertToMPart(newPart, false);
     if (oldp == null || newp == null) {
@@ -3780,7 +3774,7 @@ public class ObjectStore implements RawStore, Configurable {
     String constraintNameIfExists = null;
     try {
       openTransaction();
-      name = HiveStringUtils.normalizeIdentifier(name);
+      name = normalizeIdentifier(name);
       constraintExistsQuery = pm.newQuery(MConstraint.class, "constraintName == name");
       constraintExistsQuery.declareParameters("java.lang.String name");
       constraintExistsQuery.setUnique(true);
@@ -3863,7 +3857,7 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MMetastoreDBProperties.class, "this.propertyKey == key");
       query.declareParameters("java.lang.String key");
       Collection<MMetastoreDBProperties> names = (Collection<MMetastoreDBProperties>) query.execute("guid");
-      List<String> uuids = new ArrayList<String>();
+      List<String> uuids = new ArrayList<>();
       for (Iterator<MMetastoreDBProperties> i = names.iterator(); i.hasNext();) {
         String uuid = i.next().getPropertyValue();
         LOG.debug("Found guid " + uuid);
@@ -3887,17 +3881,17 @@ public class ObjectStore implements RawStore, Configurable {
   private List<String> addForeignKeys(
     List<SQLForeignKey> fks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
-    List<String> fkNames = new ArrayList<String>();
-    List<MConstraint> mpkfks = new ArrayList<MConstraint>();
+    List<String> fkNames = new ArrayList<>();
+    List<MConstraint> mpkfks = new ArrayList<>();
     String currentConstraintName = null;
 
     for (int i = 0; i < fks.size(); i++) {
-      final String pkTableDB = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_db());
-      final String pkTableName = HiveStringUtils.normalizeIdentifier(fks.get(i).getPktable_name());
-      final String pkColumnName =HiveStringUtils.normalizeIdentifier(fks.get(i).getPkcolumn_name());
-      final String fkTableDB = HiveStringUtils.normalizeIdentifier(fks.get(i).getFktable_db());
-      final String fkTableName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFktable_name());
-      final String fkColumnName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFkcolumn_name());
+      final String pkTableDB = normalizeIdentifier(fks.get(i).getPktable_db());
+      final String pkTableName = normalizeIdentifier(fks.get(i).getPktable_name());
+      final String pkColumnName =normalizeIdentifier(fks.get(i).getPkcolumn_name());
+      final String fkTableDB = normalizeIdentifier(fks.get(i).getFktable_db());
+      final String fkTableName = normalizeIdentifier(fks.get(i).getFktable_name());
+      final String fkColumnName = normalizeIdentifier(fks.get(i).getFkcolumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -3940,7 +3934,7 @@ public class ObjectStore implements RawStore, Configurable {
             fkTableDB, fkTableName, pkTableDB, pkTableName, pkColumnName, fkColumnName, "fk");
         }
       } else {
-        currentConstraintName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFk_name());
+        currentConstraintName = normalizeIdentifier(fks.get(i).getFk_name());
       }
       fkNames.add(currentConstraintName);
       Integer updateRule = fks.get(i).getUpdate_rule();
@@ -3975,14 +3969,14 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
-    List<String> pkNames = new ArrayList<String>();
-    List<MConstraint> mpks = new ArrayList<MConstraint>();
+    List<String> pkNames = new ArrayList<>();
+    List<MConstraint> mpks = new ArrayList<>();
     String constraintName = null;
 
     for (int i = 0; i < pks.size(); i++) {
-      final String tableDB = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_db());
-      final String tableName = HiveStringUtils.normalizeIdentifier(pks.get(i).getTable_name());
-      final String columnName = HiveStringUtils.normalizeIdentifier(pks.get(i).getColumn_name());
+      final String tableDB = normalizeIdentifier(pks.get(i).getTable_db());
+      final String tableName = normalizeIdentifier(pks.get(i).getTable_name());
+      final String columnName = normalizeIdentifier(pks.get(i).getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -4009,7 +4003,7 @@ public class ObjectStore implements RawStore, Configurable {
           constraintName = generateConstraintName(tableDB, tableName, columnName, "pk");
         }
       } else {
-        constraintName = HiveStringUtils.normalizeIdentifier(pks.get(i).getPk_name());
+        constraintName = normalizeIdentifier(pks.get(i).getPk_name());
       }
       pkNames.add(constraintName);
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
@@ -4041,14 +4035,14 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
-    List<String> ukNames = new ArrayList<String>();
-    List<MConstraint> cstrs = new ArrayList<MConstraint>();
+    List<String> ukNames = new ArrayList<>();
+    List<MConstraint> cstrs = new ArrayList<>();
     String constraintName = null;
 
     for (int i = 0; i < uks.size(); i++) {
-      final String tableDB = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_db());
-      final String tableName = HiveStringUtils.normalizeIdentifier(uks.get(i).getTable_name());
-      final String columnName = HiveStringUtils.normalizeIdentifier(uks.get(i).getColumn_name());
+      final String tableDB = normalizeIdentifier(uks.get(i).getTable_db());
+      final String tableName = normalizeIdentifier(uks.get(i).getTable_name());
+      final String columnName = normalizeIdentifier(uks.get(i).getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -4069,7 +4063,7 @@ public class ObjectStore implements RawStore, Configurable {
             constraintName = generateConstraintName(tableDB, tableName, columnName, "uk");
         }
       } else {
-        constraintName = HiveStringUtils.normalizeIdentifier(uks.get(i).getUk_name());
+        constraintName = normalizeIdentifier(uks.get(i).getUk_name());
       }
       ukNames.add(constraintName);
 
@@ -4102,14 +4096,14 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
-    List<String> nnNames = new ArrayList<String>();
-    List<MConstraint> cstrs = new ArrayList<MConstraint>();
+    List<String> nnNames = new ArrayList<>();
+    List<MConstraint> cstrs = new ArrayList<>();
     String constraintName = null;
 
     for (int i = 0; i < nns.size(); i++) {
-      final String tableDB = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_db());
-      final String tableName = HiveStringUtils.normalizeIdentifier(nns.get(i).getTable_name());
-      final String columnName = HiveStringUtils.normalizeIdentifier(nns.get(i).getColumn_name());
+      final String tableDB = normalizeIdentifier(nns.get(i).getTable_db());
+      final String tableName = normalizeIdentifier(nns.get(i).getTable_name());
+      final String columnName = normalizeIdentifier(nns.get(i).getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -4128,7 +4122,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (nns.get(i).getNn_name() == null) {
         constraintName = generateConstraintName(tableDB, tableName, columnName, "nn");
       } else {
-        constraintName = HiveStringUtils.normalizeIdentifier(nns.get(i).getNn_name());
+        constraintName = normalizeIdentifier(nns.get(i).getNn_name());
       }
       nnNames.add(constraintName);
 
@@ -4193,7 +4187,7 @@ public class ObjectStore implements RawStore, Configurable {
           "Underlying index table does not exist for the given index.");
     }
 
-    return new MIndex(HiveStringUtils.normalizeIdentifier(index.getIndexName()), origTable, index.getCreateTime(),
+    return new MIndex(normalizeIdentifier(index.getIndexName()), origTable, index.getCreateTime(),
         index.getLastAccessTime(), index.getParameters(), indexTable, msd,
         index.getIndexHandlerClass(), index.isDeferredRebuild());
   }
@@ -4224,8 +4218,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      originalTblName = HiveStringUtils.normalizeIdentifier(originalTblName);
+      dbName = normalizeIdentifier(dbName);
+      originalTblName = normalizeIdentifier(originalTblName);
       MTable mtbl = getMTable(dbName, originalTblName);
       if (mtbl == null) {
         commited = commitTransaction();
@@ -4238,7 +4232,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setUnique(true);
       midx =
           (MIndex) query.execute(originalTblName, dbName,
-              HiveStringUtils.normalizeIdentifier(indexName));
+              normalizeIdentifier(indexName));
       pm.retrieve(midx);
       commited = commitTransaction();
     } finally {
@@ -4288,15 +4282,15 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing getIndexes");
       openTransaction();
 
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      origTableName = HiveStringUtils.normalizeIdentifier(origTableName);
+      dbName = normalizeIdentifier(dbName);
+      origTableName = normalizeIdentifier(origTableName);
       query =
           pm.newQuery(MIndex.class, "origTable.tableName == t1 && origTable.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       List<MIndex> mIndexes = (List<MIndex>) query.execute(origTableName, dbName);
       pm.retrieveAll(mIndexes);
 
-      List<Index> indexes = new ArrayList<Index>(mIndexes.size());
+      List<Index> indexes = new ArrayList<>(mIndexes.size());
       for (MIndex mIdx : mIndexes) {
         indexes.add(this.convertToIndex(mIdx));
       }
@@ -4312,14 +4306,14 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<String> listIndexNames(String dbName, String origTableName, short max)
       throws MetaException {
-    List<String> pns = new ArrayList<String>();
+    List<String> pns = new ArrayList<>();
     boolean success = false;
     Query query = null;
     try {
       openTransaction();
       LOG.debug("Executing listIndexNames");
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
-      origTableName = HiveStringUtils.normalizeIdentifier(origTableName);
+      dbName = normalizeIdentifier(dbName);
+      origTableName = normalizeIdentifier(origTableName);
       query =
           pm.newQuery("select indexName from org.apache.hadoop.hive.metastore.model.MIndex "
               + "where origTable.database.name == t1 && origTable.tableName == t2 "
@@ -4537,7 +4531,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private Set<String> listAllRolesInHierarchy(String userName,
       List<String> groupNames) {
-    List<MRoleMap> ret = new ArrayList<MRoleMap>();
+    List<MRoleMap> ret = new ArrayList<>();
     if(userName != null) {
       ret.addAll(listMRoles(userName, PrincipalType.USER));
     }
@@ -4547,7 +4541,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     // get names of these roles and its ancestors
-    Set<String> roleNames = new HashSet<String>();
+    Set<String> roleNames = new HashSet<>();
     getAllRoleAncestors(roleNames, ret);
     return roleNames;
   }
@@ -4576,7 +4570,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrincipalType principalType) {
     boolean success = false;
     Query query = null;
-    List<MRoleMap> mRoleMember = new ArrayList<MRoleMap>();
+    List<MRoleMap> mRoleMember = new ArrayList<>();
 
     try {
       LOG.debug("Executing listRoles");
@@ -4599,7 +4593,10 @@ public class ObjectStore implements RawStore, Configurable {
 
     if (principalType == PrincipalType.USER) {
       // All users belong to public role implicitly, add that role
-      MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      // TODO MS-SPLIT Change this back to HiveMetaStore.PUBLIC once HiveMetaStore has moved to
+      // stand-alone metastore.
+      //MRole publicRole = new MRole(HiveMetaStore.PUBLIC, 0, HiveMetaStore.PUBLIC);
+      MRole publicRole = new MRole("public", 0, "public");
       mRoleMember.add(new MRoleMap(principalName, principalType.toString(), publicRole, 0, null,
           null, false));
     }
@@ -4609,7 +4606,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Role> listRoles(String principalName, PrincipalType principalType) {
-    List<Role> result = new ArrayList<Role>();
+    List<Role> result = new ArrayList<>();
     List<MRoleMap> roleMaps = listMRoles(principalName, principalType);
     if (roleMaps != null) {
       for (MRoleMap roleMap : roleMaps) {
@@ -4624,7 +4621,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<RolePrincipalGrant> listRolesWithGrants(String principalName,
                                                       PrincipalType principalType) {
-    List<RolePrincipalGrant> result = new ArrayList<RolePrincipalGrant>();
+    List<RolePrincipalGrant> result = new ArrayList<>();
     List<MRoleMap> roleMaps = listMRoles(principalName, principalType);
     if (roleMaps != null) {
       for (MRoleMap roleMap : roleMaps) {
@@ -4708,7 +4705,7 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery("select roleName from org.apache.hadoop.hive.metastore.model.MRole");
       query.setResult("roleName");
       Collection names = (Collection) query.execute();
-      List<String> roleNames = new ArrayList<String>();
+      List<String> roleNames = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         roleNames.add((String) i.next());
       }
@@ -4729,8 +4726,8 @@ public class ObjectStore implements RawStore, Configurable {
       if (userName != null) {
         List<MGlobalPrivilege> user = this.listPrincipalMGlobalGrants(userName, PrincipalType.USER);
         if(user.size()>0) {
-          Map<String, List<PrivilegeGrantInfo>> userPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
-          List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(user.size());
+          Map<String, List<PrivilegeGrantInfo>> userPriv = new HashMap<>();
+          List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(user.size());
           for (int i = 0; i < user.size(); i++) {
             MGlobalPrivilege item = user.get(i);
             grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
@@ -4742,12 +4739,12 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       if (groupNames != null && groupNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> groupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> groupPriv = new HashMap<>();
         for(String groupName: groupNames) {
           List<MGlobalPrivilege> group =
               this.listPrincipalMGlobalGrants(groupName, PrincipalType.GROUP);
           if(group.size()>0) {
-            List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(group.size());
+            List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(group.size());
             for (int i = 0; i < group.size(); i++) {
               MGlobalPrivilege item = group.get(i);
               grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
@@ -4771,13 +4768,13 @@ public class ObjectStore implements RawStore, Configurable {
   public List<PrivilegeGrantInfo> getDBPrivilege(String dbName,
       String principalName, PrincipalType principalType)
       throws InvalidObjectException, MetaException {
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    dbName = normalizeIdentifier(dbName);
 
     if (principalName != null) {
       List<MDBPrivilege> userNameDbPriv = this.listPrincipalMDBGrants(
           principalName, principalType, dbName);
       if (userNameDbPriv != null && userNameDbPriv.size() > 0) {
-        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(
             userNameDbPriv.size());
         for (int i = 0; i < userNameDbPriv.size(); i++) {
           MDBPrivilege item = userNameDbPriv.get(i);
@@ -4788,7 +4785,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<PrivilegeGrantInfo>(0);
+    return new ArrayList<>(0);
   }
 
 
@@ -4797,19 +4794,19 @@ public class ObjectStore implements RawStore, Configurable {
       String userName, List<String> groupNames) throws InvalidObjectException,
       MetaException {
     boolean commited = false;
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    dbName = normalizeIdentifier(dbName);
 
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
     try {
       openTransaction();
       if (userName != null) {
-        Map<String, List<PrivilegeGrantInfo>> dbUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> dbUserPriv = new HashMap<>();
         dbUserPriv.put(userName, getDBPrivilege(dbName, userName,
             PrincipalType.USER));
         ret.setUserPrivileges(dbUserPriv);
       }
       if (groupNames != null && groupNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> dbGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> dbGroupPriv = new HashMap<>();
         for (String groupName : groupNames) {
           dbGroupPriv.put(groupName, getDBPrivilege(dbName, groupName,
               PrincipalType.GROUP));
@@ -4818,7 +4815,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Set<String> roleNames = listAllRolesInHierarchy(userName, groupNames);
       if (roleNames != null && roleNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> dbRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> dbRolePriv = new HashMap<>();
         for (String roleName : roleNames) {
           dbRolePriv
               .put(roleName, getDBPrivilege(dbName, roleName, PrincipalType.ROLE));
@@ -4840,19 +4837,19 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> groupNames) throws InvalidObjectException, MetaException {
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     try {
       openTransaction();
       if (userName != null) {
-        Map<String, List<PrivilegeGrantInfo>> partUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> partUserPriv = new HashMap<>();
         partUserPriv.put(userName, getPartitionPrivilege(dbName,
             tableName, partition, userName, PrincipalType.USER));
         ret.setUserPrivileges(partUserPriv);
       }
       if (groupNames != null && groupNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> partGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> partGroupPriv = new HashMap<>();
         for (String groupName : groupNames) {
           partGroupPriv.put(groupName, getPartitionPrivilege(dbName, tableName,
               partition, groupName, PrincipalType.GROUP));
@@ -4861,7 +4858,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Set<String> roleNames = listAllRolesInHierarchy(userName, groupNames);
       if (roleNames != null && roleNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> partRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> partRolePriv = new HashMap<>();
         for (String roleName : roleNames) {
           partRolePriv.put(roleName, getPartitionPrivilege(dbName, tableName,
               partition, roleName, PrincipalType.ROLE));
@@ -4883,19 +4880,19 @@ public class ObjectStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     try {
       openTransaction();
       if (userName != null) {
-        Map<String, List<PrivilegeGrantInfo>> tableUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> tableUserPriv = new HashMap<>();
         tableUserPriv.put(userName, getTablePrivilege(dbName,
             tableName, userName, PrincipalType.USER));
         ret.setUserPrivileges(tableUserPriv);
       }
       if (groupNames != null && groupNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> tableGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> tableGroupPriv = new HashMap<>();
         for (String groupName : groupNames) {
           tableGroupPriv.put(groupName, getTablePrivilege(dbName, tableName,
               groupName, PrincipalType.GROUP));
@@ -4904,7 +4901,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Set<String> roleNames = listAllRolesInHierarchy(userName, groupNames);
       if (roleNames != null && roleNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> tableRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> tableRolePriv = new HashMap<>();
         for (String roleName : roleNames) {
           tableRolePriv.put(roleName, getTablePrivilege(dbName, tableName,
               roleName, PrincipalType.ROLE));
@@ -4925,22 +4922,22 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName, String partitionName, String columnName,
       String userName, List<String> groupNames) throws InvalidObjectException,
       MetaException {
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    columnName = HiveStringUtils.normalizeIdentifier(columnName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    columnName = normalizeIdentifier(columnName);
 
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
     try {
       openTransaction();
       if (userName != null) {
-        Map<String, List<PrivilegeGrantInfo>> columnUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> columnUserPriv = new HashMap<>();
         columnUserPriv.put(userName, getColumnPrivilege(dbName, tableName,
             columnName, partitionName, userName, PrincipalType.USER));
         ret.setUserPrivileges(columnUserPriv);
       }
       if (groupNames != null && groupNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> columnGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> columnGroupPriv = new HashMap<>();
         for (String groupName : groupNames) {
           columnGroupPriv.put(groupName, getColumnPrivilege(dbName, tableName,
               columnName, partitionName, groupName, PrincipalType.GROUP));
@@ -4949,7 +4946,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Set<String> roleNames = listAllRolesInHierarchy(userName, groupNames);
       if (roleNames != null && roleNames.size() > 0) {
-        Map<String, List<PrivilegeGrantInfo>> columnRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        Map<String, List<PrivilegeGrantInfo>> columnRolePriv = new HashMap<>();
         for (String roleName : roleNames) {
           columnRolePriv.put(roleName, getColumnPrivilege(dbName, tableName,
               columnName, partitionName, roleName, PrincipalType.ROLE));
@@ -4969,15 +4966,15 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName, String partName, String principalName,
       PrincipalType principalType) {
 
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     if (principalName != null) {
       List<MPartitionPrivilege> userNameTabPartPriv = this
           .listPrincipalMPartitionGrants(principalName, principalType,
               dbName, tableName, partName);
       if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
-        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(
             userNameTabPartPriv.size());
         for (int i = 0; i < userNameTabPartPriv.size(); i++) {
           MPartitionPrivilege item = userNameTabPartPriv.get(i);
@@ -4989,7 +4986,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<PrivilegeGrantInfo>(0);
+    return new ArrayList<>(0);
   }
 
   private PrincipalType getPrincipalTypeFromStr(String str) {
@@ -4998,15 +4995,15 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<PrivilegeGrantInfo> getTablePrivilege(String dbName,
       String tableName, String principalName, PrincipalType principalType) {
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     if (principalName != null) {
       List<MTablePrivilege> userNameTabPartPriv = this
           .listAllMTableGrants(principalName, principalType,
               dbName, tableName);
       if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
-        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(
             userNameTabPartPriv.size());
         for (int i = 0; i < userNameTabPartPriv.size(); i++) {
           MTablePrivilege item = userNameTabPartPriv.get(i);
@@ -5017,23 +5014,23 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<PrivilegeGrantInfo>(0);
+    return new ArrayList<>(0);
   }
 
   private List<PrivilegeGrantInfo> getColumnPrivilege(String dbName,
       String tableName, String columnName, String partitionName,
       String principalName, PrincipalType principalType) {
 
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    columnName = HiveStringUtils.normalizeIdentifier(columnName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    columnName = normalizeIdentifier(columnName);
 
     if (partitionName == null) {
       List<MTableColumnPrivilege> userNameColumnPriv = this
           .listPrincipalMTableColumnGrants(principalName, principalType,
               dbName, tableName, columnName);
       if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
-        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(
             userNameColumnPriv.size());
         for (int i = 0; i < userNameColumnPriv.size(); i++) {
           MTableColumnPrivilege item = userNameColumnPriv.get(i);
@@ -5048,7 +5045,7 @@ public class ObjectStore implements RawStore, Configurable {
           .listPrincipalMPartitionColumnGrants(principalName,
               principalType, dbName, tableName, partitionName, columnName);
       if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
-        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<>(
             userNameColumnPriv.size());
         for (int i = 0; i < userNameColumnPriv.size(); i++) {
           MPartitionColumnPrivilege item = userNameColumnPriv.get(i);
@@ -5059,7 +5056,7 @@ public class ObjectStore implements RawStore, Configurable {
         return grantInfos;
       }
     }
-    return new ArrayList<PrivilegeGrantInfo>(0);
+    return new ArrayList<>(0);
   }
 
   @Override
@@ -5069,13 +5066,13 @@ public class ObjectStore implements RawStore, Configurable {
     int now = (int) (System.currentTimeMillis() / 1000);
     try {
       openTransaction();
-      List<Object> persistentObjs = new ArrayList<Object>();
+      List<Object> persistentObjs = new ArrayList<>();
 
       List<HiveObjectPrivilege> privilegeList = privileges.getPrivileges();
 
       if (privilegeList != null && privilegeList.size() > 0) {
         Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
-        Set<String> privSet = new HashSet<String>();
+        Set<String> privSet = new HashSet<>();
         while (privIter.hasNext()) {
           HiveObjectPrivilege privDef = privIter.next();
           HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -5283,7 +5280,7 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     try {
       openTransaction();
-      List<Object> persistentObjs = new ArrayList<Object>();
+      List<Object> persistentObjs = new ArrayList<>();
 
       List<HiveObjectPrivilege> privilegeList = privileges.getPrivileges();
 
@@ -5525,7 +5522,7 @@ public class ObjectStore implements RawStore, Configurable {
   public List<MRoleMap> listMRoleMembers(String roleName) {
     boolean success = false;
     Query query = null;
-    List<MRoleMap> mRoleMemeberList = new ArrayList<MRoleMap>();
+    List<MRoleMap> mRoleMemeberList = new ArrayList<>();
     try {
       LOG.debug("Executing listRoleMembers");
 
@@ -5549,7 +5546,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<RolePrincipalGrant> listRoleMembers(String roleName) {
     List<MRoleMap> roleMaps = listMRoleMembers(roleName);
-    List<RolePrincipalGrant> rolePrinGrantList = new ArrayList<RolePrincipalGrant>();
+    List<RolePrincipalGrant> rolePrinGrantList = new ArrayList<>();
 
     if (roleMaps != null) {
       for (MRoleMap roleMap : roleMaps) {
@@ -5576,7 +5573,7 @@ public class ObjectStore implements RawStore, Configurable {
                                                            PrincipalType principalType) {
     boolean commited = false;
     Query query = null;
-    List<MGlobalPrivilege> userNameDbPriv = new ArrayList<MGlobalPrivilege>();
+    List<MGlobalPrivilege> userNameDbPriv = new ArrayList<>();
     try {
       List<MGlobalPrivilege> mPrivs = null;
       openTransaction();
@@ -5603,9 +5600,9 @@ public class ObjectStore implements RawStore, Configurable {
     List<MGlobalPrivilege> mUsers =
         listPrincipalMGlobalGrants(principalName, principalType);
     if (mUsers.isEmpty()) {
-      return Collections.<HiveObjectPrivilege> emptyList();
+      return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mUsers.size(); i++) {
       MGlobalPrivilege sUsr = mUsers.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -5637,7 +5634,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertGlobal(List<MGlobalPrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MGlobalPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -5656,8 +5653,8 @@ public class ObjectStore implements RawStore, Configurable {
       PrincipalType principalType, String dbName) {
     boolean success = false;
     Query query = null;
-    List<MDBPrivilege> mSecurityDBList = new ArrayList<MDBPrivilege>();
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    List<MDBPrivilege> mSecurityDBList = new ArrayList<>();
+    dbName = normalizeIdentifier(dbName);
     try {
       LOG.debug("Executing listPrincipalDBGrants");
 
@@ -5686,9 +5683,9 @@ public class ObjectStore implements RawStore, Configurable {
                                                          String dbName) {
     List<MDBPrivilege> mDbs = listPrincipalMDBGrants(principalName, principalType, dbName);
     if (mDbs.isEmpty()) {
-      return Collections.<HiveObjectPrivilege>emptyList();
+      return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mDbs.size(); i++) {
       MDBPrivilege sDB = mDbs.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -5725,7 +5722,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertDB(List<MDBPrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MDBPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -5777,11 +5774,11 @@ public class ObjectStore implements RawStore, Configurable {
   public List<MTablePrivilege> listAllTableGrants(String dbName, String tableName) {
     boolean success = false;
     Query query = null;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    List<MTablePrivilege> mSecurityTabList = new ArrayList<MTablePrivilege>();
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    List<MTablePrivilege> mSecurityTabList = new ArrayList<>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
     try {
       LOG.debug("Executing listAllTableGrants");
 
@@ -5805,11 +5802,11 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("unchecked")
   public List<MPartitionPrivilege> listTableAllPartitionGrants(String dbName, String tableName) {
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
     boolean success = false;
     Query query = null;
-    List<MPartitionPrivilege> mSecurityTabPartList = new ArrayList<MPartitionPrivilege>();
+    List<MPartitionPrivilege> mSecurityTabPartList = new ArrayList<>();
     try {
       LOG.debug("Executing listTableAllPartitionGrants");
 
@@ -5834,9 +5831,9 @@ public class ObjectStore implements RawStore, Configurable {
   public List<MTableColumnPrivilege> listTableAllColumnGrants(String dbName, String tableName) {
     boolean success = false;
     Query query = null;
-    List<MTableColumnPrivilege> mTblColPrivilegeList = new ArrayList<MTableColumnPrivilege>();
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    List<MTableColumnPrivilege> mTblColPrivilegeList = new ArrayList<>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
     try {
       LOG.debug("Executing listTableAllColumnGrants");
 
@@ -5863,9 +5860,9 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName) {
     boolean success = false;
     Query query = null;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    List<MPartitionColumnPrivilege> mSecurityColList = new ArrayList<MPartitionColumnPrivilege>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    List<MPartitionColumnPrivilege> mSecurityColList = new ArrayList<>();
     try {
       LOG.debug("Executing listTableAllPartitionColumnGrants");
 
@@ -5891,8 +5888,8 @@ public class ObjectStore implements RawStore, Configurable {
   public List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(String dbName,
       String tableName, List<String> partNames) {
     boolean success = false;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     List<MPartitionColumnPrivilege> mSecurityColList = null;
     try {
@@ -5923,7 +5920,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("unchecked")
   private List<MDBPrivilege> listDatabaseGrants(String dbName, QueryWrapper queryWrapper) {
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    dbName = normalizeIdentifier(dbName);
     boolean success = false;
     try {
       LOG.debug("Executing listDatabaseGrants");
@@ -5946,8 +5943,8 @@ public class ObjectStore implements RawStore, Configurable {
   @SuppressWarnings("unchecked")
   private List<MPartitionPrivilege> listPartitionGrants(String dbName, String tableName,
       List<String> partNames) {
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
 
     boolean success = false;
     List<MPartitionPrivilege> mSecurityTabPartList = null;
@@ -5990,8 +5987,8 @@ public class ObjectStore implements RawStore, Configurable {
     String queryStr = tbCol + " == t1 && " + dbCol + " == t2";
     String paramStr = "java.lang.String t1, java.lang.String t2";
     Object[] params = new Object[2 + partNames.size()];
-    params[0] = HiveStringUtils.normalizeIdentifier(tableName);
-    params[1] = HiveStringUtils.normalizeIdentifier(dbName);
+    params[0] = normalizeIdentifier(tableName);
+    params[1] = normalizeIdentifier(dbName);
     int index = 0;
     for (String partName : partNames) {
       params[index + 2] = partName;
@@ -6002,18 +5999,18 @@ public class ObjectStore implements RawStore, Configurable {
     queryStr += ")";
     Query query = pm.newQuery(clazz, queryStr);
     query.declareParameters(paramStr);
-    return new ObjectPair<Query, Object[]>(query, params);
+    return new ObjectPair<>(query, params);
   }
 
   @SuppressWarnings("unchecked")
   public List<MTablePrivilege> listAllMTableGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName) {
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
     boolean success = false;
     Query query = null;
-    List<MTablePrivilege> mSecurityTabPartList = new ArrayList<MTablePrivilege>();
+    List<MTablePrivilege> mSecurityTabPartList = new ArrayList<>();
     try {
       openTransaction();
       LOG.debug("Executing listAllTableGrants");
@@ -6045,9 +6042,9 @@ public class ObjectStore implements RawStore, Configurable {
     List<MTablePrivilege> mTbls =
         listAllMTableGrants(principalName, principalType, dbName, tableName);
     if (mTbls.isEmpty()) {
-      return Collections.<HiveObjectPrivilege> emptyList();
+      return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mTbls.size(); i++) {
       MTablePrivilege sTbl = mTbls.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -6068,9 +6065,9 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName, String partName) {
     boolean success = false;
     Query query = null;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    List<MPartitionPrivilege> mSecurityTabPartList = new ArrayList<MPartitionPrivilege>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    List<MPartitionPrivilege> mSecurityTabPartList = new ArrayList<>();
     try {
       LOG.debug("Executing listPrincipalPartitionGrants");
 
@@ -6107,9 +6104,9 @@ public class ObjectStore implements RawStore, Configurable {
     List<MPartitionPrivilege> mParts = listPrincipalMPartitionGrants(principalName,
         principalType, dbName, tableName, partName);
     if (mParts.isEmpty()) {
-      return Collections.<HiveObjectPrivilege> emptyList();
+      return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mParts.size(); i++) {
       MPartitionPrivilege sPart = mParts.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -6132,10 +6129,10 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName, String columnName) {
     boolean success = false;
     Query query = null;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    columnName = HiveStringUtils.normalizeIdentifier(columnName);
-    List<MTableColumnPrivilege> mSecurityColList = new ArrayList<MTableColumnPrivilege>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    columnName = normalizeIdentifier(columnName);
+    List<MTableColumnPrivilege> mSecurityColList = new ArrayList<>();
     try {
       LOG.debug("Executing listPrincipalTableColumnGrants");
 
@@ -6172,7 +6169,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mTableCols.isEmpty()) {
       return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mTableCols.size(); i++) {
       MTableColumnPrivilege sCol = mTableCols.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -6194,10 +6191,10 @@ public class ObjectStore implements RawStore, Configurable {
       String tableName, String partitionName, String columnName) {
     boolean success = false;
     Query query = null;
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    columnName = HiveStringUtils.normalizeIdentifier(columnName);
-    List<MPartitionColumnPrivilege> mSecurityColList = new ArrayList<MPartitionColumnPrivilege>();
+    tableName = normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    columnName = normalizeIdentifier(columnName);
+    List<MPartitionColumnPrivilege> mSecurityColList = new ArrayList<>();
     try {
       LOG.debug("Executing listPrincipalPartitionColumnGrants");
 
@@ -6237,7 +6234,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (mPartitionCols.isEmpty()) {
       return Collections.emptyList();
     }
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (int i = 0; i < mPartitionCols.size(); i++) {
       MPartitionColumnPrivilege sCol = mPartitionCols.get(i);
       HiveObjectRef objectRef = new HiveObjectRef(
@@ -6313,7 +6310,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertPartCols(List<MPartitionColumnPrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MPartitionColumnPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -6391,8 +6388,8 @@ public class ObjectStore implements RawStore, Configurable {
   public List<HiveObjectPrivilege> listTableGrantsAll(String dbName, String tableName) {
     boolean success = false;
     Query query = null;
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
     try {
       openTransaction();
       LOG.debug("Executing listTableGrantsAll");
@@ -6413,7 +6410,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertTable(List<MTablePrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MTablePrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -6511,7 +6508,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertPartition(List<MPartitionPrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MPartitionPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -6593,8 +6590,8 @@ public class ObjectStore implements RawStore, Configurable {
       String columnName) {
     boolean success = false;
     Query query = null;
-    dbName = HiveStringUtils.normalizeIdentifier(dbName);
-    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    dbName = normalizeIdentifier(dbName);
+    tableName = normalizeIdentifier(tableName);
     try {
       openTransaction();
       LOG.debug("Executing listPrincipalTableColumnGrantsAll");
@@ -6616,7 +6613,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<HiveObjectPrivilege> convertTableCols(List<MTableColumnPrivilege> privs) {
-    List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+    List<HiveObjectPrivilege> result = new ArrayList<>();
     for (MTableColumnPrivilege priv : privs) {
       String pname = priv.getPrincipalName();
       PrincipalType ptype = PrincipalType.valueOf(priv.getPrincipalType());
@@ -6721,7 +6718,7 @@ public class ObjectStore implements RawStore, Configurable {
       throw new InvalidPartitionException("Number of partition columns in table: "+ tbl.getPartitionKeysSize() +
           " doesn't match with number of supplied partition values: "+partName.size());
     }
-    final List<String> storedVals = new ArrayList<String>(tbl.getPartitionKeysSize());
+    final List<String> storedVals = new ArrayList<>(tbl.getPartitionKeysSize());
     for(FieldSchema partKey : tbl.getPartitionKeys()){
       String partVal = partName.get(partKey.getName());
       if(null == partVal) {
@@ -6796,7 +6793,7 @@ public class ObjectStore implements RawStore, Configurable {
   public Set<String> listFSRoots() {
     boolean committed = false;
     Query query = null;
-    Set<String> fsRoots = new HashSet<String>();
+    Set<String> fsRoots = new HashSet<>();
     try {
       openTransaction();
       query = pm.newQuery(MDatabase.class);
@@ -6888,8 +6885,8 @@ public class ObjectStore implements RawStore, Configurable {
   public UpdateMDatabaseURIRetVal updateMDatabaseURI(URI oldLoc, URI newLoc, boolean dryRun) {
     boolean committed = false;
     Query query = null;
-    Map<String, String> updateLocations = new HashMap<String, String>();
-    List<String> badRecords = new ArrayList<String>();
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
     UpdateMDatabaseURIRetVal retVal = null;
     try {
       openTransaction();
@@ -7027,8 +7024,8 @@ public class ObjectStore implements RawStore, Configurable {
       String tblPropKey, boolean isDryRun) {
     boolean committed = false;
     Query query = null;
-    Map<String, String> updateLocations = new HashMap<String, String>();
-    List<String> badRecords = new ArrayList<String>();
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
     UpdatePropURIRetVal retVal = null;
     try {
       openTransaction();
@@ -7097,8 +7094,8 @@ public class ObjectStore implements RawStore, Configurable {
       URI newLoc, boolean isDryRun) {
     boolean committed = false;
     Query query = null;
-    Map<String, String> updateLocations = new HashMap<String, String>();
-    List<String> badRecords = new ArrayList<String>();
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
     int numNullRecords = 0;
     UpdateMStorageDescriptorTblURIRetVal retVal = null;
     try {
@@ -7177,8 +7174,8 @@ public class ObjectStore implements RawStore, Configurable {
       boolean isDryRun) {
     boolean committed = false;
     Query query = null;
-    Map<String, String> updateLocations = new HashMap<String, String>();
-    List<String> badRecords = new ArrayList<String>();
+    Map<String, String> updateLocations = new HashMap<>();
+    List<String> badRecords = new ArrayList<>();
     UpdateSerdeURIRetVal retVal = null;
     try {
       openTransaction();
@@ -7493,10 +7490,9 @@ public class ObjectStore implements RawStore, Configurable {
   protected ColumnStatistics getTableColumnStatisticsInternal(
       String dbName, String tableName, final List<String> colNames, boolean allowSql,
       boolean allowJdo) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
-    return new GetStatHelper(HiveStringUtils.normalizeIdentifier(dbName),
-        HiveStringUtils.normalizeIdentifier(tableName), allowSql, allowJdo) {
+    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
+    return new GetStatHelper(normalizeIdentifier(dbName),
+        normalizeIdentifier(tableName), allowSql, allowJdo) {
       @Override
       protected ColumnStatistics getSqlResult(GetHelper<ColumnStatistics> ctx) throws MetaException {
         return directSql.getTableStats(dbName, tblName, colNames, enableBitVector);
@@ -7512,7 +7508,7 @@ public class ObjectStore implements RawStore, Configurable {
         // LastAnalyzed is stored per column, but thrift object has it per multiple columns.
         // Luckily, nobody actually uses it, so we will set to lowest value of all columns for now.
         ColumnStatisticsDesc desc = StatObjectConverter.getTableColumnStatisticsDesc(mStats.get(0));
-        List<ColumnStatisticsObj> statObjs = new ArrayList<ColumnStatisticsObj>(mStats.size());
+        List<ColumnStatisticsObj> statObjs = new ArrayList<>(mStats.size());
         for (MTableColumnStatistics mStat : mStats) {
           if (desc.getLastAnalyzed() > mStat.getLastAnalyzed()) {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
@@ -7538,8 +7534,7 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
       String dbName, String tableName, final List<String> partNames, final List<String> colNames,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     return new GetListHelper<ColumnStatistics>(dbName, tableName, allowSql, allowJdo) {
       @Override
       protected List<ColumnStatistics> getSqlResult(
@@ -7553,7 +7548,7 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           List<MPartitionColumnStatistics> mStats =
               getMPartitionColumnStatistics(getTable(), partNames, colNames, queryWrapper);
-          List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(
+          List<ColumnStatistics> result = new ArrayList<>(
               Math.min(mStats.size(), partNames.size()));
           String lastPartName = null;
           List<ColumnStatisticsObj> curList = null;
@@ -7561,7 +7556,7 @@ public class ObjectStore implements RawStore, Configurable {
           for (int i = 0; i <= mStats.size(); ++i) {
             boolean isLast = i == mStats.size();
             MPartitionColumnStatistics mStatsObj = isLast ? null : mStats.get(i);
-            String partName = isLast ? null : (String)mStatsObj.getPartitionName();
+            String partName = isLast ? null : mStatsObj.getPartitionName();
             if (isLast || !partName.equals(lastPartName)) {
               if (i != 0) {
                 result.add(new ColumnStatistics(csd, curList));
@@ -7570,7 +7565,7 @@ public class ObjectStore implements RawStore, Configurable {
                 continue;
               }
               csd = StatObjectConverter.getPartitionColumnStatisticsDesc(mStatsObj);
-              curList = new ArrayList<ColumnStatisticsObj>(colNames.size());
+              curList = new ArrayList<>(colNames.size());
             }
             curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector));
             lastPartName = partName;
@@ -7588,12 +7583,10 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String dbName, String tblName,
       final List<String> partNames, final List<String> colNames) throws MetaException, NoSuchObjectException {
-    final boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
-    final double ndvTuner = HiveConf.getFloatVar(getConf(),
-        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
-    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
+    final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
+        ConfVars.STATS_NDV_DENSITY_FUNCTION);
+    final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), ConfVars.STATS_NDV_TUNER);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     return new GetHelper<AggrStats>(dbName, tblName, true, false) {
       @Override
       protected AggrStats getSqlResult(GetHelper<AggrStats> ctx)
@@ -7619,8 +7612,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
-        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
+    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     return new GetHelper<Map<String, List<ColumnStatisticsObj>>>(dbName, tableName, true, false) {
       @Override
       protected Map<String, List<ColumnStatisticsObj>> getSqlResult(
@@ -7762,9 +7754,9 @@ public class ObjectStore implements RawStore, Configurable {
         query.setUnique(true);
         mStatsObj =
             (MPartitionColumnStatistics) query.executeWithArray(partName.trim(),
-                HiveStringUtils.normalizeIdentifier(dbName),
-                HiveStringUtils.normalizeIdentifier(tableName),
-                HiveStringUtils.normalizeIdentifier(colName));
+                normalizeIdentifier(dbName),
+                normalizeIdentifier(tableName),
+                normalizeIdentifier(colName));
         pm.retrieve(mStatsObj);
         if (mStatsObj != null) {
           pm.deletePersistent(mStatsObj);
@@ -7775,8 +7767,8 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         mStatsObjColl =
             (List<MPartitionColumnStatistics>) query.execute(partName.trim(),
-                HiveStringUtils.normalizeIdentifier(dbName),
-                HiveStringUtils.normalizeIdentifier(tableName));
+                normalizeIdentifier(dbName),
+                normalizeIdentifier(tableName));
         pm.retrieveAll(mStatsObjColl);
         if (mStatsObjColl != null) {
           pm.deletePersistentAll(mStatsObjColl);
@@ -7831,9 +7823,9 @@ public class ObjectStore implements RawStore, Configurable {
       if (colName != null) {
         query.setUnique(true);
         mStatsObj =
-            (MTableColumnStatistics) query.execute(HiveStringUtils.normalizeIdentifier(tableName),
-                HiveStringUtils.normalizeIdentifier(dbName),
-                HiveStringUtils.normalizeIdentifier(colName));
+            (MTableColumnStatistics) query.execute(normalizeIdentifier(tableName),
+                normalizeIdentifier(dbName),
+                normalizeIdentifier(colName));
         pm.retrieve(mStatsObj);
 
         if (mStatsObj != null) {
@@ -7845,8 +7837,8 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         mStatsObjColl =
             (List<MTableColumnStatistics>) query.execute(
-                HiveStringUtils.normalizeIdentifier(tableName),
-                HiveStringUtils.normalizeIdentifier(dbName));
+                normalizeIdentifier(tableName),
+                normalizeIdentifier(dbName));
         pm.retrieveAll(mStatsObjColl);
         if (mStatsObjColl != null) {
           pm.deletePersistentAll(mStatsObjColl);
@@ -7872,8 +7864,7 @@ public class ObjectStore implements RawStore, Configurable {
     long delCnt;
     LOG.debug("Begin executing cleanupEvents");
     Long expiryTime =
-        HiveConf.getTimeVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
-            TimeUnit.MILLISECONDS);
+        MetastoreConf.getTimeVar(getConf(), ConfVars.EVENT_EXPIRY_DURATION, TimeUnit.MILLISECONDS);
     Long curTime = System.currentTimeMillis();
     try {
       openTransaction();
@@ -7971,7 +7962,7 @@ public class ObjectStore implements RawStore, Configurable {
     LOG.debug("Begin executing getAllTokenIdentifiers");
     boolean committed = false;
     Query query = null;
-    List<String> tokenIdents = new ArrayList<String>();
+    List<String> tokenIdents = new ArrayList<>();
 
     try {
       openTransaction();
@@ -8107,8 +8098,7 @@ public class ObjectStore implements RawStore, Configurable {
       return;
     }
 
-    boolean strictValidation =
-      HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION);
+    boolean strictValidation = MetastoreConf.getBoolVar(getConf(), ConfVars.SCHEMA_VERIFICATION);
     // read the schema version stored in metastore db
     String dbSchemaVer = getMetaStoreSchemaVersion();
     // version of schema for this version of hive
@@ -8120,7 +8110,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("Version information not found in metastore. ");
       } else {
         LOG.warn("Version information not found in metastore. "
-            + HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
+            + ConfVars.SCHEMA_VERIFICATION.toString() +
             " is not enabled so recording the schema version " +
             hiveSchemaVer);
         setMetaStoreSchemaVersion(hiveSchemaVer,
@@ -8138,8 +8128,7 @@ public class ObjectStore implements RawStore, Configurable {
         } else {
           LOG.error("Version information found in metastore differs " + dbSchemaVer +
               " from expected schema version " + hiveSchemaVer +
-              ". Schema verififcation is disabled " +
-              HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION);
+              ". Schema verififcation is disabled " + ConfVars.SCHEMA_VERIFICATION);
           setMetaStoreSchemaVersion(hiveSchemaVer,
             "Set by MetaStore " + USER + "@" + HOSTNAME);
         }
@@ -8166,7 +8155,7 @@ public class ObjectStore implements RawStore, Configurable {
   private MVersionTable getMSchemaVersion() throws NoSuchObjectException, MetaException {
     boolean committed = false;
     Query query = null;
-    List<MVersionTable> mVerTables = new ArrayList<MVersionTable>();
+    List<MVersionTable> mVerTables = new ArrayList<>();
     try {
       openTransaction();
       query = pm.newQuery(MVersionTable.class);
@@ -8205,7 +8194,7 @@ public class ObjectStore implements RawStore, Configurable {
     MVersionTable mSchemaVer;
     boolean commited = false;
     boolean recordVersion =
-      HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION);
+      MetastoreConf.getBoolVar(getConf(), ConfVars.SCHEMA_VERIFICATION_RECORD_VERSION);
     if (!recordVersion) {
       LOG.warn("setMetaStoreSchemaVersion called but recording version is disabled: " +
         "version = " + schemaVersion + ", comment = " + comment);
@@ -8317,7 +8306,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<ResourceUri> convertToResourceUriList(List<MResourceUri> mresourceUriList) {
     List<ResourceUri> resourceUriList = null;
     if (mresourceUriList != null) {
-      resourceUriList = new ArrayList<ResourceUri>(mresourceUriList.size());
+      resourceUriList = new ArrayList<>(mresourceUriList.size());
       for (MResourceUri mres : mresourceUriList) {
         resourceUriList.add(
             new ResourceUri(ResourceType.findByValue(mres.getResourceType()), mres.getUri()));
@@ -8329,7 +8318,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MResourceUri> convertToMResourceUriList(List<ResourceUri> resourceUriList) {
     List<MResourceUri> mresourceUriList = null;
     if (resourceUriList != null) {
-      mresourceUriList = new ArrayList<MResourceUri>(resourceUriList.size());
+      mresourceUriList = new ArrayList<>(resourceUriList.size());
       for (ResourceUri res : resourceUriList) {
         mresourceUriList.add(new MResourceUri(res.getResourceType().getValue(), res.getUri()));
       }
@@ -8358,8 +8347,8 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     try {
       openTransaction();
-      funcName = HiveStringUtils.normalizeIdentifier(funcName);
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      funcName = normalizeIdentifier(funcName);
+      dbName = normalizeIdentifier(dbName);
       MFunction newf = convertToMFunction(newFunction);
       if (newf == null) {
         throw new InvalidObjectException("new function is invalid");
@@ -8371,7 +8360,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       // For now only alter name, owner, class name, type
-      oldf.setFunctionName(HiveStringUtils.normalizeIdentifier(newf.getFunctionName()));
+      oldf.setFunctionName(normalizeIdentifier(newf.getFunctionName()));
       oldf.setDatabase(newf.getDatabase());
       oldf.setOwnerName(newf.getOwnerName());
       oldf.setOwnerType(newf.getOwnerType());
@@ -8413,8 +8402,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      db = HiveStringUtils.normalizeIdentifier(db);
-      function = HiveStringUtils.normalizeIdentifier(function);
+      db = normalizeIdentifier(db);
+      function = normalizeIdentifier(function);
       query = pm.newQuery(MFunction.class, "functionName == function && database.name == db");
       query.declareParameters("java.lang.String function, java.lang.String db");
       query.setUnique(true);
@@ -8467,7 +8456,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<String> funcs = null;
     try {
       openTransaction();
-      dbName = HiveStringUtils.normalizeIdentifier(dbName);
+      dbName = normalizeIdentifier(dbName);
       // Take the pattern and split it on the | to get all the composing
       // patterns
       List<String> parameterVals = new ArrayList<>();
@@ -8480,7 +8469,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setResult("functionName");
       query.setOrdering("functionName ascending");
       Collection names = (Collection) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
-      funcs = new ArrayList<String>();
+      funcs = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         funcs.add((String) i.next());
       }
@@ -8856,8 +8845,8 @@ public class ObjectStore implements RawStore, Configurable {
     final String tbl_name_input,
     boolean allowSql, boolean allowJdo)
   throws MetaException, NoSuchObjectException {
-    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
-    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
+    final String db_name = normalizeIdentifier(db_name_input);
+    final String tbl_name = normalizeIdentifier(tbl_name_input);
     return new GetListHelper<SQLPrimaryKey>(db_name, tbl_name, allowSql, allowJdo) {
 
       @Override
@@ -8885,7 +8874,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
       Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
       pm.retrieveAll(constraints);
-      primaryKeys = new ArrayList<SQLPrimaryKey>();
+      primaryKeys = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPK = (MConstraint) i.next();
         int enableValidateRely = currPK.getEnableValidateRely();
@@ -8981,7 +8970,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<SQLForeignKey> foreignKeys = null;
     Collection<?> constraints = null;
     Query query = null;
-    Map<String, String> tblToConstraint = new HashMap<String, String>();
+    Map<String, String> tblToConstraint = new HashMap<>();
     try {
       openTransaction();
       String queryText = (parent_tbl_name != null ? "parentTable.tableName == parent_tbl_name && " : "")
@@ -9000,7 +8989,7 @@ public class ObjectStore implements RawStore, Configurable {
         paramText = paramText.substring(0, paramText.length()-1);
       }
       query.declareParameters(paramText);
-      List<String> params = new ArrayList<String>();
+      List<String> params = new ArrayList<>();
       if (parent_tbl_name != null) {
         params.add(parent_tbl_name);
       }
@@ -9026,7 +9015,7 @@ public class ObjectStore implements RawStore, Configurable {
           params.get(2), params.get(3));
       }
       pm.retrieveAll(constraints);
-      foreignKeys = new ArrayList<SQLForeignKey>();
+      foreignKeys = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPKFK = (MConstraint) i.next();
         int enableValidateRely = currPKFK.getEnableValidateRely();
@@ -9076,8 +9065,8 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<SQLUniqueConstraint> getUniqueConstraintsInternal(final String db_name_input,
       final String tbl_name_input, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
-    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
-    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
+    final String db_name = normalizeIdentifier(db_name_input);
+    final String tbl_name = normalizeIdentifier(tbl_name_input);
     return new GetListHelper<SQLUniqueConstraint>(db_name, tbl_name, allowSql, allowJdo) {
 
       @Override
@@ -9107,7 +9096,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
       Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
       pm.retrieveAll(constraints);
-      uniqueConstraints = new ArrayList<SQLUniqueConstraint>();
+      uniqueConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPK = (MConstraint) i.next();
         int enableValidateRely = currPK.getEnableValidateRely();
@@ -9145,8 +9134,8 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<SQLNotNullConstraint> getNotNullConstraintsInternal(final String db_name_input,
       final String tbl_name_input, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
-    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
-    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
+    final String db_name = normalizeIdentifier(db_name_input);
+    final String tbl_name = normalizeIdentifier(tbl_name_input);
     return new GetListHelper<SQLNotNullConstraint>(db_name, tbl_name, allowSql, allowJdo) {
 
       @Override
@@ -9176,7 +9165,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.declareParameters("java.lang.String tbl_name, java.lang.String db_name");
       Collection<?> constraints = (Collection<?>) query.execute(tbl_name, db_name);
       pm.retrieveAll(constraints);
-      notNullConstraints = new ArrayList<SQLNotNullConstraint>();
+      notNullConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currPK = (MConstraint) i.next();
         int enableValidateRely = currPK.getEnableValidateRely();

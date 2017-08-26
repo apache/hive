@@ -1,27 +1,27 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.metastore;
 
 
 import com.codahale.metrics.Counter;
 import com.google.common.collect.ImmutableList;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -119,8 +119,9 @@ public class TestObjectStore {
 
   @Before
   public void setUp() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS, MockPartitionExpressionProxy.class.getName());
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
+        MockPartitionExpressionProxy.class.getName());
 
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
@@ -134,6 +135,8 @@ public class TestObjectStore {
   /**
    * Test notification operations
    */
+  // TODO MS-SPLIT uncomment once we move EventMessage over
+  /*
   @Test
   public void testNotificationOps() throws InterruptedException {
     final int NO_EVENT_ID = 0;
@@ -180,6 +183,7 @@ public class TestObjectStore {
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
     Assert.assertEquals(0, eventResponse.getEventsSize());
   }
+  */
 
   /**
    * Test database operations
@@ -368,8 +372,8 @@ public class TestObjectStore {
 
   @Test
   public void testDirectSqlErrorMetrics() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     Metrics.initialize(conf);
     conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
         "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +

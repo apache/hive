@@ -591,6 +591,8 @@ public class MetastoreConf {
         "Metastore SSL certificate truststore password."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
+    STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
+        "Whether we fetch bitvector when we compute ndv. Users can turn it off if they want to use old schema"),
     STATS_NDV_TUNER("metastore.stats.ndv.tuner", "hive.metastore.stats.ndv.tuner", 0.0,
         "Provides a tunable parameter between the lower bound and the higher bound of ndv for aggregate ndv across all the partitions. \n" +
             "The lower bound is equal to the maximum of ndv of all the partitions. The higher bound is equal to the sum of ndv of all the partitions.\n" +

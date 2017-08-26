@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +67,10 @@ public class StatsSetupConst {
     custom {
       @Override
       public String getPublisher(Configuration conf) {
-        return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER); }
+        return MetastoreConf.getVar(conf, ConfVars.STATS_DEFAULT_PUBLISHER); }
       @Override
       public String getAggregator(Configuration conf) {
-        return HiveConf.getVar(conf,  HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR); }
+        return MetastoreConf.getVar(conf,  ConfVars.STATS_DEFAULT_AGGREGATOR); }
     };
     public abstract String getPublisher(Configuration conf);
     public abstract String getAggregator(Configuration conf);
@@ -170,7 +171,7 @@ public class StatsSetupConst {
 
       @Override
       public void serialize(Boolean value, JsonGenerator jsonGenerator,
-          SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+          SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeString(value.toString());
       }
     }
@@ -179,7 +180,7 @@ public class StatsSetupConst {
 
       public Boolean deserialize(JsonParser jsonParser,
           DeserializationContext deserializationContext)
-              throws IOException, JsonProcessingException {
+              throws IOException {
         return Boolean.valueOf(jsonParser.getValueAsString());
       }
     }
@@ -196,7 +197,7 @@ public class StatsSetupConst {
     @JsonDeserialize(contentUsing = BooleanDeserializer.class)
     TreeMap<String, Boolean> columnStats = new TreeMap<>();
 
-  };
+  }
 
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
     if (params == null) {

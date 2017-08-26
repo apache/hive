@@ -21,29 +21,46 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.lang.*;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 
 public class MetaStoreUtils {
   /** A fixed date format to be used for hive partition column values. */
@@ -56,6 +73,7 @@ public class MetaStoreUtils {
       return val;
     }
   };
+  private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
   /**
@@ -215,5 +233,130 @@ public class MetaStoreUtils {
 
   public static double decimalToDouble(Decimal decimal) {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
+  }
+
+  public static String[] getQualifiedName(String defaultDbName, String tableName) {
+    String[] names = tableName.split("\\.");
+    if (names.length == 1) {
+      return new String[] { defaultDbName, tableName};
+    }
+    return names;
+  }
+
+  public static void validatePartitionNameCharacters(List<String> partVals,
+                                                     Pattern partitionValidationPattern) throws MetaException {
+
+    String invalidPartitionVal = getPartitionValWithInvalidCharacter(partVals, partitionValidationPattern);
+    if (invalidPartitionVal != null) {
+      throw new MetaException("Partition value '" + invalidPartitionVal +
+          "' contains a character " + "not matched by whitelist pattern '" +
+          partitionValidationPattern.toString() + "'.  " + "(configure with " +
+          MetastoreConf.ConfVars.PARTITION_NAME_WHITELIST_PATTERN.varname + ")");
+    }
+  }
+
+  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
+                                                           Pattern partitionValidationPattern) {
+    if (partitionValidationPattern == null) {
+      return null;
+    }
+
+    for (String partVal : partVals) {
+      if (!partitionValidationPattern.matcher(partVal).matches()) {
+        return partVal;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Produce a hash for the storage descriptor
+   * @param sd storage descriptor to hash
+   * @param md message descriptor to use to generate the hash
+   * @return the hash as a byte array
+   */
+  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+    // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
+    // results for hashes based on the OS or JVM being used.
+    md.reset();
+    for (FieldSchema fs : sd.getCols()) {
+      md.update(fs.getName().getBytes(ENCODING));
+      md.update(fs.getType().getBytes(ENCODING));
+      if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+    }
+    if (sd.getInputFormat() != null) {
+      md.update(sd.getInputFormat().getBytes(ENCODING));
+    }
+    if (sd.getOutputFormat() != null) {
+      md.update(sd.getOutputFormat().getBytes(ENCODING));
+    }
+    md.update(sd.isCompressed() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
+    md.update(Integer.toString(sd.getNumBuckets()).getBytes(ENCODING));
+    if (sd.getSerdeInfo() != null) {
+      SerDeInfo serde = sd.getSerdeInfo();
+      if (serde.getName() != null) {
+        md.update(serde.getName().getBytes(ENCODING));
+      }
+      if (serde.getSerializationLib() != null) {
+        md.update(serde.getSerializationLib().getBytes(ENCODING));
+      }
+      if (serde.getParameters() != null) {
+        SortedMap<String, String> params = new TreeMap<>(serde.getParameters());
+        for (Map.Entry<String, String> param : params.entrySet()) {
+          md.update(param.getKey().getBytes(ENCODING));
+          md.update(param.getValue().getBytes(ENCODING));
+        }
+      }
+    }
+    if (sd.getBucketCols() != null) {
+      List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
+      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
+    }
+    if (sd.getSortCols() != null) {
+      SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
+      for (Order order : orders) {
+        md.update(order.getCol().getBytes(ENCODING));
+        md.update(Integer.toString(order.getOrder()).getBytes(ENCODING));
+      }
+    }
+    if (sd.getSkewedInfo() != null) {
+      SkewedInfo skewed = sd.getSkewedInfo();
+      if (skewed.getSkewedColNames() != null) {
+        SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
+        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValues() != null) {
+        SortedSet<String> sortedOuterList = new TreeSet<>();
+        for (List<String> innerList : skewed.getSkewedColValues()) {
+          SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
+          sortedOuterList.add(org.apache.commons.lang.StringUtils.join(sortedInnerList, "."));
+        }
+        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+      }
+      if (skewed.getSkewedColValueLocationMaps() != null) {
+        SortedMap<String, String> sortedMap = new TreeMap<>();
+        for (Map.Entry<List<String>, String> smap : skewed.getSkewedColValueLocationMaps().entrySet()) {
+          SortedSet<String> sortedKey = new TreeSet<>(smap.getKey());
+          sortedMap.put(org.apache.commons.lang.StringUtils.join(sortedKey, "."), smap.getValue());
+        }
+        for (Map.Entry<String, String> e : sortedMap.entrySet()) {
+          md.update(e.getKey().getBytes(ENCODING));
+          md.update(e.getValue().getBytes(ENCODING));
+        }
+      }
+      md.update(sd.isStoredAsSubDirectories() ? "true".getBytes(ENCODING) : "false".getBytes(ENCODING));
+    }
+
+    return md.digest();
+  }
+
+  public static List<String> getColumnNamesForTable(Table table) {
+    List<String> colNames = new ArrayList<>();
+    Iterator<FieldSchema> colsIterator = table.getSd().getColsIterator();
+    while (colsIterator.hasNext()) {
+      colNames.add(colsIterator.next().getName());
+    }
+    return colNames;
   }
 }

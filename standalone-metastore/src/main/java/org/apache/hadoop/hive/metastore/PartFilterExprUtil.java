@@ -49,7 +49,8 @@ public class PartFilterExprUtil {
     try {
       filter = expressionProxy.convertExprToFilter(expr);
     } catch (MetaException ex) {
-      // TODO - for now we have construct this by reflection because IMetaStoreClient can't be
+      // TODO MS-SPLIT - for now we have construct this by reflection because IMetaStoreClient
+      // can't be
       // moved until after HiveMetaStore is moved, which can't be moved until this is moved.
       Class<? extends MetaException> exClass = JavaUtils.getClass(
           "org.apache.hadoop.hive.metastore.IMetaStoreClient.IncompatibleMetastoreException",
