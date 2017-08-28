@@ -410,7 +410,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return threadLocalIpAddress.get();
     }
 
+    /**
+     * Use {@link #getThreadId()} instead.
+     * @return thread id
+     */
+    @Deprecated
     public static Integer get() {
+      return threadLocalId.get();
+    }
+
+    @Override
+    public int getThreadId() {
       return threadLocalId.get();
     }
 

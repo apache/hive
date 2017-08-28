@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,26 +24,25 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOException;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 public class TestRetriesInRetryingHMSHandler {
 
-  private static HiveConf hiveConf;
+  private static Configuration conf;
   private static final int RETRY_ATTEMPTS = 3;
 
   @BeforeClass
   public static void setup() throws IOException {
-    hiveConf = new HiveConf();
-    int port = MetaStoreTestUtils.findFreePort();
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-    hiveConf.setIntVar(HiveConf.ConfVars.HMSHANDLERATTEMPTS, RETRY_ATTEMPTS);
-    hiveConf.setTimeVar(HiveConf.ConfVars.HMSHANDLERINTERVAL, 10, TimeUnit.MILLISECONDS);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF, false);
+    conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setLongVar(conf, ConfVars.HMSHANDLERATTEMPTS, RETRY_ATTEMPTS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HMSHANDLERINTERVAL, 10, TimeUnit.MILLISECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.HMSHANDLERFORCERELOADCONF, false);
   }
 
   /*
@@ -52,13 +51,13 @@ public class TestRetriesInRetryingHMSHandler {
    */
   @Test
   public void testRetryInit() throws MetaException {
-    IHMSHandler mockBaseHandler = Mockito.mock(HiveMetaStore.HMSHandler.class);
-    Mockito.when(mockBaseHandler.getConf()).thenReturn(hiveConf);
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     Mockito
     .doThrow(JDOException.class)
     .doNothing()
     .when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(hiveConf, mockBaseHandler, false);
+    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(2)).init();
   }
 
@@ -67,10 +66,10 @@ public class TestRetriesInRetryingHMSHandler {
    */
   @Test
   public void testNoRetryInit() throws MetaException {
-    IHMSHandler mockBaseHandler = Mockito.mock(HiveMetaStore.HMSHandler.class);
-    Mockito.when(mockBaseHandler.getConf()).thenReturn(hiveConf);
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     Mockito.doNothing().when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(hiveConf, mockBaseHandler, false);
+    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(1)).init();
   }
 
@@ -80,10 +79,10 @@ public class TestRetriesInRetryingHMSHandler {
    */
   @Test(expected = MetaException.class)
   public void testRetriesLimit() throws MetaException {
-    IHMSHandler mockBaseHandler = Mockito.mock(HiveMetaStore.HMSHandler.class);
-    Mockito.when(mockBaseHandler.getConf()).thenReturn(hiveConf);
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     Mockito.doThrow(JDOException.class).when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(hiveConf, mockBaseHandler, false);
+    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(RETRY_ATTEMPTS)).init();
   }
 
@@ -93,8 +92,8 @@ public class TestRetriesInRetryingHMSHandler {
    */
   @Test
   public void testWrappedMetaExceptionRetry() throws MetaException {
-    IHMSHandler mockBaseHandler = Mockito.mock(HiveMetaStore.HMSHandler.class);
-    Mockito.when(mockBaseHandler.getConf()).thenReturn(hiveConf);
+    IHMSHandler mockBaseHandler = Mockito.mock(IHMSHandler.class);
+    Mockito.when(mockBaseHandler.getConf()).thenReturn(conf);
     //JDOException wrapped in MetaException wrapped in InvocationException
     MetaException me = new MetaException("Dummy exception");
     me.initCause(new JDOException());
@@ -103,7 +102,7 @@ public class TestRetriesInRetryingHMSHandler {
     .doThrow(me)
     .doNothing()
     .when(mockBaseHandler).init();
-    RetryingHMSHandler.getProxy(hiveConf, mockBaseHandler, false);
+    RetryingHMSHandler.getProxy(conf, mockBaseHandler, false);
     Mockito.verify(mockBaseHandler, Mockito.times(2)).init();
   }
 }

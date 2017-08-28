@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,13 +26,14 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.datanucleus.exceptions.NucleusException;
@@ -58,21 +59,21 @@ public class RetryingHMSHandler implements InvocationHandler {
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
 
-  private final HiveConf origConf;            // base configuration
+  private final Configuration origConf;            // base configuration
   private final Configuration activeConf;  // active configuration
 
-  private RetryingHMSHandler(HiveConf hiveConf, IHMSHandler baseHandler, boolean local) throws MetaException {
-    this.origConf = hiveConf;
+  private RetryingHMSHandler(Configuration origConf, IHMSHandler baseHandler, boolean local) throws MetaException {
+    this.origConf = origConf;
     this.baseHandler = baseHandler;
     if (local) {
-      baseHandler.setConf(hiveConf); // tests expect configuration changes applied directly to metastore
+      baseHandler.setConf(origConf); // tests expect configuration changes applied directly to metastore
     }
     activeConf = baseHandler.getConf();
     // This has to be called before initializing the instance of HMSHandler
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
-    MetaStoreInit.updateConnectionURL(hiveConf, getActiveConf(), null, metaStoreInitData);
+    MetaStoreInit.updateConnectionURL(origConf, getActiveConf(), null, metaStoreInitData);
     try {
       //invoking init method of baseHandler this way since it adds the retry logic
       //in case of transient failures in init method
@@ -86,10 +87,10 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public static IHMSHandler getProxy(HiveConf hiveConf, IHMSHandler baseHandler, boolean local)
+  public static IHMSHandler getProxy(Configuration conf, IHMSHandler baseHandler, boolean local)
       throws MetaException {
 
-    RetryingHMSHandler handler = new RetryingHMSHandler(hiveConf, baseHandler, local);
+    RetryingHMSHandler handler = new RetryingHMSHandler(conf, baseHandler, local);
 
     return (IHMSHandler) Proxy.newProxyInstance(
       RetryingHMSHandler.class.getClassLoader(),
@@ -99,7 +100,7 @@ public class RetryingHMSHandler implements InvocationHandler {
   @Override
   public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
     int retryCount = -1;
-    int threadId = HiveMetaStore.HMSHandler.get();
+    int threadId = baseHandler.getThreadId();
     boolean error = true;
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, method.getName());
@@ -119,14 +120,12 @@ public class RetryingHMSHandler implements InvocationHandler {
   public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
     boolean gotNewConnectUrl = false;
-    boolean reloadConf = HiveConf.getBoolVar(origConf,
-        HiveConf.ConfVars.HMSHANDLERFORCERELOADCONF);
-    long retryInterval = HiveConf.getTimeVar(origConf,
-        HiveConf.ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
-    int retryLimit = HiveConf.getIntVar(origConf,
-        HiveConf.ConfVars.HMSHANDLERATTEMPTS);
-    long timeout = HiveConf.getTimeVar(origConf,
-        HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMSHANDLERFORCERELOADCONF);
+    long retryInterval = MetastoreConf.getTimeVar(origConf,
+        ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
+    int retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMSHANDLERATTEMPTS);
+    long timeout = MetastoreConf.getTimeVar(origConf,
+        ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
     Deadline.registerIfNot(timeout);
 

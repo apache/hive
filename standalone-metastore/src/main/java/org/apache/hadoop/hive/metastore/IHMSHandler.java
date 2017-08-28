@@ -25,4 +25,10 @@ import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
 
   void init() throws MetaException;
+
+  /**
+   * Get the id of the thread of this handler.
+   * @return thread id
+   */
+  int getThreadId();
 }
