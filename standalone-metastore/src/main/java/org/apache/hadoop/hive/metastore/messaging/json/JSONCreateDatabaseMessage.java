@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
-import org.apache.thrift.TException;
+import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON Implementation of DropIndexMessage.
+ * JSON Implementation of CreateDatabaseMessage.
  */
-public class JSONDropIndexMessage extends DropIndexMessage {
+public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, indexName, origTableName, indexTableName;
+  String server, servicePrincipal, db;
 
   @JsonProperty
   Long timestamp;
@@ -38,16 +36,12 @@ public class JSONDropIndexMessage extends DropIndexMessage {
   /**
    * Default constructor, required for Jackson.
    */
-  public JSONDropIndexMessage() {}
+  public JSONCreateDatabaseMessage() {}
 
-  public JSONDropIndexMessage(String server, String servicePrincipal, Index index, Long timestamp) {
+  public JSONCreateDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = index.getDbName();
-    this.indexName = index.getIndexName();
-    this.origTableName = index.getOrigTableName();
-    this.indexTableName = index.getIndexTableName();
-
+    this.db = db;
     this.timestamp = timestamp;
     checkValid();
   }
@@ -65,21 +59,6 @@ public class JSONDropIndexMessage extends DropIndexMessage {
   public Long getTimestamp() { return timestamp; }
 
   @Override
-  public String getIndexName() {
-    return indexName;
-  }
-
-  @Override
-  public String getOrigTableName() {
-    return origTableName;
-  }
-
-  @Override
-  public String getIndexTableName() {
-    return indexTableName;
-  }
-
-  @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);
@@ -88,4 +67,5 @@ public class JSONDropIndexMessage extends DropIndexMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
 }

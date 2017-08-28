@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,17 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
-import org.apache.thrift.TException;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON Implementation of CreateIndexMessage.
+ * JSON Implementation of CreateDatabaseMessage.
  */
-public class JSONCreateIndexMessage extends CreateIndexMessage {
+public class JSONDropFunctionMessage extends DropFunctionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, indexObjJson;
+  String server, servicePrincipal, db, functionName;
 
   @JsonProperty
   Long timestamp;
@@ -38,18 +37,13 @@ public class JSONCreateIndexMessage extends CreateIndexMessage {
   /**
    * Default constructor, required for Jackson.
    */
-  public JSONCreateIndexMessage() {}
+  public JSONDropFunctionMessage() {}
 
-  public JSONCreateIndexMessage(String server, String servicePrincipal, Index index, Long timestamp) {
+  public JSONDropFunctionMessage(String server, String servicePrincipal, Function fn, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = index.getDbName();
-    try {
-      this.indexObjJson = JSONMessageFactory.createIndexObjJson(index);
-    } catch (TException ex) {
-      throw new IllegalArgumentException("Could not serialize Index object", ex);
-    }
-
+    this.db = fn.getDbName();
+    this.functionName = fn.getFunctionName();
     this.timestamp = timestamp;
     checkValid();
   }
@@ -66,15 +60,6 @@ public class JSONCreateIndexMessage extends CreateIndexMessage {
   @Override
   public Long getTimestamp() { return timestamp; }
 
-  public String getIndexObjJson() {
-    return indexObjJson;
-  }
-
-  @Override
-  public Index getIndexObj() throws Exception {
-    return (Index)  JSONMessageFactory.getTObj(indexObjJson, Index.class);
-  }
-
   @Override
   public String toString() {
     try {
@@ -84,4 +69,10 @@ public class JSONCreateIndexMessage extends CreateIndexMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
+  @Override
+  public String getFunctionName() {
+    return functionName;
+  }
+
 }

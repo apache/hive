@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,17 +20,17 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON Implementation of AlterIndexMessage.
+ * JSON Implementation of CreateIndexMessage.
  */
-public class JSONAlterIndexMessage extends AlterIndexMessage {
+public class JSONCreateIndexMessage extends CreateIndexMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, beforeIndexObjJson, afterIndexObjJson;
+  String server, servicePrincipal, db, indexObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -38,21 +38,19 @@ public class JSONAlterIndexMessage extends AlterIndexMessage {
   /**
    * Default constructor, required for Jackson.
    */
-  public JSONAlterIndexMessage() {}
+  public JSONCreateIndexMessage() {}
 
-  public JSONAlterIndexMessage(String server, String servicePrincipal, Index before, Index after,
-                               Long timestamp) {
+  public JSONCreateIndexMessage(String server, String servicePrincipal, Index index, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = after.getDbName();
-    this.timestamp = timestamp;
+    this.db = index.getDbName();
     try {
-      this.beforeIndexObjJson = JSONMessageFactory.createIndexObjJson(before);
-      this.afterIndexObjJson = JSONMessageFactory.createIndexObjJson(after);
+      this.indexObjJson = JSONMessageFactory.createIndexObjJson(index);
     } catch (TException ex) {
       throw new IllegalArgumentException("Could not serialize Index object", ex);
     }
 
+    this.timestamp = timestamp;
     checkValid();
   }
 
@@ -68,22 +66,13 @@ public class JSONAlterIndexMessage extends AlterIndexMessage {
   @Override
   public Long getTimestamp() { return timestamp; }
 
-  public String getBeforeIndexObjJson() {
-    return beforeIndexObjJson;
-  }
-
-  public String getAfterIndexObjJson() {
-    return afterIndexObjJson;
+  public String getIndexObjJson() {
+    return indexObjJson;
   }
 
   @Override
-  public Index getIndexObjBefore() throws Exception {
-    return (Index)  JSONMessageFactory.getTObj(beforeIndexObjJson, Index.class);
-  }
-
-  @Override
-  public Index getIndexObjAfter() throws Exception {
-    return (Index)  JSONMessageFactory.getTObj(afterIndexObjJson, Index.class);
+  public Index getIndexObj() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(indexObjJson, Index.class);
   }
 
   @Override

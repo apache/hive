@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,28 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import javax.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 /**
- * JSON implementation of DropPartitionMessage.
+ * JSON implementation of AddPartitionMessage.
  */
-public class JSONDropPartitionMessage extends DropPartitionMessage {
+public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
   String server, servicePrincipal, db, table, tableType, tableObjJson;
@@ -41,38 +51,45 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   @JsonProperty
   List<Map<String, String>> partitions;
 
+  @JsonProperty
+  List<String> partitionListJson;
+
+  @JsonProperty
+  List<PartitionFiles> partitionFiles;
+
   /**
    * Default Constructor. Required for Jackson.
    */
-  public JSONDropPartitionMessage() {
+  public JSONAddPartitionMessage() {
   }
 
-  public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
-      List<Map<String, String>> partitions, Long timestamp) {
-    this(server, servicePrincipal, db, table,  null, partitions, timestamp);
-  }
-
-  public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
-      String tableType, List<Map<String, String>> partitions, Long timestamp) {
+  /**
+   * Note that we get an Iterator rather than an Iterable here: so we can only walk thru the list once
+   */
+  public JSONAddPartitionMessage(String server, String servicePrincipal, Table tableObj,
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter,
+      Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.tableType = tableType;
-    this.partitions = partitions;
+    this.db = tableObj.getDbName();
+    this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
     this.timestamp = timestamp;
-    checkValid();
-  }
-
-  public JSONDropPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      List<Map<String, String>> partitionKeyValues, long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
-        tableObj.getTableType(), partitionKeyValues, timestamp);
+    partitions = new ArrayList<>();
+    partitionListJson = new ArrayList<>();
+    Partition partitionObj;
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      while (partitionsIterator.hasNext()) {
+        partitionObj = partitionsIterator.next();
+        partitions.add(JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObj));
+        partitionListJson.add(JSONMessageFactory.createPartitionObjJson(partitionObj));
+      }
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.partitionFiles = Lists.newArrayList(partitionFileIter);
+    checkValid();
   }
 
   @Override
@@ -101,6 +118,11 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   }
 
   @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
   public Long getTimestamp() {
     return timestamp;
   }
@@ -111,12 +133,25 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   }
 
   @Override
-  public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
+  public Iterable<Partition> getPartitionObjs() throws Exception {
+    // glorified cast from Iterable<TBase> to Iterable<Partition>
+    return Iterables.transform(
+        JSONMessageFactory.getTObjs(partitionListJson,Partition.class),
+        new Function<Object, Partition>() {
+      @Nullable
+      @Override
+      public Partition apply(@Nullable Object input) {
+        return (Partition) input;
+      }
+    });
   }
 
   public String getTableObjJson() {
     return tableObjJson;
+  }
+
+  public List<String> getPartitionListJson() {
+    return partitionListJson;
   }
 
   @Override
@@ -127,4 +162,10 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
+  @Override
+  public Iterable<PartitionFiles> getPartitionFilesIter() {
+    return partitionFiles;
+  }
+
 }

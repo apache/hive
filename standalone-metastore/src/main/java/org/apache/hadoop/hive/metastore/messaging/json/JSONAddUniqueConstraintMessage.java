@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,7 +48,7 @@ public class JSONAddUniqueConstraintMessage extends AddUniqueConstraintMessage {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
-    this.uniqueConstraintListJson = new ArrayList<String>();
+    this.uniqueConstraintListJson = new ArrayList<>();
     try {
       for (SQLUniqueConstraint uk : uks) {
         uniqueConstraintListJson.add(JSONMessageFactory.createUniqueConstraintObjJson(uk));
@@ -80,7 +80,7 @@ public class JSONAddUniqueConstraintMessage extends AddUniqueConstraintMessage {
 
   @Override
   public List<SQLUniqueConstraint> getUniqueConstraints() throws Exception {
-    List<SQLUniqueConstraint> uks = new ArrayList<SQLUniqueConstraint>();
+    List<SQLUniqueConstraint> uks = new ArrayList<>();
     for (String pkJson : uniqueConstraintListJson) {
       uks.add((SQLUniqueConstraint)JSONMessageFactory.getTObj(pkJson, SQLUniqueConstraint.class));
     }

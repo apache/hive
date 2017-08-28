@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,63 +16,49 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.google.common.collect.Lists;
-
 /**
- * JSON implementation of CreateTableMessage.
+ * JSON alter table message
  */
-public class JSONCreateTableMessage extends CreateTableMessage {
+public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson;
+
+  @JsonProperty
+  String isTruncateOp;
+
   @JsonProperty
   Long timestamp;
-  @JsonProperty
-  List<String> files;
 
   /**
    * Default constructor, needed for Jackson.
    */
-  public JSONCreateTableMessage() {
+  public JSONAlterTableMessage() {
   }
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      String tableType, Long timestamp) {
+  public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObjBefore, Table tableObjAfter,
+      boolean isTruncateOp, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.tableType = tableType;
+    this.db = tableObjBefore.getDbName();
+    this.table = tableObjBefore.getTableName();
+    this.tableType = tableObjBefore.getTableType();
+    this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
-    checkValid();
-  }
-
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      Long timestamp) {
-    this(server, servicePrincipal, db, table, null, timestamp);
-  }
-
-  public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
-      Iterator<String> fileIter, Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
-        tableObj.getTableType(), timestamp);
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.tableObjBeforeJson = JSONMessageFactory.createTableObjJson(tableObjBefore);
+      this.tableObjAfterJson = JSONMessageFactory.createTableObjJson(tableObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
-    this.files = Lists.newArrayList(fileIter);
+    checkValid();
   }
 
   @Override
@@ -106,25 +92,32 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   @Override
-  public Table getTableObj() throws Exception {
-    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  public boolean getIsTruncateOp() { return Boolean.parseBoolean(isTruncateOp); }
+
+  @Override
+  public Table getTableObjBefore() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjBeforeJson,Table.class);
   }
 
-  public String getTableObjJson() {
-    return tableObjJson;
+  @Override
+  public Table getTableObjAfter() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjAfterJson,Table.class);
+  }
+
+  public String getTableObjBeforeJson() {
+    return tableObjBeforeJson;
+  }
+
+  public String getTableObjAfterJson() {
+    return tableObjAfterJson ;
   }
 
   @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);
-    } catch (Exception exception) {
-      throw new IllegalArgumentException("Could not serialize: ", exception);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not serialize: ", e);
     }
-  }
-
-  @Override
-  public Iterable<String> getFiles() {
-    return files;
   }
 }

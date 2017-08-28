@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,49 +16,72 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON implementation of AddPrimaryKeyMessage
+ * JSON implementation of DropTableMessage.
  */
-public class JSONAddPrimaryKeyMessage extends AddPrimaryKeyMessage {
+public class JSONDropTableMessage extends DropTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
 
-  @JsonProperty
-  List<String> primaryKeyListJson;
-
   /**
    * Default constructor, needed for Jackson.
    */
-  public JSONAddPrimaryKeyMessage() {
+  public JSONDropTableMessage() {
   }
 
-  public JSONAddPrimaryKeyMessage(String server, String servicePrincipal, List<SQLPrimaryKey> pks,
+  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
       Long timestamp) {
+    this(server, servicePrincipal, db, table, null, timestamp);
+  }
+
+  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
+      String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.db = db;
+    this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
-    this.primaryKeyListJson = new ArrayList<String>();
+    checkValid();
+  }
+
+  public JSONDropTableMessage(String server, String servicePrincipal, Table tableObj,
+      Long timestamp) {
+    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+        tableObj.getTableType(), timestamp);
     try {
-      for (SQLPrimaryKey pk : pks) {
-        primaryKeyListJson.add(JSONMessageFactory.createPrimaryKeyObjJson(pk));
-      }
+      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    checkValid();
+  }
+
+  @Override
+  public String getTable() {
+    return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
   }
 
   @Override
@@ -73,21 +96,12 @@ public class JSONAddPrimaryKeyMessage extends AddPrimaryKeyMessage {
 
   @Override
   public String getDB() {
-    return null;
+    return db;
   }
 
   @Override
   public Long getTimestamp() {
     return timestamp;
-  }
-
-  @Override
-  public List<SQLPrimaryKey> getPrimaryKeys() throws Exception {
-    List<SQLPrimaryKey> pks = new ArrayList<SQLPrimaryKey>();
-    for (String pkJson : primaryKeyListJson) {
-      pks.add((SQLPrimaryKey)JSONMessageFactory.getTObj(pkJson, SQLPrimaryKey.class));
-    }
-    return pks;
   }
 
   @Override
@@ -98,4 +112,5 @@ public class JSONAddPrimaryKeyMessage extends AddPrimaryKeyMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,16 +19,18 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON implementation of DropDatabaseMessage.
+ * JSON Implementation of AlterIndexMessage.
  */
-public class JSONDropDatabaseMessage extends DropDatabaseMessage {
+public class JSONAlterIndexMessage extends AlterIndexMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db;
+  String server, servicePrincipal, db, beforeIndexObjJson, afterIndexObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -36,16 +38,26 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
   /**
    * Default constructor, required for Jackson.
    */
-  public JSONDropDatabaseMessage() {}
+  public JSONAlterIndexMessage() {}
 
-  public JSONDropDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
+  public JSONAlterIndexMessage(String server, String servicePrincipal, Index before, Index after,
+                               Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
+    this.db = after.getDbName();
     this.timestamp = timestamp;
+    try {
+      this.beforeIndexObjJson = JSONMessageFactory.createIndexObjJson(before);
+      this.afterIndexObjJson = JSONMessageFactory.createIndexObjJson(after);
+    } catch (TException ex) {
+      throw new IllegalArgumentException("Could not serialize Index object", ex);
+    }
+
     checkValid();
   }
 
+  @Override
+  public String getDB() { return db; }
 
   @Override
   public String getServer() { return server; }
@@ -54,10 +66,25 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
   public String getServicePrincipal() { return servicePrincipal; }
 
   @Override
-  public String getDB() { return db; }
+  public Long getTimestamp() { return timestamp; }
+
+  public String getBeforeIndexObjJson() {
+    return beforeIndexObjJson;
+  }
+
+  public String getAfterIndexObjJson() {
+    return afterIndexObjJson;
+  }
 
   @Override
-  public Long getTimestamp() { return timestamp; }
+  public Index getIndexObjBefore() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(beforeIndexObjJson, Index.class);
+  }
+
+  @Override
+  public Index getIndexObjAfter() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(afterIndexObjJson, Index.class);
+  }
 
   @Override
   public String toString() {

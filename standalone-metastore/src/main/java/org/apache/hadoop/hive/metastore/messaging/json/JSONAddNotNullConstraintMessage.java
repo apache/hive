@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,7 +46,7 @@ public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
-    this.notNullConstraintListJson = new ArrayList<String>();
+    this.notNullConstraintListJson = new ArrayList<>();
     try {
       for (SQLNotNullConstraint nn : nns) {
         notNullConstraintListJson.add(JSONMessageFactory.createNotNullConstraintObjJson(nn));
@@ -78,7 +78,7 @@ public class JSONAddNotNullConstraintMessage extends AddNotNullConstraintMessage
 
   @Override
   public List<SQLNotNullConstraint> getNotNullConstraints() throws Exception {
-    List<SQLNotNullConstraint> nns = new ArrayList<SQLNotNullConstraint>();
+    List<SQLNotNullConstraint> nns = new ArrayList<>();
     for (String nnJson : notNullConstraintListJson) {
       nns.add((SQLNotNullConstraint)JSONMessageFactory.getTObj(nnJson, SQLNotNullConstraint.class));
     }

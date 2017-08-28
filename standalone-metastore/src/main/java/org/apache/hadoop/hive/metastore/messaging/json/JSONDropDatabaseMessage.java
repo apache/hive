@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.thrift.TException;
+import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON Implementation of CreateDatabaseMessage.
+ * JSON implementation of DropDatabaseMessage.
  */
-public class JSONDropFunctionMessage extends DropFunctionMessage {
+public class JSONDropDatabaseMessage extends DropDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, functionName;
+  String server, servicePrincipal, db;
 
   @JsonProperty
   Long timestamp;
@@ -38,25 +36,25 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
   /**
    * Default constructor, required for Jackson.
    */
-  public JSONDropFunctionMessage() {}
+  public JSONDropDatabaseMessage() {}
 
-  public JSONDropFunctionMessage(String server, String servicePrincipal, Function fn, Long timestamp) {
+  public JSONDropDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = fn.getDbName();
-    this.functionName = fn.getFunctionName();
+    this.db = db;
     this.timestamp = timestamp;
     checkValid();
   }
 
-  @Override
-  public String getDB() { return db; }
 
   @Override
   public String getServer() { return server; }
 
   @Override
   public String getServicePrincipal() { return servicePrincipal; }
+
+  @Override
+  public String getDB() { return db; }
 
   @Override
   public Long getTimestamp() { return timestamp; }
@@ -70,10 +68,4 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
-
-  @Override
-  public String getFunctionName() {
-    return functionName;
-  }
-
 }
