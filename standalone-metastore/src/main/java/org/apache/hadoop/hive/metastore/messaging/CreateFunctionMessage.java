@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,39 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Function;
 
-public abstract class AlterTableMessage extends EventMessage {
+public abstract class CreateFunctionMessage extends EventMessage {
 
-  protected AlterTableMessage() {
-    super(EventType.ALTER_TABLE);
+  protected CreateFunctionMessage() {
+    super(EventType.CREATE_FUNCTION);
   }
 
-  public abstract String getTable();
-
-  public abstract String getTableType();
-
-  public abstract boolean getIsTruncateOp();
-
-  public abstract Table getTableObjBefore() throws Exception;
-
-  public abstract Table getTableObjAfter() throws Exception;
+  public abstract Function getFunctionObj() throws Exception;
 
   @Override
   public EventMessage checkValid() {
-    if (getTable() == null) throw new IllegalStateException("Table name unset.");
     try {
-      if (getTableObjAfter() == null){
-        throw new IllegalStateException("Table object(after) not set.");
-      }
-      if (getTableObjBefore() == null){
-        throw new IllegalStateException("Table object(before) not set.");
-      }
+      if (getFunctionObj() == null)
+        throw new IllegalStateException("Function object unset.");
     } catch (Exception e) {
       if (! (e instanceof IllegalStateException)){
-        throw new IllegalStateException("Event not set up correctly",e);
+        throw new IllegalStateException("Event not set up correctly", e);
       } else {
         throw (IllegalStateException) e;
       }

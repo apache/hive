@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,31 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Index;
+import java.util.List;
 
-public abstract class CreateIndexMessage extends EventMessage {
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 
-  protected CreateIndexMessage() {
-    super(EventType.CREATE_INDEX);
+public abstract class AddPrimaryKeyMessage extends EventMessage {
+  protected AddPrimaryKeyMessage() {
+    super(EventType.ADD_PRIMARYKEY);
   }
 
-  public abstract Index getIndexObj() throws Exception;
-
-  @Override
-  public EventMessage checkValid() {
-    try {
-      if (getIndexObj() == null)
-        throw new IllegalStateException("Function object unset.");
-    } catch (Exception e) {
-      if (! (e instanceof IllegalStateException)){
-        throw new IllegalStateException("Event not set up correctly", e);
-      } else {
-        throw (IllegalStateException) e;
-      }
-    }
-    return super.checkValid();
-  }
+  /**
+   * Getter for list of primary keys.
+   * @return List of SQLPrimaryKey
+   */
+  public abstract List<SQLPrimaryKey> getPrimaryKeys() throws Exception;
 }

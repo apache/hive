@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,38 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.Iterator;
-import java.util.List;
+import org.apache.hadoop.hive.metastore.api.Table;
 
-import com.google.common.collect.Lists;
-import org.codehaus.jackson.annotate.JsonProperty;
+public abstract class CreateTableMessage extends EventMessage {
 
-public class PartitionFiles {
-
-  @JsonProperty
-  private String partitionName;
-  @JsonProperty
-  private List<String> files;
-
-  public PartitionFiles(String partitionName, Iterator<String> files) {
-    this.partitionName = partitionName;
-    this.files = Lists.newArrayList(files);
+  protected CreateTableMessage() {
+    super(EventType.CREATE_TABLE);
   }
 
-  public PartitionFiles() {
-  }
+  /**
+   * Getter for the name of table created
+   * @return Table-name (String).
+   */
+  public abstract String getTable();
 
-  public String getPartitionName() {
-    return partitionName;
-  }
+  public abstract String getTableType();
 
-  public void setPartitionName(String partitionName) {
-    this.partitionName = partitionName;
-  }
+  public abstract Table getTableObj() throws Exception;
 
-  public Iterable<String> getFiles() {
-    return files;
+  /**
+   * Get list of files created as a result of this DML operation
+   *
+   * @return The iterable of files
+   */
+  public abstract Iterable<String> getFiles();
+
+  @Override
+  public EventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    return super.checkValid();
   }
 }

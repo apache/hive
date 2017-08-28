@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,54 +22,47 @@ package org.apache.hadoop.hive.metastore.messaging;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-/**
- * HCat message sent when an insert is done to a table or partition.
- */
-public abstract class InsertMessage extends EventMessage {
+import java.util.List;
+import java.util.Map;
 
-  protected InsertMessage() {
-    super(EventType.INSERT);
+public abstract class AddPartitionMessage extends EventMessage {
+
+  protected AddPartitionMessage() {
+    super(EventType.ADD_PARTITION);
   }
 
   /**
-   * Getter for the name of the table being insert into.
+   * Getter for name of table (where partitions are added).
    * @return Table-name (String).
    */
   public abstract String getTable();
 
   public abstract String getTableType();
 
-  /**
-   * Getter for the replace flag being insert into/overwrite
-   * @return Replace flag to represent INSERT INTO or INSERT OVERWRITE (Boolean).
-   */
-  public abstract boolean isReplace();
-
-  /**
-   * Get list of file name and checksum created as a result of this DML operation
-   *
-   * @return The iterable of files
-   */
-  public abstract Iterable<String> getFiles();
-
-  /**
-   * Get the table object associated with the insert
-   *
-   * @return The Json format of Table object
-   */
   public abstract Table getTableObj() throws Exception;
 
   /**
-   * Get the partition object associated with the insert
-   *
-   * @return The Json format of Partition object if the table is partitioned else return null.
+   * Getter for list of partitions added.
+   * @return List of maps, where each map identifies values for each partition-key, for every added partition.
    */
-  public abstract Partition getPtnObj() throws Exception;
+  public abstract List<Map<String, String>> getPartitions ();
+
+  public abstract Iterable<Partition> getPartitionObjs() throws Exception;
 
   @Override
   public EventMessage checkValid() {
     if (getTable() == null)
       throw new IllegalStateException("Table name unset.");
+    if (getPartitions() == null)
+      throw new IllegalStateException("Partition-list unset.");
     return super.checkValid();
   }
+
+  /**
+   * Get iterable of partition name and file lists created as a result of this DDL operation
+   *
+   * @return The iterable of partition PartitionFiles
+   */
+  public abstract Iterable<PartitionFiles> getPartitionFilesIter();
+
 }

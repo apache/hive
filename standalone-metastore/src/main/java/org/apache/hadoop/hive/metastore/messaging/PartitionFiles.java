@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,23 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.hadoop.hive.metastore.messaging;
 
-public abstract class DropFunctionMessage extends EventMessage {
+import java.util.Iterator;
+import java.util.List;
 
-  public abstract String getFunctionName();
+import com.google.common.collect.Lists;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-  protected DropFunctionMessage() {
-    super(EventType.DROP_FUNCTION);
+public class PartitionFiles {
+
+  @JsonProperty
+  private String partitionName;
+  @JsonProperty
+  private List<String> files;
+
+  public PartitionFiles(String partitionName, Iterator<String> files) {
+    this.partitionName = partitionName;
+    this.files = Lists.newArrayList(files);
   }
 
-  @Override
-  public EventMessage checkValid() {
-    if (getFunctionName() == null){
-      throw new IllegalStateException("Function name unset.");
-    }
-    return super.checkValid();
+  public PartitionFiles() {
   }
 
+  public String getPartitionName() {
+    return partitionName;
+  }
+
+  public void setPartitionName(String partitionName) {
+    this.partitionName = partitionName;
+  }
+
+  public Iterable<String> getFiles() {
+    return files;
+  }
 }

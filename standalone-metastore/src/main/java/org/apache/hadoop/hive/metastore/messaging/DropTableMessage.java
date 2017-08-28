@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,20 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-import java.util.List;
-import java.util.Map;
+public abstract class DropTableMessage extends EventMessage {
 
-public abstract class AddPartitionMessage extends EventMessage {
-
-  protected AddPartitionMessage() {
-    super(EventType.ADD_PARTITION);
+  protected DropTableMessage() {
+    super(EventType.DROP_TABLE);
   }
 
   /**
-   * Getter for name of table (where partitions are added).
+   * Getter for the name of the table being dropped.
    * @return Table-name (String).
    */
   public abstract String getTable();
@@ -41,28 +37,10 @@ public abstract class AddPartitionMessage extends EventMessage {
 
   public abstract Table getTableObj() throws Exception;
 
-  /**
-   * Getter for list of partitions added.
-   * @return List of maps, where each map identifies values for each partition-key, for every added partition.
-   */
-  public abstract List<Map<String, String>> getPartitions ();
-
-  public abstract Iterable<Partition> getPartitionObjs() throws Exception;
-
   @Override
   public EventMessage checkValid() {
     if (getTable() == null)
       throw new IllegalStateException("Table name unset.");
-    if (getPartitions() == null)
-      throw new IllegalStateException("Partition-list unset.");
     return super.checkValid();
   }
-
-  /**
-   * Get iterable of partition name and file lists created as a result of this DDL operation
-   *
-   * @return The iterable of partition PartitionFiles
-   */
-  public abstract Iterable<PartitionFiles> getPartitionFilesIter();
-
 }

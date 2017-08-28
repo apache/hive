@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,15 +18,12 @@
  */
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-import java.util.Map;
+public abstract class AlterTableMessage extends EventMessage {
 
-public abstract class AlterPartitionMessage extends EventMessage {
-
-  protected AlterPartitionMessage() {
-    super(EventType.ALTER_PARTITION);
+  protected AlterTableMessage() {
+    super(EventType.ALTER_TABLE);
   }
 
   public abstract String getTable();
@@ -35,26 +32,19 @@ public abstract class AlterPartitionMessage extends EventMessage {
 
   public abstract boolean getIsTruncateOp();
 
-  public abstract Map<String,String> getKeyValues();
+  public abstract Table getTableObjBefore() throws Exception;
 
-  public abstract Table getTableObj() throws Exception;
+  public abstract Table getTableObjAfter() throws Exception;
 
-  public abstract Partition getPtnObjBefore() throws Exception;
-
-  public abstract Partition getPtnObjAfter() throws Exception;
   @Override
   public EventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");
-    if (getKeyValues() == null) throw new IllegalStateException("Partition values unset");
     try {
-      if (getTableObj() == null){
-        throw new IllegalStateException("Table object not set.");
+      if (getTableObjAfter() == null){
+        throw new IllegalStateException("Table object(after) not set.");
       }
-      if (getPtnObjAfter() == null){
-        throw new IllegalStateException("Partition object(after) not set.");
-      }
-      if (getPtnObjBefore() == null){
-        throw new IllegalStateException("Partition object(before) not set.");
+      if (getTableObjBefore() == null){
+        throw new IllegalStateException("Table object(before) not set.");
       }
     } catch (Exception e) {
       if (! (e instanceof IllegalStateException)){
@@ -66,4 +56,3 @@ public abstract class AlterPartitionMessage extends EventMessage {
     return super.checkValid();
   }
 }
-

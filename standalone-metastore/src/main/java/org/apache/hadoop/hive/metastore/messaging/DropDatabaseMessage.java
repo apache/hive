@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,28 +19,9 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+public abstract class DropDatabaseMessage extends EventMessage {
 
-public abstract class DropTableMessage extends EventMessage {
-
-  protected DropTableMessage() {
-    super(EventType.DROP_TABLE);
-  }
-
-  /**
-   * Getter for the name of the table being dropped.
-   * @return Table-name (String).
-   */
-  public abstract String getTable();
-
-  public abstract String getTableType();
-
-  public abstract Table getTableObj() throws Exception;
-
-  @Override
-  public EventMessage checkValid() {
-    if (getTable() == null)
-      throw new IllegalStateException("Table name unset.");
-    return super.checkValid();
+  protected DropDatabaseMessage() {
+    super(EventType.DROP_DATABASE);
   }
 }

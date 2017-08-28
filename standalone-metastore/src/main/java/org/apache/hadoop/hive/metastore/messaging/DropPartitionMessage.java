@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,15 +19,31 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Index;
+import java.util.List;
+import java.util.Map;
 
-public abstract class AlterIndexMessage extends EventMessage {
+import org.apache.hadoop.hive.metastore.api.Table;
 
-  public abstract Index getIndexObjBefore() throws Exception;
+public abstract class DropPartitionMessage extends EventMessage {
 
-  public abstract Index getIndexObjAfter() throws Exception;
+  protected DropPartitionMessage() {
+    super(EventType.DROP_PARTITION);
+  }
 
-  protected AlterIndexMessage() {
-    super(EventType.ALTER_INDEX);
+  public abstract String getTable();
+
+  public abstract String getTableType();
+
+  public abstract Table getTableObj() throws Exception;
+
+  public abstract List<Map<String, String>> getPartitions ();
+
+  @Override
+  public EventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    if (getPartitions() == null)
+      throw new IllegalStateException("Partition-list unset.");
+    return super.checkValid();
   }
 }

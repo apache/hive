@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,28 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.List;
+public abstract class DropIndexMessage extends EventMessage {
 
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+  public abstract String getIndexName();
+  public abstract String getOrigTableName();
+  public abstract String getIndexTableName();
 
-public abstract class AddNotNullConstraintMessage extends EventMessage {
-  protected AddNotNullConstraintMessage() {
-    super(EventType.ADD_NOTNULLCONSTRAINT);
+  protected DropIndexMessage() {
+    super(EventType.DROP_INDEX);
   }
 
-  /**
-   * Getter for list of not null constraints.
-   * @return List of SQLNotNullConstraint
-   */
-  public abstract List<SQLNotNullConstraint> getNotNullConstraints() throws Exception;
+  @Override
+  public EventMessage checkValid() {
+    if (getIndexName() == null){
+      throw new IllegalStateException("Index name unset.");
+    }
+    if (getOrigTableName() == null){
+      throw new IllegalStateException("Index original table name unset.");
+    }
+    // NOTE: we do not do a not-null check on getIndexTableName,
+    // since, per the index design wiki, it can actually be null.
+
+    return super.checkValid();
+  }
+
 }

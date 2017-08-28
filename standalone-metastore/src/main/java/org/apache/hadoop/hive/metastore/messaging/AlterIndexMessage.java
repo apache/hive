@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,14 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore.messaging;
 
-public abstract class DropConstraintMessage extends EventMessage {
-  protected DropConstraintMessage() {
-    super(EventType.DROP_CONSTRAINT);
+import org.apache.hadoop.hive.metastore.api.Index;
+
+public abstract class AlterIndexMessage extends EventMessage {
+
+  public abstract Index getIndexObjBefore() throws Exception;
+
+  public abstract Index getIndexObjAfter() throws Exception;
+
+  protected AlterIndexMessage() {
+    super(EventType.ALTER_INDEX);
   }
-
-  public abstract String getTable();
-
-  public abstract String getConstraint();
 }

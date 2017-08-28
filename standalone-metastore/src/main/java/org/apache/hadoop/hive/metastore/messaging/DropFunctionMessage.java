@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,20 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.List;
+public abstract class DropFunctionMessage extends EventMessage {
 
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+  public abstract String getFunctionName();
 
-public abstract class AddUniqueConstraintMessage extends EventMessage {
-  protected AddUniqueConstraintMessage() {
-    super(EventType.ADD_UNIQUECONSTRAINT);
+  protected DropFunctionMessage() {
+    super(EventType.DROP_FUNCTION);
   }
 
-  /**
-   * Getter for list of unique constraints.
-   * @return List of SQLUniqueConstraint
-   */
-  public abstract List<SQLUniqueConstraint> getUniqueConstraints() throws Exception;
+  @Override
+  public EventMessage checkValid() {
+    if (getFunctionName() == null){
+      throw new IllegalStateException("Function name unset.");
+    }
+    return super.checkValid();
+  }
+
 }

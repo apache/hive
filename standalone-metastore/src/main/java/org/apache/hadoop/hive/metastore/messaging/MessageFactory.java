@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,20 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -63,21 +65,18 @@ public abstract class MessageFactory {
 
   private static MessageFactory instance = null;
 
-  protected static final HiveConf hiveConf = new HiveConf();
+  protected static final Configuration conf = MetastoreConf.newMetastoreConf();
+  /*
+  // TODO MS-SPLIT I'm 99% certain we don't need this, as MetastoreConf.newMetastoreConf already
+  adds this resource.
   static {
-    hiveConf.addResource("hive-site.xml");
+    conf.addResource("hive-site.xml");
   }
+  */
 
-  // This parameter is retained for legacy reasons, in case someone implemented custom
-  // factories. This, however, should not be the case, since this api was intended to
-  // be internal-only, and we should manage the jms and json implementations without
-  // needing this parameter. Marking as deprecated, for removal by 2.4 - see corresponding
-  // note on the getDeserializer(String,String) method
-  @Deprecated
-  private static final String CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX = "hcatalog.message.factory.impl.";
-
-  protected static final String MS_SERVER_URL = hiveConf.get(HiveConf.ConfVars.METASTOREURIS.name(), "");
-  protected static final String MS_SERVICE_PRINCIPAL = hiveConf.get(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL.name(), "");
+  protected static final String MS_SERVER_URL = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS, "");
+  protected static final String MS_SERVICE_PRINCIPAL =
+      MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL, "");
 
   /**
    * Getter for MessageFactory instance.
@@ -85,17 +84,17 @@ public abstract class MessageFactory {
   public static MessageFactory getInstance() {
     if (instance == null) {
       instance =
-          getInstance(hiveConf.get(HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY.varname));
+          getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY));
     }
     return instance;
   }
 
   private static MessageFactory getInstance(String className) {
     try {
-      return (MessageFactory)ReflectionUtils.newInstance(JavaUtils.loadClass(className), hiveConf);
+      return JavaUtils.newInstance(JavaUtils.getClass(className, MessageFactory.class));
     }
-    catch (ClassNotFoundException classNotFound) {
-      throw new IllegalStateException("Could not construct MessageFactory implementation: ", classNotFound);
+    catch (MetaException e) {
+      throw new IllegalStateException("Could not construct MessageFactory implementation: ", e);
     }
   }
 
@@ -107,8 +106,7 @@ public abstract class MessageFactory {
    */
   public static MessageDeserializer getDeserializer(String format,
                             String version) {
-    return getInstance(hiveConf.get(CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX + format,
-        HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY.varname)).getDeserializer();
+    return getInstance(MetastoreConf.getVar(conf, ConfVars.EVENT_MESSAGE_FACTORY)).getDeserializer();
     // Note : The reason this method exists outside the no-arg getDeserializer method is in
     // case there is a user-implemented MessageFactory that's used, and some the messages
     // are in an older format and the rest in another. Then, what MessageFactory is default

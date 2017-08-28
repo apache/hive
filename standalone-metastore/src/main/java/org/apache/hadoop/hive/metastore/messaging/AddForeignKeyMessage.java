@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,30 +20,17 @@
 package org.apache.hadoop.hive.metastore.messaging;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 
-public abstract class DropPartitionMessage extends EventMessage {
-
-  protected DropPartitionMessage() {
-    super(EventType.DROP_PARTITION);
+public abstract class AddForeignKeyMessage extends EventMessage {
+  protected AddForeignKeyMessage() {
+    super(EventType.ADD_FOREIGNKEY);
   }
 
-  public abstract String getTable();
-
-  public abstract String getTableType();
-
-  public abstract Table getTableObj() throws Exception;
-
-  public abstract List<Map<String, String>> getPartitions ();
-
-  @Override
-  public EventMessage checkValid() {
-    if (getTable() == null)
-      throw new IllegalStateException("Table name unset.");
-    if (getPartitions() == null)
-      throw new IllegalStateException("Partition-list unset.");
-    return super.checkValid();
-  }
+  /**
+   * Getter for list of foreign keys.
+   * @return List of SQLForeignKey
+   */
+  public abstract List<SQLForeignKey> getForeignKeys() throws Exception;
 }

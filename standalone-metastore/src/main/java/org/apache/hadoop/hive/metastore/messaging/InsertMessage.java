@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,30 +19,52 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-public abstract class CreateTableMessage extends EventMessage {
+/**
+ * HCat message sent when an insert is done to a table or partition.
+ */
+public abstract class InsertMessage extends EventMessage {
 
-  protected CreateTableMessage() {
-    super(EventType.CREATE_TABLE);
+  protected InsertMessage() {
+    super(EventType.INSERT);
   }
 
   /**
-   * Getter for the name of table created
+   * Getter for the name of the table being insert into.
    * @return Table-name (String).
    */
   public abstract String getTable();
 
   public abstract String getTableType();
 
-  public abstract Table getTableObj() throws Exception;
+  /**
+   * Getter for the replace flag being insert into/overwrite
+   * @return Replace flag to represent INSERT INTO or INSERT OVERWRITE (Boolean).
+   */
+  public abstract boolean isReplace();
 
   /**
-   * Get list of files created as a result of this DML operation
+   * Get list of file name and checksum created as a result of this DML operation
    *
    * @return The iterable of files
    */
   public abstract Iterable<String> getFiles();
+
+  /**
+   * Get the table object associated with the insert
+   *
+   * @return The Json format of Table object
+   */
+  public abstract Table getTableObj() throws Exception;
+
+  /**
+   * Get the partition object associated with the insert
+   *
+   * @return The Json format of Partition object if the table is partitioned else return null.
+   */
+  public abstract Partition getPtnObj() throws Exception;
 
   @Override
   public EventMessage checkValid() {

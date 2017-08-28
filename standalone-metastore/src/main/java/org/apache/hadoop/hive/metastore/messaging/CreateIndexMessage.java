@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,20 +19,20 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
 
-public abstract class CreateFunctionMessage extends EventMessage {
+public abstract class CreateIndexMessage extends EventMessage {
 
-  protected CreateFunctionMessage() {
-    super(EventType.CREATE_FUNCTION);
+  protected CreateIndexMessage() {
+    super(EventType.CREATE_INDEX);
   }
 
-  public abstract Function getFunctionObj() throws Exception;
+  public abstract Index getIndexObj() throws Exception;
 
   @Override
   public EventMessage checkValid() {
     try {
-      if (getFunctionObj() == null)
+      if (getIndexObj() == null)
         throw new IllegalStateException("Function object unset.");
     } catch (Exception e) {
       if (! (e instanceof IllegalStateException)){

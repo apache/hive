@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,18 +19,10 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.List;
+public abstract class CreateDatabaseMessage extends EventMessage {
 
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-
-public abstract class AddForeignKeyMessage extends EventMessage {
-  protected AddForeignKeyMessage() {
-    super(EventType.ADD_FOREIGNKEY);
+  protected CreateDatabaseMessage() {
+    super(EventType.CREATE_DATABASE);
   }
 
-  /**
-   * Getter for list of foreign keys.
-   * @return List of SQLForeignKey
-   */
-  public abstract List<SQLForeignKey> getForeignKeys() throws Exception;
 }

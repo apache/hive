@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,20 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.hadoop.hive.metastore.messaging;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 
-public abstract class AddPrimaryKeyMessage extends EventMessage {
-  protected AddPrimaryKeyMessage() {
-    super(EventType.ADD_PRIMARYKEY);
+public abstract class AddNotNullConstraintMessage extends EventMessage {
+  protected AddNotNullConstraintMessage() {
+    super(EventType.ADD_NOTNULLCONSTRAINT);
   }
 
   /**
-   * Getter for list of primary keys.
-   * @return List of SQLPrimaryKey
+   * Getter for list of not null constraints.
+   * @return List of SQLNotNullConstraint
    */
-  public abstract List<SQLPrimaryKey> getPrimaryKeys() throws Exception;
+  public abstract List<SQLNotNullConstraint> getNotNullConstraints() throws Exception;
 }

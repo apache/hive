@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,28 +19,18 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-public abstract class DropIndexMessage extends EventMessage {
+import java.util.List;
 
-  public abstract String getIndexName();
-  public abstract String getOrigTableName();
-  public abstract String getIndexTableName();
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 
-  protected DropIndexMessage() {
-    super(EventType.DROP_INDEX);
+public abstract class AddUniqueConstraintMessage extends EventMessage {
+  protected AddUniqueConstraintMessage() {
+    super(EventType.ADD_UNIQUECONSTRAINT);
   }
 
-  @Override
-  public EventMessage checkValid() {
-    if (getIndexName() == null){
-      throw new IllegalStateException("Index name unset.");
-    }
-    if (getOrigTableName() == null){
-      throw new IllegalStateException("Index original table name unset.");
-    }
-    // NOTE: we do not do a not-null check on getIndexTableName,
-    // since, per the index design wiki, it can actually be null.
-
-    return super.checkValid();
-  }
-
+  /**
+   * Getter for list of unique constraints.
+   * @return List of SQLUniqueConstraint
+   */
+  public abstract List<SQLUniqueConstraint> getUniqueConstraints() throws Exception;
 }
