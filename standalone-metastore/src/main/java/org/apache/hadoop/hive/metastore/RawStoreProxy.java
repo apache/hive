@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,11 +27,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ClassUtils;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
 @InterfaceAudience.Private
@@ -41,16 +42,16 @@ public class RawStoreProxy implements InvocationHandler {
   private final RawStore base;
   private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
     new MetaStoreInit.MetaStoreInitData();
-  private final HiveConf hiveConf;
+  private final Configuration hiveConf;
   private final Configuration conf; // thread local conf from HMS
   private final long socketTimeout;
 
-  protected RawStoreProxy(HiveConf hiveConf, Configuration conf,
+  protected RawStoreProxy(Configuration hiveConf, Configuration conf,
       Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
-    this.socketTimeout = HiveConf.getTimeVar(hiveConf,
-        HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    this.socketTimeout = MetastoreConf.getTimeVar(hiveConf,
+        MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 
     // This has to be called before initializing the instance of RawStore
     init();
@@ -58,11 +59,10 @@ public class RawStoreProxy implements InvocationHandler {
     this.base = ReflectionUtils.newInstance(rawStoreClass, conf);
   }
 
-  public static RawStore getProxy(HiveConf hiveConf, Configuration conf, String rawStoreClassName,
+  public static RawStore getProxy(Configuration hiveConf, Configuration conf, String rawStoreClassName,
       int id) throws MetaException {
 
-    Class<? extends RawStore> baseClass = (Class<? extends RawStore>) MetaStoreUtils.getClass(
-        rawStoreClassName);
+    Class<? extends RawStore> baseClass = JavaUtils.getClass(rawStoreClassName, RawStore.class);
 
     RawStoreProxy handler = new RawStoreProxy(hiveConf, conf, baseClass, id);
 
@@ -86,10 +86,6 @@ public class RawStoreProxy implements InvocationHandler {
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
     MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
-  }
-
-  private void initMS() {
-    base.setConf(getConf());
   }
 
   @Override

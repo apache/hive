@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,8 +23,8 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
 
 public class TestRawStoreProxy {
@@ -47,10 +47,10 @@ public class TestRawStoreProxy {
 
   @Test
   public void testExceptionDispatch() throws Throwable {
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 10,
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, 10,
         TimeUnit.MILLISECONDS);
-    RawStoreProxy rsp = new RawStoreProxy(hiveConf, hiveConf, TestStore.class, 1);
+    RawStoreProxy rsp = new RawStoreProxy(conf, conf, TestStore.class, 1);
     try {
       rsp.invoke(null, TestStore.class.getMethod("exceptions"), new Object[] {});
       fail("an exception is expected");
