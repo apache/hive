@@ -69,10 +69,6 @@ public class TestMetrics {
     counter.inc();
     counter.inc();
 
-    Histogram hist = registry.histogram("my-histogram");
-    hist.update(5);
-    hist.update(17);
-
     Meter meter = registry.meter("my-meter");
     meter.mark();
     Thread.sleep(10);

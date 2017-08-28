@@ -128,6 +128,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
@@ -933,6 +934,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void shutdown() {
       cleanupRawStore();
+      PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
     }
 
     @Override

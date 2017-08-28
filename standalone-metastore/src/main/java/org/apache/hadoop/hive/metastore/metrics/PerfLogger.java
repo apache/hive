@@ -43,6 +43,16 @@ public class PerfLogger {
     // Use getPerfLogger to get an instance of PerfLogger
   }
 
+  /**
+   * Get the singleton PerfLogger instance.
+   * @param resetPerfLogger if false, get the current PerfLogger, or create a new one if a
+   *                        current one does not exist.  If true, a new instance of PerfLogger
+   *                        will be returned rather than the existing one.  Note that the
+   *                        existing PerfLogger is not shutdown and any object which already has a
+   *                        reference to it may continue to use it. But all future calls to this
+   *                        method with this set to false will get the new PerfLogger instance.
+   * @return a PerfLogger
+   */
   public static PerfLogger getPerfLogger(boolean resetPerfLogger) {
     PerfLogger result = perfLogger.get();
     if (resetPerfLogger || result == null) {
