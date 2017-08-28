@@ -15,14 +15,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
+package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
-public interface BootstrapEvent {
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.ConstraintEvent;
 
-  EventType eventType();
+public class FSConstraintEvent implements ConstraintEvent {
+  private final Path rootDir;
 
-  enum EventType {
-    Database, Table, Function, Partition, Constraint
+  FSConstraintEvent(Path rootDir) {
+    this.rootDir = rootDir;
   }
 
+  @Override
+  public Path rootDir() {
+    return rootDir;
+  }
+
+  @Override
+  public EventType eventType() {
+    return EventType.Constraint;
+  }
 }

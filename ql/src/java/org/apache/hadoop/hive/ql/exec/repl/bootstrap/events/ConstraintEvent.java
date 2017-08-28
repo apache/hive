@@ -17,12 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events;
 
-public interface BootstrapEvent {
+import org.apache.hadoop.fs.Path;
 
-  EventType eventType();
-
-  enum EventType {
-    Database, Table, Function, Partition, Constraint
-  }
-
+public interface ConstraintEvent extends BootstrapEvent {
+  Path rootDir();
 }

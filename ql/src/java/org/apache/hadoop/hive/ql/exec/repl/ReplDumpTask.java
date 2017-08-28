@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
@@ -46,6 +50,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandler;
 import org.apache.hadoop.hive.ql.parse.repl.dump.events.EventHandlerFactory;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.ConstraintsSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -61,6 +66,7 @@ import java.util.List;
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
+  private static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
   private static final String FUNCTION_METADATA_FILE_NAME = "_metadata";
 
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
@@ -186,6 +192,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
+        dumpConstraintMetadata(dbName, tblName, dumpRoot);
       }
     }
     Long bootDumpEndReplId = getHive().getMSC().getCurrentNotificationEventId().getEventId();
@@ -296,6 +303,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         serializer.writeTo(jsonWriter, tuple.replicationSpec);
       }
       REPL_STATE_LOG.info("Repl Dump: Dumped metadata for function: {}", functionName);
+    }
+  }
+
+  private void dumpConstraintMetadata(String dbName, String tblName, Path dumpRoot) throws Exception {
+    Path constraintsRoot = new Path(new Path(dumpRoot, dbName), CONSTRAINTS_ROOT_DIR_NAME);
+    Path constraintsFile = new Path(constraintsRoot, tblName);
+    List<SQLPrimaryKey> pks = getHive().getPrimaryKeyList(dbName, tblName);
+    List<SQLForeignKey> fks = getHive().getForeignKeyList(dbName, tblName);
+    List<SQLUniqueConstraint> uks = getHive().getUniqueConstraintList(dbName, tblName);
+    List<SQLNotNullConstraint> nns = getHive().getNotNullConstraintList(dbName, tblName);
+    if (!pks.isEmpty() || !fks.isEmpty() || !uks.isEmpty() || !nns.isEmpty()) {
+      try (JsonWriter jsonWriter =
+          new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
+        ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
+        serializer.writeTo(jsonWriter, null);
+      }
     }
   }
 
