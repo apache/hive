@@ -8281,7 +8281,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void lockForUpdate() throws MetaException {
     String selectQuery = "select NEXT_EVENT_ID from NOTIFICATION_SEQUENCE";
     String selectForUpdateQuery = sqlGenerator.addForUpdateClause(selectQuery);
-    new RetryingExecutor((HiveConf) hiveConf, () -> {
+    new RetryingExecutor(hiveConf, () -> {
       Query query = pm.newQuery("javax.jdo.query.SQL", selectForUpdateQuery);
       query.setUnique(true);
       // only need to execute it to get db Lock
@@ -8300,10 +8300,12 @@ public class ObjectStore implements RawStore, Configurable {
     private int currentRetries = 0;
     private final Command command;
 
-    RetryingExecutor(HiveConf hiveConf, Command command) {
-      this.maxRetries = hiveConf.getIntVar(ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
-      this.sleepInterval = hiveConf.getTimeVar(
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL,
+    RetryingExecutor(Configuration config, Command command) {
+      this.maxRetries = config.getInt(ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.name(),
+          ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES.defaultIntVal);
+      this.sleepInterval = config.getTimeDuration(
+          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL.name(),
+          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL.defaultLongVal,
           TimeUnit.MILLISECONDS
       );
       this.command = command;
