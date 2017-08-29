@@ -108,3 +108,17 @@ Useful mailing lists
 3. commits@hive.apache.org - In order to monitor commits to the source
    repository. Send an empty email to commits-subscribe@hive.apache.org
    in order to subscribe to this mailing list.
+
+Hive2.2.0 修改记录  
+====================
+
+|序号|项目|类|方法|行号|修改说明| 
+|---|---|---|---|---|---|  
+|修改spark session|---|---|---|---|---| 
+|201707-01|hive-exec|SparkUtilities|getSparkSession|108,134|添加静态变量用于存储session|
+|201707-02|hive-exec|SparkSessionManagerImpl|closeSession|132,142|清空方法，不让session被销毁|
+|201707-03|hive-service|HiveServer2|startHiveServer2|616,618|启动时获取session|
+|增加contains和fulltext函数|---|---|---|---|---|
+|201708-01|hive-exec|GenericUDFContains|--|--|增加contains函数|
+|201708-02|hive-exec|GenericUDFullText|--|--|增加fulltext函数,es全文检索时用|
+|201708-02|hive-exec|FunctionRegistry|--|266|讲上面两个函数注册到系统中|

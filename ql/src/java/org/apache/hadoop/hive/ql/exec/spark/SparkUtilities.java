@@ -111,9 +111,18 @@ public class SparkUtilities {
     return SparkClientUtilities.isYarnMaster(master) || SparkClientUtilities.isLocalMaster(master);
   }
 
+/////////////  by zhaow chenh 
+  private static SparkSession sparksessioStat = null;
+/////////////
+
   public static SparkSession getSparkSession(HiveConf conf,
       SparkSessionManager sparkSessionManager) throws HiveException {
-    SparkSession sparkSession = SessionState.get().getSparkSession();
+	  
+/////////////////    by zhaow chenh 
+	//SparkSession sparkSession = SessionState.get().getSparkSession();
+    SparkSession sparkSession = sparksessioStat;
+/////////////////
+    
     HiveConf sessionConf = SessionState.get().getConf();
 
     // Spark configurations are updated close the existing session
@@ -126,6 +135,9 @@ public class SparkUtilities {
       sessionConf.setSparkConfigUpdated(false);
     }
     sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
+/////////////////   by zhaow chenh 
+    sparksessioStat = sparkSession;
+///////////////// 
     SessionState.get().setSparkSession(sparkSession);
     return sparkSession;
   }

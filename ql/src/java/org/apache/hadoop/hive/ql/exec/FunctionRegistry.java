@@ -262,6 +262,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("trim", GenericUDFTrim.class);
     system.registerGenericUDF("ltrim", GenericUDFLTrim.class);
     system.registerGenericUDF("rtrim", GenericUDFRTrim.class);
+    //added by zhaowei 20170822
+    system.registerGenericUDF("contains", GenericUDFContains.class);
+    system.registerGenericUDF("fulltext", GenericUDFFullText.class);
     system.registerGenericUDF("length", GenericUDFLength.class);
     system.registerGenericUDF("character_length", GenericUDFCharacterLength.class);
     system.registerGenericUDF("char_length", GenericUDFCharacterLength.class);
