@@ -1435,9 +1435,14 @@ public class HiveConf extends Configuration {
 
     HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 40000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
-        "However, if it is on, and the predicated number of entries in hashtable for a given join \n" +
+        "However, if it is on, and the predicted number of entries in hashtable for a given join \n" +
         "input is larger than this number, the join will not be converted to a mapjoin. \n" +
         "The value \"-1\" means no limit."),
+    HIVECONVERTJOINMAXSHUFFLESIZE("hive.auto.convert.join.shuffle.max.size", 10000000L,
+       "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
+       "However, if it is on, and the predicted size of the larger input for a given join is greater \n" +
+       "than this number, the join will not be converted to a dynamically partitioned hash join. \n" +
+       "The value \"-1\" means no limit."),
     HIVEHASHTABLEKEYCOUNTADJUSTMENT("hive.hashtable.key.count.adjustment", 1.0f,
         "Adjustment to mapjoin hashtable size derived from table and column statistics; the estimate" +
         " of the number of keys is divided by this value. If the value is 0, statistics are not used" +
