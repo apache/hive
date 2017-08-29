@@ -8281,7 +8281,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void lockForUpdate() throws MetaException {
     String selectQuery = "select NEXT_EVENT_ID from NOTIFICATION_SEQUENCE";
     String selectForUpdateQuery = sqlGenerator.addForUpdateClause(selectQuery);
-    new RetryingExecutor(3, () -> {
+    new RetryingExecutor((HiveConf) hiveConf, () -> {
       Query query = pm.newQuery("javax.jdo.query.SQL", selectForUpdateQuery);
       query.setUnique(true);
       // only need to execute it to get db Lock
@@ -8296,11 +8296,16 @@ public class ObjectStore implements RawStore, Configurable {
 
     private static Logger LOG = LoggerFactory.getLogger(RetryingExecutor.class);
     private final int maxRetries;
+    private final long sleepInterval;
     private int currentRetries = 0;
     private final Command command;
 
-    RetryingExecutor(int maxRetries, Command command) {
-      this.maxRetries = maxRetries;
+    RetryingExecutor(HiveConf hiveConf, Command command) {
+      this.maxRetries = hiveConf.getIntVar(ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
+      this.sleepInterval = hiveConf.getTimeVar(
+          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL,
+          TimeUnit.MILLISECONDS
+      );
       this.command = command;
     }
 
@@ -8316,6 +8321,13 @@ public class ObjectStore implements RawStore, Configurable {
             throw new MetaException(e.getMessage());
           }
           currentRetries++;
+          try {
+            Thread.sleep(sleepInterval);
+          } catch (InterruptedException e1) {
+            String msg = "error waiting for next retry " + currentRetries;
+            LOG.error(msg, e1);
+            throw new MetaException(msg);
+          }
         }
       }
     }
