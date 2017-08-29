@@ -31,7 +31,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,8 +59,6 @@ import java.util.regex.Pattern;
 import javax.jdo.JDOException;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
@@ -498,49 +495,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      //Start Metrics for Embedded mode
+      //Start Metrics
       if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
         Metrics.initialize(hiveConf);
-      }
-
-      MetricRegistry registry = Metrics.getRegistry();
-      if (registry != null && hiveConf.getBoolVar(ConfVars.METASTORE_INIT_METADATA_COUNT_ENABLED)) {
-        synchronized (HMSHandler.class) {
-          if (!registry.getNames().contains(MetricsConstants.TOTAL_DATABASES)) {
-            LOG.info("Begin calculating metadata count metrics.");
-            databaseCount = new AtomicInteger();
-            tableCount = new AtomicInteger();
-            partCount = new AtomicInteger();
-            updateMetrics();
-            LOG.info(
-                "Finished metadata count metrics: " + databaseCount + " databases, " + tableCount +
-                    " tables, " + partCount + " partitions.");
-            registry.register(MetricsConstants.TOTAL_DATABASES, new Gauge<Integer>() {
-              @Override
-              public Integer getValue() {
-                return databaseCount.get();
-              }
-            });
-            registry.register(MetricsConstants.TOTAL_TABLES, new Gauge<Integer>() {
-              @Override
-              public Integer getValue() {
-                return tableCount.get();
-              }
-            });
-            registry.register(MetricsConstants.TOTAL_PARTITIONS, new Gauge<Integer>() {
-              @Override
-              public Integer getValue() {
-                return partCount.get();
-              }
-            });
-            registry.counter(MetricsConstants.CREATE_TOTAL_DATABASES);
-            registry.counter(MetricsConstants.CREATE_TOTAL_TABLES);
-            registry.counter(MetricsConstants.CREATE_TOTAL_PARTITIONS);
-            registry.counter(MetricsConstants.DELETE_TOTAL_DATABASES);
-            registry.counter(MetricsConstants.DELETE_TOTAL_TABLES);
-            registry.counter(MetricsConstants.DELETE_TOTAL_PARTITIONS);
-          }
-        }
+        databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
+        tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
+        partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
       }
 
       preListeners = MetaStoreUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
@@ -553,7 +513,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners.add(new AcidEventListener(hiveConf));
       transactionalListeners = MetaStoreUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,hiveConf,
               hiveConf.getVar(ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS));
-      if (registry != null) {
+      if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(hiveConf));
       }
 
@@ -7602,7 +7562,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static final AtomicInteger openConnections = new AtomicInteger();
+  private static AtomicInteger openConnections;
 
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
@@ -7733,16 +7693,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       // Metrics will have already been initialized if we're using them since HMSHandler
-      // intializes them.
-      MetricRegistry registry = Metrics.getRegistry();
-      if (registry != null) {
-        registry.register(MetricsConstants.OPEN_CONNECTIONS, new Gauge<Integer>() {
-           @Override
-           public Integer getValue() {
-             return openConnections.get();
-           }
-        });
-      }
+      // initializes them.
+      openConnections = Metrics.getOrCreateGauge(MetricsConstants.OPEN_CONNECTIONS);
+
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
           .processor(processor)
           .transportFactory(transFactory)

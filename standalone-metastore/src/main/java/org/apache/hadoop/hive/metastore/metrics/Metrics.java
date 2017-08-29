@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.metrics;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Reporter;
@@ -40,18 +41,22 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Metrics {
   private static final Logger LOGGER = LoggerFactory.getLogger(Metrics.class);
 
   private static Metrics self;
+  private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
   private List<ScheduledReporter> scheduledReporters;
+  private Map<String, AtomicInteger> gaugeAtomics;
   private boolean hadoopMetricsStarted;
 
   public static synchronized Metrics initialize(Configuration conf) {
@@ -116,6 +121,34 @@ public class Metrics {
       timer = timers.get(name);
       if (timer != null) return timer;
       return self.registry.timer(name);
+    }
+  }
+
+  /**
+   * Get the AtomicInteger behind an existing gauge, or create a new gauge if it does not already
+   * exist.
+   * @param name Name of gauge.  This should come from MetricConstants
+   * @return AtomicInteger underlying this gauge.
+   */
+  public static AtomicInteger getOrCreateGauge(String name) {
+    // We return a garbage value if metrics haven't been initialized so that callers don't have
+    // to keep checking if the resulting value is null.
+    if (self == null) return singletonAtomicInteger;
+    AtomicInteger ai = self.gaugeAtomics.get(name);
+    if (ai != null) return ai;
+    synchronized (Metrics.class) {
+      ai = self.gaugeAtomics.get(name);
+      if (ai != null) return ai;
+      ai = new AtomicInteger();
+      final AtomicInteger forGauge = ai;
+      self.gaugeAtomics.put(name, ai);
+      self.registry.register(name, new Gauge<Integer>() {
+        @Override
+        public Integer getValue() {
+          return forGauge.get();
+        }
+      });
+      return ai;
     }
   }
 
@@ -206,5 +239,7 @@ public class Metrics {
       LOGGER.warn("No metrics reporters configured.");
     }
 
+    // Create map for tracking gauges
+    gaugeAtomics = new HashMap<>();
   }
 }

@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.dbcp.ConnectionFactory;
@@ -58,7 +56,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
@@ -193,8 +191,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
-  // Current number of open txns
-  private static final AtomicLong numOpenTxns = new AtomicLong();
   // Whether number of open transactions reaches the threshold
   private static volatile boolean tooManyOpenTxns = false;
   // The AcidHouseKeeperService for counting open transactions
@@ -216,6 +212,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private long retryInterval;
   private int retryLimit;
   private int retryNum;
+  // Current number of open txns
+  private AtomicInteger numOpenTxns;
+
   /**
    * Derby specific concurrency control
    */
@@ -278,21 +277,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } finally {
           closeDbConn(dbConn);
         }
-
-        // Set up a metric to track the open txns
-        MetricRegistry registry = Metrics.getRegistry();
-        if (registry != null) {
-          if (!registry.getNames().contains(MetricsConstants.NUM_OPEN_TXNS)) {
-            registry.register(MetricsConstants.NUM_OPEN_TXNS, new Gauge<Long>() {
-              @Override
-              public Long getValue() {
-                return numOpenTxns.get();
-              }
-            });
-          }
-        }
       }
     }
+
+    numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     buildJumpTable();
@@ -3177,7 +3165,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.error("Transaction database not properly configured, " +
               "can't find txn_state from TXNS.");
         } else {
-          numOpenTxns.set(rs.getLong(1));
+          Long numOpen = rs.getLong(1);
+          if (numOpen > Integer.MAX_VALUE) {
+            LOG.error("Open transaction count above " + Integer.MAX_VALUE +
+                ", can't count that high!");
+          } else {
+            numOpenTxns.set(numOpen.intValue());
+          }
         }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
