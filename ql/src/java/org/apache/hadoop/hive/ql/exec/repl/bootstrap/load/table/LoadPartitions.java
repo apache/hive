@@ -108,11 +108,8 @@ public class LoadPartitions {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,
                                             tableDesc.getTableName(), tableDesc.tableType());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
-    if (tracker.tasks().isEmpty()) {
-      tracker.addTask(replLogTask);
-    } else {
-      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
-    }
+    ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+    tracker.addTask(replLogTask);
   }
 
   public TaskTracker tasks() throws SemanticException {

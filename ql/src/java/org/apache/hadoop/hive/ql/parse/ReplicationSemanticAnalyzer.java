@@ -379,7 +379,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         // If any event is there and db name is known, then dump the start and end logs
-        if (evTaskRoot != taskChainTail) {
+        if (!evTaskRoot.equals(taskChainTail)) {
           Map<String, String> dbProps = new HashMap<>();
           dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(dmd.getEventTo()));
           ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);

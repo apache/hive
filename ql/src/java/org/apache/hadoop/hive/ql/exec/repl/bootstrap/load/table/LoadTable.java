@@ -74,6 +74,7 @@ public class LoadTable {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+    tracker.addTask(replLogTask);
   }
 
   public TaskTracker tasks() throws SemanticException {
