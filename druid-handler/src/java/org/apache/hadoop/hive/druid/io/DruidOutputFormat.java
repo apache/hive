@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.druid.io;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.metamx.common.Granularity;
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -28,17 +28,19 @@ import io.druid.data.input.impl.MapInputRowParser;
 import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.data.input.impl.TimeAndDimsParseSpec;
 import io.druid.data.input.impl.TimestampSpec;
+import io.druid.java.util.common.granularity.Granularity;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
+import io.druid.segment.IndexSpec;
+import io.druid.segment.data.ConciseBitmapSerdeFactory;
+import io.druid.segment.data.RoaringBitmapSerdeFactory;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.indexing.granularity.GranularitySpec;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
-import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.plumber.CustomVersioningPolicy;
-import io.druid.storage.hdfs.HdfsDataSegmentPusher;
-import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
+
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -50,13 +52,16 @@ import org.apache.hadoop.hive.druid.serde.DruidWritable;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.util.Progressable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,19 +93,14 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
                     tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
                     HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
     final String dataSource = tableProperties.getProperty(Constants.DRUID_DATA_SOURCE);
-    final String segmentDirectory =
-            tableProperties.getProperty(Constants.DRUID_SEGMENT_DIRECTORY) != null
-                    ? tableProperties.getProperty(Constants.DRUID_SEGMENT_DIRECTORY)
-                    : HiveConf.getVar(jc, HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
-
-    final HdfsDataSegmentPusherConfig hdfsDataSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
-    hdfsDataSegmentPusherConfig.setStorageDirectory(segmentDirectory);
-    final DataSegmentPusher hdfsDataSegmentPusher = new HdfsDataSegmentPusher(
-            hdfsDataSegmentPusherConfig, jc, DruidStorageHandlerUtils.JSON_MAPPER);
+    final String segmentDirectory = jc.get(Constants.DRUID_SEGMENT_INTERMEDIATE_DIRECTORY);
 
     final GranularitySpec granularitySpec = new UniformGranularitySpec(
-            Granularity.valueOf(segmentGranularity),
-            null,
+            Granularity.fromString(segmentGranularity),
+            Granularity.fromString(
+                    tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
+                            ? "NONE"
+                            : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
             null
     );
 
@@ -128,27 +128,37 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     final List<DimensionSchema> dimensions = new ArrayList<>();
     ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
     for (int i = 0; i < columnTypes.size(); i++) {
-      TypeInfo f = columnTypes.get(i);
-      assert f.getCategory() == ObjectInspector.Category.PRIMITIVE;
+      PrimitiveTypeInfo f = (PrimitiveTypeInfo) columnTypes.get(i);
       AggregatorFactory af;
-      switch (f.getTypeName()) {
-        case serdeConstants.TINYINT_TYPE_NAME:
-        case serdeConstants.SMALLINT_TYPE_NAME:
-        case serdeConstants.INT_TYPE_NAME:
-        case serdeConstants.BIGINT_TYPE_NAME:
+      switch (f.getPrimitiveCategory()) {
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
           af = new LongSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
           break;
-        case serdeConstants.FLOAT_TYPE_NAME:
-        case serdeConstants.DOUBLE_TYPE_NAME:
+        case FLOAT:
+        case DOUBLE:
+        case DECIMAL:
           af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
           break;
-        default:
-          // Dimension or timestamp
-          String columnName = columnNames.get(i);
-          if (!columnName.equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN) && !columnName
+        case TIMESTAMP:
+          String tColumnName = columnNames.get(i);
+          if (!tColumnName.equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN) && !tColumnName
                   .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
-            dimensions.add(new StringDimensionSchema(columnName));
+            throw new IOException("Dimension " + tColumnName + " does not have STRING type: " +
+                    f.getPrimitiveCategory());
           }
+          continue;
+        default:
+          // Dimension
+          String dColumnName = columnNames.get(i);
+          if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(f.getPrimitiveCategory()) !=
+                  PrimitiveGrouping.STRING_GROUP) {
+            throw new IOException("Dimension " + dColumnName + " does not have STRING type: " +
+                    f.getPrimitiveCategory());
+          }
+          dimensions.add(new StringDimensionSchema(dColumnName));
           continue;
       }
       aggregatorFactoryBuilder.add(af);
@@ -178,13 +188,37 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
-    final RealtimeTuningConfig realtimeTuningConfig = RealtimeTuningConfig
-            .makeDefaultTuningConfig(new File(
-                    basePersistDirectory))
-            .withVersioningPolicy(new CustomVersioningPolicy(version));
+    if (Strings.isNullOrEmpty(basePersistDirectory)) {
+      basePersistDirectory = System.getProperty("java.io.tmpdir");
+    }
+    Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
+
+    IndexSpec indexSpec;
+    if ("concise".equals(HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BITMAP_FACTORY_TYPE))) {
+      indexSpec = new IndexSpec(new ConciseBitmapSerdeFactory(), null, null, null);
+    } else {
+      indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
+    }
+    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
+            null,
+            null,
+            new File(basePersistDirectory, dataSource),
+            new CustomVersioningPolicy(version),
+            null,
+            null,
+            null,
+            indexSpec,
+            true,
+            0,
+            0,
+            true,
+            null,
+            0L
+    );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
-    return new DruidRecordWriter(dataSchema, realtimeTuningConfig, hdfsDataSegmentPusher,
+    return new DruidRecordWriter(dataSchema, realtimeTuningConfig,
+            DruidStorageHandlerUtils.createSegmentPusherForDirectory(segmentDirectory, jc),
             maxPartitionSize, new Path(workingPath, SEGMENTS_DESCRIPTOR_DIR_NAME),
             finalOutPath.getFileSystem(jc)
     );
@@ -199,6 +233,6 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
 
   @Override
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
-    throw new UnsupportedOperationException("not implemented yet");
+    // NOOP
   }
 }

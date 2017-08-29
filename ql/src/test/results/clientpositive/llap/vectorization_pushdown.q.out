@@ -1,8 +1,12 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+PREHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+POSTHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -12,7 +16,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -39,8 +43,23 @@ STAGE PLANS:
                           value expressions: _col0 (type: struct<count:bigint,sum:double,input:bigint>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: avg(VALUE._col0)

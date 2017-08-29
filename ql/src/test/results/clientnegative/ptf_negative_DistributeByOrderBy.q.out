@@ -1,2 +1,1 @@
-FAILED: ParseException line 3:46 missing ) at 'order' near 'p_mfgr'
-line 3:61 missing EOF at ')' near 'p_mfgr'
+FAILED: ParseException line 3:3 cannot recognize input near 'sum' '(' 'p_retailprice' in expression specification

@@ -1,8 +1,6 @@
-PREHOOK: query: -- base table with null data
-DROP TABLE IF EXISTS base_tab
+PREHOOK: query: DROP TABLE IF EXISTS base_tab
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- base table with null data
-DROP TABLE IF EXISTS base_tab
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -50,11 +48,9 @@ fooNullfooNull
 1.0fooNull
 1.01
 1.01
-PREHOOK: query: -- load the exported data back into a table with same null format and verify null values
-DROP TABLE IF EXISTS null_tab2
+PREHOOK: query: DROP TABLE IF EXISTS null_tab2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- load the exported data back into a table with same null format and verify null values
-DROP TABLE IF EXISTS null_tab2
+POSTHOOK: query: DROP TABLE IF EXISTS null_tab2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE null_tab2(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 PREHOOK: type: CREATETABLE

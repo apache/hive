@@ -91,6 +91,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1_new
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from t1 where ds = '2011-10-15'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1

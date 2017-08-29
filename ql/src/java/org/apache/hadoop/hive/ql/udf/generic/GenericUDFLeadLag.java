@@ -146,7 +146,9 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    assert (children.length == 2);
+    if (children.length != 2) {
+      return _getFnName() + "(...)";
+    }
     return getStandardDisplayString(_getFnName(), children);
   }
 

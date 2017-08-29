@@ -50,7 +50,7 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
       "<PERFLOG method=compile from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=parse from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=Driver.run from=org.apache.hadoop.hive.ql.Driver>",
-      "from=org.apache.hadoop.hive.ql.exec.tez.TezJobMonitor",
+      "from=org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor",
       "org.apache.tez.common.counters.DAGCounter",
       "NUM_SUCCEEDED_TASKS",
       "TOTAL_LAUNCHED_TASKS",
@@ -58,8 +58,6 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    // Change the engine to tez
-    hiveConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     // Set tez execution summary to false.
     hiveConf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, false);
     miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);

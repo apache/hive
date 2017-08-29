@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
 set hive.cli.print.header=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
@@ -25,7 +26,7 @@ INSERT INTO TABLE date_udf_flight_orc SELECT fl_date, to_utc_timestamp(fl_date, 
 
 SELECT * FROM date_udf_flight_orc;
 
-EXPLAIN SELECT
+EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_time,
   to_unix_timestamp(fl_time),
   year(fl_time),
@@ -71,7 +72,7 @@ SELECT
   datediff(fl_time, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc;
 
-EXPLAIN SELECT
+EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_date,
   to_unix_timestamp(fl_date),
   year(fl_date),
@@ -117,7 +118,7 @@ SELECT
   datediff(fl_date, timestamp "2007-03-14 08:21:59")
 FROM date_udf_flight_orc;
 
-EXPLAIN SELECT
+EXPLAIN VECTORIZATION EXPRESSION  SELECT
   fl_time,
   fl_date,
   year(fl_time) = year(fl_date),
@@ -168,7 +169,7 @@ SELECT
   datediff(fl_date, "2007-03-14") = datediff(fl_date, date "2007-03-14")
 FROM date_udf_flight_orc;
 
-EXPLAIN SELECT 
+EXPLAIN VECTORIZATION EXPRESSION  SELECT 
   fl_date, 
   to_date(date_add(fl_date, 2)), 
   to_date(date_sub(fl_date, 2)),
@@ -189,7 +190,7 @@ FROM date_udf_flight_orc LIMIT 10;
 -- Test extracting the date part of expression that includes time
 SELECT to_date('2009-07-30 04:17:52') FROM date_udf_flight_orc LIMIT 1;
 
-EXPLAIN SELECT
+EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(fl_date) AS c1,
   max(fl_date),
   count(fl_date),

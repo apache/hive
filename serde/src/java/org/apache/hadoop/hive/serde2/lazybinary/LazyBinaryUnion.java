@@ -29,7 +29,7 @@
   import org.apache.hadoop.hive.serde2.objectinspector.*;
 
 /**
- * LazyBinaryUnion is serialized as follows: start TAG FIELD end bytes[] ->
+ * LazyBinaryUnion is serialized as follows: start TAG FIELD end bytes[] -&gt;
  * |-----|---------|--- ... ---|-----|---------|
  *
  * Section TAG is one byte, corresponding to tag of set union field

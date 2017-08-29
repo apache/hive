@@ -12,7 +12,7 @@ PREHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -29,7 +29,7 @@ POSTHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -628,13 +628,11 @@ Manufacturer#5	1241.29
 Manufacturer#5	1424.0900000000001
 Manufacturer#5	1515.25
 Manufacturer#5	1534.532
-PREHOOK: query: -- multi table insert test
-create table t1 (a1 int, b1 string)
+PREHOOK: query: create table t1 (a1 int, b1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- multi table insert test
-create table t1 (a1 int, b1 string)
+POSTHOOK: query: create table t1 (a1 int, b1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1

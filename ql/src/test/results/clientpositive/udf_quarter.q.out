@@ -34,8 +34,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- string date
-select
+PREHOOK: query: select
 quarter('2014-01-10'),
 quarter('2014-02-10'),
 quarter('2014-03-31'),
@@ -48,13 +47,13 @@ quarter('2016-09-29'),
 quarter('2016-10-29'),
 quarter('2016-11-29'),
 quarter('2016-12-29'),
--- wrong date str
+
 quarter('2016-03-35'),
 quarter('2014-01-32'),
 quarter('01/14/2014'),
--- null string
+
 quarter(cast(null as string)),
--- negative Unix time
+
 quarter('1966-01-01'),
 quarter('1966-03-31'),
 quarter('1966-04-01'),
@@ -62,8 +61,7 @@ quarter('1966-12-31')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- string date
-select
+POSTHOOK: query: select
 quarter('2014-01-10'),
 quarter('2014-02-10'),
 quarter('2014-03-31'),
@@ -76,13 +74,13 @@ quarter('2016-09-29'),
 quarter('2016-10-29'),
 quarter('2016-11-29'),
 quarter('2016-12-29'),
--- wrong date str
+
 quarter('2016-03-35'),
 quarter('2014-01-32'),
 quarter('01/14/2014'),
--- null string
+
 quarter(cast(null as string)),
--- negative Unix time
+
 quarter('1966-01-01'),
 quarter('1966-03-31'),
 quarter('1966-04-01'),
@@ -91,8 +89,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1	1	1	2	2	2	3	3	3	4	4	4	2	1	NULL	NULL	1	1	2	4
-PREHOOK: query: -- string timestamp
-select
+PREHOOK: query: select
 quarter('2014-01-10 00:00:00'),
 quarter('2014-02-10 15:23:00'),
 quarter('2014-03-31 15:23:00'),
@@ -105,13 +102,13 @@ quarter('2016-09-29 15:23:00'),
 quarter('2016-10-29 15:23:00'),
 quarter('2016-11-29 15:23:00'),
 quarter('2016-12-29 15:23:00'),
--- wrong date str
+
 quarter('2016-03-35 15:23:00'),
 quarter('2014-01-32 15:23:00'),
 quarter('01/14/2014 15:23:00'),
--- null VOID type
+
 quarter(null),
--- negative Unix time
+
 quarter('1966-01-01 00:00:00'),
 quarter('1966-03-31 23:59:59.999'),
 quarter('1966-04-01 00:00:00'),
@@ -119,8 +116,7 @@ quarter('1966-12-31 23:59:59.999')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- string timestamp
-select
+POSTHOOK: query: select
 quarter('2014-01-10 00:00:00'),
 quarter('2014-02-10 15:23:00'),
 quarter('2014-03-31 15:23:00'),
@@ -133,13 +129,13 @@ quarter('2016-09-29 15:23:00'),
 quarter('2016-10-29 15:23:00'),
 quarter('2016-11-29 15:23:00'),
 quarter('2016-12-29 15:23:00'),
--- wrong date str
+
 quarter('2016-03-35 15:23:00'),
 quarter('2014-01-32 15:23:00'),
 quarter('01/14/2014 15:23:00'),
--- null VOID type
+
 quarter(null),
--- negative Unix time
+
 quarter('1966-01-01 00:00:00'),
 quarter('1966-03-31 23:59:59.999'),
 quarter('1966-04-01 00:00:00'),
@@ -148,8 +144,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1	1	1	2	2	2	3	3	3	4	4	4	2	1	NULL	NULL	1	1	2	4
-PREHOOK: query: -- date
-select
+PREHOOK: query: select
 quarter(cast('2014-01-10' as date)),
 quarter(cast('2014-02-10' as date)),
 quarter(cast('2014-03-31' as date)),
@@ -162,9 +157,9 @@ quarter(cast('2016-09-29' as date)),
 quarter(cast('2016-10-29' as date)),
 quarter(cast('2016-11-29' as date)),
 quarter(cast('2016-12-29' as date)),
--- null date
+
 quarter(cast(null as date)),
--- negative Unix time
+
 quarter(cast('1966-01-01' as date)),
 quarter(cast('1966-03-31' as date)),
 quarter(cast('1966-04-01' as date)),
@@ -172,8 +167,7 @@ quarter(cast('1966-12-31' as date))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- date
-select
+POSTHOOK: query: select
 quarter(cast('2014-01-10' as date)),
 quarter(cast('2014-02-10' as date)),
 quarter(cast('2014-03-31' as date)),
@@ -186,9 +180,9 @@ quarter(cast('2016-09-29' as date)),
 quarter(cast('2016-10-29' as date)),
 quarter(cast('2016-11-29' as date)),
 quarter(cast('2016-12-29' as date)),
--- null date
+
 quarter(cast(null as date)),
--- negative Unix time
+
 quarter(cast('1966-01-01' as date)),
 quarter(cast('1966-03-31' as date)),
 quarter(cast('1966-04-01' as date)),
@@ -197,8 +191,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1	1	1	2	2	2	3	3	3	4	4	4	NULL	1	1	2	4
-PREHOOK: query: -- timestamp
-select
+PREHOOK: query: select
 quarter(cast('2014-01-10 00:00:00' as timestamp)),
 quarter(cast('2014-02-10 15:23:00' as timestamp)),
 quarter(cast('2014-03-31 15:23:00' as timestamp)),
@@ -211,9 +204,9 @@ quarter(cast('2016-09-29 15:23:00' as timestamp)),
 quarter(cast('2016-10-29 15:23:00' as timestamp)),
 quarter(cast('2016-11-29 15:23:00' as timestamp)),
 quarter(cast('2016-12-29 15:23:00' as timestamp)),
--- null timestamp
+
 quarter(cast(null as timestamp)),
--- negative Unix time
+
 quarter(cast('1966-01-01 00:00:00' as timestamp)),
 quarter(cast('1966-03-31 23:59:59.999' as timestamp)),
 quarter(cast('1966-04-01 00:00:00' as timestamp)),
@@ -221,8 +214,7 @@ quarter(cast('1966-12-31 23:59:59.999' as timestamp))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- timestamp
-select
+POSTHOOK: query: select
 quarter(cast('2014-01-10 00:00:00' as timestamp)),
 quarter(cast('2014-02-10 15:23:00' as timestamp)),
 quarter(cast('2014-03-31 15:23:00' as timestamp)),
@@ -235,9 +227,9 @@ quarter(cast('2016-09-29 15:23:00' as timestamp)),
 quarter(cast('2016-10-29 15:23:00' as timestamp)),
 quarter(cast('2016-11-29 15:23:00' as timestamp)),
 quarter(cast('2016-12-29 15:23:00' as timestamp)),
--- null timestamp
+
 quarter(cast(null as timestamp)),
--- negative Unix time
+
 quarter(cast('1966-01-01 00:00:00' as timestamp)),
 quarter(cast('1966-03-31 23:59:59.999' as timestamp)),
 quarter(cast('1966-04-01 00:00:00' as timestamp)),

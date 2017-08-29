@@ -40,10 +40,7 @@ PREHOOK: Output: matchpathtest
 POSTHOOK: query: create temporary function matchpathtest as 'org.apache.hadoop.hive.ql.udf.ptf.MatchPath$MatchPathResolver'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: matchpathtest
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. basic Matchpath test
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpathtest(on 
         flights_tiny 
         distribute by fl_num 
@@ -55,10 +52,7 @@ from matchpathtest(on
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. basic Matchpath test
-select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
+POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpathtest(on 
         flights_tiny 
         distribute by fl_num 

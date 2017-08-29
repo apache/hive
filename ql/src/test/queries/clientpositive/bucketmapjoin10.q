@@ -23,7 +23,7 @@ LOAD DATA LOCAL INPATH '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_m
 LOAD DATA LOCAL INPATH '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part_2 PARTITION (part='2');
 
 ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) INTO 3 BUCKETS;
-
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin=true;
 
 -- The table bucketing metadata matches but the partition metadata does not, bucket map join should not be used

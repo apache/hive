@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -39,13 +40,15 @@ public class TruncateTableDesc extends DDLDesc {
   private Path inputDir;
   private Path outputDir;
   private ListBucketingCtx lbCtx;
+  private ReplicationSpec replicationSpec;
 
   public TruncateTableDesc() {
   }
 
-  public TruncateTableDesc(String tableName, Map<String, String> partSpec) {
+  public TruncateTableDesc(String tableName, Map<String, String> partSpec, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.partSpec = partSpec;
+    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName = "TableName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -98,4 +101,10 @@ public class TruncateTableDesc extends DDLDesc {
   public void setLbCtx(ListBucketingCtx lbCtx) {
     this.lbCtx = lbCtx;
   }
+
+  /**
+   * @return what kind of replication scope this truncate is running under.
+   * This can result in a "TRUNCATE IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() { return this.replicationSpec; }
 }

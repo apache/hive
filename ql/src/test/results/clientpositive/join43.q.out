@@ -1,8 +1,8 @@
-PREHOOK: query: create table purchase_history (s string, product string, price double, time int)
+PREHOOK: query: create table purchase_history (s string, product string, price double, `time` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@purchase_history
-POSTHOOK: query: create table purchase_history (s string, product string, price double, time int)
+POSTHOOK: query: create table purchase_history (s string, product string, price double, `time` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@purchase_history
@@ -46,11 +46,11 @@ POSTHOOK: Lineage: purchase_history.price EXPRESSION [(values__tmp__table__4)val
 POSTHOOK: Lineage: purchase_history.product SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: purchase_history.s SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: purchase_history.time EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-PREHOOK: query: create table cart_history (s string, cart_id int, time int)
+PREHOOK: query: create table cart_history (s string, cart_id int, `time` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cart_history
-POSTHOOK: query: create table cart_history (s string, cart_id int, time int)
+POSTHOOK: query: create table cart_history (s string, cart_id int, `time` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cart_history
@@ -108,11 +108,11 @@ POSTHOOK: Output: default@cart_history
 POSTHOOK: Lineage: cart_history.cart_id EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: cart_history.s SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: cart_history.time EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-PREHOOK: query: create table events (s string, st2 string, n int, time int)
+PREHOOK: query: create table events (s string, st2 string, n int, `time` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@events
-POSTHOOK: query: create table events (s string, st2 string, n int, time int)
+POSTHOOK: query: create table events (s string, st2 string, n int, `time` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@events
@@ -181,15 +181,15 @@ select s
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -197,15 +197,15 @@ select s
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -357,15 +357,15 @@ PREHOOK: query: select s
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cart_history
@@ -376,15 +376,15 @@ POSTHOOK: query: select s
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cart_history
@@ -399,15 +399,15 @@ select *
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -415,15 +415,15 @@ select *
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -577,15 +577,15 @@ PREHOOK: query: select *
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cart_history
@@ -596,15 +596,15 @@ POSTHOOK: query: select *
 from (
   select last.*, action.st2, action.n
   from (
-    select purchase.s, purchase.time, max (mevt.time) as last_stage_time
+    select purchase.s, purchase.`time`, max (mevt.`time`) as last_stage_time
     from (select * from purchase_history) purchase
     join (select * from cart_history) mevt
     on purchase.s = mevt.s
-    where purchase.time > mevt.time
-    group by purchase.s, purchase.time
+    where purchase.`time` > mevt.`time`
+    group by purchase.s, purchase.`time`
   ) last
   join (select * from events) action
-  on last.s = action.s and last.last_stage_time = action.time
+  on last.s = action.s and last.last_stage_time = action.`time`
 ) list
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cart_history

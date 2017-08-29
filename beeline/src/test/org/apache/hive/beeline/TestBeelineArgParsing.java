@@ -319,4 +319,16 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.properties.get(0).equals("props"));
     bl.close();
   }
+
+  /**
+   * Test maxHistoryRows parameter option.
+   */
+  @Test
+  public void testMaxHistoryRows() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] = new String[] {"--maxHistoryRows=100"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertTrue(bl.getOpts().getMaxHistoryRows() == 100);
+    bl.close();
+  }
 }

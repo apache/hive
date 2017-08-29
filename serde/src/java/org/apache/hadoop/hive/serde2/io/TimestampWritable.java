@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.serde2.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -47,9 +46,9 @@ import org.apache.hadoop.io.WritableUtils;
  * The fractional portion is reversed, and encoded as a VInt
  * so timestamps with less precision use fewer bytes.
  *
- *      0.1    -> 1
- *      0.01   -> 10
- *      0.001  -> 100
+ *      0.1    -&gt; 1
+ *      0.01   -&gt; 10
+ *      0.001  -&gt; 100
  *
  */
 public class TimestampWritable implements WritableComparable<TimestampWritable> {
@@ -133,7 +132,8 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       timestamp.setNanos(0);
       return;
     }
-    this.timestamp = t;
+    timestamp.setTime(t.getTime());
+    timestamp.setNanos(t.getNanos());
     bytesEmpty = true;
     timestampEmpty = false;
   }

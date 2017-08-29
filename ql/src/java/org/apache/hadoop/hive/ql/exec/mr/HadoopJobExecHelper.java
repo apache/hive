@@ -92,6 +92,11 @@ public class HadoopJobExecHelper {
     reduceProgress = reduceProgress == 100 ? (int)Math.floor(rj.reduceProgress() * 100) : reduceProgress;
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_MAP_PROGRESS", Long.valueOf(mapProgress));
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_REDUCE_PROGRESS", Long.valueOf(reduceProgress));
+
+    if (SessionState.get() != null) {
+      final float progress = (rj.mapProgress() + rj.reduceProgress()) * 0.5f;
+      SessionState.get().updateProgressedPercentage(progress);
+    }
   }
 
   /**
@@ -196,7 +201,6 @@ public class HadoopJobExecHelper {
     }
   }
 
-  @SuppressWarnings("deprecation")
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
     if (ctrs == null) {
       // hadoop might return null if it cannot locate the job.

@@ -132,8 +132,8 @@ STAGE PLANS:
             alias: s1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
-              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              expressions: order_quantity (type: double), discount (type: double), customer_name (type: string), customer_balance (type: double)
+              outputColumnNames: order_quantity, discount, customer_name, customer_balance
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: sum(customer_balance), sum(order_quantity), count(discount)
@@ -199,8 +199,8 @@ STAGE PLANS:
             alias: s1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: customer_name (type: string), customer_balance (type: double), order_quantity (type: double), discount (type: double)
-              outputColumnNames: customer_name, customer_balance, order_quantity, discount
+              expressions: order_quantity (type: double), discount (type: double), customer_name (type: string), customer_balance (type: double)
+              outputColumnNames: order_quantity, discount, customer_name, customer_balance
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: sum(customer_balance), sum(order_quantity), count(discount)
@@ -310,22 +310,18 @@ STAGE PLANS:
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col1 (type: string), _col2 (type: double), _col0 (type: double), _col4 (type: string)
-            outputColumnNames: _col1, _col2, _col0, _col4
+          Group By Operator
+            aggregations: sum(_col2), avg(_col0), count(_col4)
+            keys: _col1 (type: string)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-            Group By Operator
-              aggregations: sum(_col2), avg(_col0), count(_col4)
-              keys: _col1 (type: string)
-              mode: hash
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -433,22 +429,18 @@ STAGE PLANS:
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col1 (type: string), _col2 (type: double), _col0 (type: double), _col4 (type: string)
-            outputColumnNames: _col1, _col2, _col0, _col4
+          Group By Operator
+            aggregations: sum(_col2), avg(_col0), count(_col4)
+            keys: _col1 (type: string)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-            Group By Operator
-              aggregations: sum(_col2), avg(_col0), count(_col4)
-              keys: _col1 (type: string)
-              mode: hash
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce
@@ -560,22 +552,18 @@ STAGE PLANS:
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1, _col2, _col4
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: _col1 (type: string), _col2 (type: double), _col0 (type: double), _col4 (type: string)
-            outputColumnNames: _col1, _col2, _col0, _col4
+          Group By Operator
+            aggregations: sum(_col2), avg(_col0), count(_col4)
+            keys: _col1 (type: string)
+            mode: hash
+            outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-            Group By Operator
-              aggregations: sum(_col2), avg(_col0), count(_col4)
-              keys: _col1 (type: string)
-              mode: hash
-              outputColumnNames: _col0, _col1, _col2, _col3
-              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce

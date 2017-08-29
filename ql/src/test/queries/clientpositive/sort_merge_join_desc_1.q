@@ -12,7 +12,7 @@ insert overwrite table table_desc2 select key, value from src;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
+set hive.cbo.enable=false;
 -- The columns of the tables above are sorted in same descending order.
 -- So, sort merge join should be performed
 

@@ -34,8 +34,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
+import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -213,10 +216,11 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing Script Operator");
       // col1
-      ExprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
-
+      ExprNodeDesc exprDesc1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "",
+          false);
       // col2
-      ExprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
+      ExprNodeDesc expr1 = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col0", "",
+          false);
       ExprNodeDesc expr2 = new ExprNodeConstantDesc("1");
       ExprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor
           .getFuncExprNodeDesc("concat", expr1, expr2);
@@ -434,5 +438,46 @@ public class TestOperators extends TestCase {
     driver.getResults(result);
     assertEquals(20, result.size());
     driver.close();
+  }
+
+  @Test
+  public void testNoConditionalTaskSizeForLlap() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
+    HiveConf hiveConf = new HiveConf();
+
+    // execution mode not set, null is returned
+    assertEquals(defaultNoConditionalTaskSize, convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize,
+      hiveConf).getAdjustedNoConditionalTaskSize());
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+
+    // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");
+    double fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    int maxSlots = 3;
+    long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf)
+        .getAdjustedNoConditionalTaskSize());
+
+    // num executors is less than max executors per query (which is not expected case), default executors will be
+    // chosen. 4 * 20% of noconditional task size will be oversubscribed
+    int chosenSlots = hiveConf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * chosenSlots));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf)
+        .getAdjustedNoConditionalTaskSize());
+
+    // disable memory checking
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "0");
+    assertFalse(
+      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf).doMemoryMonitoring());
+
+    // invalid inflation factor
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL.varname, "10000");
+    hiveConf.set(HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR.varname, "0.0f");
+    assertFalse(
+      convertJoinMapJoin.getMemoryMonitorInfo(defaultNoConditionalTaskSize, hiveConf).doMemoryMonitoring());
   }
 }

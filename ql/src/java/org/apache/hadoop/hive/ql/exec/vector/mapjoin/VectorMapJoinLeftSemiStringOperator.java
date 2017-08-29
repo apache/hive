@@ -46,8 +46,17 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinInnerBigOnlyLongOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinLeftSemiStringOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -136,7 +145,7 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -193,7 +202,7 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishLeftSemiRepeated(batch, joinResult, hashSetResults[0]);
@@ -203,7 +212,7 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -344,7 +353,7 @@ public class VectorMapJoinLeftSemiStringOperator extends VectorMapJoinLeftSemiGe
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +

@@ -153,15 +153,10 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     while (reader.next()) {
       boolean needMore = processRow(reader.getCurrentKey(),
           reader.getCurrentValue());
-      if (!needMore || abort) {
+      if (!needMore || isAborted()) {
         break;
       }
     }
-  }
-
-  @Override
-  void abort() {
-    super.abort();
   }
 
   @Override
@@ -172,8 +167,8 @@ public class MergeFileRecordProcessor extends RecordProcessor {
     }
 
     // check if there are IOExceptions
-    if (!abort) {
-      abort = execContext.getIoCxt().getIOExceptions();
+    if (!isAborted()) {
+      setAborted(execContext.getIoCxt().getIOExceptions());
     }
 
     // detecting failed executions by exceptions thrown by the operator tree
@@ -181,12 +176,13 @@ public class MergeFileRecordProcessor extends RecordProcessor {
       if (mergeOp == null || mfWork == null) {
         return;
       }
+      boolean abort = isAborted();
       mergeOp.close(abort);
 
       ExecMapper.ReportStats rps = new ExecMapper.ReportStats(reporter, jconf);
       mergeOp.preorderMap(rps);
     } catch (Exception e) {
-      if (!abort) {
+      if (!isAborted()) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators",
@@ -216,7 +212,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
         mergeOp.process(row, 0);
       }
     } catch (Throwable e) {
-      abort = true;
+      setAborted(true);
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;

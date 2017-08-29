@@ -1,0 +1,38 @@
+PREHOOK: query: create table t (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (1),(1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1),(1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: explain select count(*) from t group by ()
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from t group by ()
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from t group by ()
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from t group by ()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+3

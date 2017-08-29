@@ -3394,6 +3394,79 @@ public class TestHiveDecimal extends HiveDecimalTestBase {
     }
   }
 
+  //------------------------------------------------------------------------------------------------
+
+  @Test
+  public void testRandomDecimal64() {
+    Random r = new Random(2497);
+    for (BigDecimalFlavor bigDecimalFlavor : BigDecimalFlavor.values()) {
+      doTestRandomDecimal64(r, standardAlphabet, bigDecimalFlavor);
+    }
+    for (BigDecimalFlavor bigDecimalFlavor : BigDecimalFlavor.values()) {
+      for (String sparseAlphabet : sparseAlphabets) {
+        doTestRandomDecimal64(r, sparseAlphabet, bigDecimalFlavor);
+      }
+    }
+  }
+
+  private void doTestRandomDecimal64(Random r, String digitAlphabet, BigDecimalFlavor bigDecimalFlavor) {
+
+    for (int i = 0; i < POUND_FACTOR; i++) {
+      BigDecimal bigDecimal = randHiveBigDecimal(r, digitAlphabet, bigDecimalFlavor);
+
+      doTestDecimal64(r, bigDecimal);
+    }
+  }
+
+  @Test
+  public void testDecimal64Special() {
+    Random r = new Random(198);
+    for (BigDecimal bigDecimal : specialBigDecimals) {
+      int precision = Math.min(bigDecimal.precision(), HiveDecimalWritable.DECIMAL64_DECIMAL_DIGITS);
+      int scale = Math.min(bigDecimal.scale(), precision);
+      doTestDecimal64(r, bigDecimal, precision, scale);
+    }
+  }
+
+  private void doTestDecimal64(Random r, BigDecimal inputBigDecimal) {
+    final int precision = 1 + r.nextInt(HiveDecimalWritable.DECIMAL64_DECIMAL_DIGITS);
+    assertTrue(HiveDecimalWritable.isPrecisionDecimal64(precision));
+    final int scale = r.nextInt(precision + 1);
+
+    doTestDecimal64(r, inputBigDecimal, precision, scale);
+  }
+
+  private void doTestDecimal64(Random r, BigDecimal inputBigDecimal, int precision, int scale) {
+
+    BigDecimal bigDecimal = inputBigDecimal;
+
+    if (!bigDecimal.equals(BigDecimal.ZERO)) {
+      while (true) {
+        bigDecimal = bigDecimal.remainder(BigDecimal.valueOf(10).pow(precision - scale));
+        bigDecimal = bigDecimal.setScale(scale, BigDecimal.ROUND_DOWN);
+        if (!bigDecimal.unscaledValue().equals(BigInteger.ZERO)) {
+          break;
+        }
+        bigDecimal = randHiveBigDecimalNormalRange(r, standardAlphabet);
+      }
+    }
+
+    HiveDecimal dec = HiveDecimal.create(bigDecimal);
+    assertTrue(dec != null);
+    dec.validate();
+
+    HiveDecimalWritable decWritable = new HiveDecimalWritable(dec);
+
+    final long decimal64Long = decWritable.serialize64(scale);
+    assertTrue(decimal64Long <= HiveDecimalWritable.getDecimal64AbsMax(precision));
+    HiveDecimalWritable resultWritable = new HiveDecimalWritable(0);
+    resultWritable.deserialize64(decimal64Long, scale);
+
+    assertEquals(dec, resultWritable.getHiveDecimal());
+  }
+
+  //------------------------------------------------------------------------------------------------
+
   public static String displayBytes(byte[] bytes, int start, int length) {
     StringBuilder sb = new StringBuilder();
     for (int i = start; i < start + length; i++) {

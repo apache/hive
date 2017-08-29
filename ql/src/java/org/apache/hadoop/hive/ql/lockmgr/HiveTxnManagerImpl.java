@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
@@ -42,7 +45,6 @@ import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 abstract class HiveTxnManagerImpl implements HiveTxnManager {
 
   protected HiveConf conf;
-  private boolean isAutoCommit = true;//true by default; matches JDBC spec
 
   void setHiveConf(HiveConf c) {
     conf = c;
@@ -56,19 +58,14 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
   }
 
   @Override
+  public void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException {
+    acquireLocks(plan, ctx, username);
+  }
+
+  @Override
   protected void finalize() throws Throwable {
     destruct();
   }
-  @Override
-  public void setAutoCommit(boolean autoCommit) throws LockException {
-    isAutoCommit = autoCommit;
-  }
-
-  @Override
-  public boolean getAutoCommit() {
-    return isAutoCommit;
-  }
-
   @Override
   public int lockTable(Hive db, LockTableDesc lockTbl) throws HiveException {
     HiveLockManager lockMgr = getAndCheckLockManager();
@@ -85,7 +82,8 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
         new HiveLockObjectData(lockTbl.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
             "EXPLICIT",
-            lockTbl.getQueryStr());
+            lockTbl.getQueryStr(),
+            conf);
 
     if (partSpec == null) {
       HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
@@ -143,7 +141,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
     HiveLockObjectData lockData =
         new HiveLockObjectData(lockDb.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
-            "EXPLICIT", lockDb.getQueryStr());
+            "EXPLICIT", lockDb.getQueryStr(), conf);
 
     HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
     if (lck == null) {
@@ -194,4 +192,13 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
 
     return lockMgr;
   }
+  @Override
+  public boolean recordSnapshot(QueryPlan queryPlan) {
+    return false;
+  }
+  @Override
+  public boolean isImplicitTransactionOpen() {
+    return true;
+  }
+
 }

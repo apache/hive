@@ -1,18 +1,12 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_j1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_j1
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -22,9 +16,7 @@ FROM
 ) subq1
 JOIN src1 x ON (x.key = subq1.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -54,25 +46,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: (UDFToDouble(key) < 20.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col1 (type: bigint)
-                    auto parallelism: false
+                  tag: -1
+                  value expressions: _col1 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -84,6 +72,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -104,6 +93,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -121,7 +111,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:$hdt$_0:x]
+        /src [$hdt$_0-subquery1:$hdt$_0-subquery1:x]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -139,6 +129,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col0,_col1
                   columns.types string,bigint
                   escape.delim \
@@ -205,8 +196,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,value,val2
                           columns.comments 
                           columns.types string:string:int
@@ -253,8 +245,9 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
-                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                          COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,value,val2
                           columns.comments 
                           columns.types string:string:int
@@ -284,6 +277,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col1
               columns.types string,bigint
               escape.delim \
@@ -293,6 +287,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
@@ -304,6 +299,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col1
               columns.types string,bigint
               escape.delim \
@@ -313,6 +309,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
@@ -326,6 +323,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -346,6 +344,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -374,8 +373,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,val2
                 columns.comments 
                 columns.types string:string:int
@@ -407,25 +407,21 @@ STAGE PLANS:
               isSamplingPred: false
               predicate: (UDFToDouble(key) > 100.0) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
+              Group By Operator
+                aggregations: count()
+                keys: key (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  aggregations: count(1)
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    null sort order: a
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    tag: -1
-                    value expressions: _col1 (type: bigint)
-                    auto parallelism: false
+                  tag: -1
+                  value expressions: _col1 (type: bigint)
+                  auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -437,6 +433,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -457,6 +454,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -474,7 +472,7 @@ STAGE PLANS:
               name: default.src
             name: default.src
       Truncated Path -> Alias:
-        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:$hdt$_0:x1]
+        /src [$hdt$_0-subquery2:$hdt$_0-subquery2:x1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -492,6 +490,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col0,_col1
                   columns.types string,bigint
                   escape.delim \

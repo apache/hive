@@ -35,7 +35,6 @@ import org.junit.Test;
 
 public class TestMacroSemanticAnalyzer {
 
-  private ParseDriver parseDriver;
   private MacroSemanticAnalyzer analyzer;
   private QueryState queryState;
   private HiveConf conf;
@@ -43,16 +42,15 @@ public class TestMacroSemanticAnalyzer {
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     SessionState.start(conf);
     context = new Context(conf);
-    parseDriver = new ParseDriver();
     analyzer = new MacroSemanticAnalyzer(queryState);
   }
 
   private ASTNode parse(String command) throws Exception {
-    return ParseUtils.findRootNonNullToken(parseDriver.parse(command));
+    return ParseUtils.parse(command);
   }
   private void analyze(ASTNode ast) throws Exception {
     analyzer.analyze(ast, context);

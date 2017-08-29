@@ -34,7 +34,7 @@ Database:           	default
 Table:              	mytbl               	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

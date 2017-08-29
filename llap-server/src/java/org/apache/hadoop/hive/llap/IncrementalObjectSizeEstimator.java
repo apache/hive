@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
  * during the actual estimation. TODO: clean up
  */
 public class IncrementalObjectSizeEstimator {
-  private static final JavaDataModel memoryModel = JavaDataModel.get();
+  public static final JavaDataModel memoryModel = JavaDataModel.get();
   private enum FieldType { PRIMITIVE_ARRAY, OBJECT_ARRAY, COLLECTION, MAP, OTHER };
 
   public static HashMap<Class<?>, ObjectEstimator> createEstimators(Object rootObj) {
@@ -116,7 +116,7 @@ public class IncrementalObjectSizeEstimator {
           addToProcessing(byType, stack, fieldObj, fieldClass);
         }
       }
-      estimator.directSize = JavaDataModel.alignUp(
+      estimator.directSize = (int) JavaDataModel.alignUp(
           estimator.directSize, memoryModel.memoryAlign());
     }
   }
@@ -454,7 +454,7 @@ public class IncrementalObjectSizeEstimator {
           if (len != 0) {
             int elementSize = getPrimitiveSize(e.field.getType().getComponentType());
             arraySize += elementSize * len;
-            arraySize = JavaDataModel.alignUp(arraySize, memoryModel.memoryAlign());
+            arraySize = (int) JavaDataModel.alignUp(arraySize, memoryModel.memoryAlign());
           }
           referencedSize += arraySize;
           break;

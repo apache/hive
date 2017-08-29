@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Strings;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
@@ -50,7 +52,7 @@ public class CoreCompareCliDriver extends CliAdapter{
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-      hiveConfDir, hadoopVer, initScript, cleanupScript, false, false);
+      hiveConfDir, hadoopVer, initScript, cleanupScript, false);
 
       // do a one time initialization
       qt.cleanUp();
@@ -143,12 +145,14 @@ public class CoreCompareCliDriver extends CliAdapter{
         }
       }
 
-      ecode = qt.checkCompareCliDriverResults(fname, outputs);
-      if (ecode != 0) {
-        qt.failedDiff(ecode, fname, debugHint);
+      QTestProcessExecResult result = qt.checkCompareCliDriverResults(fname, outputs);
+      if (result.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
+            debugHint : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
-    catch (Throwable e) {
+    catch (Exception e) {
       qt.failed(e, fname, debugHint);
     }
 

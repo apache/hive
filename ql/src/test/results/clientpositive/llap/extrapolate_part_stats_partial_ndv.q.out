@@ -83,21 +83,29 @@ PREHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statisti
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2001
+PREHOOK: Output: default@loc_orc_1d
+PREHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid,cnt,zip
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2001
+POSTHOOK: Output: default@loc_orc_1d
+POSTHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid,cnt,zip
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2002
+PREHOOK: Output: default@loc_orc_1d
+PREHOOK: Output: default@loc_orc_1d@year=2002
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid,cnt,zip
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2002
+POSTHOOK: Output: default@loc_orc_1d
+POSTHOOK: Output: default@loc_orc_1d@year=2002
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 PREHOOK: type: DESCTABLE
@@ -105,72 +113,72 @@ PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	0.75                	2                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	6                   	3.0                 	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	4.0                 	0                   	5                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	4.0                 	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	5.0                 	0                   	6                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	5.0                 	0                   	5                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	2000                	0                   	5                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	2000                	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	910                 	0                   	4                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	910                 	0                   	4                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') zip
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	4                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') zip
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	4                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
@@ -191,6 +199,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -212,6 +221,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -234,6 +244,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -255,6 +266,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -277,6 +289,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -298,6 +311,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -320,6 +334,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -341,6 +356,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -368,21 +384,29 @@ PREHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statisti
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2000
+PREHOOK: Output: default@loc_orc_1d
+PREHOOK: Output: default@loc_orc_1d@year=2000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state,locid,cnt,zip
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2000
+POSTHOOK: Output: default@loc_orc_1d
+POSTHOOK: Output: default@loc_orc_1d@year=2000
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state,locid,cnt,zip
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2003
+PREHOOK: Output: default@loc_orc_1d
+PREHOOK: Output: default@loc_orc_1d@year=2003
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state,locid,cnt,zip
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2003
+POSTHOOK: Output: default@loc_orc_1d
+POSTHOOK: Output: default@loc_orc_1d@year=2003
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') state
 PREHOOK: type: DESCTABLE
@@ -390,72 +414,72 @@ PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	4                   	1.25                	4                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	1.25                	4                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	2.0                 	0                   	2                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	2.0                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	double              	1.0                 	31.0                	0                   	6                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	double              	1.0                 	31.0                	0                   	5                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	1010                	0                   	3                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	1010                	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	2000                	0                   	3                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	2000                	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2000') zip
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	94086               	94087               	0                   	2                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	94086               	94087               	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') zip
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_1d
 POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2003') zip
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_1d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-zip                 	int                 	43201               	94087               	0                   	4                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+zip                 	int                 	43201               	94087               	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_1d
@@ -476,6 +500,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -497,6 +522,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -519,6 +545,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -540,6 +567,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -562,6 +590,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -583,6 +612,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -605,6 +635,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -626,6 +657,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -724,21 +756,29 @@ PREHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid,cnt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid,cnt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
+PREHOOK: Output: default@loc_orc_2d
+PREHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid,cnt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
+POSTHOOK: Output: default@loc_orc_2d
+POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') state
 PREHOOK: type: DESCTABLE
@@ -746,54 +786,54 @@ PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	2                   	0.5                 	1                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') state
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') state
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-state               	string              	                    	                    	0                   	4                   	3.0                 	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+state               	string              	                    	                    	0                   	3                   	3.0                 	3                   	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	int                 	2                   	3                   	0                   	2                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	int                 	2                   	3                   	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') locid
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') locid
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-locid               	int                 	1                   	5                   	0                   	3                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+locid               	int                 	1                   	5                   	0                   	3                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94086, year='2001') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	1000                	2000                	0                   	2                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	1000                	2000                	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') cnt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@loc_orc_2d
 POSTHOOK: query: describe formatted loc_orc_2d partition(zip=94087, year='2002') cnt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@loc_orc_2d
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-cnt                 	decimal(10,0)       	10                  	100                 	0                   	2                   	                    	                    	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+cnt                 	decimal(10,0)       	10                  	100                 	0                   	2                   	                    	                    	                    	                    	HL                  	from deserializer   
 PREHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select state,locid,cnt,zip from loc_orc_2d
@@ -815,6 +855,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -836,6 +877,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -859,6 +901,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -880,6 +923,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -903,6 +947,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -924,6 +969,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -947,6 +993,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -968,6 +1015,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -991,6 +1039,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1012,6 +1061,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1035,6 +1085,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1056,6 +1107,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1079,6 +1131,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1100,6 +1153,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1123,6 +1177,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1144,6 +1199,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1167,6 +1223,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1188,6 +1245,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1211,6 +1269,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1232,6 +1291,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1255,6 +1315,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1276,6 +1337,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)

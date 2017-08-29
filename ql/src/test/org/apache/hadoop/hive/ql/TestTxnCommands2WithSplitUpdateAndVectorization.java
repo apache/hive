@@ -23,11 +23,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Same as TestTxnCommands2WithSplitUpdate but tests ACID tables with vectorization turned on by
+ * Same as TestTxnCommands2 but tests ACID tables with vectorization turned on by
  * default, and having 'transactional_properties' set to 'default'. This specifically tests the
  * fast VectorizedOrcAcidRowBatchReader for ACID tables with split-update turned on.
  */
-public class TestTxnCommands2WithSplitUpdateAndVectorization extends TestTxnCommands2WithSplitUpdate {
+public class TestTxnCommands2WithSplitUpdateAndVectorization extends TestTxnCommands2 {
 
   public TestTxnCommands2WithSplitUpdateAndVectorization() {
     super();

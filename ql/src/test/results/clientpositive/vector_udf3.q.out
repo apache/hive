@@ -4,10 +4,14 @@ PREHOOK: Output: rot13
 POSTHOOK: query: CREATE TEMPORARY FUNCTION rot13 as 'hive.it.custom.udfs.GenericUDFRot13'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: rot13
-PREHOOK: query: EXPLAIN SELECT rot13(cstring1) from alltypesorc
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT rot13(cstring1) from alltypesorc
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT rot13(cstring1) from alltypesorc
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -19,18 +23,37 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Select Operator
               expressions: Rot13(cstring1) (type: string)
               outputColumnNames: _col0
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [12]
+                  selectExpressions: VectorStringRot13(col 6) -> 12:String
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

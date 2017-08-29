@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +123,7 @@ public class CliDriver {
 
     // Flush the print stream, so it doesn't include output from the last command
     ss.err.flush();
-    String cmd_trimmed = cmd.trim();
+    String cmd_trimmed = HiveStringUtils.removeComments(cmd).trim();
     String[] tokens = tokenizeCmd(cmd_trimmed);
     int ret = 0;
 
@@ -181,7 +182,12 @@ public class CliDriver {
     }  else { // local mode
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens, (HiveConf) conf);
-        ret = processLocalCmd(cmd, proc, ss);
+        if (proc instanceof Driver) {
+          // Let Driver strip comments using sql parser
+          ret = processLocalCmd(cmd, proc, ss);
+        } else {
+          ret = processLocalCmd(cmd_trimmed, proc, ss);
+        }
       } catch (SQLException e) {
         console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
           org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -384,8 +390,11 @@ public class CliDriver {
     try {
       int lastRet = 0, ret = 0;
 
+      // we can not use "split" function directly as ";" may be quoted
+      List<String> commands = splitSemiColon(line);
+      
       String command = "";
-      for (String oneCmd : line.split(";")) {
+      for (String oneCmd : commands) {
 
         if (StringUtils.endsWith(oneCmd, "\\")) {
           command += StringUtils.chop(oneCmd) + ";";
@@ -414,6 +423,47 @@ public class CliDriver {
         Signal.handle(interruptSignal, oldSignal);
       }
     }
+  }
+  
+  public static List<String> splitSemiColon(String line) {
+    boolean insideSingleQuote = false;
+    boolean insideDoubleQuote = false;
+    boolean escape = false;
+    int beginIndex = 0;
+    List<String> ret = new ArrayList<>();
+    for (int index = 0; index < line.length(); index++) {
+      if (line.charAt(index) == '\'') {
+        // take a look to see if it is escaped
+        if (!escape) {
+          // flip the boolean variable
+          insideSingleQuote = !insideSingleQuote;
+        }
+      } else if (line.charAt(index) == '\"') {
+        // take a look to see if it is escaped
+        if (!escape) {
+          // flip the boolean variable
+          insideDoubleQuote = !insideDoubleQuote;
+        }
+      } else if (line.charAt(index) == ';') {
+        if (insideSingleQuote || insideDoubleQuote) {
+          // do not split
+        } else {
+          // split, do not include ; itself
+          ret.add(line.substring(beginIndex, index));
+          beginIndex = index + 1;
+        }
+      } else {
+        // nothing to do
+      }
+      // set the escape
+      if (escape) {
+        escape = false;
+      } else if (line.charAt(index) == '\\') {
+        escape = true;
+      }
+    }
+    ret.add(line.substring(beginIndex));
+    return ret;
   }
 
   public int processReader(BufferedReader r) throws IOException {

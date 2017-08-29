@@ -75,7 +75,7 @@ STAGE PLANS:
               Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: bigint)
                   1 _col0 (type: bigint)
@@ -92,6 +92,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

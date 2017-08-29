@@ -301,7 +301,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     //Remove any virtual cols
     if (tableAccessRel instanceof HiveTableScan) {
-      iRefSet.removeAll(((HiveTableScan)tableAccessRel).getPartOrVirtualCols());
+      iRefSet.removeAll(((HiveTableScan)tableAccessRel).getVirtualCols());
     }
 
     if (!iRefSet.isEmpty()) {
@@ -312,5 +312,9 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             tableAccessRel.getTable().getQualifiedName());
       }
     }
+  }
+
+  protected TrimResult result(RelNode r, final Mapping mapping) {
+    return new TrimResult(r, mapping);
   }
 }

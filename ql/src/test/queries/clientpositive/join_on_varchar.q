@@ -7,6 +7,7 @@ insert into table tbl1 select repeat('t', 10), 11 from src limit 1;
 insert into table tbl1 select repeat('s', 10), 22 from src limit 1;
 insert into table tbl2 select concat(repeat('t', 10), 'ppp') from src limit 1;
 insert into table tbl2 select repeat('s', 10) from src limit 1;
+set hive.auto.convert.join=true;
 
 explain
 select /*+ MAPJOIN(tbl2) */ c1,c2 from tbl1 join tbl2 on (c1 = c2) order by c1,c2;

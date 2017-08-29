@@ -51,3 +51,5 @@ POSTHOOK: Input: default@src
 5	val_5
 5	val_5
 c=1
+x=1
+x=2

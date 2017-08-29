@@ -1,0 +1,601 @@
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 5) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [6, 2, 4, 1, 16]
+                          selectExpressions: VectorCoalesce(columns [12, 6, 13, 14, 15])(children: ConstantVectorExpression(val null) -> 12:string, col 6, CastLongToString(col 2) -> 13:String, VectorUDFAdaptor(null(cfloat)) -> 14:string, CastLongToString(col 1) -> 15:String) -> 16:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [5, 0, 1, 2, 3, 4]
+                    selectExpressions: ConstantVectorExpression(val null) -> 5:double
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
+FROM alltypesorc
+WHERE (cdouble IS NULL)
+ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	NULL	-413196097	-51.0	NULL	-413196097
+NULL	NULL	-413553449	11.0	NULL	-413553449
+NULL	NULL	-457224565	11.0	NULL	-457224565
+NULL	NULL	-591488718	-51.0	NULL	-591488718
+NULL	NULL	-656987896	8.0	NULL	-656987896
+NULL	NULL	-670908417	8.0	NULL	-670908417
+NULL	NULL	-738306196	-51.0	NULL	-738306196
+NULL	NULL	-819152895	8.0	NULL	-819152895
+NULL	NULL	-827212561	8.0	NULL	-827212561
+NULL	NULL	-949587513	11.0	NULL	-949587513
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+FROM alltypesorc
+WHERE (ctinyint IS NULL)
+ORDER BY ctinyint, cdouble, cint, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+FROM alltypesorc
+WHERE (ctinyint IS NULL)
+ORDER BY ctinyint, cdouble, cint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 0) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [5, 2, 15]
+                          selectExpressions: VectorCoalesce(columns [12, 14, 13])(children: ConstantVectorExpression(val null) -> 12:double, DoubleColAddDoubleColumn(col 5, col 13)(children: FuncLog2LongToDouble(col 2) -> 13:double) -> 14:double, ConstantVectorExpression(val 0.0) -> 13:double) -> 15:double
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [3, 0, 1, 2]
+                    selectExpressions: ConstantVectorExpression(val null) -> 3:tinyint
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+FROM alltypesorc
+WHERE (ctinyint IS NULL)
+ORDER BY ctinyint, cdouble, cint, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ctinyint, cdouble, cint, coalesce(ctinyint+10, (cdouble+log2(cint)), 0) as c
+FROM alltypesorc
+WHERE (ctinyint IS NULL)
+ORDER BY ctinyint, cdouble, cint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	NULL	-1015272448	0.0
+NULL	NULL	-609074876	0.0
+NULL	NULL	-700300206	0.0
+NULL	NULL	-726473298	0.0
+NULL	NULL	-738747840	0.0
+NULL	NULL	-838810013	0.0
+NULL	NULL	-850295959	0.0
+NULL	NULL	-886426182	0.0
+NULL	NULL	-899422227	0.0
+NULL	NULL	-971543377	0.0
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4) -> boolean, SelectColumnIsNull(col 3) -> boolean) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: []
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2]
+                    selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val 0.0) -> 2:double
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint, 0) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+NULL	NULL	0.0
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+FROM alltypesorc 
+WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
+ORDER BY ctimestamp1, ctimestamp2, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+FROM alltypesorc 
+WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
+ORDER BY ctimestamp1, ctimestamp2, c
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 9) -> boolean) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [8, 9, 12]
+                          selectExpressions: VectorCoalesce(columns [8, 9])(children: col 8, col 9) -> 12:timestamp
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2]
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+FROM alltypesorc 
+WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
+ORDER BY ctimestamp1, ctimestamp2, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
+FROM alltypesorc 
+WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
+ORDER BY ctimestamp1, ctimestamp2, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
+NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
+NULL	1969-12-31 15:59:30.929	1969-12-31 15:59:30.929
+NULL	1969-12-31 15:59:43.63	1969-12-31 15:59:43.63
+NULL	1969-12-31 15:59:43.658	1969-12-31 15:59:43.658
+NULL	1969-12-31 15:59:43.672	1969-12-31 15:59:43.672
+NULL	1969-12-31 15:59:43.684	1969-12-31 15:59:43.684
+NULL	1969-12-31 15:59:43.703	1969-12-31 15:59:43.703
+NULL	1969-12-31 15:59:43.704	1969-12-31 15:59:43.704
+NULL	1969-12-31 15:59:43.709	1969-12-31 15:59:43.709
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4) -> boolean, SelectColumnIsNull(col 3) -> boolean) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: []
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2]
+                    selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val null) -> 2:float
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cfloat, cbigint, coalesce(cfloat, cbigint) as c
+FROM alltypesorc
+WHERE (cfloat IS NULL AND cbigint IS NULL)
+ORDER BY cfloat, cbigint, c
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+PREHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNull(col 3) -> boolean
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [12, 0, 14]
+                          selectExpressions: ConstantVectorExpression(val null) -> 12:bigint, VectorCoalesce(columns [13, 0])(children: ConstantVectorExpression(val null) -> 13:tinyint, col 0) -> 14:tinyint
+                        Limit Vectorization:
+                            className: VectorLimitOperator
+                            native: true
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+
+PREHOOK: query: SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
+FROM alltypesorc
+WHERE cbigint IS NULL
+LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+NULL	-11	-11
+NULL	-28	-28
+NULL	-34	-34
+NULL	-50	-50
+NULL	27	27
+NULL	29	29
+NULL	31	31
+NULL	31	31
+NULL	61	61
+NULL	NULL	NULL

@@ -56,8 +56,13 @@ public class ObjectCacheFactory {
               new org.apache.hadoop.hive.ql.exec.mr.ObjectCache(), queryId);
         }
       } else { // container
-        return new ObjectCacheWrapper(
-            new org.apache.hadoop.hive.ql.exec.tez.ObjectCache(), queryId);
+        if (org.apache.hadoop.hive.ql.exec.tez.ObjectCache.isObjectRegistryConfigured()) {
+          return new ObjectCacheWrapper(
+              new org.apache.hadoop.hive.ql.exec.tez.ObjectCache(), queryId);
+        } else {
+          // Tez processor needs to configure object registry first.
+          return null;
+        }
       }
     } else { // mr or spark
       return new ObjectCacheWrapper(

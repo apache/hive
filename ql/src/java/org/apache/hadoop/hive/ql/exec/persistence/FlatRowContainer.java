@@ -292,7 +292,7 @@ public class FlatRowContainer extends AbstractCollection<Object>
     }
 
     public Iterator<Object> iterator() {
-      return listIterator();
+      return super.listIterator();
     }
 
     public ListIterator<Object> listIterator(int index) {

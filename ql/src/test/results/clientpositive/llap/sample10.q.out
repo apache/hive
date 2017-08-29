@@ -1,12 +1,8 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+PREHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpartbucket
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+POSTHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpartbucket
@@ -103,6 +99,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -125,6 +122,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -151,6 +149,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -173,6 +172,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -199,6 +199,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -221,6 +222,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -247,6 +249,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -269,6 +272,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string

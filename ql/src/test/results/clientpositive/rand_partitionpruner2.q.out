@@ -1,12 +1,8 @@
-PREHOOK: query: -- scanning partitioned data
-
-create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- scanning partitioned data
-
-create table tmptable(key string, value string, hr string, ds string)
+POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
@@ -55,8 +51,9 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
-                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                         bucket_count -1
+                        column.name.delimiter ,
                         columns key,value,hr,ds
                         columns.comments 
                         columns.types string:string:string:string
@@ -89,6 +86,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -110,6 +108,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -135,6 +134,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -156,6 +156,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -192,8 +193,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types string:string:string:string
@@ -228,8 +230,9 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types string:string:string:string
@@ -257,8 +260,9 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types string:string:string:string
@@ -277,8 +281,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types string:string:string:string
@@ -312,8 +317,9 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types string:string:string:string
@@ -341,8 +347,9 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types string:string:string:string
@@ -361,8 +368,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"ds":"true","hr":"true","key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types string:string:string:string

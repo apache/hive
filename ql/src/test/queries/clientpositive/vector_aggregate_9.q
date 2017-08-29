@@ -1,5 +1,6 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 create table vectortab2k(
             t tinyint,
@@ -38,9 +39,19 @@ STORED AS ORC;
 
 INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 
-explain
-select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc;
-
 -- SORT_QUERY_RESULTS
 
+explain vectorization detail
 select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc;
+
+select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc;
+
+explain vectorization detail
+select min(d), max(d), sum(d), avg(d) from vectortab2korc;
+
+select min(d), max(d), sum(d), avg(d) from vectortab2korc;
+
+explain vectorization detail
+select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc;
+
+select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc;

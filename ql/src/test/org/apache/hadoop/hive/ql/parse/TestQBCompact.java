@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -49,7 +50,7 @@ public class TestQBCompact {
 
   @BeforeClass
   public static void init() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -67,6 +68,12 @@ public class TestQBCompact {
     Map<String, String> partSpec = new HashMap<String, String>();
     partSpec.put("ds", "today");
     h.createPartition(t, partSpec);
+  }
+
+  @AfterClass
+  public static void deInit() throws Exception {
+    Hive h = Hive.get(conf);
+    h.dropTable("foo");
   }
 
   private AlterTableSimpleDesc parseAndAnalyze(String query) throws Exception {

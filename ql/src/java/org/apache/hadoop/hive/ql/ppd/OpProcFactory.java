@@ -97,7 +97,7 @@ public final class OpProcFactory {
   protected static final Logger LOG = LoggerFactory.getLogger(OpProcFactory.class
     .getName());
 
-  private static ExprWalkerInfo getChildWalkerInfo(Operator<?> current, OpWalkerInfo owi) {
+  private static ExprWalkerInfo getChildWalkerInfo(Operator<?> current, OpWalkerInfo owi) throws SemanticException {
     if (current.getNumChild() == 0) {
       return null;
     }
@@ -875,7 +875,7 @@ public final class OpProcFactory {
   }
 
   protected static Object createFilter(Operator op,
-      ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) {
+      ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) throws SemanticException {
     if (pushDownPreds != null && pushDownPreds.hasAnyCandidates()) {
       return createFilter(op, pushDownPreds.getFinalCandidates(), owi);
     }
@@ -883,7 +883,7 @@ public final class OpProcFactory {
   }
 
   protected static Object createFilter(Operator op,
-      Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) {
+      Map<String, List<ExprNodeDesc>> predicates, OpWalkerInfo owi) throws SemanticException {
     RowSchema inputRS = op.getSchema();
 
     // combine all predicates into a single expression
@@ -970,7 +970,7 @@ public final class OpProcFactory {
     TableScanOperator tableScanOp,
     ExprNodeGenericFuncDesc originalPredicate,
     OpWalkerInfo owi,
-    HiveConf hiveConf) {
+    HiveConf hiveConf) throws SemanticException {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = tableScanDesc.getTableMetadata();
@@ -997,9 +997,15 @@ public final class OpProcFactory {
     JobConf jobConf = new JobConf(owi.getParseContext().getConf());
     Utilities.setColumnNameList(jobConf, tableScanOp);
     Utilities.setColumnTypeList(jobConf, tableScanOp);
-    Utilities.copyTableJobPropertiesToConf(
-      Utilities.getTableDesc(tbl),
-      jobConf);
+
+    try {
+      Utilities.copyTableJobPropertiesToConf(
+        Utilities.getTableDesc(tbl),
+        jobConf);
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+
     Deserializer deserializer = tbl.getDeserializer();
     HiveStoragePredicateHandler.DecomposedPredicate decomposed =
       predicateHandler.decomposePredicate(

@@ -49,7 +49,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
   public void implement(Implementor implementor) {
   }
 
-  private void findCorrelatedVar(RexNode node, Set<CorrelationId> allVars) {
+  private static void findCorrelatedVar(RexNode node, Set<CorrelationId> allVars) {
     if(node instanceof RexCall) {
       RexCall nd = (RexCall)node;
       for (RexNode rn : nd.getOperands()) {
@@ -67,7 +67,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
 
   //traverse the given node to find all correlated variables
   // Note that correlated variables are supported in Filter only i.e. Where & Having
-  private void traverseFilter(RexNode node, Set<CorrelationId> allVars) {
+  private static void traverseFilter(RexNode node, Set<CorrelationId> allVars) {
       if(node instanceof RexSubQuery) {
           //we expect correlated variables in HiveFilter only for now.
           // Also check for case where operator has 0 inputs .e.g TableScan
@@ -100,6 +100,12 @@ public class HiveFilter extends Filter implements HiveRelNode {
   public Set<CorrelationId> getVariablesSet() {
       Set<CorrelationId> allCorrVars = new HashSet<>();
       traverseFilter(condition, allCorrVars);
+      return allCorrVars;
+  }
+
+  public static Set<CorrelationId> getVariablesSet(RexSubQuery e) {
+      Set<CorrelationId> allCorrVars = new HashSet<>();
+      traverseFilter(e, allCorrVars);
       return allCorrVars;
   }
 

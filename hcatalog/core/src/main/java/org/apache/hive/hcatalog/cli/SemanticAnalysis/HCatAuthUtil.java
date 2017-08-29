@@ -40,8 +40,7 @@ final class HCatAuthUtil {
     // The recommended configuration is to use storage based authorization in metastore server.
     // However, if user define a custom V1 authorization, it will be honored.
     if (SessionState.get().getAuthorizer() == null ||
-        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER)
-        == DefaultHiveAuthorizationProvider.class.getName()) {
+        DefaultHiveAuthorizationProvider.class.getName().equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER))) {
       LOG.info("Metastore authorizer is skipped for V2 authorizer or"
         + " DefaultHiveAuthorizationProvider");
       return false;

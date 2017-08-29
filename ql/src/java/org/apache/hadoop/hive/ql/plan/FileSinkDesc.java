@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 /**
  * FileSinkDesc.
@@ -102,6 +103,8 @@ public class FileSinkDesc extends AbstractOperatorDesc {
    * indeed written using ThriftJDBCBinarySerDe
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
+
+  private boolean isInsertOverwrite = false;
 
   public FileSinkDesc() {
   }
@@ -438,7 +441,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public DPSortState getDpSortState() {
     return dpSortState;
   }
-
+  @Explain(displayName = "Dp Sort State")
+  public String getDpSortStateString() {
+    return getDpSortState() == DPSortState.NONE ? null : getDpSortState().toString();
+  }
   public void setDpSortState(DPSortState dpSortState) {
     this.dpSortState = dpSortState;
   }
@@ -450,7 +456,10 @@ public class FileSinkDesc extends AbstractOperatorDesc {
   public AcidUtils.Operation getWriteType() {
     return writeType;
   }
-
+  @Explain(displayName = "Write Type")
+  public String getWriteTypeString() {
+    return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();
+  }
   public void setTransactionId(long id) {
     txnId = id;
   }
@@ -488,4 +497,45 @@ public class FileSinkDesc extends AbstractOperatorDesc {
     this.statsTmpDir = statsCollectionTempDir;
   }
 
+  public class FileSinkOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    public FileSinkOperatorExplainVectorization(VectorDesc vectorDesc) {
+      // Native vectorization not supported.
+      super(vectorDesc, false);
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "File Sink Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public FileSinkOperatorExplainVectorization getFileSinkVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new FileSinkOperatorExplainVectorization(vectorDesc);
+  }
+
+  public void setInsertOverwrite(boolean isInsertOverwrite) {
+    this.isInsertOverwrite = isInsertOverwrite;
+  }
+
+  public boolean getInsertOverwrite() {
+    return isInsertOverwrite;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      FileSinkDesc otherDesc = (FileSinkDesc) other;
+      return Objects.equals(getDirName(), otherDesc.getDirName()) &&
+          Objects.equals(getTableInfo(), otherDesc.getTableInfo()) &&
+          getCompressed() == otherDesc.getCompressed() &&
+          getDestTableId() == otherDesc.getDestTableId() &&
+          isMultiFileSpray() == otherDesc.isMultiFileSpray() &&
+          getTotalFiles() == otherDesc.getTotalFiles() &&
+          getNumFiles() == otherDesc.getNumFiles() &&
+          Objects.equals(getStaticSpec(), otherDesc.getStaticSpec()) &&
+          isGatherStats() == otherDesc.isGatherStats() &&
+          Objects.equals(getStatsAggPrefix(), otherDesc.getStatsAggPrefix());
+    }
+    return false;
+  }
 }

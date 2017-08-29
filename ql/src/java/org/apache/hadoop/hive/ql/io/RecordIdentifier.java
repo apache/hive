@@ -43,7 +43,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * Each field of RecordIdentifier which should be part of ROWID should be in this enum... which 
    * really means that it should be part of VirtualColumn (so make a subclass for rowid).
    */
-  public static enum Field {
+  public enum Field {
     //note the enum names match field names in the struct
     transactionId(TypeInfoFactory.longTypeInfo,
       PrimitiveObjectInspectorFactory.javaLongObjectInspector),
@@ -89,7 +89,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         return;
       }
       struct[Field.transactionId.ordinal()] = ri.getTransactionId();
-      struct[Field.bucketId.ordinal()] = ri.getBucketId();
+      struct[Field.bucketId.ordinal()] = ri.getBucketProperty();
       struct[Field.rowId.ordinal()] = ri.getRowId();
     }
   }
@@ -142,10 +142,10 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   }
 
   /**
-   * What was the original bucket id for the last row?
-   * @return the bucket id
+   * See {@link BucketCodec} for details
+   * @return the bucket value;
    */
-  public int getBucketId() {
+  public int getBucketProperty() {
     return bucketId;
   }
 
@@ -197,6 +197,9 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public boolean equals(Object other) {
+    if(other == this) {
+      return true;
+    }
     if (other == null || other.getClass() != getClass()) {
       return false;
     }
@@ -205,10 +208,27 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         oth.bucketId == bucketId &&
         oth.rowId == rowId;
   }
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (int)(transactionId ^ (transactionId >>> 32));
+    result = 31 * result + bucketId;
+    result = 31 * result + (int)(rowId ^ (rowId >>> 32));
+    return result;
+  }
 
   @Override
   public String toString() {
-    return "{originalTxn: " + transactionId + ", bucket: " +
-        bucketId + ", row: " + getRowId() + "}";
+    BucketCodec codec = 
+      BucketCodec.determineVersion(bucketId);
+    String s = "(" + codec.getVersion() + "." + codec.decodeWriterId(bucketId) +
+      "." + codec.decodeStatementId(bucketId) + ")";
+    return "{originalTxn: " + transactionId + ", " + bucketToString() + ", row: " + getRowId() +"}";
+  }
+  protected String bucketToString() {
+    BucketCodec codec =
+      BucketCodec.determineVersion(bucketId);
+    return  "bucket: " + bucketId + "(" + codec.getVersion() + "." +
+      codec.decodeWriterId(bucketId) + "." + codec.decodeStatementId(bucketId) + ")";
   }
 }

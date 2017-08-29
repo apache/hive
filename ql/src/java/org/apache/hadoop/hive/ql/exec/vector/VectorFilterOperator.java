@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -50,9 +51,8 @@ public class VectorFilterOperator extends FilterOperator {
   public VectorFilterOperator(CompilationOpContext ctx,
       VectorizationContext vContext, OperatorDesc conf) throws HiveException {
     this(ctx);
-    ExprNodeDesc oldExpression = ((FilterDesc) conf).getPredicate();
-    conditionEvaluator = vContext.getVectorExpression(oldExpression, VectorExpressionDescriptor.Mode.FILTER);
     this.conf = (FilterDesc) conf;
+    conditionEvaluator = ((VectorFilterDesc) this.conf.getVectorDesc()).getPredicateExpression();
   }
 
   /** Kryo ctor. */
@@ -72,6 +72,8 @@ public class VectorFilterOperator extends FilterOperator {
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
+
+      conditionEvaluator.init(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }
@@ -118,7 +120,7 @@ public class VectorFilterOperator extends FilterOperator {
         // All are selected, do nothing
     }
     if (vrg.size > 0) {
-      forward(vrg, null);
+      forward(vrg, null, true);
     }
 
     // Restore the original selected vector

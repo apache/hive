@@ -33,8 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,9 +55,12 @@ public class TestCodahaleMetrics {
 
     jsonReportFile = new File(workDir, "json_reporting");
     jsonReportFile.delete();
+
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, "local");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_CLASS, CodahaleMetrics.class.getCanonicalName());
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
+    conf.setVar(HiveConf.ConfVars.HIVE_CODAHALE_METRICS_REPORTER_CLASSES,
+        "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, "
+            + "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter");
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_LOCATION, jsonReportFile.toString());
     conf.setVar(HiveConf.ConfVars.HIVE_METRICS_JSON_FILE_INTERVAL, "100ms");
 
@@ -80,7 +81,7 @@ public class TestCodahaleMetrics {
       MetricsFactory.getInstance().endStoredScope("method1");
     }
 
-    Timer timer = metricRegistry.getTimers().get("api_method1");
+    Timer timer = metricRegistry.getTimers().get("method1");
     Assert.assertEquals(5, timer.getCount());
     Assert.assertTrue(timer.getMeanRate() > 0);
   }
@@ -113,7 +114,7 @@ public class TestCodahaleMetrics {
     }
     executorService.shutdown();
     assertTrue(executorService.awaitTermination(10000, TimeUnit.MILLISECONDS));
-    Timer timer = metricRegistry.getTimers().get("api_method2");
+    Timer timer = metricRegistry.getTimers().get("method2");
     Assert.assertEquals(4, timer.getCount());
     Assert.assertTrue(timer.getMeanRate() > 0);
   }
@@ -160,5 +161,21 @@ public class TestCodahaleMetrics {
     testVar.setValue(40);
     json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "gauge1", testVar.getValue());
+  }
+
+  @Test
+  public void testMeter() throws Exception {
+
+    String json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "");
+
+    MetricsFactory.getInstance().markMeter("meter");
+    json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "1");
+
+    MetricsFactory.getInstance().markMeter("meter");
+    json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "2");
+
   }
 }

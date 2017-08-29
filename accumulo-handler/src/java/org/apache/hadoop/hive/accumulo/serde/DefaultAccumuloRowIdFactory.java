@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.accumulo.serde;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -61,7 +62,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 
   @Override
   public void addDependencyJars(Configuration conf) throws IOException {
-    Utils.addDependencyJars(conf, getClass());
+    Utils.addDependencyJars(conf, Collections.<Class<?>> singletonList(getClass()));
   }
 
   @Override
@@ -76,7 +77,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 //    return LazyFactory.createLazyObject(inspector,
 //            ColumnEncoding.BINARY == rowIdMapping.getEncoding());
     return LazyFactory.createLazyObject(inspector,
-        inspector.getTypeName() != TypeInfoFactory.stringTypeInfo.getTypeName()
+            !TypeInfoFactory.stringTypeInfo.getTypeName().equals(inspector.getTypeName())
             && ColumnEncoding.BINARY == rowIdMapping.getEncoding());
   }
 

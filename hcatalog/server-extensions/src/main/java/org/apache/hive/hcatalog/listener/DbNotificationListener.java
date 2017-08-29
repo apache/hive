@@ -17,22 +17,41 @@
  */
 package org.apache.hive.hcatalog.listener;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -40,6 +59,7 @@ import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
@@ -47,10 +67,14 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -63,7 +87,7 @@ import org.slf4j.LoggerFactory;
  * the database.  Also, occasionally the thread needs to clean the database of old records.  We
  * definitely don't want to do that as part of another metadata operation.
  */
-public class DbNotificationListener extends MetaStoreEventListener {
+public class DbNotificationListener extends TransactionalMetaStoreEventListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
@@ -74,23 +98,17 @@ public class DbNotificationListener extends MetaStoreEventListener {
   // HiveConf rather than a Configuration.
   private HiveConf hiveConf;
   private MessageFactory msgFactory;
-  private RawStore rs;
 
-  private synchronized void init(HiveConf conf) {
-    try {
-      rs = RawStoreProxy.getProxy(conf, conf,
-          conf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL), 999999);
-    } catch (MetaException e) {
-      LOG.error("Unable to connect to raw store, notifications will not be tracked", e);
-      rs = null;
-    }
-    if (cleaner == null && rs != null) {
-      cleaner = new CleanerThread(conf, rs);
+  private synchronized void init(HiveConf conf) throws MetaException {
+    if (cleaner == null) {
+      cleaner =
+          new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
+              conf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL), 999999));
       cleaner.start();
     }
   }
 
-  public DbNotificationListener(Configuration config) {
+  public DbNotificationListener(Configuration config) throws MetaException {
     super(config);
     // The code in MetastoreUtils.getMetaStoreListeners() that calls this looks for a constructor
     // with a Configuration parameter, so we have to declare config as Configuration.  But it
@@ -127,10 +145,10 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = tableEvent.getTable();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(), msgFactory
-            .buildCreateTableMessage(t).toString());
+            .buildCreateTableMessage(t, new FileIterator(t.getSd().getLocation())).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    process(event);
+    process(event, tableEvent);
   }
 
   /**
@@ -145,7 +163,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
             .buildDropTableMessage(t).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    process(event);
+    process(event, tableEvent);
   }
 
   /**
@@ -158,12 +176,103 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table after = tableEvent.getNewTable();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(), msgFactory
-            .buildAlterTableMessage(before, after).toString());
+            .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp()).toString());
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
-    process(event);
+    process(event, tableEvent);
   }
 
+  class FileIterator implements Iterator<String> {
+    /***
+     * Filter for valid files only (no dir, no hidden)
+     */
+    PathFilter VALID_FILES_FILTER = new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        try {
+          if (!fs.isFile(p)) {
+            return false;
+          }
+          String name = p.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+    private FileSystem fs;
+    private FileStatus[] files;
+    private int i = 0;
+    FileIterator(String locString) {
+      try {
+        if (locString != null) {
+          Path loc = new Path(locString);
+          fs = loc.getFileSystem(hiveConf);
+          files = fs.listStatus(loc, VALID_FILES_FILTER);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (files == null) {
+        return false;
+      }
+      return i<files.length;
+    }
+
+    @Override
+    public String next() {
+      try {
+        FileStatus file = files[i];
+        i++;
+        return ReplChangeManager.encodeFileUri(file.getPath().toString(),
+            ReplChangeManager.checksumFor(file.getPath(), fs));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+  class PartitionFilesIterator implements Iterator<PartitionFiles> {
+
+    private Iterator<Partition> partitionIter;
+    private Table t;
+
+    PartitionFilesIterator(Iterator<Partition> partitionIter, Table t) {
+      this.partitionIter = partitionIter;
+      this.t = t;
+    }
+    @Override
+    public boolean hasNext() {
+      return partitionIter.hasNext();
+    }
+
+    @Override
+    public PartitionFiles next() {
+      try {
+        Partition p = partitionIter.next();
+        List<String> files = Lists.newArrayList(new FileIterator(p.getSd().getLocation()));
+        PartitionFiles partitionFiles =
+            new PartitionFiles(Warehouse.makePartName(t.getPartitionKeys(), p.getValues()),
+            files.iterator());
+        return partitionFiles;
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
   /**
    * @param partitionEvent partition event
    * @throws MetaException
@@ -172,12 +281,13 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
     String msg = msgFactory
-        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString();
+        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(),
+            new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t)).toString();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_PARTITION.toString(), msg);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    process(event);
+    process(event, partitionEvent);
   }
 
   /**
@@ -192,7 +302,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
             .buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    process(event);
+    process(event, partitionEvent);
   }
 
   /**
@@ -205,10 +315,10 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Partition after = partitionEvent.getNewPartition();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(), msgFactory
-            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after).toString());
+            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after, partitionEvent.getIsTruncateOp()).toString());
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
-    process(event);
+    process(event, partitionEvent);
   }
 
   /**
@@ -222,7 +332,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.CREATE_DATABASE.toString(), msgFactory
             .buildCreateDatabaseMessage(db).toString());
     event.setDbName(db.getName());
-    process(event);
+    process(event, dbEvent);
   }
 
   /**
@@ -236,7 +346,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.DROP_DATABASE.toString(), msgFactory
             .buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
-    process(event);
+    process(event, dbEvent);
   }
 
   /**
@@ -250,7 +360,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.CREATE_FUNCTION.toString(), msgFactory
             .buildCreateFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
-    process(event);
+    process(event, fnEvent);
   }
 
   /**
@@ -264,7 +374,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.DROP_FUNCTION.toString(), msgFactory
             .buildDropFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
-    process(event);
+    process(event, fnEvent);
   }
 
   /**
@@ -278,7 +388,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.CREATE_INDEX.toString(), msgFactory
             .buildCreateIndexMessage(index).toString());
     event.setDbName(index.getDbName());
-    process(event);
+    process(event, indexEvent);
   }
 
   /**
@@ -292,7 +402,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.DROP_INDEX.toString(), msgFactory
             .buildDropIndexMessage(index).toString());
     event.setDbName(index.getDbName());
-    process(event);
+    process(event, indexEvent);
   }
 
   /**
@@ -307,18 +417,45 @@ public class DbNotificationListener extends MetaStoreEventListener {
         new NotificationEvent(0, now(), EventType.ALTER_INDEX.toString(), msgFactory
             .buildAlterIndexMessage(before, after).toString());
     event.setDbName(before.getDbName());
-    process(event);
+    process(event, indexEvent);
   }
 
+  class FileChksumIterator implements Iterator<String> {
+    private List<String> files;
+    private List<String> chksums;
+    int i = 0;
+    FileChksumIterator(List<String> files, List<String> chksums) {
+      this.files = files;
+      this.chksums = chksums;
+    }
+    @Override
+    public boolean hasNext() {
+      return i< files.size();
+    }
+
+    @Override
+    public String next() {
+      String result = encodeFileUri(files.get(i), chksums != null? chksums.get(i) : null);
+      i++;
+      return result;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
   @Override
   public void onInsert(InsertEvent insertEvent) throws MetaException {
+    Table tableObj = insertEvent.getTableObj();
     NotificationEvent event =
-        new NotificationEvent(0, now(), EventType.INSERT.toString(), msgFactory.buildInsertMessage(
-            insertEvent.getDb(), insertEvent.getTable(), insertEvent.getPartitionKeyValues(),
-            insertEvent.getFiles(), insertEvent.getFileChecksums()).toString());
-    event.setDbName(insertEvent.getDb());
-    event.setTableName(insertEvent.getTable());
-    process(event);
+        new NotificationEvent(0, now(), EventType.INSERT.toString(), msgFactory.buildInsertMessage(tableObj,
+                insertEvent.getPartitionObj(), insertEvent.isReplace(),
+            new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()))
+                .toString());
+    event.setDbName(tableObj.getDbName());
+    event.setTableName(tableObj.getTableName());
+    process(event, insertEvent);
   }
 
   /**
@@ -329,6 +466,91 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException {
     // TODO, we don't support this, but we should, since users may create an empty partition and
     // then load data into it.
+  }
+
+  /***
+   * @param addPrimaryKeyEvent add primary key event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddPrimaryKey(AddPrimaryKeyEvent addPrimaryKeyEvent) throws MetaException {
+    List<SQLPrimaryKey> cols = addPrimaryKeyEvent.getPrimaryKeyCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_PRIMARYKEY.toString(), msgFactory
+              .buildAddPrimaryKeyMessage(addPrimaryKeyEvent.getPrimaryKeyCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addPrimaryKeyEvent);
+    }
+  }
+
+  /***
+   * @param addForeignKeyEvent add foreign key event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddForeignKey(AddForeignKeyEvent addForeignKeyEvent) throws MetaException {
+    List<SQLForeignKey> cols = addForeignKeyEvent.getForeignKeyCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_FOREIGNKEY.toString(), msgFactory
+              .buildAddForeignKeyMessage(addForeignKeyEvent.getForeignKeyCols()).toString());
+      event.setDbName(cols.get(0).getPktable_db());
+      event.setTableName(cols.get(0).getPktable_name());
+      process(event, addForeignKeyEvent);
+    }
+  }
+
+  /***
+   * @param addUniqueConstraintEvent add unique constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddUniqueConstraint(AddUniqueConstraintEvent addUniqueConstraintEvent) throws MetaException {
+    List<SQLUniqueConstraint> cols = addUniqueConstraintEvent.getUniqueConstraintCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_UNIQUECONSTRAINT.toString(), msgFactory
+              .buildAddUniqueConstraintMessage(addUniqueConstraintEvent.getUniqueConstraintCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addUniqueConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addNotNullConstraintEvent add not null constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddNotNullConstraint(AddNotNullConstraintEvent addNotNullConstraintEvent) throws MetaException {
+    List<SQLNotNullConstraint> cols = addNotNullConstraintEvent.getNotNullConstraintCols();
+    if (cols.size() > 0) {
+      NotificationEvent event =
+          new NotificationEvent(0, now(), EventType.ADD_NOTNULLCONSTRAINT.toString(), msgFactory
+              .buildAddNotNullConstraintMessage(addNotNullConstraintEvent.getNotNullConstraintCols()).toString());
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addNotNullConstraintEvent);
+    }
+  }
+
+  /***
+   * @param dropConstraintEvent drop constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
+    String dbName = dropConstraintEvent.getDbName();
+    String tableName = dropConstraintEvent.getTableName();
+    String constraintName = dropConstraintEvent.getConstraintName();
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_CONSTRAINT.toString(), msgFactory
+            .buildDropConstraintMessage(dbName, tableName, constraintName).toString());
+    event.setDbName(dbName);
+    event.setTableName(tableName);
+    process(event, dropConstraintEvent);
   }
 
   private int now() {
@@ -342,17 +564,27 @@ public class DbNotificationListener extends MetaStoreEventListener {
     return (int)millis;
   }
 
-  // Process this notification by adding it to metastore DB
-  private void process(NotificationEvent event) {
-    if (rs != null) {
-      synchronized (NOTIFICATION_TBL_LOCK) {
-        LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
-            event.getMessage());
-        rs.addNotificationEvent(event);
-      }
-    } else {
-      LOG.warn("Dropping event " + event + " since notification is not running.");
+  /**
+   * Process this notification by adding it to metastore DB.
+   *
+   * @param event NotificationEvent is the object written to the metastore DB.
+   * @param listenerEvent ListenerEvent (from which NotificationEvent was based) used only to set the
+   *                      DB_NOTIFICATION_EVENT_ID_KEY_NAME for future reference by other listeners.
+   */
+  private void process(NotificationEvent event, ListenerEvent listenerEvent) throws MetaException {
+    event.setMessageFormat(msgFactory.getMessageFormat());
+    synchronized (NOTIFICATION_TBL_LOCK) {
+      LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
+          event.getMessage());
+      HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
     }
+
+      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+      if (event.isSetEventId()) {
+        listenerEvent.putParameter(
+            MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+            Long.toString(event.getEventId()));
+      }
   }
 
   private static class CleanerThread extends Thread {
@@ -390,4 +622,13 @@ public class DbNotificationListener extends MetaStoreEventListener {
 
   }
 
+  // TODO: this needs to be enhanced once change management based filesystem is implemented
+  // Currently using fileuri#checksum as the format
+  private String encodeFileUri(String fileUriStr, String fileChecksum) {
+    if (fileChecksum != null) {
+      return fileUriStr + "#" + fileChecksum;
+    } else {
+      return fileUriStr;
+    }
+  }
 }

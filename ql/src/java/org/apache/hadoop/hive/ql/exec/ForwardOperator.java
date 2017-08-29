@@ -73,4 +73,9 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

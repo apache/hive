@@ -1,0 +1,211 @@
+PREHOOK: query: explain
+with customer_total_return as
+ (select wr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(wr_return_amt) as ctr_total_return
+ from web_returns
+     ,date_dim
+     ,customer_address
+ where wr_returned_date_sk = d_date_sk 
+   and d_year =2002
+   and wr_returning_addr_sk = ca_address_sk 
+ group by wr_returning_customer_sk
+         ,ca_state)
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+       ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+       ,c_last_review_date,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+                  ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+                  ,c_last_review_date,ctr_total_return
+limit 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+with customer_total_return as
+ (select wr_returning_customer_sk as ctr_customer_sk
+        ,ca_state as ctr_state, 
+ 	sum(wr_return_amt) as ctr_total_return
+ from web_returns
+     ,date_dim
+     ,customer_address
+ where wr_returned_date_sk = d_date_sk 
+   and d_year =2002
+   and wr_returning_addr_sk = ca_address_sk 
+ group by wr_returning_customer_sk
+         ,ca_state)
+  select  c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+       ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+       ,c_last_review_date,ctr_total_return
+ from customer_total_return ctr1
+     ,customer_address
+     ,customer
+ where ctr1.ctr_total_return > (select avg(ctr_total_return)*1.2
+ 			  from customer_total_return ctr2 
+                  	  where ctr1.ctr_state = ctr2.ctr_state)
+       and ca_address_sk = c_current_addr_sk
+       and ca_state = 'IL'
+       and ctr1.ctr_customer_sk = c_customer_sk
+ order by c_customer_id,c_salutation,c_first_name,c_last_name,c_preferred_cust_flag
+                  ,c_birth_day,c_birth_month,c_birth_year,c_birth_country,c_login,c_email_address
+                  ,c_last_review_date,ctr_total_return
+limit 100
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
+Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 14 (SIMPLE_EDGE)
+Reducer 13 <- Map 11 (SIMPLE_EDGE), Map 14 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 6 <- Map 5 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+Reducer 8 <- Reducer 10 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+Reducer 9 <- Map 5 (SIMPLE_EDGE), Reducer 13 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:100
+    Stage-1
+      Reducer 4
+      File Output Operator [FS_66]
+        Limit [LIM_65] (rows=100 width=860)
+          Number of rows:100
+          Select Operator [SEL_64] (rows=96800003 width=860)
+            Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+          <-Reducer 3 [SIMPLE_EDGE]
+            SHUFFLE [RS_63]
+              Select Operator [SEL_62] (rows=96800003 width=860)
+                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
+                Merge Join Operator [MERGEJOIN_107] (rows=96800003 width=860)
+                  Conds:RS_59._col0=RS_60._col0(Inner),Output:["_col1","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col18"]
+                <-Reducer 2 [SIMPLE_EDGE]
+                  SHUFFLE [RS_59]
+                    PartitionCols:_col0
+                    Merge Join Operator [MERGEJOIN_101] (rows=88000001 width=860)
+                      Conds:RS_56._col2=RS_57._col0(Inner),Output:["_col0","_col1","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
+                    <-Map 5 [SIMPLE_EDGE]
+                      SHUFFLE [RS_57]
+                        PartitionCols:_col0
+                        Select Operator [SEL_5] (rows=20000000 width=1014)
+                          Output:["_col0"]
+                          Filter Operator [FIL_94] (rows=20000000 width=1014)
+                            predicate:((ca_state = 'IL') and ca_address_sk is not null)
+                            TableScan [TS_3] (rows=40000000 width=1014)
+                              default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state"]
+                    <-Map 1 [SIMPLE_EDGE]
+                      SHUFFLE [RS_56]
+                        PartitionCols:_col2
+                        Select Operator [SEL_2] (rows=80000000 width=860)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
+                          Filter Operator [FIL_93] (rows=80000000 width=860)
+                            predicate:(c_current_addr_sk is not null and c_customer_sk is not null)
+                            TableScan [TS_0] (rows=80000000 width=860)
+                              default@customer,customer,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk","c_customer_id","c_current_addr_sk","c_salutation","c_first_name","c_last_name","c_preferred_cust_flag","c_birth_day","c_birth_month","c_birth_year","c_birth_country","c_login","c_email_address","c_last_review_date"]
+                <-Reducer 8 [SIMPLE_EDGE]
+                  SHUFFLE [RS_60]
+                    PartitionCols:_col0
+                    Select Operator [SEL_55] (rows=8066666 width=1014)
+                      Output:["_col0","_col2"]
+                      Filter Operator [FIL_54] (rows=8066666 width=1014)
+                        predicate:(_col2 > CASE WHEN (_col4 is null) THEN (null) ELSE (_col3) END)
+                        Merge Join Operator [MERGEJOIN_106] (rows=24200000 width=1014)
+                          Conds:RS_51._col1=RS_52._col2(Inner),Output:["_col0","_col2","_col3","_col4"]
+                        <-Reducer 10 [SIMPLE_EDGE]
+                          SHUFFLE [RS_52]
+                            PartitionCols:_col2
+                            Select Operator [SEL_50] (rows=11000000 width=1014)
+                              Output:["_col0","_col1","_col2"]
+                              Group By Operator [GBY_49] (rows=11000000 width=1014)
+                                Output:["_col0","_col1"],aggregations:["avg(_col2)"],keys:_col0
+                                Select Operator [SEL_45] (rows=22000000 width=1014)
+                                  Output:["_col0","_col2"]
+                                  Group By Operator [GBY_44] (rows=22000000 width=1014)
+                                    Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
+                                  <-Reducer 9 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_43]
+                                      PartitionCols:_col0
+                                      Group By Operator [GBY_42] (rows=44000000 width=1014)
+                                        Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col7, _col1
+                                        Merge Join Operator [MERGEJOIN_105] (rows=44000000 width=1014)
+                                          Conds:RS_38._col2=RS_39._col0(Inner),Output:["_col1","_col3","_col7"]
+                                        <-Map 5 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_39]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_34] (rows=40000000 width=1014)
+                                              Output:["_col0","_col1"]
+                                              Filter Operator [FIL_100] (rows=40000000 width=1014)
+                                                predicate:(ca_address_sk is not null and ca_state is not null)
+                                                 Please refer to the previous TableScan [TS_3]
+                                        <-Reducer 13 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_38]
+                                            PartitionCols:_col2
+                                            Merge Join Operator [MERGEJOIN_104] (rows=15838314 width=92)
+                                              Conds:RS_35._col0=RS_36._col0(Inner),Output:["_col1","_col2","_col3"]
+                                            <-Map 11 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_35]
+                                                PartitionCols:_col0
+                                                Select Operator [SEL_28] (rows=14398467 width=92)
+                                                  Output:["_col0","_col1","_col2","_col3"]
+                                                  Filter Operator [FIL_98] (rows=14398467 width=92)
+                                                    predicate:(wr_returned_date_sk is not null and wr_returning_addr_sk is not null)
+                                                    TableScan [TS_6] (rows=14398467 width=92)
+                                                      default@web_returns,web_returns,Tbl:COMPLETE,Col:NONE,Output:["wr_returned_date_sk","wr_returning_customer_sk","wr_returning_addr_sk","wr_return_amt"]
+                                            <-Map 14 [SIMPLE_EDGE]
+                                              SHUFFLE [RS_36]
+                                                PartitionCols:_col0
+                                                Select Operator [SEL_11] (rows=36524 width=1119)
+                                                  Output:["_col0"]
+                                                  Filter Operator [FIL_96] (rows=36524 width=1119)
+                                                    predicate:((d_year = 2002) and d_date_sk is not null)
+                                                    TableScan [TS_9] (rows=73049 width=1119)
+                                                      default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
+                        <-Reducer 7 [SIMPLE_EDGE]
+                          SHUFFLE [RS_51]
+                            PartitionCols:_col1
+                            Select Operator [SEL_25] (rows=22000000 width=1014)
+                              Output:["_col0","_col1","_col2"]
+                              Group By Operator [GBY_24] (rows=22000000 width=1014)
+                                Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
+                              <-Reducer 6 [SIMPLE_EDGE]
+                                SHUFFLE [RS_23]
+                                  PartitionCols:_col0, _col1
+                                  Group By Operator [GBY_22] (rows=44000000 width=1014)
+                                    Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col7, _col1
+                                    Merge Join Operator [MERGEJOIN_103] (rows=44000000 width=1014)
+                                      Conds:RS_18._col2=RS_19._col0(Inner),Output:["_col1","_col3","_col7"]
+                                    <-Map 5 [SIMPLE_EDGE]
+                                      SHUFFLE [RS_19]
+                                        PartitionCols:_col0
+                                        Select Operator [SEL_14] (rows=40000000 width=1014)
+                                          Output:["_col0","_col1"]
+                                          Filter Operator [FIL_97] (rows=40000000 width=1014)
+                                            predicate:ca_address_sk is not null
+                                             Please refer to the previous TableScan [TS_3]
+                                    <-Reducer 12 [SIMPLE_EDGE]
+                                      SHUFFLE [RS_18]
+                                        PartitionCols:_col2
+                                        Merge Join Operator [MERGEJOIN_102] (rows=15838314 width=92)
+                                          Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col1","_col2","_col3"]
+                                        <-Map 11 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_15]
+                                            PartitionCols:_col0
+                                            Select Operator [SEL_8] (rows=14398467 width=92)
+                                              Output:["_col0","_col1","_col2","_col3"]
+                                              Filter Operator [FIL_95] (rows=14398467 width=92)
+                                                predicate:(wr_returned_date_sk is not null and wr_returning_addr_sk is not null and wr_returning_customer_sk is not null)
+                                                 Please refer to the previous TableScan [TS_6]
+                                        <-Map 14 [SIMPLE_EDGE]
+                                          SHUFFLE [RS_16]
+                                            PartitionCols:_col0
+                                             Please refer to the previous Select Operator [SEL_11]
+

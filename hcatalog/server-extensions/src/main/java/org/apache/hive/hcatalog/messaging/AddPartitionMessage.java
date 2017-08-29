@@ -37,6 +37,8 @@ public abstract class AddPartitionMessage extends HCatEventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   /**
    * Getter for list of partitions added.
    * @return List of maps, where each map identifies values for each partition-key, for every added partition.

@@ -19,8 +19,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 /**
@@ -134,5 +138,48 @@ public class SelectDesc extends AbstractOperatorDesc {
    */
   public void setSelStarNoCompute(boolean selStarNoCompute) {
     this.selStarNoCompute = selStarNoCompute;
+  }
+
+
+  public class SelectOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final SelectDesc selectDesc;
+    private final VectorSelectDesc vectorSelectDesc;
+
+    public SelectOperatorExplainVectorization(SelectDesc selectDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.selectDesc = selectDesc;
+      vectorSelectDesc = (VectorSelectDesc) vectorDesc;
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "selectExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getSelectExpressions() {
+      return vectorExpressionsToStringList(vectorSelectDesc.getSelectExpressions());
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumns() {
+      return Arrays.toString(vectorSelectDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Select Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public SelectOperatorExplainVectorization getSelectVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new SelectOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      SelectDesc otherDesc = (SelectDesc) other;
+      return Objects.equals(getColListString(), otherDesc.getColListString()) &&
+          Objects.equals(getOutputColumnNames(), otherDesc.getOutputColumnNames()) &&
+          Objects.equals(explainNoCompute(), otherDesc.explainNoCompute());
+    }
+    return false;
   }
 }

@@ -26,6 +26,7 @@ select ds from pcs_t1 where struct(ds, key) in (struct('2000-04-08',1), struct('
 explain extended select ds from pcs_t1 where struct(ds, key+2) in (struct('2000-04-08',3), struct('2000-04-09',4));
 select ds from pcs_t1 where struct(ds, key+2) in (struct('2000-04-08',3), struct('2000-04-09',4));
 
+set hive.cbo.enable=false;
 explain extended select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from pcs_t1 a join pcs_t1 b  on a.ds=b.ds where struct(a.ds, a.key, b.ds) in (struct('2000-04-08',1, '2000-04-09'), struct('2000-04-09',2, '2000-04-08'));
 
 select /*+ MAPJOIN(pcs_t1) */ a.ds, b.key from pcs_t1 a join pcs_t1 b  on a.ds=b.ds where struct(a.ds, a.key, b.ds) in (struct('2000-04-08',1, '2000-04-09'), struct('2000-04-09',2, '2000-04-08'));

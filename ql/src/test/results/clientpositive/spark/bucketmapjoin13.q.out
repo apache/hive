@@ -8,14 +8,12 @@ CLUSTERED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
-POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
+POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='1')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -30,14 +28,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1 CLUSTERED BY (key) INTO 2 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_1@part=2
-POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
+POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_1 PARTITION (part='2')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -54,30 +50,24 @@ CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_2 is bucketed by 'key'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+PREHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
-POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_2 is bucketed by 'key'
-INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
+POSTHOOK: query: INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@part=1
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_part_2 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
--- and it is also being joined. So, bucketed map-join cannot be performed
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
--- and it is also being joined. So, bucketed map-join cannot be performed
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
@@ -123,6 +113,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -145,6 +136,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -216,6 +208,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name value
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -238,6 +231,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -263,6 +257,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -285,6 +280,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -360,16 +356,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 #### A masked pattern was here ####
 2056
-PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key and a.part = '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key and a.part = '2'
@@ -420,6 +412,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -442,6 +435,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -519,6 +513,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -541,6 +536,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -621,16 +617,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1 drop partition (part = '1'
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1@part=1
-PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
@@ -681,6 +673,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -703,6 +696,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -780,6 +774,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -802,6 +797,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -882,18 +878,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1 CLUSTERED BY (value) INTO 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_1
 POSTHOOK: Output: default@srcbucket_mapjoin_part_1
-PREHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
--- The fact that the table is being bucketed by 'value' does not matter
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- part=2 partition for srcbucket_mapjoin_part_1 is bucketed by 'key'
--- and it is being joined. So, bucketed map-join can be performed
--- The fact that the table is being bucketed by 'value' does not matter
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key
@@ -944,6 +934,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -966,6 +957,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -1043,6 +1035,7 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -1065,6 +1058,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name value
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string

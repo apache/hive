@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.io.Text;
 
 /**
  * UDFLpad.
@@ -29,10 +28,14 @@ import org.apache.hadoop.io.Text;
     value = "_FUNC_(str, len, pad) - Returns str, left-padded with pad to a length of len",
     extended = "If str is longer than len, the return value is shortened to "
     + "len characters.\n"
+    + "In case of empty pad string, the return value is null.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('hi', 5, '??') FROM src LIMIT 1;\n"
-    + "  '???hi'"
-    + "  > SELECT _FUNC_('hi', 1, '??') FROM src LIMIT 1;\n" + "  'h'")
+    + "  '???hi'\n"
+    + "  > SELECT _FUNC_('hi', 1, '??') FROM src LIMIT 1;\n"
+    + "  'h'\n"
+    + "  > SELECT _FUNC_('hi', 5, '') FROM src LIMIT 1;\n"
+    + "  null")
 public class GenericUDFLpad extends GenericUDFBasePad {
   public GenericUDFLpad() {
     super("lpad");

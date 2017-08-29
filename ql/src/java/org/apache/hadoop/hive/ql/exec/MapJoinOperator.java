@@ -70,6 +70,8 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import com.esotericsoftware.kryo.KryoException;
 
 /**
@@ -99,6 +101,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
                                                                           // spilled small tables
   protected HybridHashTableContainer firstSmallTable; // The first small table;
                                                       // Only this table has spilled big table rows
+
+  protected transient boolean isTestingNoHashTableLoad;
 
   /** Kryo ctor. */
   protected MapJoinOperator() {
@@ -132,6 +136,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     return HashTableLoaderFactory.getLoader(hconf);
   }
 
+  public String getCacheKey() {
+    return cacheKey;
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     this.hconf = hconf;
@@ -161,6 +169,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     generateMapMetaData();
 
+    isTestingNoHashTableLoad = HiveConf.getBoolVar(hconf,
+        HiveConf.ConfVars.HIVE_MAPJOIN_TESTING_NO_HASH_TABLE_LOAD);
+    if (isTestingNoHashTableLoad) {
+      return;
+    }
+
     final ExecMapperContext mapContext = getExecContext();
     final MapredContext mrContext = MapredContext.get();
 
@@ -173,7 +187,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * requires changes in the Tez API with regard to finding bucket id and
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("This is not bucket map join, so cache");
       }
 
@@ -233,6 +247,14 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       this.getExecContext().setLastInputPath(null);
       this.getExecContext().setCurrentInputPath(null);
     }
+  }
+
+  @VisibleForTesting
+  public void setTestMapJoinTableContainer(int posSmallTable,
+      MapJoinTableContainer testMapJoinTableContainer,
+      MapJoinTableContainerSerDe mapJoinTableContainerSerDe) {
+    mapJoinTables[posSmallTable] = testMapJoinTableContainer;
+    mapJoinTableSerdes[posSmallTable] = mapJoinTableContainerSerDe;
   }
 
   @Override
@@ -314,7 +336,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
     } catch (HiveException e) {
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
       }
 
@@ -554,7 +576,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
 
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
       }
 
@@ -568,7 +590,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && !(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
             && SparkUtilities.isDedicatedCluster(hconf))) {
-      if (isLogInfoEnabled) {
+      if (LOG.isInfoEnabled()) {
         LOG.info("MR: Clearing all map join table containers.");
       }
       clearAllTableContainers();

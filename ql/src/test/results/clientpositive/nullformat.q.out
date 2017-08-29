@@ -1,8 +1,6 @@
-PREHOOK: query: -- base table with null data
-DROP TABLE IF EXISTS base_tab
+PREHOOK: query: DROP TABLE IF EXISTS base_tab
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- base table with null data
-DROP TABLE IF EXISTS base_tab
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -32,11 +30,9 @@ c                   	string
 d                   	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- table with non-default null format
-DROP TABLE IF EXISTS null_tab1
+PREHOOK: query: DROP TABLE IF EXISTS null_tab1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- table with non-default null format
-DROP TABLE IF EXISTS null_tab1
+POSTHOOK: query: DROP TABLE IF EXISTS null_tab1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: EXPLAIN CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
 PREHOOK: type: CREATETABLE
@@ -94,13 +90,11 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
 #### A masked pattern was here ####
-PREHOOK: query: -- load null data from another table and verify that the null is stored in the expected format
-INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+PREHOOK: query: INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_tab
 PREHOOK: Output: default@null_tab1
-POSTHOOK: query: -- load null data from another table and verify that the null is stored in the expected format
-INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+POSTHOOK: query: INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_tab
 POSTHOOK: Output: default@null_tab1
@@ -134,13 +128,11 @@ NULL	NULL
 1.0	NULL
 1.0	1
 1.0	1
-PREHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
-ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+PREHOOK: query: ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@null_tab1
 PREHOOK: Output: default@null_tab1
-POSTHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
-ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+POSTHOOK: query: ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@null_tab1
 POSTHOOK: Output: default@null_tab1

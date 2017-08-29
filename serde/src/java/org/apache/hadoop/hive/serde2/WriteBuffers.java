@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.common.MemoryEstimate;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.io.WritableUtils;
@@ -31,7 +33,7 @@ import org.apache.hive.common.util.HashCodeUtil;
  * The structure storing arbitrary amount of data as a set of fixed-size byte buffers.
  * Maintains read and write pointers for convenient single-threaded writing/reading.
  */
-public final class WriteBuffers implements RandomAccessOutput {
+public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
   private final ArrayList<byte[]> writeBuffers = new ArrayList<byte[]>(1);
   /** Buffer size in writeBuffers */
   private final int wbSize;
@@ -39,13 +41,21 @@ public final class WriteBuffers implements RandomAccessOutput {
   private final long offsetMask;
   private final long maxSize;
 
-  public static class Position {
+  public static class Position implements MemoryEstimate {
     private byte[] buffer = null;
     private int bufferIndex = 0;
     private int offset = 0;
     public void clear() {
       buffer = null;
       bufferIndex = offset = -1;
+    }
+
+    @Override
+    public long getEstimatedMemorySize() {
+      JavaDataModel jdm = JavaDataModel.get();
+      long memSize = buffer == null ? 0 : jdm.lengthForByteArrayOfSize(buffer.length);
+      memSize += (2 * jdm.primitive1());
+      return memSize;
     }
   }
 
@@ -608,6 +618,17 @@ public final class WriteBuffers implements RandomAccessOutput {
    */
   public long size() {
     return writeBuffers.size() * (long) wbSize;
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    long size = 0;
+    size += writeBuffers == null ? 0 : jdm.arrayList() + (writeBuffers.size() * jdm.lengthForByteArrayOfSize(wbSize));
+    size += (3 * jdm.primitive2());
+    size += writePos == null ? 0 : writePos.getEstimatedMemorySize();
+    size += unsafeReadPos == null ? 0 : unsafeReadPos.getEstimatedMemorySize();
+    return size;
   }
 
   /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */

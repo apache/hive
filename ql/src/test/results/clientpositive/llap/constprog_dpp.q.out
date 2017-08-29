@@ -44,7 +44,7 @@ Vertex dependency in root stage
 Map 3 <- Union 4 (CONTAINS)
 Map 6 <- Union 4 (CONTAINS)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-Reducer 5 <- Union 4 (SIMPLE_EDGE)
+Reducer 5 <- Union 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -68,7 +68,7 @@ Stage-0
               Number of rows:1
               Select Operator [SEL_10] (rows=1 width=0)
                 Output:["_col0"]
-              <-Union 4 [SIMPLE_EDGE]
+              <-Union 4 [CUSTOM_SIMPLE_EDGE]
                 <-Map 3 [CONTAINS] llap
                   Reduce Output Operator [RS_9]
                     Limit [LIM_8] (rows=1 width=0)

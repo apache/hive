@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -56,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
+import org.apache.orc.impl.OrcAcidUtils;
 
 /**
  * LoadSemanticAnalyzer.
@@ -226,6 +228,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
     }
 
+    if(AcidUtils.isAcidTable(ts.tableHandle)) {
+      throw new SemanticException(ErrorMsg.LOAD_DATA_ON_ACID_TABLE, ts.tableHandle.getCompleteName());
+    }
     // make sure the arguments make sense
     List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, fromTree, isLocal);
 

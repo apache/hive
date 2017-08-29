@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
     // the interface. this helps in being able to switch the user within a session.
     // so we need to check if the user has changed
     String newUserName = authenticator.getUserName();
-    if(currentUserName == newUserName){
+    if (Objects.equals(currentUserName, newUserName)) {
       //no need to (re-)initialize the currentUserName, currentRoles fields
       return;
     }

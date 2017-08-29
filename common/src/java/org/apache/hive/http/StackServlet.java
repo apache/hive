@@ -74,7 +74,7 @@ public class StackServlet extends HttpServlet {
       Thread.State state = info.getThreadState();
       stream.println("  State: " + state);
       stream.println("  Blocked count: " + info.getBlockedCount());
-      stream.println("  Wtaited count: " + info.getWaitedCount());
+      stream.println("  Waited count: " + info.getWaitedCount());
       if (contention) {
         stream.println("  Blocked time: " + info.getBlockedTime());
         stream.println("  Waited time: " + info.getWaitedTime());

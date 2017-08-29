@@ -51,10 +51,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -185,6 +187,7 @@ public class SessionState {
   private HiveAuthorizationProvider authorizer;
 
   private HiveAuthorizer authorizerV2;
+  private volatile ProgressMonitor progressMonitor;
 
   public enum AuthorizationMode{V1, V2};
 
@@ -280,6 +283,8 @@ public class SessionState {
   private final ResourceDownloader resourceDownloader;
 
   private List<String> forwardedAddresses;
+
+  private String atsDomainId;
 
   /**
    * Get the lineage state stored in this session.
@@ -455,6 +460,21 @@ public class SessionState {
     return txnMgr;
   }
 
+  /**
+   * This only for testing.  It allows to switch the manager before the (test) operation so that
+   * it's not coupled to the executing thread.  Since tests run against Derby which often wedges
+   * under concurrent access, tests must use a single thead and simulate concurrent access.
+   * For example, {@code TestDbTxnManager2}
+   */
+  @VisibleForTesting
+  public HiveTxnManager setTxnMgr(HiveTxnManager mgr) {
+    if(!(sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST) || sessionConf.getBoolVar(ConfVars.HIVE_IN_TEZ_TEST))) {
+      throw new IllegalStateException("Only for testing!");
+    }
+    HiveTxnManager tmp = txnMgr;
+    txnMgr = mgr;
+    return tmp;
+  }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
       return getHdfsEncryptionShim(FileSystem.get(sessionConf));
@@ -1049,60 +1069,151 @@ public class SessionState {
       this.isSilent = isSilent;
     }
 
+    /**
+     * Get the console output stream for HiveServer2 or HiveCli.
+     * @return The output stream
+     */
     public PrintStream getOutStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;
     }
 
+    /**
+     * Get the console info stream for HiveServer2 or HiveCli.
+     * @return The info stream
+     */
     public static PrintStream getInfoStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.info != null)) ? ss.info : getErrStream();
     }
 
+    /**
+     * Get the console error stream for HiveServer2 or HiveCli.
+     * @return The error stream
+     */
     public static PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
     }
 
+    /**
+     * Get the child process output stream for HiveServer2 or HiveCli.
+     * @return The child process output stream
+     */
     public PrintStream getChildOutStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.childOut != null)) ? ss.childOut : System.out;
     }
 
+    /**
+     * Get the child process error stream for HiveServer2 or HiveCli.
+     * @return The child process error stream
+     */
     public PrintStream getChildErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.childErr != null)) ? ss.childErr : System.err;
     }
 
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
     public boolean getIsSilent() {
       SessionState ss = SessionState.get();
       // use the session or the one supplied in constructor
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+    /**
+     * Logs into the log file.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     */
     public void logInfo(String info) {
       logInfo(info, null);
     }
 
+    /**
+     * Logs into the log file. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void logInfo(String info, String detail) {
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
+    /**
+     * Logs info into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     */
     public void printInfo(String info) {
       printInfo(info, null);
     }
 
+    /**
+     * Logs info into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. The isSilent parameter is used instead of the LogHelper isSilent attribute.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
+    public void printInfo(String info, boolean isSilent) {
+      printInfo(info, null, isSilent);
+    }
+
+    /**
+     * Logs info into the log file, and if the LogHelper is not silent then into the HiveServer2 or
+     * HiveCli info stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void printInfo(String info, String detail) {
-      if (!getIsSilent()) {
+      printInfo(info, detail, getIsSilent());
+    }
+
+    /**
+     * Logs info into the log file, and if not silent then into the HiveServer2 or HiveCli info
+     * stream too. Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param info The log message
+     * @param detail Extra detail to log which will be not printed if null
+     * @param isSilent If true then the message will not be printed to the info stream
+     */
+    public void printInfo(String info, String detail, boolean isSilent) {
+      if (!isSilent) {
         getInfoStream().println(info);
       }
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
+    /**
+     * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param error The log message
+     */
     public void printError(String error) {
       printError(error, null);
     }
 
+    /**
+     * Logs an error into the log file, and into the HiveServer2 or HiveCli error stream too.
+     * Handles an extra detail which will not be printed if null.
+     * BeeLine uses the operation log file to show the logs to the user, so depending on the
+     * BeeLine settings it could be shown to the user.
+     * @param error The log message
+     * @param detail Extra detail to log which will be not printed if null
+     */
     public void printError(String error, String detail) {
       getErrStream().println(error);
       LOG.error(error + StringUtils.defaultString(detail));
@@ -1233,6 +1344,14 @@ public class SessionState {
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return false;
     }
+  }
+
+  public String getATSDomainId() {
+    return atsDomainId;
+  }
+
+  public void setATSDomainId(String domainId) {
+    this.atsDomainId = domainId;
   }
 
   /**
@@ -1558,6 +1677,7 @@ public class SessionState {
       // removes the threadlocal variables, closes underlying HMS connection
       Hive.closeCurrent();
     }
+    progressMonitor = null;
   }
 
   private void unCacheDataNucleusClassLoaders() {
@@ -1565,7 +1685,9 @@ public class SessionState {
       Hive threadLocalHive = Hive.get(sessionConf);
       if ((threadLocalHive != null) && (threadLocalHive.getMSC() != null)
           && (threadLocalHive.getMSC().isLocalMetaStore())) {
-        if (sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
+        if (sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(ObjectStore.class.getName())
+            || sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL).equals(CachedStore.class.getName()) &&
+            sessionConf.getVar(ConfVars.METASTORE_CACHED_RAW_STORE_IMPL).equals(ObjectStore.class.getName())) {
           ObjectStore.unCacheDataNucleusClassLoaders();
         }
       }
@@ -1738,6 +1860,49 @@ public class SessionState {
   public String getReloadableAuxJars() {
     return StringUtils.join(preReloadableAuxJars, ',');
   }
+
+  public void updateProgressedPercentage(final double percentage) {
+    this.progressMonitor = new ProgressMonitor() {
+      @Override
+      public List<String> headers() {
+        return null;
+      }
+
+      @Override
+      public List<List<String>> rows() {
+        return null;
+      }
+
+      @Override
+      public String footerSummary() {
+        return null;
+      }
+
+      @Override
+      public long startTime() {
+        return 0;
+      }
+
+      @Override
+      public String executionStatus() {
+        return null;
+      }
+
+      @Override
+      public double progressedPercentage() {
+        return percentage;
+      }
+    };
+  }
+
+  public void updateProgressMonitor(ProgressMonitor progressMonitor) {
+    this.progressMonitor = progressMonitor;
+  }
+
+  public ProgressMonitor getProgressMonitor() {
+    return progressMonitor;
+  }
+
 }
 
 class ResourceMaps {

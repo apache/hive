@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain select distinct src.* from src
+PREHOOK: query: explain select distinct src.* from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain select distinct src.* from src
+POSTHOOK: query: explain select distinct src.* from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -61,15 +57,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select distinct src.* from src
+PREHOOK: query: select distinct src.* from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select distinct src.* from src
+POSTHOOK: query: select distinct src.* from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -1351,10 +1343,10 @@ PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
       Create View Operator:
         Create View
           or replace: false
@@ -1374,6 +1366,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
+POSTHOOK: Lineage: sdi.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sdi.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended sdi
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sdi
@@ -3813,10 +3807,10 @@ PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
       Create View Operator:
         Create View
           or replace: false
@@ -3836,6 +3830,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
+POSTHOOK: Lineage: sdi.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sdi.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended sdi
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sdi

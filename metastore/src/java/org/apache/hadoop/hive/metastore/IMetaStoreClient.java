@@ -26,15 +26,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
+import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -70,6 +73,7 @@ import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
@@ -81,7 +85,9 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -90,6 +96,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -205,7 +212,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of table names that match a filter.
-   * The filter operators are LIKE, <, <=, >, >=, =, <>
+   * The filter operators are LIKE, &lt;, &lt;=, &gt;, &gt;=, =, &lt;&gt;
    *
    * In the filter statement, values interpreted as strings must be enclosed in quotes,
    * while values interpreted as integers should not be.  Strings and integers are the only
@@ -217,12 +224,12 @@ public interface IMetaStoreClient {
    * Constants.HIVE_FILTER_FIELD_LAST_ACCESS, which filters on the last access times
    *   and supports all filter operators except LIKE
    * Constants.HIVE_FILTER_FIELD_PARAMS, which filters on the tables' parameter keys and values
-   *   and only supports the filter operators = and <>.
+   *   and only supports the filter operators = and &lt;&gt;.
    *   Append the parameter key name to HIVE_FILTER_FIELD_PARAMS in the filter statement.
    *   For example, to filter on parameter keys called "retention", the key name in the filter
    *   statement should be Constants.HIVE_FILTER_FIELD_PARAMS + "retention"
-   *   Also, = and <> only work for keys that exist in the tables.
-   *   E.g., filtering on tables where key1 <> value will only
+   *   Also, = and &lt;&gt; only work for keys that exist in the tables.
+   *   E.g., filtering on tables where key1 &lt;&gt; value will only
    *   return tables that have a value for the parameter key1.
    * Some example filter statements include:
    * filter = Constants.HIVE_FILTER_FIELD_OWNER + " like \".*test.*\" and " +
@@ -302,6 +309,29 @@ public interface IMetaStoreClient {
    */
   void dropTable(String dbname, String tableName)
       throws MetaException, TException, NoSuchObjectException;
+
+  /**
+   * Truncate the table/partitions in the DEFAULT database.
+   * @param dbName
+   *          The db to which the table to be truncate belongs to
+   * @param tableName
+   *          The table to truncate
+   * @param partNames
+   *          List of partitions to truncate. NULL will truncate the whole table/all partitions
+   * @throws MetaException
+   * @throws TException
+   *           Could not truncate table properly.
+   */
+  void truncateTable(String dbName, String tableName, List<String> partNames) throws MetaException, TException;
+
+  /**
+   * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
+   *
+   * @param request Inputs for path of the data files to be recycled to cmroot and
+   *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
+   * @return Response which is currently void
+   */
+  CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException;
 
   boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException;
@@ -560,7 +590,7 @@ public interface IMetaStoreClient {
    * @param dbName the database name
    * @param tableName the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @return number of partitions
    * @throws MetaException
@@ -576,7 +606,7 @@ public interface IMetaStoreClient {
    * @param db_name the database name
    * @param tbl_name the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @param max_parts the maximum number of partitions to return,
    *    all partitions are returned if -1 is passed
@@ -706,6 +736,14 @@ public interface IMetaStoreClient {
   void alter_table(String defaultDatabaseName, String tblName,
       Table table) throws InvalidOperationException, MetaException, TException;
 
+  /**
+   * Use alter_table_with_environmentContext instead of alter_table with cascade option
+   * passed in EnvironmentContext using {@code StatsSetupConst.CASCADE}
+   */
+  @Deprecated
+  void alter_table(String defaultDatabaseName, String tblName, Table table,
+      boolean cascade) throws InvalidOperationException, MetaException, TException;
+
   //wrapper of alter_table_with_cascade
   void alter_table_with_environmentContext(String defaultDatabaseName, String tblName, Table table,
       EnvironmentContext environmentContext) throws InvalidOperationException, MetaException,
@@ -779,6 +817,26 @@ public interface IMetaStoreClient {
   boolean dropPartition(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
+
+  /**
+   * updates a partition to new partition
+   *
+   * @param dbName
+   *          database of the old partition
+   * @param tblName
+   *          table name of the old partition
+   * @param newPart
+   *          new partition
+   * @throws InvalidOperationException
+   *           if the old partition does not exist
+   * @throws MetaException
+   *           if error in updating metadata
+   * @throws TException
+   *           if error in communicating with metastore server
+   */
+  void alter_partition(String dbName, String tblName, Partition newPart)
+      throws InvalidOperationException, MetaException, TException;
+
   /**
    * updates a partition to new partition
    *
@@ -814,7 +872,28 @@ public interface IMetaStoreClient {
    * @throws TException
    *           if error in communicating with metastore server
    */
-  void alter_partitions(String dbName, String tblName, List<Partition> newParts, EnvironmentContext environmentContext)
+  void alter_partitions(String dbName, String tblName, List<Partition> newParts)
+      throws InvalidOperationException, MetaException, TException;
+
+  /**
+   * updates a list of partitions
+   *
+   * @param dbName
+   *          database of the old partition
+   * @param tblName
+   *          table name of the old partition
+   * @param newParts
+   *          list of partitions
+   * @param environmentContext 
+   * @throws InvalidOperationException
+   *           if the old partition does not exist
+   * @throws MetaException
+   *           if error in updating metadata
+   * @throws TException
+   *           if error in communicating with metastore server
+   */
+  void alter_partitions(String dbName, String tblName, List<Partition> newParts,
+      EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException;
 
   /**
@@ -1347,6 +1426,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
+  @RetrySemantics.CannotRetry
   LockResponse lock(LockRequest request)
       throws NoSuchTxnException, TxnAbortedException, TException;
 
@@ -1480,7 +1560,7 @@ public interface IMetaStoreClient {
                               Map<String, String> tblproperties) throws TException;
 
   /**
-   * Get a list of all current compactions.
+   * Get a list of all compactions.
    * @return List of all current compactions.  This includes compactions waiting to happen,
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException
@@ -1507,6 +1587,15 @@ public interface IMetaStoreClient {
     throws TException;
 
   /**
+   * Performs the commit/rollback to the metadata storage for insert operator from external storage handler.
+   * @param table table name
+   * @param overwrite true if the insert is overwrite
+   *
+   * @throws MetaException
+   */
+  void insertTable(Table table, boolean overwrite) throws MetaException;
+
+  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -1524,7 +1613,7 @@ public interface IMetaStoreClient {
    * Get the next set of notifications from the database.
    * @param lastEventId The last event id that was consumed by this reader.  The returned
    *                    notifications will start at the next eventId available after this eventId.
-   * @param maxEvents Maximum number of events to return.  If < 1, then all available events will
+   * @param maxEvents Maximum number of events to return.  If &lt; 1, then all available events will
    *                  be returned.
    * @param filter User provided filter to remove unwanted events.  If null, all events will be
    *               returned.
@@ -1626,12 +1715,20 @@ public interface IMetaStoreClient {
   List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException,
     NoSuchObjectException, TException;
 
+  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException,
+    NoSuchObjectException, TException;
+
+  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException,
+    NoSuchObjectException, TException;
+
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
+    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+    List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints)
     throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
-  void dropConstraint(String dbName, String tableName, String constraintName) throws 
+  void dropConstraint(String dbName, String tableName, String constraintName) throws
     MetaException, NoSuchObjectException, TException;
 
   void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
@@ -1639,4 +1736,19 @@ public interface IMetaStoreClient {
 
   void addForeignKey(List<SQLForeignKey> foreignKeyCols) throws
   MetaException, NoSuchObjectException, TException;
+
+  void addUniqueConstraint(List<SQLUniqueConstraint> uniqueConstraintCols) throws
+  MetaException, NoSuchObjectException, TException;
+
+  void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
+  MetaException, NoSuchObjectException, TException;
+
+  /**
+   * Gets the unique id of the backing database instance used for storing metadata
+   * @return unique id of the backing database instance
+   * @throws MetaException if HMS is not able to fetch the UUID or if there are multiple UUIDs found in the database
+   * @throws TException in case of Thrift errors
+   */
+  String getMetastoreDbUuid() throws MetaException, TException;
+
 }

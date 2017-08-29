@@ -488,6 +488,7 @@ public class TestAccumuloPredicateHandler {
         TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo);
     conf.set(serdeConstants.LIST_COLUMNS, Joiner.on(',').join(columnNames));
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "string,int,string");
+    conf.set(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE, ColumnEncoding.BINARY.getName());
     String columnMappingStr = "cf:f1,cf:f2,:rowID";
     conf.set(AccumuloSerDeParameters.COLUMN_MAPPINGS, columnMappingStr);
     columnMapper = new ColumnMapper(columnMappingStr, ColumnEncoding.STRING.getName(), columnNames,
@@ -758,7 +759,7 @@ public class TestAccumuloPredicateHandler {
     String hiveRowIdColumnName = "rid";
 
     Mockito.when(mockHandler.getRanges(conf, columnMapper)).thenCallRealMethod();
-    Mockito.when(mockHandler.generateRanges(columnMapper, hiveRowIdColumnName, root)).thenReturn(null);
+    Mockito.when(mockHandler.generateRanges(conf, columnMapper, hiveRowIdColumnName, root)).thenReturn(null);
     Mockito.when(mockHandler.getExpression(conf)).thenReturn(root);
 
     // A null result from AccumuloRangeGenerator is all ranges
@@ -776,7 +777,8 @@ public class TestAccumuloPredicateHandler {
     String hiveRowIdColumnName = "rid";
 
     Mockito.when(mockHandler.getRanges(conf, columnMapper)).thenCallRealMethod();
-    Mockito.when(mockHandler.generateRanges(columnMapper, hiveRowIdColumnName, root)).thenReturn(Collections.emptyList());
+    Mockito.when(mockHandler.generateRanges(conf, columnMapper, hiveRowIdColumnName, root))
+                  .thenReturn(Collections.emptyList());
     Mockito.when(mockHandler.getExpression(conf)).thenReturn(root);
 
     // A null result from AccumuloRangeGenerator is all ranges
@@ -795,7 +797,7 @@ public class TestAccumuloPredicateHandler {
     Range r = new Range("a");
 
     Mockito.when(mockHandler.getRanges(conf, columnMapper)).thenCallRealMethod();
-    Mockito.when(mockHandler.generateRanges(columnMapper, hiveRowIdColumnName, root)).thenReturn(r);
+    Mockito.when(mockHandler.generateRanges(conf, columnMapper, hiveRowIdColumnName, root)).thenReturn(r);
     Mockito.when(mockHandler.getExpression(conf)).thenReturn(root);
 
     // A null result from AccumuloRangeGenerator is all ranges
@@ -814,7 +816,8 @@ public class TestAccumuloPredicateHandler {
     Range r1 = new Range("a"), r2 = new Range("z");
 
     Mockito.when(mockHandler.getRanges(conf, columnMapper)).thenCallRealMethod();
-    Mockito.when(mockHandler.generateRanges(columnMapper, hiveRowIdColumnName, root)).thenReturn(Arrays.asList(r1, r2));
+    Mockito.when(mockHandler.generateRanges(conf, columnMapper, hiveRowIdColumnName, root))
+                 .thenReturn(Arrays.asList(r1, r2));
     Mockito.when(mockHandler.getExpression(conf)).thenReturn(root);
 
     // A null result from AccumuloRangeGenerator is all ranges

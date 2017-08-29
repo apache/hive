@@ -45,6 +45,7 @@ import jline.Terminal;
 import jline.TerminalFactory;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
+import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 class BeeLineOpts implements Completer {
@@ -60,8 +61,9 @@ class BeeLineOpts implements Completer {
   public static final char DEFAULT_DELIMITER_FOR_DSV = '|';
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
   public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
+  public static final String DEFAULT_DELIMITER = ";";
 
-  public static String URL_ENV_PREFIX = "BEELINE_URL_";
+  public static final String URL_ENV_PREFIX = "BEELINE_URL_";
 
   private final BeeLine beeLine;
   private boolean autosave = false;
@@ -75,6 +77,7 @@ class BeeLineOpts implements Completer {
   private boolean verbose = false;
   private boolean force = false;
   private boolean incremental = true;
+  private boolean convertBinaryArrayToString = true;
   private int incrementalBufferRows = DEFAULT_INCREMENTAL_BUFFER_ROWS;
   private boolean showWarnings = false;
   private boolean showNestedErrs = false;
@@ -92,7 +95,6 @@ class BeeLineOpts implements Completer {
   private HiveConf conf;
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
-  private boolean showConnectedUrl = false;
 
   //This can be set for old behavior of nulls printed as empty strings
   private boolean nullEmptyString = false;
@@ -101,6 +103,7 @@ class BeeLineOpts implements Completer {
 
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
+  private int maxHistoryRows = MemoryHistory.DEFAULT_MAX_SIZE;
 
   private String scriptFile = null;
   private String[] initFiles = null;
@@ -114,6 +117,8 @@ class BeeLineOpts implements Completer {
   private String lastConnectedUrl = null;
 
   private TreeSet<String> cachedPropertyNameSet = null;
+
+  private String delimiter = DEFAULT_DELIMITER;
 
   @Retention(RetentionPolicy.RUNTIME)
   public @interface Ignore {
@@ -384,6 +389,14 @@ class BeeLineOpts implements Completer {
     return numberFormat;
   }
 
+  public void setConvertBinaryArrayToString(boolean convert) {
+    this.convertBinaryArrayToString = convert;
+  }
+
+  public boolean getConvertBinaryArrayToString() {
+    return this.convertBinaryArrayToString;
+  }
+
   public void setMaxWidth(int maxWidth) {
     this.maxWidth = maxWidth;
   }
@@ -430,6 +443,17 @@ class BeeLineOpts implements Completer {
 
   public String getHistoryFile() {
     return historyFile;
+  }
+
+  /**
+   * @param numRows - the number of rows to store in history file
+   */
+  public void setMaxHistoryRows(int numRows) {
+    this.maxHistoryRows = numRows;
+  }
+
+  public int getMaxHistoryRows() {
+    return maxHistoryRows;
   }
 
   public void setScriptFile(String scriptFile) {
@@ -535,14 +559,6 @@ class BeeLineOpts implements Completer {
 
   public boolean getAutosave() {
     return autosave;
-  }
-
-  public boolean getShowConnectedUrl() {
-    return showConnectedUrl;
-  }
-
-  public void setShowConnectedUrl(boolean showConnectedUrl) {
-    this.showConnectedUrl = showConnectedUrl;
   }
 
   public void setOutputFormat(String outputFormat) {
@@ -653,6 +669,14 @@ class BeeLineOpts implements Completer {
 
   public void setLastConnectedUrl(String lastConnectedUrl){
     this.lastConnectedUrl = lastConnectedUrl;
+  }
+
+  public String getDelimiter() {
+    return this.delimiter;
+  }
+
+  public void setDelimiter(String delimiter) {
+    this.delimiter = delimiter;
   }
 
   @Ignore

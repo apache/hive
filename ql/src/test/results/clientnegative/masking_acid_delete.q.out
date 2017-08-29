@@ -1,0 +1,13 @@
+PREHOOK: query: create table masking_test (key int, value string)
+clustered by (value) into 2 buckets stored as orc
+tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test
+POSTHOOK: query: create table masking_test (key int, value string)
+clustered by (value) into 2 buckets stored as orc
+tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test
+FAILED: SemanticException [Error 10287]: Detected default.masking_test has row masking/column filtering enabled, which is not supported for query involving ACID operations

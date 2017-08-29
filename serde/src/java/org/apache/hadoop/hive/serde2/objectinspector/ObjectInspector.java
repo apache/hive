@@ -50,7 +50,7 @@ public interface ObjectInspector extends Cloneable {
    * ObjectInspector. This is used to display the type information to the user.
    *
    * For primitive types, the type name is standardized. For other types, the
-   * type name can be something like "list<int>", "map<int,string>", java class
+   * type name can be something like "list&lt;int&gt;", "map&lt;int,string&gt;", java class
    * names, or user-defined type names similar to typedef.
    */
   String getTypeName();

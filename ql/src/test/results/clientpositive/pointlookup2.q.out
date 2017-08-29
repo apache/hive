@@ -138,6 +138,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -159,6 +160,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -183,6 +185,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -204,6 +207,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -332,6 +336,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -353,6 +358,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -368,7 +374,7 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1/ds=2000-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -379,23 +385,28 @@ STAGE PLANS:
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  columns _col0,_col1,_col3,_col4
-                  columns.types int,string,int,string
-                  escape.delim \
-                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    column.name.delimiter ,
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int,string,int,string
+                    escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -408,7 +419,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
-              value expressions: _col1 (type: string), _col3 (type: int), _col4 (type: string)
+              value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -419,7 +430,8 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col1,_col3,_col4
+              column.name.delimiter ,
+              columns _col0,_col1,_col2,_col3
               columns.types int,string,int,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -428,7 +440,8 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col1,_col3,_col4
+                column.name.delimiter ,
+                columns _col0,_col1,_col2,_col3
                 columns.types int,string,int,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -546,6 +559,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -567,6 +581,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -591,6 +606,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -612,6 +628,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -627,8 +644,8 @@ STAGE PLANS:
               name: default.pcr_t1
             name: default.pcr_t1
       Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [$hdt$_0:t1]
-        /pcr_t1/ds=2000-04-09 [$hdt$_1:t2]
+        /pcr_t1/ds=2000-04-08 [$hdt$_0:$hdt$_0:t1]
+        /pcr_t1/ds=2000-04-09 [$hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -639,23 +656,28 @@ STAGE PLANS:
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1, _col3, _col4
           Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: string), _col3 (type: int), _col4 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
 #### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                properties:
-                  columns _col0,_col1,_col3,_col4
-                  columns.types int,string,int,string
-                  escape.delim \
-                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    column.name.delimiter ,
+                    columns _col0,_col1,_col2,_col3
+                    columns.types int,string,int,string
+                    escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -668,7 +690,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 22 Data size: 176 Basic stats: COMPLETE Column stats: NONE
               tag: -1
-              value expressions: _col1 (type: string), _col3 (type: int), _col4 (type: string)
+              value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
               auto parallelism: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -679,7 +701,8 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col1,_col3,_col4
+              column.name.delimiter ,
+              columns _col0,_col1,_col2,_col3
               columns.types int,string,int,string
               escape.delim \
               serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -688,7 +711,8 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col1,_col3,_col4
+                column.name.delimiter ,
+                columns _col0,_col1,_col2,_col3
                 columns.types int,string,int,string
                 escape.delim \
                 serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
@@ -799,6 +823,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -820,6 +845,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -844,6 +870,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -865,6 +892,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -887,6 +915,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns ds,key,value
               columns.comments 
               columns.types string:int:string
@@ -907,6 +936,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns ds,key,value
                 columns.comments 
                 columns.types string:int:string
@@ -950,6 +980,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    column.name.delimiter ,
                     columns _col0,_col1,_col2,_col3,_col4,_col5
                     columns.types int,string,string,string,int,string
                     escape.delim \
@@ -981,6 +1012,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col1,_col2,_col3,_col4,_col5
               columns.types int,string,string,string,int,string
               escape.delim \
@@ -990,6 +1022,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,string,int,string
                 escape.delim \
@@ -1105,6 +1138,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -1126,6 +1160,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -1150,6 +1185,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -1171,6 +1207,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -1195,6 +1232,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -1216,6 +1254,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -1238,6 +1277,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns ds,key,value
               columns.comments 
               columns.types string:int:string
@@ -1258,6 +1298,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns ds,key,value
                 columns.comments 
                 columns.types string:int:string
@@ -1302,6 +1343,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    column.name.delimiter ,
                     columns _col0,_col1,_col2,_col3,_col4,_col5
                     columns.types int,string,string,string,int,string
                     escape.delim \
@@ -1333,6 +1375,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col1,_col2,_col3,_col4,_col5
               columns.types int,string,string,string,int,string
               escape.delim \
@@ -1342,6 +1385,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,string,int,string
                 escape.delim \

@@ -44,8 +44,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
@@ -85,7 +83,8 @@ import org.apache.orc.ColumnStatistics;
 import org.apache.orc.DecimalColumnStatistics;
 import org.apache.orc.DoubleColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
-import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.OrcConf;
+import org.apache.orc.MemoryManager;
 import org.apache.orc.OrcProto;
 
 import org.apache.orc.OrcUtils;
@@ -247,7 +246,7 @@ public class TestOrcFile {
   public void openFileSystem () throws Exception {
     conf = new Configuration();
     if(zeroCopy) {
-      conf.setBoolean(HiveConf.ConfVars.HIVE_ORC_ZEROCOPY.varname, zeroCopy);
+      conf.setBoolean(OrcConf.USE_ZEROCOPY.getHiveConfName(), zeroCopy);
     }
     fs = FileSystem.getLocal(conf);
     testFilePath = new Path(workDir, "TestOrcFile." +
@@ -1817,7 +1816,7 @@ public class TestOrcFile {
     assertEquals(COUNT, reader.getNumberOfRows());
     /* enable zero copy record reader */
     Configuration conf = new Configuration();
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY, true);
+    conf.setBoolean(OrcConf.USE_ZEROCOPY.getHiveConfName(), true);
     RecordReader rows = reader.rows();
     /* all tests are identical to the other seek() tests */
     OrcStruct row = null;
@@ -1923,7 +1922,7 @@ public class TestOrcFile {
         new MiddleStruct(inner, inner2), list(), map(inner,inner2));
   }
 
-  private static class MyMemoryManager extends MemoryManager {
+  private static class MyMemoryManager implements MemoryManager {
     final long totalSpace;
     double rate;
     Path path = null;
@@ -1932,7 +1931,6 @@ public class TestOrcFile {
     MemoryManager.Callback callback;
 
     MyMemoryManager(Configuration conf, long totalSpace, double rate) {
-      super(conf);
       this.totalSpace = totalSpace;
       this.rate = rate;
     }
@@ -1949,16 +1947,6 @@ public class TestOrcFile {
     public synchronized void removeWriter(Path path) {
       this.path = null;
       this.lastAllocation = 0;
-    }
-
-    @Override
-    public long getTotalMemoryPool() {
-      return totalSpace;
-    }
-
-    @Override
-    public double getAllocationScale() {
-      return rate;
     }
 
     @Override

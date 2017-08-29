@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 4:7 Unsupported SubQuery Expression 'key': IN/NOT IN subqueries are not allowed in LHS

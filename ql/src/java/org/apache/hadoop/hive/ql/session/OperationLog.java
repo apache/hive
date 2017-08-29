@@ -37,23 +37,44 @@ public class OperationLog {
 
   private final String operationName;
   private final LogFile logFile;
+  // If in test mode then the LogDivertAppenderForTest created an extra log file containing only
+  // the output needed for the qfile results.
+  private final LogFile testLogFile;
+  // True if we are running test and the extra test file should be used when the logs are
+  // requested.
+  private final boolean isShortLogs;
+  // True if the logs should be removed after the operation. Should be used only in test mode
+  private final boolean isRemoveLogs;
   private LoggingLevel opLoggingLevel = LoggingLevel.UNKNOWN;
-
-  public PrintStream getPrintStream() {
-    return logFile.getPrintStream();
-  }
 
   public enum LoggingLevel {
     NONE, EXECUTION, PERFORMANCE, VERBOSE, UNKNOWN
   }
 
-  public OperationLog(String name, File file, HiveConf hiveConf) throws FileNotFoundException {
+  public OperationLog(String name, File file, HiveConf hiveConf) {
     operationName = name;
     logFile = new LogFile(file);
 
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
       String logLevel = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL);
       opLoggingLevel = getLoggingLevel(logLevel);
+    }
+
+    // If in test mod create a test log file which will contain only logs which are supposed to
+    // be written to the qtest output
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+      isRemoveLogs = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REMOVE_LOGS);
+      if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_SHORT_LOGS)) {
+        testLogFile = new LogFile(new File(file.getAbsolutePath() + ".test"));
+        isShortLogs = true;
+      } else {
+        testLogFile = null;
+        isShortLogs = false;
+      }
+    } else {
+      testLogFile = null;
+      isShortLogs = false;
+      isRemoveLogs = true;
     }
   }
 
@@ -76,47 +97,6 @@ public class OperationLog {
   }
 
   /**
-   * Singleton OperationLog object per thread.
-   */
-  private static final ThreadLocal<OperationLog> THREAD_LOCAL_OPERATION_LOG = new
-      ThreadLocal<OperationLog>() {
-    @Override
-    protected OperationLog initialValue() {
-      return null;
-    }
-  };
-
-  public static void setCurrentOperationLog(OperationLog operationLog) {
-    THREAD_LOCAL_OPERATION_LOG.set(operationLog);
-  }
-
-  public static OperationLog getCurrentOperationLog() {
-    return THREAD_LOCAL_OPERATION_LOG.get();
-  }
-
-  public static void removeCurrentOperationLog() {
-    THREAD_LOCAL_OPERATION_LOG.remove();
-  }
-
-  /**
-   * Write operation execution logs into log file
-   * @param operationLogMessage one line of log emitted from log4j
-   */
-  public void writeOperationLog(String operationLogMessage) {
-    logFile.write(operationLogMessage);
-  }
-
-  /**
-   * Write operation execution logs into log file
-   * @param operationLogMessage one line of log emitted from log4j
-   */
-  public void writeOperationLog(LoggingLevel level, String operationLogMessage) {
-    if (opLoggingLevel.compareTo(level) < 0) return;
-    logFile.write(operationLogMessage);
-  }
-
-
-  /**
    * Read operation execution logs from log file
    * @param isFetchFirst true if the Enum FetchOrientation value is Fetch_First
    * @param maxRows the max number of fetched lines from log
@@ -124,36 +104,38 @@ public class OperationLog {
    * @throws java.sql.SQLException
    */
   public List<String> readOperationLog(boolean isFetchFirst, long maxRows)
-      throws SQLException{
-    return logFile.read(isFetchFirst, maxRows);
+      throws SQLException {
+    if (isShortLogs) {
+      return testLogFile.read(isFetchFirst, maxRows);
+    } else {
+      return logFile.read(isFetchFirst, maxRows);
+    }
   }
 
   /**
    * Close this OperationLog when operation is closed. The log file will be removed.
    */
   public void close() {
-    logFile.remove();
+    if (isShortLogs) {
+      // In case of test, do just close the log files, do not remove them.
+      logFile.close(isRemoveLogs);
+      testLogFile.close(isRemoveLogs);
+    } else {
+      logFile.close(true);
+    }
   }
 
   /**
-   * Wrapper for read/write the operation log file
+   * Wrapper for read the operation log file
    */
   private class LogFile {
     private final File file;
     private BufferedReader in;
-    private final PrintStream out;
     private volatile boolean isRemoved;
 
-    LogFile(File file) throws FileNotFoundException {
+    LogFile(File file) {
       this.file = file;
-      in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-      out = new PrintStream(new FileOutputStream(file));
       isRemoved = false;
-    }
-
-    synchronized void write(String msg) {
-      // write log to the file
-      out.print(msg);
     }
 
     synchronized List<String> read(boolean isFetchFirst, long maxRows)
@@ -166,15 +148,16 @@ public class OperationLog {
       return readResults(maxRows);
     }
 
-    synchronized void remove() {
+    /**
+     * Close the logs, and remove them if specified.
+     * @param removeLog If true, remove the log file
+     */
+    synchronized void close(boolean removeLog) {
       try {
         if (in != null) {
           in.close();
         }
-        if (out != null) {
-          out.close();
-        }
-        if (!isRemoved) {
+        if (!isRemoved && removeLog && file.exists()) {
           FileUtils.forceDelete(file);
           isRemoved = true;
         }
@@ -191,21 +174,21 @@ public class OperationLog {
     }
 
     private List<String> readResults(long nLines) throws SQLException {
+      List<String> logs = new ArrayList<String>();
       if (in == null) {
         try {
           in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-        } catch (FileNotFoundException e) {
-          if (isRemoved) {
-            throw new SQLException("The operation has been closed and its log file " +
-                file.getAbsolutePath() + " has been removed.", e);
-          } else {
-            throw new SQLException("Operation Log file " + file.getAbsolutePath() +
-                " is not found.", e);
+          // Adding name of the log file in an extra log line, so it is easier to find
+          // the original if there is a test error
+          if (isShortLogs) {
+            logs.add("Reading log file: " + file);
+            nLines--;
           }
+        } catch (FileNotFoundException e) {
+          return logs;
         }
       }
 
-      List<String> logs = new ArrayList<String>();
       String line = "";
       // if nLines <= 0, read all lines in log file.
       for (int i = 0; i < nLines || nLines <= 0; i++) {
@@ -226,10 +209,6 @@ public class OperationLog {
         }
       }
       return logs;
-    }
-
-    public PrintStream getPrintStream() {
-      return out;
     }
   }
 }

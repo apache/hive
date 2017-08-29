@@ -26,20 +26,10 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 // 2) Within dag priority
 // 3) Attempt start time
 // 4) Vertex parallelism
-public class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
+public class FirstInFirstOutComparator extends LlapQueueComparatorBase {
 
   @Override
-  public int compare(TaskWrapper t1, TaskWrapper t2) {
-    TaskRunnerCallable o1 = t1.getTaskRunnerCallable();
-    TaskRunnerCallable o2 = t2.getTaskRunnerCallable();
-    boolean o1CanFinish = o1.canFinish();
-    boolean o2CanFinish = o2.canFinish();
-    if (o1CanFinish == true && o2CanFinish == false) {
-      return -1;
-    } else if (o1CanFinish == false && o2CanFinish == true) {
-      return 1;
-    }
-
+  public int compareInternal(TaskRunnerCallable o1, TaskRunnerCallable o2) {
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
     LlapDaemonProtocolProtos.FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
 
@@ -53,11 +43,7 @@ public class FirstInFirstOutComparator implements Comparator<TaskWrapper> {
     if (o1.getQueryId().equals(o2.getQueryId())) {
       // Same Query
       // Within dag priority - lower values indicate higher priority.
-      if (fri1.getWithinDagPriority() < fri2.getWithinDagPriority()) {
-        return -1;
-      } else if (fri1.getWithinDagPriority() > fri2.getWithinDagPriority()){
-        return 1;
-      }
+      return Integer.compare(fri1.getWithinDagPriority(), fri2.getWithinDagPriority());
     }
 
     if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {

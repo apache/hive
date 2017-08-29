@@ -1,10 +1,8 @@
-PREHOOK: query: -- outer join is not qualified for pushing down of where to join condition
-CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: query: CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ltable
-POSTHOOK: query: -- outer join is not qualified for pushing down of where to join condition
-CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: query: CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ltable
@@ -76,7 +74,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col2 (type: string), _col3 (type: string)
             1 _col1 (type: string), _col2 (type: string)
@@ -152,7 +150,7 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 52 Basic stats: COMPLETE Column stats: NONE
               Map Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col2 (type: string), _col3 (type: string)
                   1 _col1 (type: string), _col2 (type: string)

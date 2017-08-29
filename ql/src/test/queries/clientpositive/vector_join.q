@@ -32,6 +32,7 @@ TBLPROPERTIES (
 set hive.auto.convert.join=false;
 set hive.vectorized.execution.enabled = true;
 set hive.mapred.mode=nonstrict;
+set hive.fetch.task.conversion=none;
 SELECT cr.id1 ,
 cr.id2
 FROM

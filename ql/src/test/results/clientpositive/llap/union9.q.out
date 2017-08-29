@@ -1,15 +1,9 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2 UNION ALL
                         select s3.key as key, s3.value as value from src s3) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2 UNION ALL
                         select s3.key as key, s3.value as value from src s3) unionsrc
@@ -26,7 +20,7 @@ STAGE PLANS:
         Map 1 <- Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
         Map 5 <- Union 2 (CONTAINS)
-        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -39,7 +33,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1500 Data size: 12000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -59,7 +53,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1500 Data size: 12000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -79,7 +73,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1500 Data size: 12000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

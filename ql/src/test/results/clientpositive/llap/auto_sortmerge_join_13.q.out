@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1
@@ -54,8 +50,7 @@ POSTHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
-PREHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -63,8 +58,7 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -96,19 +90,19 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1, _col5, _col6
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3
+                        input vertices:
+                          1 Map 2
                         Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col2 (type: int)
@@ -144,12 +138,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -268,8 +266,7 @@ val_5	val_5
 val_5	val_5
 val_8	val_8
 val_9	val_9
-PREHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -277,8 +274,7 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -310,19 +306,19 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1, _col5, _col6
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3
+                        input vertices:
+                          1 Map 2
                         Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col2 (type: int)
@@ -358,12 +354,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -482,8 +482,7 @@ val_5	val_5
 val_5	val_5
 val_8	val_8
 val_9	val_9
-PREHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -491,8 +490,7 @@ from (
 INSERT OVERWRITE TABLE dest1 select key1, key2
 INSERT OVERWRITE TABLE dest2 select value1, value2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- A SMB join followed by a mutli-insert
-explain 
+POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -524,19 +522,19 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                      outputColumnNames: _col0, _col1, _col5, _col6
-                      input vertices:
-                        1 Map 2
-                      Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: string)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3
+                        input vertices:
+                          1 Map 2
                         Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col0 (type: int), _col2 (type: int)
@@ -572,12 +570,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: value (type: string)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
 

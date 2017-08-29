@@ -1,0 +1,482 @@
+PREHOOK: query: create table t (a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: explain select * from t t1 join t t2 using (a)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from t t1 join t t2 using (a)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t1
+            Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: a is not null (type: boolean)
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: a (type: int), b (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: int)
+          TableScan
+            alias: t2
+            Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: a is not null (type: boolean)
+              Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: a (type: int), b (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: int)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: int)
+            1 _col0 (type: int)
+          outputColumnNames: _col0, _col1, _col3
+          Statistics: Num rows: 8 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: int), _col3 (type: int)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 8 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 8 Data size: 30 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from t t1 join t t2 using (a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 join t t2 using (a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2	2
+2	1	1
+2	1	NULL
+2	NULL	1
+2	NULL	NULL
+3	3	3
+3	3	4
+3	4	3
+3	4	4
+4	3	3
+PREHOOK: query: select * from t t1 join t t2 using (a,b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 join t t2 using (a,b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+3	3
+3	4
+4	3
+PREHOOK: query: select t1.a,t2.b,t1.b,t2.a from t t1 join t t2 using (a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.a,t2.b,t1.b,t2.a from t t1 join t t2 using (a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2	2	1
+2	1	1	2
+2	1	NULL	2
+2	NULL	1	2
+2	NULL	NULL	2
+3	3	3	3
+3	3	4	3
+3	4	3	3
+3	4	4	3
+4	3	3	4
+PREHOOK: query: select * from t t1 left outer join t t2 using (a,b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 left outer join t t2 using (a,b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+2	NULL
+3	3
+3	4
+4	3
+NULL	1
+NULL	NULL
+PREHOOK: query: select t1.a,t1.b from t t1 right outer join t t2 on (t1.a=t2.a and t1.b=t2.b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.a,t1.b from t t1 right outer join t t2 on (t1.a=t2.a and t1.b=t2.b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+3	3
+3	4
+4	3
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: select * from t t1 right outer join t t2 using (a,b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 right outer join t t2 using (a,b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+2	NULL
+3	3
+3	4
+4	3
+NULL	1
+NULL	NULL
+PREHOOK: query: select * from t t1 inner join t t2 using (a,b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 inner join t t2 using (a,b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+3	3
+3	4
+4	3
+PREHOOK: query: select * from t t1 left outer join t t2 using (b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 left outer join t t2 using (b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2	2
+1	2	NULL
+1	NULL	2
+1	NULL	NULL
+2	1	1
+3	3	3
+3	3	4
+3	4	3
+3	4	4
+4	3	3
+NULL	2	NULL
+NULL	NULL	NULL
+PREHOOK: query: select * from t t1 right outer join t t2 using (b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 right outer join t t2 using (b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2	2
+1	2	NULL
+1	NULL	2
+1	NULL	NULL
+2	1	1
+3	3	3
+3	3	4
+3	4	3
+3	4	4
+4	3	3
+NULL	NULL	2
+NULL	NULL	NULL
+PREHOOK: query: select * from t t1 inner join t t2 using (b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t t1 inner join t t2 using (b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2	2
+1	2	NULL
+1	NULL	2
+1	NULL	NULL
+2	1	1
+3	3	3
+3	3	4
+3	4	3
+3	4	4
+4	3	3
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v as select * from t t1 join t t2 using (a,b)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as select * from t t1 join t t2 using (a,b)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.a SIMPLE [(t)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: v.b SIMPLE [(t)t1.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
+POSTHOOK: query: desc formatted v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from t t1 join t t2 using (a,b)	 
+View Expanded Text: 	select `t1`.`a`, `t1`.`b` from `default`.`t` `t1` join `default`.`t` `t2` using (`a`,`b`)	 
+View Rewrite Enabled:	No                  	 
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+1	2
+2	1
+3	3
+3	4
+4	3
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+PREHOOK: query: create view v as select * from t t1 right outer join t t2 using (b,a)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as select * from t t1 right outer join t t2 using (b,a)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.a SIMPLE [(t)t2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: v.b SIMPLE [(t)t2.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
+POSTHOOK: query: desc formatted v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
+# col_name            	data_type           	comment             
+	 	 
+b                   	int                 	                    
+a                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from t t1 right outer join t t2 using (b,a)	 
+View Expanded Text: 	select `t2`.`b`, `t2`.`a` from `default`.`t` `t1` right outer join `default`.`t` `t2` using (`b`,`a`)	 
+View Rewrite Enabled:	No                  	 
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+1	2
+1	NULL
+2	1
+3	3
+3	4
+4	3
+NULL	2
+NULL	NULL
+PREHOOK: query: select * from (select t1.b b from t t1 inner join t t2 using (b)) t3 join t t4 using(b)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select t1.b b from t t1 inner join t t2 using (b)) t3 join t t4 using(b)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+1	2
+1	2
+1	2
+1	NULL
+1	NULL
+1	NULL
+1	NULL
+2	1
+3	3
+3	3
+3	3
+3	3
+3	4
+3	4
+3	4
+3	4
+4	3
+PREHOOK: query: select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1	2
+2	1
+2	1
+2	NULL
+2	NULL
+3	3
+3	3
+3	3
+3	4
+3	4
+3	4
+4	3
+4	3
+PREHOOK: query: create table tt as select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tt
+POSTHOOK: query: create table tt as select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tt
+POSTHOOK: Lineage: tt.a SIMPLE [(t)t2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: tt.b SIMPLE [(t)t4.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted tt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tt
+POSTHOOK: query: desc formatted tt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tt
+# col_name            	data_type           	comment             
+	 	 
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	13                  
+	rawDataSize         	41                  
+	totalSize           	54                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

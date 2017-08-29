@@ -232,6 +232,12 @@ public class FilterExprOrExpr extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    // The children are input.
+    return null;
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
 
     // IMPORTANT NOTE: For Multi-OR, the VectorizationContext class will catch cases with 3 or

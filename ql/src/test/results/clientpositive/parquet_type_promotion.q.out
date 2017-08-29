@@ -201,19 +201,9 @@ POSTHOOK: Input: default@parquet_type_promotion
 200	250.0	255.0	5643.0	7777.0	0.4000000059604645	0.8	{"k2":14}	{"k2":13.0}	[8,17,24]	[15.0,17.0,19.0]	{"c1":20,"c2":20}	{"v11":5.0}	[3.299999952316284,3.0999999046325684,5.599999904632568]	{"c1":5.800000190734863,"c2":4.7}
 300	350.0	355.0	7643.0	8888.0	0.4000000059604645	0.9	{"k3":12}	{"k3":19.0}	[9,17,25]	[21.0,23.0,25.0]	{"c1":30,"c2":60}	{"b11":6.0}	[4.300000190734863,3.200000047683716,5.699999809265137]	{"c1":5.900000095367432,"c2":4.6}
 400	450.0	455.0	8643.0	9999.0	0.4000000059604645	0.5	{"k4":15}	{"k4":23.0}	[7,18,27]	[27.0,29.0,31.0]	{"c1":50,"c2":70}	{"d11":8.0}	[6.300000190734863,3.299999952316284,5.800000190734863]	{"c1":5.0,"c2":4.5}
-PREHOOK: query: -- This test covers the case where array<struct<f1,f2,..>> data
--- can be retrieved useing map<f1,f2>.
--- This also test if there are more than 2 fields in array_of_struct
--- which can be read as  map as well.
-
-DROP TABLE arrays_of_struct_to_map
+PREHOOK: query: DROP TABLE arrays_of_struct_to_map
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- This test covers the case where array<struct<f1,f2,..>> data
--- can be retrieved useing map<f1,f2>.
--- This also test if there are more than 2 fields in array_of_struct
--- which can be read as  map as well.
-
-DROP TABLE arrays_of_struct_to_map
+POSTHOOK: query: DROP TABLE arrays_of_struct_to_map
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE arrays_of_struct_to_map (locations1 array<struct<c1:int,c2:int>>, locations2 array<struct<f1:int,
 f2:int,f3:int>>) STORED AS PARQUET
@@ -246,14 +236,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@arrays_of_struct_to_map
 #### A masked pattern was here ####
 [{"c1":1,"c2":2}]	[{"f1":77,"f2":88,"f3":99}]
-PREHOOK: query: -- Testing schema evolution of dropping column from array<struct<>>
-ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
 array<struct<f2:int>>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@arrays_of_struct_to_map
 PREHOOK: Output: default@arrays_of_struct_to_map
-POSTHOOK: query: -- Testing schema evolution of dropping column from array<struct<>>
-ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
 array<struct<f2:int>>)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@arrays_of_struct_to_map
@@ -267,14 +255,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@arrays_of_struct_to_map
 #### A masked pattern was here ####
 [{"c1":1}]	[{"f2":88}]
-PREHOOK: query: -- Testing schema evolution of adding columns into array<struct<>>
-ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@arrays_of_struct_to_map
 PREHOOK: Output: default@arrays_of_struct_to_map
-POSTHOOK: query: -- Testing schema evolution of adding columns into array<struct<>>
-ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
 array<struct<f1:int,f2:int,f3:int>>)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@arrays_of_struct_to_map

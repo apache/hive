@@ -112,8 +112,8 @@ public class CompressionUtils {
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
    *
-   * @param inputFile the input .tar file
-   * @param outputDir the output directory file.
+   * @param inputFileName the input .tar file
+   * @param outputDirName the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
    *
@@ -131,8 +131,8 @@ public class CompressionUtils {
    * The output file is created in the output folder, having the same name as the input file, minus
    * the '.tar' extension.
    *
-   * @param inputFile the input .tar file
-   * @param outputDir the output directory file.
+   * @param inputFileName the input .tar file
+   * @param outputDirName the output directory file.
    * @throws IOException
    * @throws FileNotFoundException
    *

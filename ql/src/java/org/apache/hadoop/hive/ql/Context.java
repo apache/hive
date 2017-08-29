@@ -25,7 +25,6 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -54,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -125,6 +125,10 @@ public class Context {
   private Heartbeater heartbeater;
 
   private boolean skipTableMasking;
+
+  // Identify whether the query involves an UPDATE, DELETE or MERGE
+  private boolean isUpdateDeleteMerge;
+
   /**
    * This determines the prefix of the
    * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
@@ -132,7 +136,17 @@ public class Context {
    * given tree but multi-insert has several and multi-insert representing MERGE must use
    * different prefixes to encode the purpose of different Insert branches
    */
-  private Map<ASTNode, DestClausePrefix> tree2DestNamePrefix;
+  private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
+  private Operation operation = Operation.OTHER;
+  public void setOperation(Operation operation) {
+    this.operation = operation;
+  }
+
+  /**
+   * These ops require special handling in various places
+   * (note that Insert into Acid table is in OTHER category)
+   */
+  public enum Operation {UPDATE, DELETE, MERGE, OTHER};
   public enum DestClausePrefix {
     INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
     private final String prefix;
@@ -143,36 +157,95 @@ public class Context {
       return prefix;
     }
   }
+  private String getMatchedText(ASTNode n) {
+    return getTokenRewriteStream().toString(n.getTokenStartIndex(), n.getTokenStopIndex() + 1).trim();
+  }
   /**
    * The suffix is always relative to a given ASTNode
    */
   public DestClausePrefix getDestNamePrefix(ASTNode curNode) {
-    //if there is no mapping, we want to default to "old" naming
     assert curNode != null : "must supply curNode";
-    if(tree2DestNamePrefix == null || tree2DestNamePrefix.isEmpty()) {
+    if(curNode.getType() != HiveParser.TOK_INSERT_INTO) {
+      //select statement
+      assert curNode.getType() == HiveParser.TOK_DESTINATION;
+      if(operation == Operation.OTHER) {
+        //not an 'interesting' op
+        return DestClausePrefix.INSERT;
+      }
+      //if it is an 'interesting' op but it's a select it must be a sub-query or a derived table
+      //it doesn't require a special Acid code path - the reset of the code here is to ensure
+      //the tree structure is what we expect
+      boolean thisIsInASubquery = false;
+      parentLoop: while(curNode.getParent() != null) {
+        curNode = (ASTNode) curNode.getParent();
+        switch (curNode.getType()) {
+          case HiveParser.TOK_SUBQUERY_EXPR:
+            //this is a real subquery (foo IN (select ...))
+          case HiveParser.TOK_SUBQUERY:
+            //this is a Derived Table Select * from (select a from ...))
+            //strictly speaking SetOps should have a TOK_SUBQUERY parent so next 6 items are redundant
+          case HiveParser.TOK_UNIONALL:
+          case HiveParser.TOK_UNIONDISTINCT:
+          case HiveParser.TOK_EXCEPTALL:
+          case HiveParser.TOK_EXCEPTDISTINCT:
+          case HiveParser.TOK_INTERSECTALL:
+          case HiveParser.TOK_INTERSECTDISTINCT:
+            thisIsInASubquery = true;
+            break parentLoop;
+        }
+      }
+      if(!thisIsInASubquery) {
+        throw new IllegalStateException("Expected '" + getMatchedText(curNode) + "' to be in sub-query or set operation.");
+      } 
       return DestClausePrefix.INSERT;
     }
-    do {
-      DestClausePrefix prefix = tree2DestNamePrefix.get(curNode);
-      if(prefix != null) {
-        return prefix;
-      }
-      curNode = (ASTNode) curNode.parent;
-    } while(curNode != null);
-    return DestClausePrefix.INSERT;
+    switch (operation) {
+      case OTHER:
+        return DestClausePrefix.INSERT;
+      case UPDATE:
+        return DestClausePrefix.UPDATE;
+      case DELETE:
+        return DestClausePrefix.DELETE;
+      case MERGE:
+      /* This is the structrue expected here
+        HiveParser.TOK_QUERY;
+          HiveParser.TOK_FROM
+          HiveParser.TOK_INSERT;
+            HiveParser.TOK_INSERT_INTO;
+          HiveParser.TOK_INSERT;
+            HiveParser.TOK_INSERT_INTO;
+          .....*/
+        ASTNode insert = (ASTNode) curNode.getParent();
+        assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
+        ASTNode query = (ASTNode) insert.getParent();
+        assert query != null && query.getType() == HiveParser.TOK_QUERY;
+        
+        for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
+          assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
+          if(insert == query.getChild(childIdx)) {
+            DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
+            if(prefix == null) {
+              throw new IllegalStateException("Found a node w/o branch mapping: '" +
+                getMatchedText(insert) + "'");
+            }
+            return prefix;
+          }
+        }
+        throw new IllegalStateException("Could not locate '" + getMatchedText(insert) + "'");
+      default:
+        throw new IllegalStateException("Unexpected operation: " + operation);
+    }
   }
   /**
-   * Will make SemanticAnalyzer.Phase1Ctx#dest in subtree rooted at 'tree' use 'prefix'
-   * @param tree
+   * Will make SemanticAnalyzer.Phase1Ctx#dest in subtree rooted at 'tree' use 'prefix'.  This to
+   * handle multi-insert stmt that represents Merge stmt and has insert branches representing
+   * update/delete/insert.
+   * @param pos ordinal index of specific TOK_INSERT as child of TOK_QUERY
    * @return previous prefix for 'tree' or null
    */
-  public DestClausePrefix addDestNamePrefix(ASTNode tree, DestClausePrefix prefix) {
-    if(tree2DestNamePrefix == null) {
-      tree2DestNamePrefix = new IdentityHashMap<>();
-    }
-    return tree2DestNamePrefix.put(tree, prefix);
+  public DestClausePrefix addDestNamePrefix(int pos, DestClausePrefix prefix) {
+    return insertBranchToNamePrefix.put(pos, prefix);
   }
-
   public Context(Configuration conf) throws IOException {
     this(conf, generateExecutionId());
   }
@@ -282,9 +355,7 @@ public class Context {
 
       if (mkdir) {
         try {
-          boolean inheritPerms = HiveConf.getBoolVar(conf,
-              HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-          if (!FileUtils.mkdir(fs, dir, inheritPerms, conf)) {
+          if (!FileUtils.mkdir(fs, dir, conf)) {
             throw new IllegalStateException("Cannot create staging directory  '" + dir.toString() + "'");
           }
 
@@ -490,7 +561,7 @@ public class Context {
 
 
   private static final String MR_PREFIX = "-mr-";
-  private static final String EXT_PREFIX = "-ext-";
+  public static final String EXT_PREFIX = "-ext-";
   private static final String LOCAL_PREFIX = "-local-";
 
   /**
@@ -877,6 +948,13 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
+  private boolean isExplainPlan = false;
+  public boolean isExplainPlan() {
+    return isExplainPlan;
+  }
+  public void setExplainPlan(boolean t) {
+    this.isExplainPlan = t;
+  }
 
   public void setExplainConfig(ExplainConfiguration explainConfig) {
     this.explainConfig = explainConfig;
@@ -885,5 +963,13 @@ public class Context {
   public void resetOpContext(){
     opContext = new CompilationOpContext();
     sequencer = new AtomicInteger();
+  }
+
+  public boolean getIsUpdateDeleteMerge() {
+    return isUpdateDeleteMerge;
+  }
+
+  public void setIsUpdateDeleteMerge(boolean isUpdate) {
+    this.isUpdateDeleteMerge = isUpdate;
   }
 }

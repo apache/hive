@@ -201,7 +201,12 @@
 
 <property>
   <name>spark.master</name>
-  <value>yarn-cluster</value>
+  <value>yarn</value>
+</property>
+
+<property>
+  <name>spark.submit.deployMode</name>
+  <value>cluster</value>
 </property>
 
 <property>
@@ -252,6 +257,16 @@
 <property>
   <name>spark.yarn.driver.memoryOverhead</name>
   <value>0</value>
+</property>
+
+<property>
+  <name>hive.prewarm.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.prewarm.spark.timeout</name>
+  <value>30s</value>
 </property>
 
 <property>

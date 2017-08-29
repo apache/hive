@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
@@ -650,7 +652,7 @@ public class Server {
                       @FormParam("enablelog") boolean enablelog,
                       @FormParam("enablejobreconnect") Boolean enablejobreconnect)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     verifyUser();
     verifyParam(inputs, "input");
     verifyParam(mapper, "mapper");
@@ -704,7 +706,7 @@ public class Server {
                   @FormParam("enablelog") boolean enablelog,
                   @FormParam("enablejobreconnect") Boolean enablejobreconnect)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     verifyUser();
     verifyParam(jar, "jar");
     verifyParam(mainClass, "class");
@@ -754,7 +756,7 @@ public class Server {
                @FormParam("enablelog") boolean enablelog,
                @FormParam("enablejobreconnect") Boolean enablejobreconnect)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     verifyUser();
     if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
@@ -805,7 +807,7 @@ public class Server {
               @FormParam("enablelog") boolean enablelog,
               @FormParam("enablejobreconnect") Boolean enablejobreconnect)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    IOException, InterruptedException {
+    IOException, InterruptedException, TooManyRequestsException {
     verifyUser();
     if (command == null && optionsFile == null)
       throw new BadParam("Must define Sqoop command or a optionsfile contains Sqoop command to run Sqoop job.");
@@ -859,7 +861,7 @@ public class Server {
               @FormParam("enablelog") boolean enablelog,
               @FormParam("enablejobreconnect") Boolean enablejobreconnect)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
-    ExecuteException, IOException, InterruptedException {
+    ExecuteException, IOException, InterruptedException, TooManyRequestsException {
     verifyUser();
     if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
@@ -891,7 +893,8 @@ public class Server {
   @Path("jobs/{jobid}")
   @Produces({MediaType.APPLICATION_JSON})
   public QueueStatusBean showJobId(@PathParam("jobid") String jobid)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException,
+           BusyException, TimeoutException, ExecutionException, TooManyRequestsException {
 
     verifyUser();
     verifyParam(jobid, ":jobid");
@@ -968,7 +971,8 @@ public class Server {
                                        @QueryParam("showall") boolean showall,
                                        @QueryParam("jobid") String jobid,
                                        @QueryParam("numrecords") String numrecords)
-    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException,
+    BusyException, TimeoutException, ExecutionException, TooManyRequestsException {
 
     verifyUser();
 
@@ -980,19 +984,14 @@ public class Server {
       showDetails = true;
     }
 
-    ListDelegator ld = new ListDelegator(appConf);
-    List<String> list = ld.run(getDoAsUser(), showall);
-    List<JobItemBean> detailList = new ArrayList<JobItemBean>();
-    int currRecord = 0;
     int numRecords;
-
     // Parse numrecords to an integer
     try {
       if (numrecords != null) {
         numRecords = Integer.parseInt(numrecords);
-  if (numRecords <= 0) {
-    throw new BadParam("numrecords should be an integer > 0");
-  }
+        if (numRecords <= 0) {
+          throw new BadParam("numrecords should be an integer > 0");
+        }
       }
       else {
         numRecords = -1;
@@ -1002,57 +1001,8 @@ public class Server {
       throw new BadParam("Invalid numrecords format: numrecords should be an integer > 0");
     }
 
-    // Sort the list as requested
-    boolean isAscendingOrder = true;
-    switch (appConf.getListJobsOrder()) {
-    case lexicographicaldesc:
-      Collections.sort(list, Collections.reverseOrder());
-      isAscendingOrder = false;
-      break;
-    case lexicographicalasc:
-    default:
-      Collections.sort(list);
-      break;
-    }
-
-    for (String job : list) {
-      // If numRecords = -1, fetch all records.
-      // Hence skip all the below checks when numRecords = -1.
-      if (numRecords != -1) {
-        // If currRecord >= numRecords, we have already fetched the top #numRecords
-        if (currRecord >= numRecords) {
-          break;
-        }
-        else if (jobid == null || jobid.trim().length() == 0) {
-            currRecord++;
-        }
-        // If the current record needs to be returned based on the
-        // filter conditions specified by the user, increment the counter
-        else if (isAscendingOrder && job.compareTo(jobid) > 0 || !isAscendingOrder && job.compareTo(jobid) < 0) {
-          currRecord++;
-        }
-        // The current record should not be included in the output detailList.
-        else {
-          continue;
-        }
-      }
-      JobItemBean jobItem = new JobItemBean();
-      jobItem.id = job;
-      if (showDetails) {
-        StatusDelegator sd = new StatusDelegator(appConf);
-        try {
-          jobItem.detail = sd.run(getDoAsUser(), job);
-        }
-        catch(Exception ex) {
-          /*if we could not get status for some reason, log it, and send empty status back with
-          * just the ID so that caller knows to even look in the log file*/
-          LOG.info("Failed to get status detail for jobId='" + job + "'", ex);
-          jobItem.detail = new QueueStatusBean(job, "Failed to retrieve status; see WebHCat logs");
-        }
-      }
-      detailList.add(jobItem);
-    }
-    return detailList;
+    ListDelegator ld = new ListDelegator(appConf);
+    return ld.run(getDoAsUser(), showall, jobid, numRecords, showDetails);
   }
 
   /**

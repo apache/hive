@@ -19,9 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,13 +27,22 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
+
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -44,6 +50,7 @@ import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
@@ -52,6 +59,7 @@ import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -61,7 +69,6 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +85,6 @@ public class JSONMessageFactory extends MessageFactory {
   private static final Logger LOG = LoggerFactory.getLogger(JSONMessageFactory.class.getName());
 
   private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();
-  private static TDeserializer thriftDeSerializer = new TDeserializer(new TJSONProtocol.Factory());
 
   @Override
   public MessageDeserializer getDeserializer() {
@@ -86,13 +92,8 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public String getVersion() {
-    return "0.1";
-  }
-
-  @Override
   public String getMessageFormat() {
-    return "json";
+    return "json-0.2";
   }
 
   @Override
@@ -106,40 +107,40 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public CreateTableMessage buildCreateTableMessage(Table table) {
-    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, now());
+  public CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> fileIter) {
+    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, fileIter, now());
   }
 
   @Override
-  public AlterTableMessage buildAlterTableMessage(Table before, Table after) {
-    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, now());
+  public AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp) {
+    return new JSONAlterTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, isTruncateOp, now());
   }
 
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
     return new JSONDropTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), now());
+        table.getTableName(), table.getTableType(), now());
   }
 
   @Override
   public AddPartitionMessage buildAddPartitionMessage(Table table,
-      Iterator<Partition> partitionsIterator) {
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter) {
     return new JSONAddPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table,
-        partitionsIterator, now());
+        partitionsIterator, partitionFileIter, now());
   }
 
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-      Partition after) {
-    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after,
+      Partition after, boolean isTruncateOp) {
+    return new JSONAlterPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, before, after, isTruncateOp,
         now());
   }
 
   @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table,
       Iterator<Partition> partitionsIterator) {
-    return new JSONDropPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitionsIterator), now());
+    return new JSONDropPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table,
+        getPartitionKeyValues(table, partitionsIterator), now());
   }
 
   @Override
@@ -168,17 +169,36 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
-      List<String> files) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
-        files, now());
+  public InsertMessage buildInsertMessage(Table tableObj, Partition partObj,
+                                          boolean replace, Iterator<String> fileIter) {
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, tableObj, partObj, replace, fileIter, now());
   }
 
   @Override
-  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
-      List<String> files, List<ByteBuffer> fileChecksums) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
-        files, fileChecksums, now());
+  public AddPrimaryKeyMessage buildAddPrimaryKeyMessage(List<SQLPrimaryKey> pks) {
+    return new JSONAddPrimaryKeyMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, pks, now());
+  }
+
+  @Override
+  public AddForeignKeyMessage buildAddForeignKeyMessage(List<SQLForeignKey> fks) {
+    return new JSONAddForeignKeyMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, fks, now());
+  }
+
+  @Override
+  public AddUniqueConstraintMessage buildAddUniqueConstraintMessage(List<SQLUniqueConstraint> uks) {
+    return new JSONAddUniqueConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, uks, now());
+  }
+
+  @Override
+  public AddNotNullConstraintMessage buildAddNotNullConstraintMessage(List<SQLNotNullConstraint> nns) {
+    return new JSONAddNotNullConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, nns, now());
+  }
+
+  @Override
+  public DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
+      String constraintName) {
+    return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dbName, tableName,
+        constraintName, now());
   }
 
   private long now() {
@@ -201,6 +221,26 @@ public class JSONMessageFactory extends MessageFactory {
             return getPartitionKeyValues(table, partition);
           }
         }));
+  }
+
+  static String createPrimaryKeyObjJson(SQLPrimaryKey primaryKeyObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(primaryKeyObj, "UTF-8");
+  }
+
+  static String createForeignKeyObjJson(SQLForeignKey foreignKeyObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(foreignKeyObj, "UTF-8");
+  }
+
+  static String createUniqueConstraintObjJson(SQLUniqueConstraint uniqueConstraintObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(uniqueConstraintObj, "UTF-8");
+  }
+
+  static String createNotNullConstraintObjJson(SQLNotNullConstraint notNullConstaintObj) throws TException {
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+    return serializer.toString(notNullConstaintObj, "UTF-8");
   }
 
   static String createTableObjJson(Table tableObj) throws TException {
@@ -262,11 +302,11 @@ public class JSONMessageFactory extends MessageFactory {
    */
 
   public static TBase getTObj(String tSerialized, Class<? extends TBase> objClass) throws Exception{
+    TDeserializer thriftDeSerializer = new TDeserializer(new TJSONProtocol.Factory());
     TBase obj = objClass.newInstance();
     thriftDeSerializer.deserialize(obj, tSerialized, "UTF-8");
     return obj;
   }
-
 
   public static Iterable<? extends TBase> getTObjs(
       Iterable<String> objRefStrs, final Class<? extends TBase> objClass) throws Exception {
@@ -311,66 +351,5 @@ public class JSONMessageFactory extends MessageFactory {
       }
     };
     return getTObjs(Iterables.transform(jsonArrayIterator, textExtractor), objClass);
-  }
-
-  // FIXME : remove all methods below this, and expose them from the individual Messages' impl instead.
-  // TestDbNotificationListener needs a revamp before we remove these methods though.
-
-  public static List<Partition> getPartitionObjList(ObjectNode jsonTree) throws Exception {
-    TDeserializer deSerializer = new TDeserializer(new TJSONProtocol.Factory());
-    List<Partition> partitionObjList = new ArrayList<Partition>();
-    Partition partitionObj = new Partition();
-    Iterator<JsonNode> jsonArrayIterator = jsonTree.get("partitionListJson").iterator();
-    while (jsonArrayIterator.hasNext()) {
-      deSerializer.deserialize(partitionObj, jsonArrayIterator.next().asText(), "UTF-8");
-      partitionObjList.add(partitionObj);
-    }
-    return partitionObjList;
-  }
-
-  public static Function getFunctionObj(ObjectNode jsonTree) throws Exception {
-    TDeserializer deSerializer = new TDeserializer(new TJSONProtocol.Factory());
-    Function funcObj = new Function();
-    String tableJson = jsonTree.get("functionObjJson").asText();
-    deSerializer.deserialize(funcObj, tableJson, "UTF-8");
-    return funcObj;
-  }
-
-  public static Index getIndexObj(ObjectNode jsonTree) throws Exception {
-    return getIndexObj(jsonTree, "indexObjJson");
-  }
-
-  public static Index getIndexObj(ObjectNode jsonTree, String indexObjKey) throws Exception {
-    TDeserializer deSerializer = new TDeserializer(new TJSONProtocol.Factory());
-    Index indexObj = new Index();
-    String tableJson = jsonTree.get(indexObjKey).asText();
-    deSerializer.deserialize(indexObj, tableJson, "UTF-8");
-    return indexObj;
-  }
-
-  /**
-   * Convert a json ArrayNode to an ordered list of Strings
-   *
-   * @param arrayNode: the json array node
-   * @param elements: the list to populate
-   * @return
-   */
-  public static List<String> getAsList(ArrayNode arrayNode, List<String> elements) {
-    Iterator<JsonNode> arrayNodeIterator = arrayNode.iterator();
-    while (arrayNodeIterator.hasNext()) {
-      JsonNode node = arrayNodeIterator.next();
-      elements.add(node.asText());
-    }
-    return elements;
-  }
-
-  public static LinkedHashMap<String, String> getAsMap(ObjectNode objectNode,
-      LinkedHashMap<String, String> hashMap) {
-    Iterator<Map.Entry<String, JsonNode>> objectNodeIterator = objectNode.getFields();
-    while (objectNodeIterator.hasNext()) {
-      Map.Entry<String, JsonNode> objectAsMap = objectNodeIterator.next();
-      hashMap.put(objectAsMap.getKey(), objectAsMap.getValue().asText());
-    }
-    return hashMap;
   }
 }

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -257,7 +258,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public ServiceInstanceSet getInstances(String component) throws IOException {
+  public ServiceInstanceSet getInstances(String component, long timeoutMs) throws IOException {
     return new FixedServiceInstanceSet();
   }
 
@@ -270,5 +271,10 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   @Override
   public String toString() {
     return String.format("FixedRegistry hosts=%s", StringUtils.join(",", this.hosts));
+  }
+
+  @Override
+  public ApplicationId getApplicationId() throws IOException {
+    return null; // No good way to find out (may even have no app).
   }
 }

@@ -95,16 +95,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_3 CLUSTERED BY (key) INTO 2 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_3
 POSTHOOK: Output: default@srcbucket_mapjoin_part_3
-PREHOOK: query: -- The partition bucketing metadata match but one table is not bucketed, bucket map join should still be used
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The partition bucketing metadata match but one table is not bucketed, bucket map join should still be used
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
@@ -130,6 +126,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -151,6 +148,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -235,6 +233,7 @@ STAGE PLANS:
             properties:
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -257,6 +256,7 @@ STAGE PLANS:
               properties:
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -328,16 +328,12 @@ POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2@part=1
 #### A masked pattern was here ####
 464
-PREHOOK: query: -- The table bucketing metadata match but one partition is not bucketed, bucket map join should not be used
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The table bucketing metadata match but one partition is not bucketed, bucket map join should not be used
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
@@ -362,6 +358,7 @@ STAGE PLANS:
                     part 1
                   properties:
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -384,6 +381,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -460,6 +458,7 @@ STAGE PLANS:
             properties:
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -482,6 +481,7 @@ STAGE PLANS:
               properties:
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

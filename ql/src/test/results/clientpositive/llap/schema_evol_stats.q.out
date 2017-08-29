@@ -14,13 +14,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1
@@ -39,12 +37,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
+PREHOOK: Output: default@partitioned1
+PREHOOK: Output: default@partitioned1@part=1
+PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2
+POSTHOOK: Output: default@partitioned1
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted partitioned1
 PREHOOK: type: DESCTABLE
@@ -71,6 +75,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	8                   
+	rawDataSize         	96                  
+	totalSize           	104                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -210,13 +221,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1
@@ -235,12 +244,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
+PREHOOK: Output: default@partitioned1
+PREHOOK: Output: default@partitioned1@part=1
+PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2
+POSTHOOK: Output: default@partitioned1
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted partitioned1
 PREHOOK: type: DESCTABLE
@@ -267,6 +282,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	8                   
+	rawDataSize         	1116                
+	totalSize           	819                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

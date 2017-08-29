@@ -28,7 +28,7 @@ package org.apache.hadoop.hive.ql.plan;
  */
 public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   public static enum ReduceSinkKeyType {
     NONE,
@@ -60,5 +60,87 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
   public VectorReduceSinkInfo getVectorReduceSinkInfo() {
     return vectorReduceSinkInfo;
+  }
+
+  private boolean isVectorizationReduceSinkNativeEnabled;
+  private String engine;
+  private boolean isEmptyKey;
+  private boolean isEmptyValue;
+  private boolean isEmptyBuckets;
+  private boolean isEmptyPartitions;
+  private boolean hasPTFTopN;
+  private boolean hasDistinctColumns;
+  private boolean isKeyBinarySortable;
+  private boolean isValueLazyBinary;
+  private boolean isUnexpectedCondition;
+
+  /*
+   * The following conditions are for native Vector ReduceSink.
+   */
+  public void setIsVectorizationReduceSinkNativeEnabled(boolean isVectorizationReduceSinkNativeEnabled) {
+    this.isVectorizationReduceSinkNativeEnabled = isVectorizationReduceSinkNativeEnabled;
+  }
+  public boolean getIsVectorizationReduceSinkNativeEnabled() {
+    return isVectorizationReduceSinkNativeEnabled;
+  }
+  public void setEngine(String engine) {
+    this.engine = engine;
+  }
+  public String getEngine() {
+    return engine;
+  }
+  public void setIsEmptyKey(boolean isEmptyKey) {
+    this.isEmptyKey = isEmptyKey;
+  }
+  public boolean getIsEmptyKey() {
+    return isEmptyKey;
+  }
+  public void setIsEmptyValue(boolean isEmptyValue) {
+    this.isEmptyValue = isEmptyValue;
+  }
+  public boolean getIsEmptyValue() {
+    return isEmptyValue;
+  }
+  public void setIsEmptyBuckets(boolean isEmptyBuckets) {
+    this.isEmptyBuckets = isEmptyBuckets;
+  }
+  public boolean getIsEmptyBuckets() {
+    return isEmptyBuckets;
+  }
+  public void setIsEmptyPartitions(boolean isEmptyPartitions) {
+    this.isEmptyPartitions = isEmptyPartitions;
+  }
+  public boolean getIsEmptyPartitions() {
+    return isEmptyPartitions;
+  }
+  public void setHasPTFTopN(boolean hasPTFTopN) {
+    this.hasPTFTopN = hasPTFTopN;
+  }
+  public boolean getHasPTFTopN() {
+    return hasPTFTopN;
+  }
+  public void setHasDistinctColumns(boolean hasDistinctColumns) {
+    this.hasDistinctColumns = hasDistinctColumns;
+  }
+  public boolean getHasDistinctColumns() {
+    return hasDistinctColumns;
+  }
+  public void setIsKeyBinarySortable(boolean isKeyBinarySortable) {
+    this.isKeyBinarySortable = isKeyBinarySortable;
+  }
+  public boolean getIsKeyBinarySortable() {
+    return isKeyBinarySortable;
+  }
+  public void setIsValueLazyBinary(boolean isValueLazyBinary) {
+    this.isValueLazyBinary = isValueLazyBinary;
+  }
+  public boolean getIsValueLazyBinary() {
+    return isValueLazyBinary;
+  }
+  public void setIsUnexpectedCondition(boolean isUnexpectedCondition) {
+    this.isUnexpectedCondition = isUnexpectedCondition;
+  }
+  public boolean getIsUnexpectedCondition() {
+    return isUnexpectedCondition;
   }
 }

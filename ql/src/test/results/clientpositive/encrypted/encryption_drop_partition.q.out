@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -111,26 +111,7 @@ PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@encrypted_table_dp
 PREHOOK: Output: default@encrypted_table_dp@p=2014-09-23
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to drop default.encrypted_table_dp.[2014-09-23] because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.
-PREHOOK: query: SELECT * FROM encrypted_table_dp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@encrypted_table_dp
-PREHOOK: Input: default@encrypted_table_dp@p=2014-09-23
-PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
-POSTHOOK: query: SELECT * FROM encrypted_table_dp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encrypted_table_dp
-POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-23
-POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
-#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
-1	foo	2014-09-23
-2	bar	2014-09-24
-PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23') PURGE
-PREHOOK: type: ALTERTABLE_DROPPARTS
-PREHOOK: Input: default@encrypted_table_dp
-PREHOOK: Output: default@encrypted_table_dp@p=2014-09-23
-POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23') PURGE
+POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@encrypted_table_dp
 POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
@@ -172,17 +153,15 @@ PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-24')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@encrypted_table_dp
 PREHOOK: Output: default@encrypted_table_dp@p=2014-09-24
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to drop default.encrypted_table_dp.[2014-09-24] because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.
+POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-24')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
 PREHOOK: query: DROP TABLE encrypted_table_dp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table_dp
 PREHOOK: Output: default@encrypted_table_dp
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Unable to drop default.encrypted_table_dp because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.)
-PREHOOK: query: DROP TABLE encrypted_table_dp PURGE
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encrypted_table_dp
-PREHOOK: Output: default@encrypted_table_dp
-POSTHOOK: query: DROP TABLE encrypted_table_dp PURGE
+POSTHOOK: query: DROP TABLE encrypted_table_dp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_dp
 POSTHOOK: Output: default@encrypted_table_dp

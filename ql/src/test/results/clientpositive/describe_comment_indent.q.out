@@ -1,6 +1,4 @@
-PREHOOK: query: -- test comment indent processing for multi-line comments
-
-CREATE TABLE test_table(
+PREHOOK: query: CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -12,9 +10,7 @@ two lines'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- test comment indent processing for multi-line comments
-
-CREATE TABLE test_table(
+POSTHOOK: query: CREATE TABLE test_table(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -60,7 +56,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 	comment             	table comment       
 	                    	two lines           
 	numFiles            	0                   

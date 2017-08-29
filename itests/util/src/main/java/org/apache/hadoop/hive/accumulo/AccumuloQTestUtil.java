@@ -29,7 +29,7 @@ public class AccumuloQTestUtil extends QTestUtil {
   public AccumuloQTestUtil(String outDir, String logDir, MiniClusterType miniMr,
       AccumuloTestSetup setup, String initScript, String cleanupScript) throws Exception {
 
-    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false, false);
+    super(outDir, logDir, miniMr, null, "0.20", initScript, cleanupScript, false);
     setup.setupWithHiveConf(conf);
     this.setup = setup;
   }

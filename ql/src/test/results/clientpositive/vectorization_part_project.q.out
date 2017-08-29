@@ -46,10 +46,14 @@ POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltype
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: explain select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
+PREHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
+POSTHOOK: query: explain vectorization select (cdouble+2) c1 from alltypesorc_part order by c1 limit 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -71,6 +75,18 @@ STAGE PLANS:
                 Statistics: Num rows: 200 Data size: 54496 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double)

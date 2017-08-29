@@ -32,17 +32,40 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
 
 class LocalCache implements OrcInputFormat.FooterCache {
   private static final Logger LOG = LoggerFactory.getLogger(LocalCache.class);
   private static final int DEFAULT_CACHE_INITIAL_CAPACITY = 1024;
-  private final Cache<Path, OrcTail> cache;
 
-  LocalCache(int numThreads, int cacheStripeDetailsSize, boolean useSoftRef) {
-    CacheBuilder builder = CacheBuilder.newBuilder()
+  private static final class TailAndFileData {
+    public TailAndFileData(long fileLength, long fileModificationTime, ByteBuffer bb) {
+      this.fileLength = fileLength;
+      this.fileModTime = fileModificationTime;
+      this.bb = bb;
+    }
+    public ByteBuffer bb;
+    public long fileLength, fileModTime;
+
+    public int getMemoryUsage() {
+      return bb.remaining() + 100; // 100 is for 2 longs, BB and java overheads (semi-arbitrary).
+    }
+  }
+
+  private final Cache<Path, TailAndFileData> cache;
+
+  LocalCache(int numThreads, long cacheMemSize, boolean useSoftRef) {
+    CacheBuilder<Path, TailAndFileData> builder = CacheBuilder.newBuilder()
         .initialCapacity(DEFAULT_CACHE_INITIAL_CAPACITY)
         .concurrencyLevel(numThreads)
-        .maximumSize(cacheStripeDetailsSize);
+        .maximumWeight(cacheMemSize)
+        .weigher(new Weigher<Path, TailAndFileData>() {
+          @Override
+          public int weigh(Path key, TailAndFileData value) {
+            return value.getMemoryUsage();
+          }
+        });
+
     if (useSoftRef) {
       builder = builder.softValues();
     }
@@ -55,11 +78,8 @@ class LocalCache implements OrcInputFormat.FooterCache {
   }
 
   public void put(Path path, OrcTail tail) {
-    cache.put(path, tail);
-  }
-
-  public OrcTail get(Path path) {
-    return cache.getIfPresent(path);
+    cache.put(path, new TailAndFileData(tail.getFileTail().getFileLength(),
+        tail.getFileModificationTime(), tail.getSerializedTail().duplicate()));
   }
 
   @Override
@@ -74,23 +94,21 @@ class LocalCache implements OrcInputFormat.FooterCache {
       ++i;
       FileStatus file = fileWithId.getFileStatus();
       Path path = file.getPath();
-      OrcTail tail = cache.getIfPresent(path);
+      TailAndFileData tfd = cache.getIfPresent(path);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Serialized tail " + (tail == null ? "not " : "") + "cached for path: " + path);
+        LOG.debug("Serialized tail " + (tfd == null ? "not " : "") + "cached for path: " + path);
       }
-      if (tail == null) continue;
-      if (tail != null && file.getLen() == tail.getFileTail().getFileLength()
-          && file.getModificationTime() == tail.getFileModificationTime()) {
-        result[i] = tail;
+      if (tfd == null) continue;
+      if (file.getLen() == tfd.fileLength && file.getModificationTime() == tfd.fileModTime) {
+        result[i] = ReaderImpl.extractFileTail(tfd.bb.duplicate(), tfd.fileLength, tfd.fileModTime);
         continue;
       }
       // Invalidate
       cache.invalidate(path);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Meta-Info for : " + path + " changed. CachedModificationTime: "
-            + tail.getFileModificationTime() + ", CurrentModificationTime: "
-            + file.getModificationTime() + ", CachedLength: " + tail.getFileTail().getFileLength()
-            + ", CurrentLength: " + file.getLen());
+            + tfd.fileModTime + ", CurrentModificationTime: " + file.getModificationTime()
+            + ", CachedLength: " + tfd.fileLength + ", CurrentLength: " + file.getLen());
       }
     }
   }

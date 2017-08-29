@@ -154,6 +154,27 @@ public class <ClassName> extends VectorExpression {
     return "boolean";
   }
 
+  public HiveDecimal getLeftValue() {
+    return leftValue;
+  }
+
+  public void setLeftValue(HiveDecimal value) {
+    this.leftValue = value;
+  }
+
+  public HiveDecimal getRightValue() {
+    return rightValue;
+  }
+
+  public void setRightValue(HiveDecimal value) {
+    this.rightValue = value;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", left " + leftValue.toString() + ", right " + rightValue.toString();
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

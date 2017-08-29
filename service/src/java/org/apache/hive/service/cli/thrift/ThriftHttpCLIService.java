@@ -23,6 +23,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.HttpMethod;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -38,9 +40,11 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
-import org.eclipse.jetty.servlet.FilterMapping;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -48,6 +52,8 @@ import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 
 
 public class ThriftHttpCLIService extends ThriftCLIService {
+  private static final String APPLICATION_THRIFT = "application/x-thrift";
+
   private final Runnable oomHook;
 
   public ThriftHttpCLIService(CLIService cliService, Runnable oomHook) {
@@ -63,9 +69,6 @@ public class ThriftHttpCLIService extends ThriftCLIService {
   @Override
   public void run() {
     try {
-      // HTTP Server
-      httpServer = new org.eclipse.jetty.server.Server();
-
       // Server thread pool
       // Start with minWorkerThreads, expand till maxWorkerThreads and reject subsequent requests
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
@@ -73,19 +76,26 @@ public class ThriftHttpCLIService extends ThriftCLIService {
           maxWorkerThreads, workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
           new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
-      httpServer.setThreadPool(threadPool);
 
-      // Connector configs
-      SelectChannelConnector connector = new SelectChannelConnector();
+      // HTTP Server
+      httpServer = new Server(threadPool);
+
+
+      ServerConnector connector;
+
+      final HttpConfiguration conf = new HttpConfiguration();
       // Configure header size
       int requestHeaderSize =
           hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE);
       int responseHeaderSize =
           hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE);
-      connector.setRequestHeaderSize(requestHeaderSize);
-      connector.setResponseHeaderSize(responseHeaderSize);
+      conf.setRequestHeaderSize(requestHeaderSize);
+      conf.setResponseHeaderSize(responseHeaderSize);
+      final HttpConnectionFactory http = new HttpConnectionFactory(conf);
+
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
+
       // Change connector if SSL is used
       if (useSsl) {
         String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH).trim();
@@ -103,14 +113,17 @@ public class ThriftHttpCLIService extends ThriftCLIService {
           Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
-        connector = new SslSelectChannelConnector(sslContextFactory);
+        connector = new ServerConnector(httpServer, sslContextFactory, http);
+      } else {
+        connector = new ServerConnector(httpServer, http);
       }
+
       connector.setPort(portNum);
       // Linux:yes, Windows:no
-      connector.setReuseAddress(!Shell.WINDOWS);
+      connector.setReuseAddress(true);
       int maxIdleTime = (int) hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME,
           TimeUnit.MILLISECONDS);
-      connector.setMaxIdleTime(maxIdleTime);
+      connector.setIdleTimeout(maxIdleTime);
 
       httpServer.addConnector(connector);
 
@@ -140,9 +153,18 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         LOG.warn("XSRF filter disabled");
       }
 
-      String httpPath = getHttpPath(hiveConf
+      final String httpPath = getHttpPath(hiveConf
           .getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
-      httpServer.setHandler(context);
+
+      if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED)) {
+        final GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setHandler(context);
+        gzipHandler.addIncludedMethods(HttpMethod.POST);
+        gzipHandler.addIncludedMimeTypes(APPLICATION_THRIFT);
+        httpServer.setHandler(gzipHandler);
+      } else {
+        httpServer.setHandler(context);
+      }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize, bodyRecieveDuration, etc.

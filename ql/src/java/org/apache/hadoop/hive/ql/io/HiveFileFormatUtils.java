@@ -87,7 +87,7 @@ public final class HiveFileFormatUtils {
   public static class FileChecker {
     // we don't have many file formats that implement InputFormatChecker. We won't be holding
     // multiple instances of such classes
-    private static int MAX_CACHE_SIZE = 16;
+    private static final int MAX_CACHE_SIZE = 16;
 
     // immutable maps
     Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
@@ -340,7 +340,7 @@ public final class HiveFileFormatUtils {
         .isCompressed(conf.getCompressed())
         .tableProperties(tableProp)
         .reporter(reporter)
-        .writingBase(false)
+        .writingBase(conf.getInsertOverwrite())
         .minimumTransactionId(conf.getTransactionId())
         .maximumTransactionId(conf.getTransactionId())
         .bucket(bucket)

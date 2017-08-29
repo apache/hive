@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -174,5 +173,12 @@ public class DoubleColumnVector extends ColumnVector {
         }
       }
     }
+  }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    DoubleColumnVector other = (DoubleColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    other.vector = vector;
   }
 }

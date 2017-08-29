@@ -22,7 +22,7 @@ import org.apache.avro.Schema;
 /**
  * Retrieves the avro schema from the given source. "Source" is a little loose term here in the
  * sense it can range from being an HDFS url location pointing to the schema or it can be even as
- * simple as a {@link Properties properties} file with a simple key-value mapping to the schema. For
+ * simple as a {@link java.util.Properties properties} file with a simple key-value mapping to the schema. For
  * cases where the {@link Schema schema} is a part of the serialized data itself, "Source" would
  * refer to the data bytes from which the {@link Schema schema} has to retrieved.
  *

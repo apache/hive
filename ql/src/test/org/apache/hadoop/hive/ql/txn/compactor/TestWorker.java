@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -288,7 +289,7 @@ public class TestWorker extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    startWorker();
+    startWorker();//adds delta and delete_delta
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -298,7 +299,7 @@ public class TestWorker extends CompactorTest {
     // There should still now be 5 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    Assert.assertEquals(4, stat.length);
+    Assert.assertEquals(5, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     boolean sawNewDelta = false;
@@ -309,9 +310,19 @@ public class TestWorker extends CompactorTest {
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
-        Assert.assertEquals(208L, buckets[0].getLen());
-        Assert.assertEquals(208L, buckets[1].getLen());
-      } else {
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
+      }
+      if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24))) {
+        sawNewDelta = true;
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        Assert.assertEquals(2, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
+      }
+      else {
         LOG.debug("This is not the delta file you are looking for " + stat[i].getPath().getName());
       }
     }
@@ -347,14 +358,15 @@ public class TestWorker extends CompactorTest {
     // There should still now be 5 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    Assert.assertEquals(4, stat.length);
+    Assert.assertEquals(5, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     Arrays.sort(stat);
     Assert.assertEquals("base_20", stat[0].getPath().getName());
-    Assert.assertEquals(makeDeltaDirNameCompacted(21, 22), stat[1].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(23, 25), stat[2].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(26, 27), stat[3].getPath().getName());
+    Assert.assertEquals(makeDeleteDeltaDirNameCompacted(21, 22), stat[1].getPath().getName());
+    Assert.assertEquals(makeDeltaDirNameCompacted(21, 22), stat[2].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(23, 25), stat[3].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(26, 27), stat[4].getPath().getName());
   }
 
   @Test
@@ -379,18 +391,19 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(1, compacts.size());
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
 
-    // There should still now be 5 directories in the location
+    // There should still now be 6 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    Assert.assertEquals(5, stat.length);
+    Assert.assertEquals(6, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     Arrays.sort(stat);
     Assert.assertEquals("base_20", stat[0].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(21, 22), stat[1].getPath().getName());
-    Assert.assertEquals(makeDeltaDirNameCompacted(21, 27), stat[2].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(23, 25), stat[3].getPath().getName());
-    Assert.assertEquals(makeDeltaDirName(26, 27), stat[4].getPath().getName());
+    Assert.assertEquals(makeDeleteDeltaDirNameCompacted(21, 27), stat[1].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(21, 22), stat[2].getPath().getName());
+    Assert.assertEquals(makeDeltaDirNameCompacted(21, 27), stat[3].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(23, 25), stat[4].getPath().getName());
+    Assert.assertEquals(makeDeltaDirName(26, 27), stat[5].getPath().getName());
   }
 
   @Test
@@ -408,7 +421,7 @@ public class TestWorker extends CompactorTest {
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
 
-    startWorker();
+    startWorker();//this will create delta_20_24 and delete_delta_20_24. See MockRawReader
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
@@ -418,7 +431,7 @@ public class TestWorker extends CompactorTest {
     // There should still be four directories in the location.
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(p.getSd().getLocation()));
-    Assert.assertEquals(4, stat.length);
+    Assert.assertEquals(5, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     boolean sawNewDelta = false;
@@ -429,9 +442,18 @@ public class TestWorker extends CompactorTest {
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
-        Assert.assertEquals(208L, buckets[0].getLen());
-        Assert.assertEquals(208L, buckets[1].getLen());
-      } else {
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
+      }
+      if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24))) {
+          sawNewDelta = true;
+          FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+          Assert.assertEquals(2, buckets.length);
+          Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+          Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+          Assert.assertEquals(104L, buckets[0].getLen());
+          Assert.assertEquals(104L, buckets[1].getLen());
+        } else {
         LOG.debug("This is not the delta file you are looking for " + stat[i].getPath().getName());
       }
     }
@@ -461,7 +483,7 @@ public class TestWorker extends CompactorTest {
     // There should still now be 5 directories in the location
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(t.getSd().getLocation()));
-    Assert.assertEquals(3, stat.length);
+    Assert.assertEquals(4, stat.length);
 
     // Find the new delta file and make sure it has the right contents
     boolean sawNewDelta = false;
@@ -472,8 +494,17 @@ public class TestWorker extends CompactorTest {
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
-        Assert.assertEquals(208L, buckets[0].getLen());
-        Assert.assertEquals(208L, buckets[1].getLen());
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
+      }
+      if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(1, 4))) {
+        sawNewDelta = true;
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath());
+        Assert.assertEquals(2, buckets.length);
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
+        Assert.assertEquals(104L, buckets[0].getLen());
+        Assert.assertEquals(104L, buckets[1].getLen());
       } else {
         LOG.debug("This is not the delta file you are looking for " + stat[i].getPath().getName());
       }
@@ -533,6 +564,17 @@ public class TestWorker extends CompactorTest {
   public void majorNoBaseLotsOfDeltas() throws Exception {
     compactNoBaseLotsOfDeltas(CompactionType.MAJOR);
   }
+
+  /**
+   * These tests are starting to be a hack.  The files writtern by addDeltaFile() are not proper
+   * Acid files and the {@link CompactorTest.MockRawReader} performs no merging of delta files and
+   * fakes isDelete() as a shortcut.  This makes files created on disk to not be representative of
+   * what they should look like in a real system.
+   * Making {@link org.apache.hadoop.hive.ql.txn.compactor.CompactorTest.MockRawReader} do proper
+   * delete event handling would be duplicating either OrcRawRecordMerger or VectorizedOrcAcidRowBatchReaer.
+   * @param type
+   * @throws Exception
+   */
   private void compactNoBaseLotsOfDeltas(CompactionType type) throws Exception {
     conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 2);
     Table t = newTable("default", "mapwb", true);
@@ -569,45 +611,55 @@ public class TestWorker extends CompactorTest {
 
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stat = fs.listStatus(new Path(p.getSd().getLocation()));
-    Assert.assertEquals(9, stat.length);
+    /* delete_delta_21_23 and delete_delta_25_33 which are created as a result of compacting*/
+    int numFilesExpected = 11 + (type == CompactionType.MINOR ? 1 : 0);
+    Assert.assertEquals(numFilesExpected, stat.length);
 
     // Find the new delta file and make sure it has the right contents
-    BitSet matchesFound = new BitSet(9);
-    for (int i = 0; i < stat.length; i++) {
+    BitSet matchesFound = new BitSet(numFilesExpected);
+    for (int i = 0, j = 0; i < stat.length; i++) {
+      if(stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21,23))) {
+        matchesFound.set(j++);
+      }
+      if(stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(25,33))) {
+        matchesFound.set(j++);
+      }
       if(stat[i].getPath().getName().equals(makeDeltaDirName(21,21))) {
-        matchesFound.set(0);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirName(23, 23))) {
-        matchesFound.set(1);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(25, 29))) {
-        matchesFound.set(2);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(31, 32))) {
-        matchesFound.set(3);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(31, 33))) {
-        matchesFound.set(4);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirName(35, 35))) {
-        matchesFound.set(5);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21,23))) {
-        matchesFound.set(6);
+        matchesFound.set(j++);
       }
       else if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(25,33))) {
-        matchesFound.set(7);
+        matchesFound.set(j++);
       }
       switch (type) {
-        //yes, both do set(8)
         case MINOR:
           if(stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21,35))) {
-            matchesFound.set(8);
+            matchesFound.set(j++);
+          }
+          if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 35))) {
+            matchesFound.set(j++);
           }
           break;
         case MAJOR:
           if(stat[i].getPath().getName().equals(AcidUtils.baseDir(35))) {
-            matchesFound.set(8);
+            matchesFound.set(j++);
           }
           break;
         default:
@@ -976,5 +1028,10 @@ public class TestWorker extends CompactorTest {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
     Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    compactorTestCleanup();
   }
 }

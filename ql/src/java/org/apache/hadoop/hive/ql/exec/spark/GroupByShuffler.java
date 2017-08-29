@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class GroupByShuffler implements SparkShuffler {
+public class GroupByShuffler implements SparkShuffler<Iterable<BytesWritable>> {
 
   @Override
   public JavaPairRDD<HiveKey, Iterable<BytesWritable>> shuffle(
@@ -37,4 +37,5 @@ public class GroupByShuffler implements SparkShuffler {
   public String getName() {
     return "GroupBy";
   }
+
 }

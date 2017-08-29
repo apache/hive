@@ -64,15 +64,11 @@ POSTHOOK: Input: default@ts_merge
 50000
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: -- incompatible merge test (stripe statistics missing)
-
-create table a_merge like alltypesorc
+PREHOOK: query: create table a_merge like alltypesorc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@a_merge
-POSTHOOK: query: -- incompatible merge test (stripe statistics missing)
-
-create table a_merge like alltypesorc
+POSTHOOK: query: create table a_merge like alltypesorc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_merge

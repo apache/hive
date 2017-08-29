@@ -18,5 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-/** Marker interface for LLAP; serves no other purpose. */
-public interface LlapWrappableInputFormatInterface {}
+/** Marker interface for LLAP IO. */
+public interface LlapWrappableInputFormatInterface {
+}

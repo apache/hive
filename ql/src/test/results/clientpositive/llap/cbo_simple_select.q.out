@@ -1,11 +1,9 @@
-PREHOOK: query: -- 1. Test Select + TS
-select * from cbo_t1
+PREHOOK: query: select * from cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. Test Select + TS
-select * from cbo_t1
+POSTHOOK: query: select * from cbo_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
@@ -130,14 +128,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-PREHOOK: query: -- 2. Test Select + TS + FIL
-select * from cbo_t1 where cbo_t1.c_int >= 0
+PREHOOK: query: select * from cbo_t1 where cbo_t1.c_int >= 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2. Test Select + TS + FIL
-select * from cbo_t1 where cbo_t1.c_int >= 0
+POSTHOOK: query: select * from cbo_t1 where cbo_t1.c_int >= 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
@@ -244,14 +240,12 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 1 	1	25.0
 1	1	25.0
 1	1	25.0
-PREHOOK: query: -- 3 Test Select + Select + TS + FIL
-select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
+PREHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3 Test Select + Select + TS + FIL
-select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
+POSTHOOK: query: select * from (select * from cbo_t1 where cbo_t1.c_int >= 0) as cbo_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
@@ -694,13 +688,11 @@ POSTHOOK: Input: default@cbo_t1@dt=2014
 2.0	1	25.0
 2.0	1	25.0
 2.0	1	25.0
-PREHOOK: query: -- 13. null expr in select list
-select null from cbo_t3
+PREHOOK: query: select null from cbo_t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
-POSTHOOK: query: -- 13. null expr in select list
-select null from cbo_t3
+POSTHOOK: query: select null from cbo_t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t3
 #### A masked pattern was here ####
@@ -724,28 +716,24 @@ NULL
 NULL
 NULL
 NULL
-PREHOOK: query: -- 14. unary operator
-select key from cbo_t1 where c_int = -6  or c_int = +6
+PREHOOK: query: select key from cbo_t1 where c_int = -6  or c_int = +6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 14. unary operator
-select key from cbo_t1 where c_int = -6  or c_int = +6
+POSTHOOK: query: select key from cbo_t1 where c_int = -6  or c_int = +6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
-PREHOOK: query: -- 15. query referencing only partition columns
-select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
+PREHOOK: query: select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 15. query referencing only partition columns
-select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
+POSTHOOK: query: select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

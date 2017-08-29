@@ -55,7 +55,7 @@ public interface MetaStoreThread {
 
   /**
    * Run the thread in the background.  This must not be called until
-   * {@link ##init(java.util.concurrent.atomic.AtomicBoolean, java.util.concurrent.atomic.AtomicBoolean)} has
+   * {@link MetaStoreThread#init(java.util.concurrent.atomic.AtomicBoolean,java.util.concurrent.atomic.AtomicBoolean)} has
    * been called.
    */
   void start();

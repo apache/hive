@@ -123,18 +123,20 @@ PREHOOK: Input: default@a
 POSTHOOK: query: describe formatted a key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@a
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: from src
 insert overwrite table a select *
 insert into table b select *
@@ -229,18 +231,20 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	0                   	214                 	6.812               	7                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -249,26 +253,28 @@ POSTHOOK: query: insert into table b select NULL, NULL from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SIMPLE []
-POSTHOOK: Lineage: b.value SIMPLE []
+POSTHOOK: Lineage: b.key EXPRESSION []
+POSTHOOK: Lineage: b.value EXPRESSION []
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	10                  	205                 	2.812               	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	10                  	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	214                 	6.812               	7                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	10                  	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -285,18 +291,20 @@ PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	20                  	205                 	2.812               	3                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	20                  	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
 POSTHOOK: query: describe formatted b value
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@b
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-value               	string              	                    	                    	10                  	214                 	8.0                 	8                   	                    	                    	from deserializer   
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	10                  	319                 	8.0                 	8                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table src_multi2
@@ -508,7 +516,7 @@ Database:           	default
 Table:              	alter5              	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -1069,6 +1077,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

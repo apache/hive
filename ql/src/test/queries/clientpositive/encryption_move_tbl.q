@@ -19,9 +19,15 @@ CRYPTO CREATE_ZONE --keyName key_128_2 --path ${hiveconf:hive.metastore.warehous
 
 INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
 SHOW TABLES;
--- should fail, since they are in different encryption zones
+ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS;
+DESCRIBE FORMATTED encrypted_table key;
+DESCRIBE FORMATTED encrypted_table value;
+
+-- should fail, since they are in different encryption zones, but table columns statistics should not change
 ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2;
 SHOW TABLES;
+DESCRIBE FORMATTED encrypted_table key;
+DESCRIBE FORMATTED encrypted_table value;
 
 -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
 ALTER TABLE default.encrypted_table RENAME TO default.plain_table;

@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS unencrypted_table
+PREHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS unencrypted_table
+POSTHOOK: query: DROP TABLE IF EXISTS unencrypted_table
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE

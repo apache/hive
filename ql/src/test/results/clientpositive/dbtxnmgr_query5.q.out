@@ -35,6 +35,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: foo@t1
 POSTHOOK: Output: database:foo
 POSTHOOK: Output: foo@V1
+POSTHOOK: Lineage: V1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:foo

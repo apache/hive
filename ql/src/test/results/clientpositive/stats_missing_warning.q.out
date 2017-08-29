@@ -1,0 +1,159 @@
+PREHOOK: query: DROP TABLE IF EXISTS missing_stats_t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS missing_stats_t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS missing_stats_t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS missing_stats_t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS missing_stats_t3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS missing_stats_t3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE missing_stats_t1 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@missing_stats_t1
+POSTHOOK: query: CREATE TABLE missing_stats_t1 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@missing_stats_t1
+PREHOOK: query: CREATE TABLE missing_stats_t2 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@missing_stats_t2
+POSTHOOK: query: CREATE TABLE missing_stats_t2 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@missing_stats_t2
+PREHOOK: query: CREATE TABLE missing_stats_t3 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@missing_stats_t3
+POSTHOOK: query: CREATE TABLE missing_stats_t3 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@missing_stats_t3
+PREHOOK: query: INSERT INTO missing_stats_t1 (key, value)
+   SELECT key, value
+   FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@missing_stats_t1
+POSTHOOK: query: INSERT INTO missing_stats_t1 (key, value)
+   SELECT key, value
+   FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@missing_stats_t1
+POSTHOOK: Lineage: missing_stats_t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: missing_stats_t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO missing_stats_t2 (key, value)
+   SELECT key, value
+   FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@missing_stats_t2
+POSTHOOK: query: INSERT INTO missing_stats_t2 (key, value)
+   SELECT key, value
+   FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@missing_stats_t2
+POSTHOOK: Lineage: missing_stats_t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: missing_stats_t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT INTO missing_stats_t3 (key, value)
+   SELECT key, value
+   FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@missing_stats_t3
+POSTHOOK: query: INSERT INTO missing_stats_t3 (key, value)
+   SELECT key, value
+   FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@missing_stats_t3
+POSTHOOK: Lineage: missing_stats_t3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: missing_stats_t3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t1
+PREHOOK: Input: default@missing_stats_t2
+PREHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t1
+POSTHOOK: Input: default@missing_stats_t2
+POSTHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t1
+PREHOOK: Input: default@missing_stats_t2
+PREHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t1
+POSTHOOK: Input: default@missing_stats_t2
+POSTHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+0
+PREHOOK: query: ANALYZE TABLE missing_stats_t1 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t1
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE missing_stats_t1 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t1
+#### A masked pattern was here ####
+PREHOOK: query: ANALYZE TABLE missing_stats_t2 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t2
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE missing_stats_t2 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t2
+#### A masked pattern was here ####
+PREHOOK: query: ANALYZE TABLE missing_stats_t3 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE missing_stats_t3 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+PREHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@missing_stats_t1
+PREHOOK: Input: default@missing_stats_t2
+PREHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*)
+FROM missing_stats_t1 t1
+JOIN missing_stats_t2 t2 ON t1.value = t2.key
+JOIN missing_stats_t3 t3 ON t2.key = t3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@missing_stats_t1
+POSTHOOK: Input: default@missing_stats_t2
+POSTHOOK: Input: default@missing_stats_t3
+#### A masked pattern was here ####
+0

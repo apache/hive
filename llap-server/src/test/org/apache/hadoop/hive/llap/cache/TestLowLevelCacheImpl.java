@@ -59,7 +59,7 @@ public class TestLowLevelCacheImpl {
     public void allocateMultiple(MemoryBuffer[] dest, int size) {
       for (int i = 0; i < dest.length; ++i) {
         LlapDataBuffer buf = new LlapDataBuffer();
-        buf.initialize(0, null, -1, size);
+        buf.initialize(null, -1, size);
         dest[i] = buf;
       }
     }
@@ -85,6 +85,12 @@ public class TestLowLevelCacheImpl {
     @Override
     public MemoryBuffer createUnallocated() {
       return new LlapDataBuffer();
+    }
+
+    @Override
+    public void allocateMultiple(MemoryBuffer[] dest, int size,
+        BufferObjectFactory factory) throws AllocatorOutOfMemoryException {
+      allocateMultiple(dest, size);
     }
   }
 
@@ -116,10 +122,26 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
-    public int tryEvictContiguousData(int allocationSize, int count) {
-      return count;
+    public void debugDumpShort(StringBuilder sb) {
     }
   }
+
+/*
+Example code to test specific scenarios:
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+    final int FILE = 1;
+    cache.putFileData(FILE, gaps(3756206, 4261729, 7294767, 7547564), fbs(3), 0, Priority.NORMAL, null);
+    cache.putFileData(FILE, gaps(7790545, 11051556), fbs(1), 0, Priority.NORMAL, null);
+    cache.putFileData(FILE, gaps(11864971, 11912961, 13350968, 13393630), fbs(3), 0, Priority.NORMAL, null);
+    DiskRangeList dr = dr(3756206, 7313562);
+    MutateHelper mh = new MutateHelper(dr);
+    dr = dr.insertAfter(dr(7790545, 11051556));
+    dr = dr.insertAfter(dr(11864971, 13393630));
+    BooleanRef g = new BooleanRef();
+    dr = cache.getFileData(FILE, mh.next, 0, testFactory, null, g);
+*/
 
   @Test
   public void testGetPut() {
@@ -228,7 +250,7 @@ public class TestLowLevelCacheImpl {
     evict(cache, fakes[2]);
     verifyCacheGet(cache, fn1, 1, 3, dr(1, 2), fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, dr(1, 2));
-    verifyRefcount(fakes, -1, 4, -1);
+    verifyRefcount(fakes, 0, 4, 0);
   }
 
   @Test
@@ -351,8 +373,8 @@ public class TestLowLevelCacheImpl {
                   continue;
                 }
                 ++gets;
-                LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)iter).getBuffer();
-                assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.arenaIndex);
+                LlapAllocatorBuffer result = (LlapAllocatorBuffer)((CacheChunk)iter).getBuffer();
+                assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), result.getArenaIndex());
                 cache.decRefBuffer(result);
                 iter = iter.next;
               }
@@ -367,7 +389,7 @@ public class TestLowLevelCacheImpl {
               MemoryBuffer[] buffers = new MemoryBuffer[count];
               for (int j = 0; j < offsets.length; ++j) {
                 LlapDataBuffer buf = LowLevelCacheImpl.allocateFake();
-                buf.arenaIndex = makeFakeArenaIndex(fileIndex, offsets[j]);
+                buf.setNewAllocLocation(makeFakeArenaIndex(fileIndex, offsets[j]), 0);
                 buffers[j] = buf;
               }
               long[] mask = cache.putFileData(fileName, ranges, buffers, 0, Priority.NORMAL, null);
@@ -380,7 +402,7 @@ public class TestLowLevelCacheImpl {
               for (int j = 0; j < offsets.length; ++j) {
                 LlapDataBuffer buf = (LlapDataBuffer)(buffers[j]);
                 if ((maskVal & 1) == 1) {
-                  assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.arenaIndex);
+                  assertEquals(makeFakeArenaIndex(fileIndex, offsets[j]), buf.getArenaIndex());
                 }
                 maskVal >>= 1;
                 cache.decRefBuffer(buf);
@@ -394,7 +416,7 @@ public class TestLowLevelCacheImpl {
       }
 
       private int makeFakeArenaIndex(int fileIndex, long offset) {
-        return (int)((fileIndex << 16) + offset);
+        return (int)((fileIndex << 12) + offset);
       }
     };
 
@@ -417,7 +439,7 @@ public class TestLowLevelCacheImpl {
             if (r instanceof CacheChunk) {
               LlapDataBuffer result = (LlapDataBuffer)((CacheChunk)r).getBuffer();
               cache.decRefBuffer(result);
-              if (victim == null && result.invalidate()) {
+              if (victim == null && result.invalidate() == LlapCacheableBuffer.INVALIDATE_OK) {
                 ++evictions;
                 victim = result;
               }
@@ -470,7 +492,7 @@ public class TestLowLevelCacheImpl {
     for (int i = 0; i < refCount; ++i) {
       victimBuffer.decRef();
     }
-    assertTrue(victimBuffer.invalidate());
+    assertTrue(LlapCacheableBuffer.INVALIDATE_OK == victimBuffer.invalidate());
     cache.notifyEvicted(victimBuffer);
   }
 
@@ -488,6 +510,15 @@ public class TestLowLevelCacheImpl {
     return rv;
   }
 
+  private MemoryBuffer[] fbs(int count) {
+    MemoryBuffer[] rv = new MemoryBuffer[count];
+    for (int i = 0; i < count; ++i) {
+      rv[i] = fb();
+    }
+    return rv;
+  }
+
+
   private LlapDataBuffer fb() {
     LlapDataBuffer fake = LowLevelCacheImpl.allocateFake();
     fake.incRef();
@@ -502,6 +533,14 @@ public class TestLowLevelCacheImpl {
     DiskRange[] result = new DiskRange[offsets.length];
     for (int i = 0; i < offsets.length; ++i) {
       result[i] = new DiskRange(offsets[i], offsets[i] + 1);
+    }
+    return result;
+  }
+
+  private DiskRange[] gaps(int... offsets) {
+    DiskRange[] result = new DiskRange[offsets.length - 1];
+    for (int i = 0; i < result .length; ++i) {
+      result[i] = new DiskRange(offsets[i], offsets[i + 1]);
     }
     return result;
   }

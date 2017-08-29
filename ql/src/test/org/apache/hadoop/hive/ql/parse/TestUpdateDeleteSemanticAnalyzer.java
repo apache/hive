@@ -223,7 +223,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
   @Before
   public void setup() {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
@@ -258,9 +258,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ctx.setCmd(query);
     ctx.setHDFSCleanup(true);
 
-    ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(query, ctx);
-    tree = ParseUtils.findRootNonNullToken(tree);
+    ASTNode tree = ParseUtils.parse(query, ctx);
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);

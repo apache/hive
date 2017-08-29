@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -98,16 +99,25 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
       Preconditions.checkArgument(alias != null, "AssertionError: expected alias to be not null");
 
       SparkWork sparkWork = context.currentTask.getWork();
-      boolean partialScan = parseContext.getQueryProperties().isPartialScanAnalyzeCommand();
-      boolean noScan = parseContext.getQueryProperties().isNoScanAnalyzeCommand();
-      if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
-
+      if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
+          MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
+        // For ORC & Parquet, all the following statements are the same
+        // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task
         StatsNoJobWork snjWork = new StatsNoJobWork(tableScan.getConf().getTableMetadata().getTableSpec());
         snjWork.setStatsReliable(parseContext.getConf().getBoolVar(
             HiveConf.ConfVars.HIVE_STATS_RELIABLE));
+        // If partition is specified, get pruned partition list
+        Set<Partition> confirmedParts = GenMapRedUtils.getConfirmedPartitionsForScan(tableScan);
+        if (confirmedParts.size() > 0) {
+          Table source = tableScan.getConf().getTableMetadata();
+          List<String> partCols = GenMapRedUtils.getPartitionColumns(tableScan);
+          PrunedPartitionList partList = new PrunedPartitionList(source, confirmedParts, partCols,
+              false);
+          snjWork.setPrunedPartitionList(partList);
+        }
         Task<StatsNoJobWork> snjTask = TaskFactory.get(snjWork, parseContext.getConf());
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);

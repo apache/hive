@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+
 /**
  * VectorGroupByDesc.
  *
@@ -28,7 +31,7 @@ package org.apache.hadoop.hive.ql.plan;
  */
 public class VectorGroupByDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   /**
    *     GLOBAL         No key.  All rows --> 1 full aggregation on end of input
@@ -59,6 +62,12 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private boolean isVectorOutput;
 
+  private VectorExpression[] keyExpressions;
+  private VectorAggregateExpression[] aggregators;
+  private int[] projectedOutputColumns;
+  private boolean isVectorizationComplexTypesEnabled;
+  private boolean isVectorizationGroupByComplexTypesEnabled;
+
   public VectorGroupByDesc() {
     this.processingMode = ProcessingMode.NONE;
     this.isVectorOutput = false;
@@ -77,6 +86,46 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   public void setVectorOutput(boolean isVectorOutput) {
     this.isVectorOutput = isVectorOutput;
+  }
+
+  public void setKeyExpressions(VectorExpression[] keyExpressions) {
+    this.keyExpressions = keyExpressions;
+  }
+
+  public VectorExpression[] getKeyExpressions() {
+    return keyExpressions;
+  }
+
+  public void setAggregators(VectorAggregateExpression[] aggregators) {
+    this.aggregators = aggregators;
+  }
+
+  public VectorAggregateExpression[] getAggregators() {
+    return aggregators;
+  }
+
+  public void setProjectedOutputColumns(int[] projectedOutputColumns) {
+    this.projectedOutputColumns = projectedOutputColumns;
+  }
+
+  public int[] getProjectedOutputColumns() {
+    return projectedOutputColumns;
+  }
+
+  public void setIsVectorizationComplexTypesEnabled(boolean isVectorizationComplexTypesEnabled) {
+    this.isVectorizationComplexTypesEnabled = isVectorizationComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationComplexTypesEnabled() {
+    return isVectorizationComplexTypesEnabled;
+  }
+
+  public void setIsVectorizationGroupByComplexTypesEnabled(boolean isVectorizationGroupByComplexTypesEnabled) {
+    this.isVectorizationGroupByComplexTypesEnabled = isVectorizationGroupByComplexTypesEnabled;
+  }
+
+  public boolean getIsVectorizationGroupByComplexTypesEnabled() {
+    return isVectorizationGroupByComplexTypesEnabled;
   }
 
   /**

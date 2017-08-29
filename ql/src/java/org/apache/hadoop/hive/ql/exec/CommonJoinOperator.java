@@ -154,6 +154,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected transient int heartbeatInterval;
   protected static final int NOTSKIPBIGTABLE = -1;
 
+  private transient boolean closeOpCalled = false;
+
   /** Kryo ctor. */
   protected CommonJoinOperator() {
     super();
@@ -226,6 +228,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   @SuppressWarnings("unchecked")
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    closeOpCalled = false;
     this.handleSkewJoin = conf.getHandleSkewJoin();
     this.hconf = hconf;
 
@@ -251,11 +254,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     noOuterJoin = conf.isNoOuterJoin();
 
     totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),
-        order,NOTSKIPBIGTABLE);
+        order,NOTSKIPBIGTABLE, hconf);
 
     //process join filters
     joinFilters = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE, hconf);
 
 
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
@@ -358,13 +361,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     // Create post-filtering evaluators if needed
     if (conf.getResidualFilterExprs() != null) {
-      // Currently residual filter expressions are only used with outer joins, thus
-      // we add this safeguard.
-      // TODO: Remove this guard when support for residual expressions can be present
-      // for inner joins too. This would be added to improve efficiency in the evaluation
-      // of certain joins, since we will not be emitting rows which are thrown away by
-      // filter straight away.
-      assert !noOuterJoin;
       residualJoinFilters = new ArrayList<>(conf.getResidualFilterExprs().size());
       residualJoinFiltersOIs = new ArrayList<>(conf.getResidualFilterExprs().size());
       for (int i = 0; i < conf.getResidualFilterExprs().size(); i++) {
@@ -374,13 +370,15 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
                 residualJoinFilters.get(i).initialize(outputObjInspector));
       }
       needsPostEvaluation = true;
-      // We need to disable join emit interval, since for outer joins with post conditions
-      // we need to have the full view on the right matching rows to know whether we need
-      // to produce a row with NULL values or not
-      joinEmitInterval = -1;
+      if (!noOuterJoin) {
+        // We need to disable join emit interval, since for outer joins with post conditions
+        // we need to have the full view on the right matching rows to know whether we need
+        // to produce a row with NULL values or not
+        joinEmitInterval = -1;
+      }
     }
 
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
     }
   }
@@ -851,6 +849,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   }
 
   protected void checkAndGenObject() throws HiveException {
+    if (closeOpCalled) {
+      LOG.warn("checkAndGenObject is called after operator " +
+          id + " " + getName() + " called closeOp");
+      return;
+    }
+
     if (condn[0].getType() == JoinDesc.UNIQUE_JOIN) {
 
       // Check if results need to be emitted.
@@ -951,6 +955,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    */
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    closeOpCalled = true;
     for (AbstractRowContainer<List<Object>> alw : storage) {
       if (alw != null) {
         alw.clearRows(); // clean up the temp files

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -139,58 +140,69 @@ public class TestTxnHandler {
 
   @Test
   public void testAbortTxn() throws Exception {
-    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(2, "me", "localhost"));
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
     List<Long> txnList = openedTxns.getTxn_ids();
     long first = txnList.get(0);
     assertEquals(1L, first);
     long second = txnList.get(1);
     assertEquals(2L, second);
     txnHandler.abortTxn(new AbortTxnRequest(1));
+    List<String> parts = new ArrayList<String>();
+    parts.add("p=1");
+    AddDynamicPartitions adp = new AddDynamicPartitions(3, "default", "T", parts);
+    adp.setOperationType(DataOperationType.INSERT);
+    txnHandler.addDynamicPartitions(adp);
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
-    assertEquals(2L, txnsInfo.getTxn_high_water_mark());
-    assertEquals(2, txnsInfo.getOpen_txns().size());
+    assertEquals(3, txnsInfo.getTxn_high_water_mark());
+    assertEquals(3, txnsInfo.getOpen_txns().size());
     assertEquals(1L, txnsInfo.getOpen_txns().get(0).getId());
     assertEquals(TxnState.ABORTED, txnsInfo.getOpen_txns().get(0).getState());
     assertEquals(2L, txnsInfo.getOpen_txns().get(1).getId());
     assertEquals(TxnState.OPEN, txnsInfo.getOpen_txns().get(1).getState());
+    assertEquals(3, txnsInfo.getOpen_txns().get(2).getId());
+    assertEquals(TxnState.OPEN, txnsInfo.getOpen_txns().get(2).getState());
 
     GetOpenTxnsResponse txns = txnHandler.getOpenTxns();
-    assertEquals(2L, txns.getTxn_high_water_mark());
-    assertEquals(2, txns.getOpen_txns().size());
-    boolean[] saw = new boolean[3];
+    assertEquals(3, txns.getTxn_high_water_mark());
+    assertEquals(3, txns.getOpen_txns().size());
+    boolean[] saw = new boolean[4];
     for (int i = 0; i < saw.length; i++) saw[i] = false;
     for (Long tid : txns.getOpen_txns()) {
       saw[tid.intValue()] = true;
     }
     for (int i = 1; i < saw.length; i++) assertTrue(saw[i]);
     txnHandler.commitTxn(new CommitTxnRequest(2));
+    //this succeeds as abortTxn is idempotent
+    txnHandler.abortTxn(new AbortTxnRequest(1));
     boolean gotException = false;
-    try {
-      txnHandler.abortTxn(new AbortTxnRequest(1));
-    }
-    catch(TxnAbortedException ex) {
-      gotException = true;
-      Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(1) + " already aborted", ex.getMessage());
-    }
-    Assert.assertTrue(gotException);
-    gotException = false;
     try {
       txnHandler.abortTxn(new AbortTxnRequest(2));
     }
     catch(NoSuchTxnException ex) {
       gotException = true;
       //if this wasn't an empty txn, we'd get a better msg
-      //Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(2) + " already committed.", ex.getMessage());
       Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(2), ex.getMessage());
     }
     Assert.assertTrue(gotException);
     gotException = false;
+    txnHandler.commitTxn(new CommitTxnRequest(3));
     try {
       txnHandler.abortTxn(new AbortTxnRequest(3));
     }
     catch(NoSuchTxnException ex) {
       gotException = true;
-      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(3), ex.getMessage());
+      //txn 3 is not empty txn, so we get a better msg
+      Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(3) + " is already committed.", ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+    
+    gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(4));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(4), ex.getMessage());
     }
     Assert.assertTrue(gotException);
   }
@@ -701,7 +713,7 @@ public class TestTxnHandler {
     res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
   }
-
+  @Ignore("now that every op has a txn ctx, we don't produce the error expected here....")
   @Test
   public void testWrongLockForOperation() throws Exception {
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");

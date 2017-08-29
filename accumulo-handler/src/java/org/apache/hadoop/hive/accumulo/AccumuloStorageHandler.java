@@ -1,10 +1,11 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -17,28 +18,17 @@
 
 package org.apache.hadoop.hive.accumulo;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.admin.TableOperations;
-import org.apache.accumulo.core.client.mapred.AccumuloInputFormat;
-import org.apache.accumulo.core.client.mapred.AccumuloOutputFormat;
-import org.apache.accumulo.core.client.mapreduce.lib.impl.InputConfigurator;
-import org.apache.accumulo.core.client.mapreduce.lib.impl.OutputConfigurator;
-import org.apache.accumulo.core.client.security.tokens.AuthenticationToken;
-import org.apache.accumulo.fate.Fate;
-import org.apache.accumulo.start.Main;
-import org.apache.accumulo.trace.instrument.Tracer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.accumulo.mr.HiveAccumuloTableInputFormat;
 import org.apache.hadoop.hive.accumulo.mr.HiveAccumuloTableOutputFormat;
 import org.apache.hadoop.hive.accumulo.predicate.AccumuloPredicateHandler;
+import org.apache.hadoop.hive.accumulo.serde.AccumuloIndexParameters;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDe;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -52,26 +42,31 @@ import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
-import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Create table mapping to Accumulo for Hive. Handle predicate pushdown if necessary.
  */
 public class AccumuloStorageHandler extends DefaultStorageHandler implements HiveMetaHook,
     HiveStoragePredicateHandler {
-  private static final Logger log = LoggerFactory.getLogger(AccumuloStorageHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AccumuloStorageHandler.class);
   private static final String DEFAULT_PREFIX = "default";
 
   protected AccumuloPredicateHandler predicateHandler = AccumuloPredicateHandler.getInstance();
@@ -88,7 +83,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
    *          Properties that will be added to the JobConf by Hive
    */
   @Override
-  public void configureTableJobProperties(TableDesc desc, Map<String,String> jobProps) {
+  public void configureTableJobProperties(TableDesc desc, Map<String, String> jobProps) {
     // Should not be getting invoked, configureInputJobProperties or configureOutputJobProperties
     // should be invoked instead.
     configureInputJobProperties(desc, jobProps);
@@ -119,6 +114,21 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     }
   }
 
+  protected String getIndexTableName(Table table) {
+    // Use TBLPROPERTIES
+    String idxTableName = table.getParameters().get(AccumuloIndexParameters.INDEXTABLE_NAME);
+
+    if (null != idxTableName) {
+      return idxTableName;
+    }
+
+    // Then try SERDEPROPERTIES
+    idxTableName = table.getSd().getSerdeInfo().getParameters()
+        .get(AccumuloIndexParameters.INDEXTABLE_NAME);
+
+    return idxTableName;
+  }
+
   protected String getTableName(TableDesc tableDesc) {
     Properties props = tableDesc.getProperties();
     String tableName = props.getProperty(AccumuloSerDeParameters.TABLE_NAME);
@@ -135,6 +145,18 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     return tableName;
   }
 
+  protected String getColumnTypes(TableDesc tableDesc)  {
+    Properties props = tableDesc.getProperties();
+    String columnTypes = props.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    return columnTypes;
+  }
+
+  protected String getIndexTableName(TableDesc tableDesc) {
+    Properties props = tableDesc.getProperties();
+    String tableName = props.getProperty(AccumuloIndexParameters.INDEXTABLE_NAME);
+    return tableName;
+  }
+
   @Override
   public Configuration getConf() {
     return conf;
@@ -146,7 +168,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     connectionParams = new AccumuloConnectionParameters(conf);
   }
 
-  @SuppressWarnings("deprecation")
   @Override
   public Class<? extends AbstractSerDe> getSerDeClass() {
     return AccumuloSerDe.class;
@@ -163,7 +184,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
   }
 
   @Override
-  public void configureInputJobProperties(TableDesc tableDesc, Map<String,String> jobProperties) {
+  public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     Properties props = tableDesc.getProperties();
 
     jobProperties.put(AccumuloSerDeParameters.COLUMN_MAPPINGS,
@@ -178,7 +199,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
 
     String useIterators = props.getProperty(AccumuloSerDeParameters.ITERATOR_PUSHDOWN_KEY);
     if (useIterators != null) {
-      if (!useIterators.equalsIgnoreCase("true") && !useIterators.equalsIgnoreCase("false")) {
+      if (!"true".equalsIgnoreCase(useIterators) && !"false".equalsIgnoreCase(useIterators)) {
         throw new IllegalArgumentException("Expected value of true or false for "
             + AccumuloSerDeParameters.ITERATOR_PUSHDOWN_KEY);
       }
@@ -196,21 +217,65 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
       jobProperties.put(AccumuloSerDeParameters.AUTHORIZATIONS_KEY, authValue);
     }
 
-    log.info("Computed input job properties of " + jobProperties);
+    LOG.info("Computed input job properties of " + jobProperties);
+
+    Configuration conf = getConf();
+    helper.loadDependentJars(conf);
+
+    // When Kerberos is enabled, we have to add the Accumulo delegation token to the
+    // Job so that it gets passed down to the YARN/Tez task.
+    if (connectionParams.useSasl()) {
+      try {
+        // Open an accumulo connection
+        Connector conn = connectionParams.getConnector();
+
+        // Convert the Accumulo token in a Hadoop token
+        Token<? extends TokenIdentifier> accumuloToken = helper.setConnectorInfoForInputAndOutput(connectionParams, conn, conf);
+
+        // Probably don't have a JobConf here, but we can still try...
+        if (conf instanceof JobConf) {
+          // Convert the Accumulo token in a Hadoop token
+          LOG.debug("Adding Hadoop Token for Accumulo to Job's Credentials: " + accumuloToken);
+
+          // Add the Hadoop token to the JobConf
+          JobConf jobConf = (JobConf) conf;
+          jobConf.getCredentials().addToken(accumuloToken.getService(), accumuloToken);
+          LOG.info("All job tokens: " + jobConf.getCredentials().getAllTokens());
+        } else {
+          LOG.info("Don't have a JobConf, so we cannot persist Tokens. Have to do it later.");
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to obtain DelegationToken for "
+            + connectionParams.getAccumuloUserName(), e);
+      }
+    }
   }
 
   @Override
-  public void configureOutputJobProperties(TableDesc tableDesc, Map<String,String> jobProperties) {
+  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     Properties props = tableDesc.getProperties();
     // Adding these job properties will make them available to the OutputFormat in checkOutputSpecs
-    jobProperties.put(AccumuloSerDeParameters.COLUMN_MAPPINGS,
-        props.getProperty(AccumuloSerDeParameters.COLUMN_MAPPINGS));
+    String colMap = props.getProperty(AccumuloSerDeParameters.COLUMN_MAPPINGS);
+    jobProperties.put(AccumuloSerDeParameters.COLUMN_MAPPINGS, colMap);
 
     String tableName = props.getProperty(AccumuloSerDeParameters.TABLE_NAME);
     if (null == tableName) {
       tableName = getTableName(tableDesc);
     }
     jobProperties.put(AccumuloSerDeParameters.TABLE_NAME, tableName);
+
+    String indexTable = props.getProperty(AccumuloIndexParameters.INDEXTABLE_NAME);
+    if (null == indexTable) {
+      indexTable = getIndexTableName(tableDesc);
+    }
+
+    if ( null != indexTable) {
+      jobProperties.put(AccumuloIndexParameters.INDEXTABLE_NAME, indexTable);
+
+      String indexColumns = props.getProperty(AccumuloIndexParameters.INDEXED_COLUMNS);
+      jobProperties.put(AccumuloIndexParameters.INDEXED_COLUMNS,
+          getIndexedColFamQuals(tableDesc, indexColumns, colMap));
+    }
 
     if (props.containsKey(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE)) {
       jobProperties.put(AccumuloSerDeParameters.DEFAULT_STORAGE_TYPE,
@@ -221,6 +286,42 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
       jobProperties.put(AccumuloSerDeParameters.VISIBILITY_LABEL_KEY,
           props.getProperty(AccumuloSerDeParameters.VISIBILITY_LABEL_KEY));
     }
+  }
+
+  private String getIndexedColFamQuals(TableDesc tableDesc, String indexColumns, String colMap) {
+    StringBuilder sb = new StringBuilder();
+
+    String cols = indexColumns;
+
+
+    String hiveColString = tableDesc.getProperties().getProperty(serdeConstants.LIST_COLUMNS);
+    // if there are actual accumulo index columns defined then build
+    // the comma separated list of accumulo columns
+    if (cols == null || cols.isEmpty() || "*".equals(indexColumns)) {
+      // skip rowid
+      cols = hiveColString.substring(hiveColString.indexOf(',')+1);
+    }
+
+    String[] hiveTypes = tableDesc.getProperties()
+        .getProperty(serdeConstants.LIST_COLUMN_TYPES).split(":");
+    String[] accCols = colMap.split(",");
+    String[] hiveCols = hiveColString.split(",");
+    Set<String> indexSet = new HashSet<String>();
+
+    for (String idx : cols.split(",")) {
+      indexSet.add(idx.trim());
+    }
+
+    for (int i = 0; i < hiveCols.length; i++) {
+      if (indexSet.contains(hiveCols[i].trim())) {
+        if (sb.length() > 0) {
+          sb.append(",");
+        }
+        sb.append(accCols[i].trim() + ":" + AccumuloIndexLexicoder.getRawType(hiveTypes[i]));
+      }
+    }
+
+    return sb.toString();
   }
 
   @SuppressWarnings("rawtypes")
@@ -242,7 +343,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
       throw new MetaException("Location can't be specified for Accumulo");
     }
 
-    Map<String,String> serdeParams = table.getSd().getSerdeInfo().getParameters();
+    Map<String, String> serdeParams = table.getSd().getSerdeInfo().getParameters();
     String columnMapping = serdeParams.get(AccumuloSerDeParameters.COLUMN_MAPPINGS);
     if (columnMapping == null) {
       throw new MetaException(AccumuloSerDeParameters.COLUMN_MAPPINGS
@@ -266,6 +367,16 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
         if (!isExternal) {
           throw new MetaException("Table " + tblName
               + " already exists in Accumulo. Use CREATE EXTERNAL TABLE to register with Hive.");
+        }
+      }
+
+      String idxTable = getIndexTableName(table);
+
+      if (idxTable != null && !idxTable.isEmpty()) {
+
+        // create the index table if it does not exist
+        if (!tableOpts.exists(idxTable)) {
+          tableOpts.create(idxTable);
         }
       }
     } catch (AccumuloSecurityException e) {
@@ -323,7 +434,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     // do nothing
   }
 
-  @SuppressWarnings("deprecation")
   @Override
   public DecomposedPredicate decomposePredicate(JobConf conf, Deserializer deserializer,
       ExprNodeDesc desc) {
@@ -336,72 +446,50 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     if (serDe.getIteratorPushdown()) {
       return predicateHandler.decompose(conf, desc);
     } else {
-      log.info("Set to ignore Accumulo iterator pushdown, skipping predicate handler.");
+      LOG.info("Set to ignore Accumulo iterator pushdown, skipping predicate handler.");
       return null;
     }
   }
 
-  @SuppressWarnings("deprecation")
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-    try {
-      Utils.addDependencyJars(jobConf, Tracer.class, Fate.class, Connector.class, Main.class,
-          ZooKeeper.class, AccumuloStorageHandler.class);
-    } catch (IOException e) {
-      log.error("Could not add necessary Accumulo dependencies to classpath", e);
-    }
+    helper.loadDependentJars(jobConf);
 
     Properties tblProperties = tableDesc.getProperties();
     AccumuloSerDeParameters serDeParams = null;
     try {
-      serDeParams = new AccumuloSerDeParameters(jobConf, tblProperties, AccumuloSerDe.class.getName());
+      serDeParams =
+          new AccumuloSerDeParameters(jobConf, tblProperties, AccumuloSerDe.class.getName());
     } catch (SerDeException e) {
-      log.error("Could not instantiate AccumuloSerDeParameters", e);
+      LOG.error("Could not instantiate AccumuloSerDeParameters", e);
       return;
     }
 
     try {
       serDeParams.getRowIdFactory().addDependencyJars(jobConf);
     } catch (IOException e) {
-      log.error("Could not add necessary dependencies for " + serDeParams.getRowIdFactory().getClass(), e);
+      LOG.error("Could not add necessary dependencies for "
+          + serDeParams.getRowIdFactory().getClass(), e);
     }
 
     // When Kerberos is enabled, we have to add the Accumulo delegation token to the
     // Job so that it gets passed down to the YARN/Tez task.
     if (connectionParams.useSasl()) {
       try {
-        // Obtain a delegation token from Accumulo
+        // Open an accumulo connection
         Connector conn = connectionParams.getConnector();
-        AuthenticationToken token = helper.getDelegationToken(conn);
-
-        // Make sure the Accumulo token is set in the Configuration (only a stub of the Accumulo
-        // AuthentiationToken is serialized, not the entire token). configureJobConf may be
-        // called multiple times with the same JobConf which results in an error from Accumulo
-        // MapReduce API. Catch the error, log a debug message and just keep going
-        try {
-          InputConfigurator.setConnectorInfo(AccumuloInputFormat.class, jobConf,
-              connectionParams.getAccumuloUserName(), token);
-        } catch (IllegalStateException e) {
-          // The implementation balks when this method is invoked multiple times
-          log.debug("Ignoring IllegalArgumentException about re-setting connector information");
-        }
-        try {
-          OutputConfigurator.setConnectorInfo(AccumuloOutputFormat.class, jobConf,
-              connectionParams.getAccumuloUserName(), token);
-        } catch (IllegalStateException e) {
-          // The implementation balks when this method is invoked multiple times
-          log.debug("Ignoring IllegalArgumentException about re-setting connector information");
-        }
 
         // Convert the Accumulo token in a Hadoop token
-        Token<? extends TokenIdentifier> accumuloToken = helper.getHadoopToken(token);
+        Token<? extends TokenIdentifier> accumuloToken = helper.setConnectorInfoForInputAndOutput(connectionParams, conn, jobConf);
 
-        log.info("Adding Hadoop Token for Accumulo to Job's Credentials");
+        LOG.debug("Adding Hadoop Token for Accumulo to Job's Credentials");
 
         // Add the Hadoop token to the JobConf
         helper.mergeTokenIntoJobConf(jobConf, accumuloToken);
+        LOG.debug("All job tokens: " + jobConf.getCredentials().getAllTokens());
       } catch (Exception e) {
-        throw new RuntimeException("Failed to obtain DelegationToken for " + connectionParams.getAccumuloUserName(), e);
+        throw new RuntimeException("Failed to obtain DelegationToken for "
+            + connectionParams.getAccumuloUserName(), e);
       }
     }
   }

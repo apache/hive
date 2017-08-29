@@ -41,6 +41,7 @@ public class TestMetastoreVersion extends TestCase {
   private Driver driver;
   private String metaStoreRoot;
   private String testMetastoreDB;
+  private IMetaStoreSchemaInfo metastoreSchemaInfo;
 
   @Override
   protected void setUp() throws Exception {
@@ -63,6 +64,8 @@ public class TestMetastoreVersion extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     metaStoreRoot = System.getProperty("test.tmp.dir");
+    metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf,
+        System.getProperty("test.tmp.dir", "target/tmp"), "derby");
   }
 
   @Override
@@ -121,7 +124,7 @@ public class TestMetastoreVersion extends TestCase {
     driver.run("show tables");
 
     // correct version stored by Metastore during startup
-    assertEquals(MetaStoreSchemaInfo.getHiveSchemaVersion(), getVersion(hiveConf));
+    assertEquals(metastoreSchemaInfo.getHiveSchemaVersion(), getVersion(hiveConf));
     setVersion(hiveConf, "foo");
     assertEquals("foo", getVersion(hiveConf));
   }
@@ -139,7 +142,7 @@ public class TestMetastoreVersion extends TestCase {
 
     ObjectStore.setSchemaVerified(false);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION, true);
-    setVersion(hiveConf, MetaStoreSchemaInfo.getHiveSchemaVersion());
+    setVersion(hiveConf, metastoreSchemaInfo.getHiveSchemaVersion());
     driver = new Driver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
     assertTrue(proc.getResponseCode() == 0);
@@ -189,13 +192,11 @@ public class TestMetastoreVersion extends TestCase {
 
   //  write the given version to metastore
   private String getVersion(HiveConf conf) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
     return getMetaStoreVersion();
   }
 
   //  write the given version to metastore
   private void setVersion(HiveConf conf, String version) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
     setMetaStoreVersion(version, "setVersion test");
   }
 

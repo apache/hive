@@ -10,12 +10,12 @@ insert into table a values('aaa');
 insert into table b values('aaa');
 
 -- We expect no vectorization due to NULL (void) projection type.
-explain
+explain vectorization expression
 select NULL from a;
 
 select NULL from a;
 
-explain
+explain vectorization expression
 select NULL as x from a union distinct select NULL as x from b;
 
 select NULL as x from a union distinct select NULL as x from b;

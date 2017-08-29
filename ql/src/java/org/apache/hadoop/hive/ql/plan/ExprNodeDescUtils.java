@@ -27,11 +27,15 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -40,6 +44,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.ReflectionUtils;
+
+import com.google.common.collect.Lists;
 
 public class ExprNodeDescUtils {
 
@@ -87,6 +93,55 @@ public class ExprNodeDescUtils {
     }
     // constant or null, just return it
     return origin;
+  }
+
+  private static boolean isDefaultPartition(ExprNodeDesc origin, String defaultPartitionName) {
+    if (origin instanceof ExprNodeConstantDesc && ((ExprNodeConstantDesc)origin).getValue() != null &&
+        ((ExprNodeConstantDesc)origin).getValue().equals(defaultPartitionName)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static void replaceEqualDefaultPartition(ExprNodeDesc origin,
+      String defaultPartitionName) throws SemanticException {
+    ExprNodeColumnDesc column = null;
+    ExprNodeConstantDesc defaultPartition = null;
+    if (origin instanceof ExprNodeGenericFuncDesc
+        && (((ExprNodeGenericFuncDesc) origin)
+            .getGenericUDF() instanceof GenericUDFOPEqual
+            || ((ExprNodeGenericFuncDesc) origin)
+                .getGenericUDF() instanceof GenericUDFOPNotEqual)) {
+      if (isDefaultPartition(origin.getChildren().get(0),
+          defaultPartitionName)) {
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(0);
+        column = (ExprNodeColumnDesc) origin.getChildren().get(1);
+      } else if (isDefaultPartition(origin.getChildren().get(1),
+          defaultPartitionName)) {
+        column = (ExprNodeColumnDesc) origin.getChildren().get(0);
+        defaultPartition = (ExprNodeConstantDesc) origin.getChildren().get(1);
+      }
+    }
+    // Found
+    if (column != null) {
+      origin.getChildren().remove(defaultPartition);
+      String fnName;
+      if (((ExprNodeGenericFuncDesc) origin)
+          .getGenericUDF() instanceof GenericUDFOPEqual) {
+        fnName = "isnull";
+      } else {
+        fnName = "isnotnull";
+      }
+      ((ExprNodeGenericFuncDesc) origin).setGenericUDF(
+          FunctionRegistry.getFunctionInfo(fnName).getGenericUDF());
+    } else {
+      if (origin.getChildren() != null) {
+        for (ExprNodeDesc child : origin.getChildren()) {
+          replaceEqualDefaultPartition(child, defaultPartitionName);
+        }
+      }
+    }
   }
 
   /**
@@ -504,7 +559,11 @@ public class ExprNodeDescUtils {
 		} else if (exprDesc instanceof ExprNodeFieldDesc) {
 			getExprNodeColumnDesc(((ExprNodeFieldDesc) exprDesc).getDesc(),
 					hashCodeToColumnDescMap);
-		}
+		} else if( exprDesc instanceof  ExprNodeSubQueryDesc) {
+		    getExprNodeColumnDesc(((ExprNodeSubQueryDesc) exprDesc).getSubQueryLhs(),
+                    hashCodeToColumnDescMap);
+        }
+
 	}
 
   public static boolean isConstant(ExprNodeDesc value) {
@@ -712,5 +771,169 @@ public class ExprNodeDescUtils {
     }
     // Otherwise, we return the expression
     return foldedExpr;
+  }
+
+  /**
+   * Checks whether the keys of a parent operator are a prefix of the keys of a
+   * child operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, false);
+  }
+
+  /**
+   * Checks whether the keys of a child operator are a prefix of the keys of a
+   * parent operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeysUpstream(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, true);
+  }
+
+  private static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp,
+      boolean upstream) throws SemanticException {
+    if (childKeys == null || childKeys.isEmpty()) {
+      if (parentKeys != null && !parentKeys.isEmpty()) {
+        return false;
+      }
+      return true;
+    }
+    if (parentKeys == null || parentKeys.isEmpty()) {
+      return false;
+    }
+    int size;
+    if (upstream) {
+      if (childKeys.size() > parentKeys.size()) {
+        return false;
+      }
+      size = childKeys.size();
+    } else {
+      if (parentKeys.size() > childKeys.size()) {
+        return false;
+      }
+      size = parentKeys.size();
+    }
+    for (int i = 0; i < size; i++) {
+      ExprNodeDesc expr = ExprNodeDescUtils.backtrack(childKeys.get(i), childOp, parentOp);
+      if (expr == null) {
+        // cKey is not present in parent
+        return false;
+      }
+      if (!expr.isSame(parentKeys.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static class ColumnOrigin {
+    public ExprNodeColumnDesc col;
+    public Operator<?> op;
+
+    public ColumnOrigin(ExprNodeColumnDesc col, Operator<?> op) {
+      super();
+      this.col = col;
+      this.op = op;
+    }
+  }
+
+  private static ExprNodeDesc findParentExpr(ExprNodeColumnDesc col, Operator<?> op) {
+    ExprNodeDesc parentExpr = col;
+    Map<String, ExprNodeDesc> mapping = op.getColumnExprMap();
+    if (mapping != null) {
+      parentExpr = mapping.get(col.getColumn());
+      if (parentExpr == null && op instanceof ReduceSinkOperator) {
+        return col;
+      }
+    }
+    return parentExpr;
+  }
+
+  public static ColumnOrigin findColumnOrigin(ExprNodeDesc expr, Operator<?> op) {
+    if (expr == null || op == null) {
+      // bad input
+      return null;
+    }
+
+    ExprNodeColumnDesc col = ExprNodeDescUtils.getColumnExpr(expr);
+    if (col == null) {
+      // not a column
+      return null;
+    }
+
+    Operator<?> parentOp = null;
+    int numParents = op.getNumParent();
+    if (numParents == 0) {
+      return new ColumnOrigin(col, op);
+    }
+
+    ExprNodeDesc parentExpr = findParentExpr(col, op);
+    if (parentExpr == null) {
+      // couldn't find proper parent column expr
+      return null;
+    }
+
+    if (numParents == 1) {
+      parentOp = op.getParentOperators().get(0);
+    } else {
+      // Multiple parents - find the right one based on the table alias in the parentExpr
+      ExprNodeColumnDesc parentCol = ExprNodeDescUtils.getColumnExpr(parentExpr);
+      if (parentCol != null) {
+        for (Operator<?> currParent : op.getParentOperators()) {
+          RowSchema schema = currParent.getSchema();
+          if (schema == null) {
+            // Happens in case of TezDummyStoreOperator
+            return null;
+          }
+          if (schema.getTableNames().contains(parentCol.getTabAlias())) {
+            parentOp = currParent;
+            break;
+          }
+        }
+      }
+    }
+
+    if (parentOp == null) {
+      return null;
+    }
+
+    return findColumnOrigin(parentExpr, parentOp);
+  }
+
+  // Null-safe isSame
+  public static boolean isSame(ExprNodeDesc desc1, ExprNodeDesc desc2) {
+    return (desc1 == desc2) || (desc1 != null && desc1.isSame(desc2));
+  }
+
+  // Null-safe isSame for lists of ExprNodeDesc
+  public static boolean isSame(List<ExprNodeDesc> first, List<ExprNodeDesc> second) {
+    if (first == second) {
+      return true;
+    }
+    if (first == null || second == null || first.size() != second.size()) {
+      return false;
+    }
+    for (int i = 0; i < first.size(); i++) {
+      if (!first.get(i).isSame(second.get(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 }

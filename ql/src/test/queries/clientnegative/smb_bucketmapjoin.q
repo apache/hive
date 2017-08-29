@@ -16,7 +16,7 @@ select * from src;
 
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-
+set hive.cbo.enable=false;
 select /*+mapjoin(a)*/ * from smb_bucket4_1 a left outer join smb_bucket4_2 b on a.key = b.key;
 
 

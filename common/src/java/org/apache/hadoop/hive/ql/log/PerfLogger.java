@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.log;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -27,13 +28,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * PerfLogger.
@@ -43,6 +39,7 @@ import java.util.Set;
 public class PerfLogger {
   public static final String ACQUIRE_READ_WRITE_LOCKS = "acquireReadWriteLocks";
   public static final String COMPILE = "compile";
+  public static final String WAIT_COMPILE = "waitCompile";
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
   public static final String OPTIMIZER = "optimizer";
@@ -225,7 +222,7 @@ public class PerfLogger {
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      MetricsScope scope = metrics.createScope(method);
+      MetricsScope scope = metrics.createScope(MetricsConstant.API_PREFIX + method);
       openScopes.put(method, scope);
     }
 

@@ -26,6 +26,9 @@ import org.junit.Before;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -95,8 +98,12 @@ public class TestDummyTxnManager {
     List<HiveLock> expectedLocks = new ArrayList<HiveLock>();
     expectedLocks.add(new ZooKeeperHiveLock("default", new HiveLockObject(), HiveLockMode.SHARED));
     expectedLocks.add(new ZooKeeperHiveLock("default.table1", new HiveLockObject(), HiveLockMode.SHARED));
-
-    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false))).thenReturn(expectedLocks);
+    LockedDriverState lDrvState = new LockedDriverState();
+    LockedDriverState lDrvInp = new LockedDriverState();
+    lDrvInp.driverState = DriverState.INTERRUPT;
+    LockException lEx = new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
+    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvState))).thenReturn(expectedLocks);
+    when(mockLockManager.lock(anyListOf(HiveLockObj.class), eq(false), eq(lDrvInp))).thenThrow(lEx);
     doNothing().when(mockLockManager).setContext(any(HiveLockManagerCtx.class));
     doNothing().when(mockLockManager).close();
     ArgumentCaptor<List> lockObjsCaptor = ArgumentCaptor.forClass(List.class);
@@ -105,7 +112,7 @@ public class TestDummyTxnManager {
     when(mockQueryPlan.getOutputs()).thenReturn(new HashSet<WriteEntity>());
 
     // Execute
-    txnMgr.acquireLocks(mockQueryPlan, ctx, "fred");
+    txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", lDrvState);
 
     // Verify
     Assert.assertEquals("db1", SessionState.get().getCurrentDatabase());
@@ -116,13 +123,22 @@ public class TestDummyTxnManager {
     Assert.assertEquals(expectedLocks.get(1).getHiveLockMode(), resultLocks.get(1).getHiveLockMode());
     Assert.assertEquals(expectedLocks.get(0).getHiveLockObject().getName(), resultLocks.get(0).getHiveLockObject().getName());
 
-    verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false));
+    verify(mockLockManager).lock(lockObjsCaptor.capture(), eq(false), eq(lDrvState));
     List<HiveLockObj> lockObjs = lockObjsCaptor.getValue();
     Assert.assertEquals(2, lockObjs.size());
     Assert.assertEquals("default", lockObjs.get(0).getName());
     Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(0).mode);
     Assert.assertEquals("default/table1", lockObjs.get(1).getName());
     Assert.assertEquals(HiveLockMode.SHARED, lockObjs.get(1).mode);
+
+    // Execute
+    try {
+      txnMgr.acquireLocks(mockQueryPlan, ctx, "fred", lDrvInp);
+      Assert.fail();
+    } catch(LockException le) {
+      Assert.assertEquals(le.getMessage(), ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
+    }
+
   }
 
   @Test
@@ -131,9 +147,9 @@ public class TestDummyTxnManager {
     String path1 = "path1";
     String path2 = "path2";
     HiveLockObjectData lockData1 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
     HiveLockObjectData lockData2 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
 
     // Start with the following locks:
     // [path1, shared]

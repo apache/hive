@@ -31,10 +31,10 @@ import org.apache.hive.service.auth.HiveAuthFactory;
  *
  */
 public abstract class CLIServiceClient implements ICLIService {
-  protected int defaultFetchRows = ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
+  protected int defaultFetchRows = ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
 
   public CLIServiceClient(Configuration conf) {
-    defaultFetchRows = HiveConf.getIntVar(conf, ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE);
+    defaultFetchRows = HiveConf.getIntVar(conf, ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
   }
 
   public SessionHandle openSession(String username, String password)

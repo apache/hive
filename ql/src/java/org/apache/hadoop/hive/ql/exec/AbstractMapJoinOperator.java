@@ -70,7 +70,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     if (conf.getGenJoinKeys()) {
       int tagLen = conf.getTagLength();
       joinKeys = new List[tagLen];
-      JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), NOTSKIPBIGTABLE);
+      JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), NOTSKIPBIGTABLE, hconf);
       joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
           inputObjInspectors,NOTSKIPBIGTABLE, tagLen);
     }

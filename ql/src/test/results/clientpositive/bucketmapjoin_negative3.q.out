@@ -142,11 +142,9 @@ POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO 
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test4
-PREHOOK: query: -- should be allowed
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- should be allowed
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -244,6 +242,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -265,6 +264,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -290,9 +290,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -390,6 +390,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -411,6 +412,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -436,11 +438,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- should not apply bucket mapjoin
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- should not apply bucket mapjoin
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -530,6 +530,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -551,6 +552,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -576,9 +578,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -668,6 +670,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -689,6 +692,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -714,9 +718,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -806,6 +810,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -827,6 +832,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -852,9 +858,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -944,6 +950,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -965,6 +972,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -990,9 +998,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1082,6 +1090,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -1103,6 +1112,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -1128,9 +1138,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1220,6 +1230,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name value
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -1241,6 +1252,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name value
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -1266,9 +1278,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
+PREHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select /* + MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
+POSTHOOK: query: explain extended select /*+ MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1358,6 +1370,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -1379,6 +1392,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string

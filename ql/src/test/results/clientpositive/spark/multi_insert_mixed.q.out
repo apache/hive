@@ -22,19 +22,13 @@ POSTHOOK: query: create table src_multi3 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi3
-PREHOOK: query: -- Testing the case where a map work contains both shuffling (ReduceSinkOperator)
--- and inserting to output table (FileSinkOperator).
-
-explain
+PREHOOK: query: explain
 from src
 insert overwrite table src_multi1 select key, count(1) group by key order by key
 insert overwrite table src_multi2 select value, count(1) group by value order by value
 insert overwrite table src_multi3 select * where key < 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing the case where a map work contains both shuffling (ReduceSinkOperator)
--- and inserting to output table (FileSinkOperator).
-
-explain
+POSTHOOK: query: explain
 from src
 insert overwrite table src_multi1 select key, count(1) group by key order by key
 insert overwrite table src_multi2 select value, count(1) group by value order by value
@@ -132,7 +126,7 @@ STAGE PLANS:
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -159,7 +153,7 @@ STAGE PLANS:
         Reducer 5 
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+                expressions: KEY.reducesinkkey0 (type: string), UDFToString(VALUE._col0) (type: string)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

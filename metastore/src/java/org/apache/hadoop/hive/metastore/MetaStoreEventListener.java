@@ -20,8 +20,14 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -30,6 +36,7 @@ import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
@@ -44,7 +51,8 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
  * are called whenever an event occurs on metastore. Status of the event whether
  * it was successful or not is contained in container event object.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MetaStoreEventListener implements Configurable {
 
   private Configuration conf;
@@ -75,19 +83,17 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
-   * @param add partition event
-   * @throws MetaException
-   */
-
-  /**
    * @param tableEvent alter table event
    * @throws MetaException
    */
   public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
   }
 
-  public void onAddPartition (AddPartitionEvent partitionEvent)
-      throws MetaException {
+  /**
+   * @param partitionEvent add partition event
+   * @throws MetaException
+   */
+  public void onAddPartition (AddPartitionEvent partitionEvent) throws MetaException {
   }
 
   /**
@@ -169,6 +175,41 @@ public abstract class MetaStoreEventListener implements Configurable {
    */
   public void onInsert(InsertEvent insertEvent) throws MetaException {
 
+  }
+
+  /**
+   * @param addPrimaryKeyEvent add primary key event
+   * @throws MetaException
+   */
+  public void onAddPrimaryKey(AddPrimaryKeyEvent addPrimaryKeyEvent) throws MetaException {
+  }
+
+  /**
+   * @param addForeignKeyEvent add foreign key event
+   * @throws MetaException
+   */
+  public void onAddForeignKey(AddForeignKeyEvent addForeignKeyEvent) throws MetaException {
+  }
+
+  /**
+   * @param addUniqueConstraintEvent add unique constraint event
+   * @throws MetaException
+   */
+  public void onAddUniqueConstraint(AddUniqueConstraintEvent addUniqueConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addNotNullConstraintEvent add not null constraint event
+   * @throws MetaException
+   */
+  public void onAddNotNullConstraint(AddNotNullConstraintEvent addNotNullConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param dropConstraintEvent drop constraint event
+   * @throws MetaException
+   */
+  public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
   }
 
   @Override

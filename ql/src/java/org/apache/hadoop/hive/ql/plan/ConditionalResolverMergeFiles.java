@@ -284,7 +284,16 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         // make the MoveTask as the child of the MR Task
         resTsks.add(mrAndMvTask);
 
-        MoveWork mvWork = (MoveWork) mvTask.getWork();
+        // Originally the mvTask and the child move task of the mrAndMvTask contain the same
+        // MoveWork object.
+        // If the blobstore optimizations are on and the input/output paths are merged
+        // in the move only MoveWork, the mvTask and the child move task of the mrAndMvTask
+        // will contain different MoveWork objects, which causes problems.
+        // Not just in this case, but also in general the child move task of the mrAndMvTask should
+        // be used, because that is the correct move task for the "merge and move" use case.
+        Task<? extends Serializable> mergeAndMoveMoveTask = mrAndMvTask.getChildTasks().get(0);
+        MoveWork mvWork = (MoveWork) mergeAndMoveMoveTask.getWork();
+
         LoadFileDesc lfd = mvWork.getLoadFileWork();
 
         Path targetDir = lfd.getTargetDir();
@@ -317,10 +326,9 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
   private PartitionDesc generateDPFullPartSpec(DynamicPartitionCtx dpCtx, FileStatus[] status,
       TableDesc tblDesc, int i) {
-    Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
-        dpCtx.getPartSpec());
+    LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<>(dpCtx.getPartSpec());
     Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath());
-    PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
+    PartitionDesc pDesc = new PartitionDesc(tblDesc, fullPartSpec);
     return pDesc;
   }
 

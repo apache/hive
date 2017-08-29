@@ -220,6 +220,34 @@ public class ParseDriver {
     return tree;
   }
 
+  /*
+   * Parse a string as a query hint.
+   */
+  public ASTNode parseHint(String command) throws ParseException {
+    LOG.info("Parsing hint: " + command);
+
+    HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    HintParser parser = new HintParser(tokens);
+    parser.setTreeAdaptor(adaptor);
+    HintParser.hint_return r = null;
+    try {
+      r = parser.hint();
+    } catch (RecognitionException e) {
+      e.printStackTrace();
+      throw new ParseException(parser.errors);
+    }
+
+    if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
+      LOG.info("Parse Completed");
+    } else if (lexer.getErrors().size() != 0) {
+      throw new ParseException(lexer.getErrors());
+    } else {
+      throw new ParseException(parser.errors);
+    }
+
+    return (ASTNode) r.getTree();
+  }
 
   /*
    * parse a String as a Select List. This allows table functions to be passed expression Strings

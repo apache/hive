@@ -29,7 +29,10 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjBeforeJson, tableObjAfterJson;
+  String server, servicePrincipal, db, table, tableType, tableObjBeforeJson, tableObjAfterJson;
+
+  @JsonProperty
+  String isTruncateOp;
 
   @JsonProperty
   Long timestamp;
@@ -41,11 +44,13 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   }
 
   public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObjBefore, Table tableObjAfter,
-      Long timestamp) {
+      boolean isTruncateOp, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObjBefore.getDbName();
     this.table = tableObjBefore.getTableName();
+    this.tableType = tableObjBefore.getTableType();
+    this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
     try {
       this.tableObjBeforeJson = JSONMessageFactory.createTableObjJson(tableObjBefore);
@@ -80,6 +85,14 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   public String getTable() {
     return table;
   }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
+  public boolean getIsTruncateOp() { return Boolean.parseBoolean(isTruncateOp); }
 
   @Override
   public Table getTableObjBefore() throws Exception {

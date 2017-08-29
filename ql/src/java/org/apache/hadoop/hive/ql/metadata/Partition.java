@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -156,7 +157,7 @@ public class Partition implements Serializable {
       org.apache.hadoop.hive.metastore.api.Partition tPartition) throws HiveException {
 
     this.table = table;
-    this.tPartition = tPartition;
+    setTPartition(tPartition);
 
     if (table.isView()) {
       return;
@@ -212,9 +213,15 @@ public class Partition implements Serializable {
 
   public Path getDataLocation() {
     if (table.isPartitioned()) {
-      return new Path(tPartition.getSd().getLocation());
+      if (tPartition.getSd() == null)
+        return null;
+      else
+        return new Path(tPartition.getSd().getLocation());
     } else {
-      return new Path(table.getTTable().getSd().getLocation());
+      if (table.getTTable() == null || table.getTTable().getSd() == null)
+        return null;
+      else
+        return new Path(table.getTTable().getSd().getLocation());
     }
   }
 
@@ -458,6 +465,7 @@ public class Partition implements Serializable {
    */
   public void setTPartition(
       org.apache.hadoop.hive.metastore.api.Partition partition) {
+    StringInternUtils.internStringsInList(partition.getValues());
     tPartition = partition;
   }
 
@@ -522,7 +530,7 @@ public class Partition implements Serializable {
         throw new HiveException(
             "partition spec is invalid. field.getName() does not exist in input.");
       }
-      pvals.add(val);
+      pvals.add(val.intern());
     }
     tPartition.setValues(pvals);
   }

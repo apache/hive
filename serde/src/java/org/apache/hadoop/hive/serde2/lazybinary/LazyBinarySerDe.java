@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -108,11 +111,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
       throws SerDeException {
     // Get column names and types
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     }
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
@@ -348,7 +353,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * @param byteStream
    * @param dec
    * @param scratchLongs
-   * @param buffer
+   * @param scratchBytes
    */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
@@ -374,9 +379,9 @@ public class LazyBinarySerDe extends AbstractSerDe {
   * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
   *
   * @param byteStream
-  * @param dec
+  * @param decWritable
   * @param scratchLongs
-  * @param buffer
+  * @param scratchBytes
   */
   public static void writeToByteStream(
       RandomAccessOutput byteStream,
@@ -507,6 +512,11 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return;
+      }
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZWritable t = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(obj);
         t.writeToByteStream(byteStream);
         return;
       }

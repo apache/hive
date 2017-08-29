@@ -1,21 +1,15 @@
-PREHOOK: query: -- HIVE-3464
-
-create table a (key string, value string)
+PREHOOK: query: create table a (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@a
-POSTHOOK: query: -- HIVE-3464
-
-create table a (key string, value string)
+POSTHOOK: query: create table a (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
-PREHOOK: query: -- (a-b-c-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (a-b-c-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.key=c.key) left outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -94,8 +88,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Left Outer Join1 to 2
-               Left Outer Join0 to 3
+               Left Outer Join 1 to 2
+               Left Outer Join 0 to 3
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -196,8 +190,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Left Outer Join1 to 2
-               Right Outer Join0 to 3
+               Left Outer Join 1 to 2
+               Right Outer Join 0 to 3
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -295,8 +289,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Right Outer Join1 to 2
-               Left Outer Join0 to 3
+               Right Outer Join 1 to 2
+               Left Outer Join 0 to 3
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -394,8 +388,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Right Outer Join1 to 2
-               Right Outer Join0 to 3
+               Right Outer Join 1 to 2
+               Right Outer Join 0 to 3
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -417,12 +411,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- ((a-b-d)-c) (reordered)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ((a-b-d)-c) (reordered)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -486,7 +478,7 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Left Outer Join0 to 2
+               Left Outer Join 0 to 2
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -526,7 +518,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -614,7 +606,7 @@ STAGE PLANS:
         Join Operator
           condition map:
                Inner Join 0 to 1
-               Right Outer Join0 to 2
+               Right Outer Join 0 to 2
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -654,7 +646,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -806,12 +798,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- (((a-b)-c)-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (((a-b)-c)-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) right outer join a d on (a.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -898,7 +888,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -937,7 +927,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -1047,7 +1037,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -1196,7 +1186,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -1235,7 +1225,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           keys:
             0 _col0 (type: string)
             1 _col0 (type: string)
@@ -1345,7 +1335,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
+               Right Outer Join 0 to 1
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)
@@ -1404,12 +1394,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- ((a-b)-c-d)
-explain
+PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ((a-b)-c-d)
-explain
+POSTHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) left outer join a d on (c.key=d.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1508,8 +1496,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Left Outer Join1 to 2
+               Left Outer Join 0 to 1
+               Left Outer Join 1 to 2
           keys:
             0 _col3 (type: string)
             1 _col0 (type: string)

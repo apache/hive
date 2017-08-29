@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReducerTimeStatsPerJob;
@@ -105,11 +107,19 @@ public class QueryPlan implements Serializable {
 
   private transient Long queryStartTime;
   private final HiveOperation operation;
+  private final boolean acidResourcesInQuery;
+  private final Set<FileSinkDesc> acidSinks;
   private Boolean autoCommitValue;
 
   public QueryPlan() {
-    this.reducerTimeStatsPerJobList = new ArrayList<ReducerTimeStatsPerJob>();
-    operation = null;
+    this(null);
+  }
+  @VisibleForTesting
+  protected QueryPlan(HiveOperation command) {
+    this.reducerTimeStatsPerJobList = new ArrayList<>();
+    this.operation = command;
+    this.acidResourcesInQuery = false;
+    this.acidSinks = Collections.emptySet();
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -136,8 +146,22 @@ public class QueryPlan implements Serializable {
     this.operation = operation;
     this.autoCommitValue = sem.getAutoCommitValue();
     this.resultSchema = resultSchema;
+    this.acidResourcesInQuery = sem.hasAcidInQuery();
+    this.acidSinks = sem.getAcidFileSinks();
   }
 
+  /**
+   * @return true if any acid resources are read/written
+   */
+  public boolean hasAcidResourcesInQuery() {
+    return acidResourcesInQuery;
+  }
+  /**
+   * @return Collection of FileSinkDesc representing writes to Acid resources
+   */
+  Set<FileSinkDesc> getAcidSinks() {
+    return acidSinks;
+  }
   public String getQueryStr() {
     return queryString;
   }

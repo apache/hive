@@ -18,6 +18,8 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -161,22 +163,27 @@ public class <ClassName> extends VectorExpression {
     this.colNum = colNum;
   }
 
-  public byte[] getLeft() {
+  public byte[] getLeftValue() {
     return left;
   }
 
-  public void setLeft(byte[] value) {
+  public void setLeftValue(byte[] value) {
     this.left = value;
   }
   
-  public byte[] getRight() {
+  public byte[] getRightValue() {
     return right;
   }
 
-  public void setRight(byte[] value) {
+  public void setRightValue(byte[] value) {
     this.right = value;
   }
-  
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", left " + displayUtf8Bytes(left) + ", right " + displayUtf8Bytes(right);
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

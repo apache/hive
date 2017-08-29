@@ -1,8 +1,6 @@
-PREHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -35,6 +33,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 	transactional       	true                
 #### A masked pattern was here ####
 	 	 
@@ -94,7 +98,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	3837                
+	totalSize           	3950                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -132,9 +136,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 1 Data size: 3837 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 1 Data size: 3950 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              Statistics: Num rows: 1 Data size: 3837 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 1 Data size: 3950 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -211,7 +215,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3837                
+	totalSize           	3950                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -260,7 +264,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3837                
+	totalSize           	3950                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -387,7 +391,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	7689                
+	totalSize           	7904                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -436,7 +440,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	7689                
+	totalSize           	7904                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -603,6 +607,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

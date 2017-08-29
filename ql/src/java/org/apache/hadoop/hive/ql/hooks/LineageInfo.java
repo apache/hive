@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -403,7 +404,7 @@ public class LineageInfo implements Serializable {
      * @param expr the expr to set
      */
     public void setExpr(String expr) {
-      this.expr = expr;
+      this.expr = StringInternUtils.internIfNotNull(expr);
     }
 
     /**

@@ -51,4 +51,8 @@ public class CastDateToChar extends CastDateToString implements TruncStringOutpu
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
   }
+
+  public String vectorExpressionParameters() {
+    return "col " + inputColumn + ", maxLength " + maxLength;
+  }
 }

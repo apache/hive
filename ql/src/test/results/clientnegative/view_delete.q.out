@@ -16,4 +16,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@dv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dv_view
+POSTHOOK: Lineage: dv_view.a SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: dv_view.b SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: dv_view.c SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 FAILED: SemanticException [Error 10402]: You cannot update or delete records in a view

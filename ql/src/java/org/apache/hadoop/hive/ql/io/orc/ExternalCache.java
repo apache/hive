@@ -54,7 +54,6 @@ import com.google.common.collect.Lists;
 /** Metastore-based footer cache storing serialized footers. Also has a local cache. */
 public class ExternalCache implements FooterCache {
   private static final Logger LOG = LoggerFactory.getLogger(ExternalCache.class);
-  private static boolean isDebugEnabled = LOG.isDebugEnabled();
 
   private final LocalCache localCache;
   private final ExternalFooterCachesByConf externalCacheSrc;
@@ -194,7 +193,7 @@ public class ExternalCache implements FooterCache {
       Long fileId = file.getFileId();
       if (fileId == null) {
         if (!isInTest) {
-          if (!isWarnLogged || isDebugEnabled) {
+          if (!isWarnLogged || LOG.isDebugEnabled()) {
             LOG.warn("Not using metastore cache because fileId is missing: " + fs.getPath());
             isWarnLogged = true;
           }
@@ -209,7 +208,7 @@ public class ExternalCache implements FooterCache {
   }
 
   private Long generateTestFileId(final FileStatus fs, List<HdfsFileStatusWithId> files, int i) {
-    final Long fileId = HdfsUtils.createFileId(fs.getPath().toUri().getPath(), fs, false, null);
+    final Long fileId = HdfsUtils.createTestFileId(fs.getPath().toUri().getPath(), fs, false, null);
     files.set(i, new HdfsFileStatusWithId() {
       @Override
       public FileStatus getFileStatus() {

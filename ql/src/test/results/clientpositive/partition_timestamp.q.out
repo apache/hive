@@ -1,10 +1,6 @@
-PREHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-drop table partition_timestamp_1
+PREHOOK: query: drop table partition_timestamp_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-drop table partition_timestamp_1
+POSTHOOK: query: drop table partition_timestamp_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_timestamp_1 (key string, value string) partitioned by (dt timestamp, region string)
 PREHOOK: type: CREATETABLE
@@ -105,175 +101,137 @@ POSTHOOK: query: select * from partition_timestamp_1 where dt = '2000-01-01 01:0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-PREHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 10
-PREHOOK: query: -- 10.  Also try with string value in predicate
-select count(*) from partition_timestamp_1 where dt = '2000-01-01 01:00:00'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = '2000-01-01 01:00:00'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 10.  Also try with string value in predicate
-select count(*) from partition_timestamp_1 where dt = '2000-01-01 01:00:00'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = '2000-01-01 01:00:00'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 10
-PREHOOK: query: -- 5
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 02:00:00' and region = '2'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 02:00:00' and region = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 5
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 02:00:00' and region = '2'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 02:00:00' and region = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 5
-PREHOOK: query: -- 11
-select count(*) from partition_timestamp_1 where dt = timestamp '2001-01-01 03:00:00' and region = '10'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2001-01-01 03:00:00' and region = '10'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 11
-select count(*) from partition_timestamp_1 where dt = timestamp '2001-01-01 03:00:00' and region = '10'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2001-01-01 03:00:00' and region = '10'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 11
-PREHOOK: query: -- 30
-select count(*) from partition_timestamp_1 where region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 30
-select count(*) from partition_timestamp_1 where region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 30
-PREHOOK: query: -- 0
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00' and region = '3'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00' and region = '3'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 0
-select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00' and region = '3'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '2000-01-01 01:00:00' and region = '3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- 0
-select count(*) from partition_timestamp_1 where dt = timestamp '1999-01-01 01:00:00'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '1999-01-01 01:00:00'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 0
-select count(*) from partition_timestamp_1 where dt = timestamp '1999-01-01 01:00:00'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt = timestamp '1999-01-01 01:00:00'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- Try other comparison operations
-
--- 20
-select count(*) from partition_timestamp_1 where dt > timestamp '2000-01-01 01:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt > timestamp '2000-01-01 01:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Try other comparison operations
-
--- 20
-select count(*) from partition_timestamp_1 where dt > timestamp '2000-01-01 01:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt > timestamp '2000-01-01 01:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 20
-PREHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt < timestamp '2000-01-02 01:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt < timestamp '2000-01-02 01:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt < timestamp '2000-01-02 01:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt < timestamp '2000-01-02 01:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 10
-PREHOOK: query: -- 20
-select count(*) from partition_timestamp_1 where dt >= timestamp '2000-01-02 01:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt >= timestamp '2000-01-02 01:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 20
-select count(*) from partition_timestamp_1 where dt >= timestamp '2000-01-02 01:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt >= timestamp '2000-01-02 01:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 20
-PREHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt <= timestamp '2000-01-01 01:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt <= timestamp '2000-01-01 01:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt <= timestamp '2000-01-01 01:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt <= timestamp '2000-01-01 01:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 10
-PREHOOK: query: -- 20
-select count(*) from partition_timestamp_1 where dt <> timestamp '2000-01-01 01:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt <> timestamp '2000-01-01 01:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 20
-select count(*) from partition_timestamp_1 where dt <> timestamp '2000-01-01 01:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt <> timestamp '2000-01-01 01:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 20
-PREHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt between timestamp '1999-12-30 12:00:00' and timestamp '2000-01-03 12:00:00' and region = '1'
+PREHOOK: query: select count(*) from partition_timestamp_1 where dt between timestamp '1999-12-30 12:00:00' and timestamp '2000-01-03 12:00:00' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 10
-select count(*) from partition_timestamp_1 where dt between timestamp '1999-12-30 12:00:00' and timestamp '2000-01-03 12:00:00' and region = '1'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where dt between timestamp '1999-12-30 12:00:00' and timestamp '2000-01-03 12:00:00' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 10
-PREHOOK: query: -- Try a string key with timestamp-like strings
-
--- 5
-select count(*) from partition_timestamp_1 where region = '2020-20-20'
+PREHOOK: query: select count(*) from partition_timestamp_1 where region = '2020-20-20'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Try a string key with timestamp-like strings
-
--- 5
-select count(*) from partition_timestamp_1 where region = '2020-20-20'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where region = '2020-20-20'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
 5
-PREHOOK: query: -- 5
-select count(*) from partition_timestamp_1 where region > '2010-01-01'
+PREHOOK: query: select count(*) from partition_timestamp_1 where region > '2010-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 5
-select count(*) from partition_timestamp_1 where region > '2010-01-01'
+POSTHOOK: query: select count(*) from partition_timestamp_1 where region > '2010-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
 #### A masked pattern was here ####

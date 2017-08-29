@@ -36,6 +36,11 @@ public class ObjectCacheWrapper implements ObjectCache {
   }
 
   @Override
+  public <T> T retrieve(String key) throws HiveException {
+    return globalCache.retrieve(makeKey(key));
+  }
+
+  @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
     return globalCache.retrieve(makeKey(key), fn);
   }

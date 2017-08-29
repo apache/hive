@@ -1,10 +1,14 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
+
+-- Until HIVE-16756: 'Vectorization: LongColModuloLongColumn throws "java.lang.ArithmeticException: / by zero"' is resolved, do not vectorize Reducers
+set hive.vectorized.execution.reduce.enabled=false;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN 
+EXPLAIN VECTORIZATION DETAIL
 SELECT   cfloat,
          cboolean1,
          cdouble,

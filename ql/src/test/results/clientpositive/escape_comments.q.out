@@ -11,13 +11,13 @@ POSTHOOK: query: use escape_comments_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:escape_comments_db
 PREHOOK: query: create table escape_comments_tbl1
-(col1 string comment 'a\nb\';') comment 'a\nb'
+(col1 string comment 'a\nb\'\;') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:escape_comments_db
 PREHOOK: Output: escape_comments_db@escape_comments_tbl1
 POSTHOOK: query: create table escape_comments_tbl1
-(col1 string comment 'a\nb\';') comment 'a\nb'
+(col1 string comment 'a\nb\'\;') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:escape_comments_db
@@ -34,6 +34,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
 POSTHOOK: Output: database:escape_comments_db
 POSTHOOK: Output: escape_comments_db@escape_comments_view1
+POSTHOOK: Lineage: escape_comments_view1.col1 SIMPLE [(escape_comments_tbl1)escape_comments_tbl1.FieldSchema(name:col1, type:string, comment:a
+b';), ]
 PREHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: escape_comments_db@escape_comments_tbl1
@@ -100,8 +102,14 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	comment             	a                   
 	                    	b                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

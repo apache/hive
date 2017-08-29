@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -75,10 +76,11 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
               // no check for the line? How to check?
               // if the line is invalid for any reason, the job will fail.
               FileStatus[] matches = fileSystem.globStatus(new Path(line));
-              for(FileStatus fileStatus :matches) {
+              for (FileStatus fileStatus : matches) {
                 Path schemaLessPath = Path.getPathWithoutSchemeAndAuthority(fileStatus.getPath());
-                 toAddPathToPart.put(schemaLessPath, partDesc);
-                 pathToAliases.put(schemaLessPath, aliases);
+                StringInternUtils.internUriStringsInPath(schemaLessPath);
+                toAddPathToPart.put(schemaLessPath, partDesc);
+                pathToAliases.put(schemaLessPath, aliases);
               }
             }
           } finally {

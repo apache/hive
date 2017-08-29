@@ -153,6 +153,27 @@ public class <ClassName> extends VectorExpression {
     return "boolean";
   }
 
+  public Timestamp getLeftValue() {
+    return leftValue;
+  }
+
+  public void setLeftValue(Timestamp value) {
+    this.leftValue = value;
+  }
+
+  public Timestamp getRightValue() {
+    return rightValue;
+  }
+
+  public void setRightValue(Timestamp value) {
+    this.rightValue = value;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", left " + leftValue.toString() + ", right " + rightValue.toString();
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

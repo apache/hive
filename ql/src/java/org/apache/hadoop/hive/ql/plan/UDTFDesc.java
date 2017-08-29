@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+import java.util.Objects;
+
 
 /**
  * All member variables should have a setters and getters of the form get<member
@@ -67,5 +69,15 @@ public class UDTFDesc extends AbstractOperatorDesc {
   @Explain(displayName = "outer lateral view")
   public String isOuterLateralView() {
     return outerLV ? "true" : null;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      UDTFDesc otherDesc = (UDTFDesc) other;
+      return Objects.equals(getUDTFName(), otherDesc.getUDTFName()) &&
+          Objects.equals(isOuterLateralView(), otherDesc.isOuterLateralView());
+    }
+    return false;
   }
 }

@@ -65,7 +65,7 @@
   <module name="Translation"/>
 
   <module name="Header">
-    <property name="headerFile" value="checkstyle/asf.header"/>
+    <property name="headerFile" value="${basedir}/asf.header"/>
   </module>
 
   <!-- Maximum file line length -->
@@ -78,7 +78,7 @@
 
   <!-- List of files to ignore -->
   <module name="SuppressionFilter">
-    <property name="file" value="checkstyle/suppressions.xml"/>
+    <property name="file" value="${basedir}/suppressions.xml"/>
   </module>
 
   <!-- Ignore JavaCC/JJTree files -->
@@ -208,17 +208,11 @@
     <!-- Miscellaneous other checks.                   -->
     <!-- See http://checkstyle.sf.net/config_misc.html -->
     <module name="ArrayTypeStyle"/>
-
-    <!-- We like to indent "throws" clauses by 4 spaces -->
-    <!-- which is a nuance that Checkstyle does not     -->
-    <!-- support. Disabling Indentation check until we  -->
-    <!-- can figure out something else.                 -->
-    <!--
     <module name="Indentation">
       <property name="basicOffset" value="2" />
       <property name="caseIndent" value="0" />
+      <property name="throwsIndent" value="4" />
     </module>
-    -->
     <module name="TodoComment"/>
     <module name="UpperEll"/>
     

@@ -20,16 +20,16 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 
 public class HiveFilterAggregateTransposeRule extends FilterAggregateTransposeRule {
 
   public HiveFilterAggregateTransposeRule(Class<? extends Filter> filterClass,
-      FilterFactory filterFactory, Class<? extends Aggregate> aggregateClass) {
-    super(filterClass, filterFactory, aggregateClass);
+      RelBuilderFactory builderFactory, Class<? extends Aggregate> aggregateClass) {
+    super(filterClass, builderFactory, aggregateClass);
   }
 
   @Override

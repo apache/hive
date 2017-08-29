@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -42,7 +43,9 @@ public abstract class ExecuteStatementOperation extends Operation {
   public static ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
       String statement, Map<String, String> confOverlay, boolean runAsync, long queryTimeout)
       throws HiveSQLException {
-    String[] tokens = statement.trim().split("\\s+");
+
+    String cleanStatement = HiveStringUtils.removeComments(statement);
+    String[] tokens = cleanStatement.trim().split("\\s+");
     CommandProcessor processor = null;
     try {
       processor = CommandProcessorFactory.getForHiveCommand(tokens, parentSession.getHiveConf());
@@ -51,8 +54,9 @@ public abstract class ExecuteStatementOperation extends Operation {
     }
     if (processor == null) {
       // runAsync, queryTimeout makes sense only for a SQLOperation
+      // Pass the original statement to SQLOperation as sql parser can remove comments by itself
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout);
     }
-    return new HiveCommandOperation(parentSession, statement, processor, confOverlay);
+    return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
   }
 }

@@ -37,6 +37,8 @@ public class LlapStatusOptionsProcessor {
 
   private static final long DEFAULT_STATUS_REFRESH_INTERVAL_MS = 1 * 1000l; // 1 seconds wait until subsequent status
   private static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
+  private static final float DEFAULT_RUNNING_NODES_THRESHOLD = 1.0f;
+
   enum OptionConstants {
 
     NAME("name", 'n', "LLAP cluster name", true),
@@ -44,9 +46,10 @@ public class LlapStatusOptionsProcessor {
         "Amount of time(s) that the tool will sleep to wait for the YARN application to start. negative values=wait forever, 0=Do not wait. default=" +
             TimeUnit.SECONDS.convert(FIND_YARN_APP_TIMEOUT_MS, TimeUnit.MILLISECONDS) + "s", true),
     OUTPUT_FILE("outputFile", 'o', "File to which output should be written (Default stdout)", true),
-    WATCH_UNTIL_STATUS_CHANGE("watchUntil", 'w', "Watch until LLAP application status changes to the specified " +
-      "desired state before printing to console. Accepted values are " + Arrays.toString(LlapStatusServiceDriver.State
-      .values()), true),
+    WATCH_MODE("watch", 'w', "Watch mode waits until all LLAP daemons are running or subset of the nodes are " +
+      "running (threshold can be specified via -r option) (Default wait until all nodes are running)", false),
+    RUNNING_NODES_THRESHOLD("runningNodesThreshold", 'r', "When watch mode is enabled (-w), wait until the " +
+      "specified threshold of nodes are running (Default 1.0 which means 100% nodes are running)", true),
     STATUS_REFRESH_INTERVAL("refreshInterval", 'i', "Amount of time in seconds to wait until subsequent status checks" +
       " in watch mode. Valid only for watch mode. (Default " +
       TimeUnit.SECONDS.convert(DEFAULT_STATUS_REFRESH_INTERVAL_MS, TimeUnit.MILLISECONDS) + "s)", true),
@@ -102,25 +105,27 @@ public class LlapStatusOptionsProcessor {
     private final long findAppTimeoutMs;
     private final String outputFile;
     private final long refreshIntervalMs;
-    private final LlapStatusServiceDriver.State watchUntil;
+    private final boolean watchMode;
     private final long watchTimeout;
+    private final float runningNodesThreshold;
 
-    public LlapStatusOptions(String name) {
-      this(name, new Properties(), FIND_YARN_APP_TIMEOUT_MS, null, DEFAULT_STATUS_REFRESH_INTERVAL_MS, null,
-        DEFAULT_WATCH_MODE_TIMEOUT_MS);
+    public LlapStatusOptions(final String name) {
+      this(name, new Properties(), FIND_YARN_APP_TIMEOUT_MS, null, DEFAULT_STATUS_REFRESH_INTERVAL_MS, false,
+        DEFAULT_WATCH_MODE_TIMEOUT_MS, DEFAULT_RUNNING_NODES_THRESHOLD);
     }
 
     public LlapStatusOptions(String name, Properties hiveProperties, long findAppTimeoutMs,
-                             String outputFile, long refreshIntervalMs,
-                             final LlapStatusServiceDriver.State watchUntil,
-                             final long watchTimeoutMs) {
+                              String outputFile, long refreshIntervalMs,
+                              final boolean watchMode, final long watchTimeoutMs,
+                              final float runningNodesThreshold) {
       this.name = name;
       this.conf = hiveProperties;
       this.findAppTimeoutMs = findAppTimeoutMs;
       this.outputFile = outputFile;
       this.refreshIntervalMs = refreshIntervalMs;
-      this.watchUntil = watchUntil;
+      this.watchMode = watchMode;
       this.watchTimeout = watchTimeoutMs;
+      this.runningNodesThreshold = runningNodesThreshold;
     }
 
     public String getName() {
@@ -143,12 +148,16 @@ public class LlapStatusOptionsProcessor {
       return refreshIntervalMs;
     }
 
-    public LlapStatusServiceDriver.State getWatchUntilState() {
-      return watchUntil;
+    public boolean isWatchMode() {
+      return watchMode;
     }
 
     public long getWatchTimeoutMs() {
       return watchTimeout;
+    }
+
+    public float getRunningNodesThreshold() {
+      return runningNodesThreshold;
     }
   }
 
@@ -208,12 +217,7 @@ public class LlapStatusOptionsProcessor {
       refreshIntervalMs = TimeUnit.MILLISECONDS.convert(refreshIntervalSec, TimeUnit.SECONDS);
     }
 
-    LlapStatusServiceDriver.State watchUntil = null;
-    if (commandLine.hasOption(OptionConstants.WATCH_UNTIL_STATUS_CHANGE.getLongOpt())) {
-      String watchUntilStr = commandLine.getOptionValue(OptionConstants.WATCH_UNTIL_STATUS_CHANGE.getLongOpt());
-      watchUntil = LlapStatusServiceDriver.State.valueOf(watchUntilStr);
-    }
-
+    boolean watchMode = commandLine.hasOption(OptionConstants.WATCH_MODE.getLongOpt()) ? true : false;
     long watchTimeoutMs = DEFAULT_WATCH_MODE_TIMEOUT_MS;
     if (commandLine.hasOption(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt())) {
       long watchTimeoutSec = Long.parseLong(commandLine.getOptionValue(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt()));
@@ -222,7 +226,17 @@ public class LlapStatusOptionsProcessor {
       }
       watchTimeoutMs = TimeUnit.MILLISECONDS.convert(watchTimeoutSec, TimeUnit.SECONDS);
     }
-    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile, refreshIntervalMs, watchUntil, watchTimeoutMs);
+
+    float runningNodesThreshold = DEFAULT_RUNNING_NODES_THRESHOLD;
+    if (commandLine.hasOption(OptionConstants.RUNNING_NODES_THRESHOLD.getLongOpt())) {
+      runningNodesThreshold = Float.parseFloat(commandLine.getOptionValue(OptionConstants.RUNNING_NODES_THRESHOLD
+        .getLongOpt()));
+      if (runningNodesThreshold < 0.0f || runningNodesThreshold > 1.0f) {
+        throw new IllegalArgumentException("Running nodes threshold value should be between 0.0 and 1.0 (inclusive)");
+      }
+    }
+    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile, refreshIntervalMs, watchMode,
+      watchTimeoutMs, runningNodesThreshold);
   }
 
 

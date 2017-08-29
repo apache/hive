@@ -60,15 +60,15 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 www.apache.org	www.apache	www		org	apache.org	www.apache.org
 PREHOOK: query: select
---str is empty string
+
 substring_index('', '.', 2),
---delim is empty string
+
 substring_index('www.apache.org', '', 1),
---delim does not exist in str
+
 substring_index('www.apache.org', '-', 2),
---delim is two chars
+
 substring_index('www||apache||org', '||', 2),
---null
+
 substring_index(cast(null as string), '.', 2),
 substring_index('www.apache.org', cast(null as string), 2),
 substring_index('www.apache.org', '.', cast(null as int))
@@ -76,15 +76,15 @@ PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POSTHOOK: query: select
---str is empty string
+
 substring_index('', '.', 2),
---delim is empty string
+
 substring_index('www.apache.org', '', 1),
---delim does not exist in str
+
 substring_index('www.apache.org', '-', 2),
---delim is two chars
+
 substring_index('www||apache||org', '||', 2),
---null
+
 substring_index(cast(null as string), '.', 2),
 substring_index('www.apache.org', cast(null as string), 2),
 substring_index('www.apache.org', '.', cast(null as int))
@@ -92,15 +92,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 		www.apache.org	www||apache	NULL	NULL	NULL
-PREHOOK: query: --varchar and char
-select
+PREHOOK: query: select
 substring_index(cast('www.apache.org' as varchar(20)), '.', 2),
 substring_index(cast('www.apache.org' as char(20)), '.', 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --varchar and char
-select
+POSTHOOK: query: select
 substring_index(cast('www.apache.org' as varchar(20)), '.', 2),
 substring_index(cast('www.apache.org' as char(20)), '.', 2)
 POSTHOOK: type: QUERY

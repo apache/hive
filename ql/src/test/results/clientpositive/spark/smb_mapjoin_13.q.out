@@ -1,14 +1,8 @@
-PREHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are joined on columns with different names
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are joined on columns with different names
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
@@ -66,15 +60,11 @@ POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Join data from 2 tables on their respective sorted columns (one each, with different names) and
--- verify sort merge join is used
-EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Join data from 2 tables on their respective sorted columns (one each, with different names) and
--- verify sort merge join is used
-EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -134,6 +124,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -156,6 +147,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -213,12 +205,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
 PREHOOK: Input: default@test_table2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table2
@@ -233,15 +225,11 @@ POSTHOOK: Input: default@test_table2
 0	val_0	0	val_0
 0	val_0	0	val_0
 2	val_2	2	val_2
-PREHOOK: query: -- Join data from 2 tables on their respective columns (two each, with the same names but sorted
--- with different priorities) and verify sort merge join is not used
-EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Join data from 2 tables on their respective columns (two each, with the same names but sorted
--- with different priorities) and verify sort merge join is not used
-EXPLAIN EXTENDED
-SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: query: EXPLAIN EXTENDED
+SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -283,6 +271,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -305,6 +294,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -380,6 +370,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -402,6 +393,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -459,12 +451,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
 PREHOOK: Input: default@test_table4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table4

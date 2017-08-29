@@ -449,8 +449,8 @@ public class SQLAuthorizationUtils {
       String userName, FileSystem fs,
       FileStatus fileStatus, boolean recurse) throws Exception {
     Set<SQLPrivTypeGrant> privs = new HashSet<SQLPrivTypeGrant>();
-    LOG.debug("Checking fs privileges for {} {}",
-        fileStatus.toString(), (recurse? "recursively":"without recursion"));
+    LOG.info("Checking fs privileges of user {} for {} {} ",
+        userName, fileStatus.toString(), (recurse? "recursively":"without recursion"));
     if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName, recurse)) {
       privs.add(SQLPrivTypeGrant.OWNER_PRIV);
     }

@@ -6,24 +6,18 @@ POSTHOOK: query: CREATE TABLE srcbucket_pruned(key int, value string) partitione
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_pruned
-PREHOOK: query: -- cannot prune 2-key scenarios without a smarter optimizer
-CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcbucket_unpruned
-POSTHOOK: query: -- cannot prune 2-key scenarios without a smarter optimizer
-CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_unpruned
-PREHOOK: query: -- good cases
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- good cases
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -886,14 +880,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- compat case (-15 = 1 & 15)
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = -15
 PREHOOK: type: QUERY
-POSTHOOK: query: -- compat case (-15 = 1 & 15)
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = -15
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -952,14 +942,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- valid but irrelevant case (all buckets selected)
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- valid but irrelevant case (all buckets selected)
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key in (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1200,14 +1186,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- valid, but unimplemented cases
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' or key = 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- valid, but unimplemented cases
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 1 and ds='2008-04-08' or key = 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1387,14 +1369,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Invalid cases
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcbucket_pruned where key = 'x11'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Invalid cases
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcbucket_pruned where key = 'x11'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

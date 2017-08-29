@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.parse;
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
@@ -32,6 +32,7 @@ import java.util.HashMap;
  *
  */
 public final class SemanticAnalyzerFactory {
+  static final private Logger LOG = LoggerFactory.getLogger(SemanticAnalyzerFactory.class);
 
   static HashMap<Integer, HiveOperation> commandType = new HashMap<Integer, HiveOperation>();
   static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>();
@@ -116,6 +117,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
     commandType.put(HiveParser.TOK_ALTERDATABASE_OWNER, HiveOperation.ALTERDATABASE_OWNER);
+    commandType.put(HiveParser.TOK_ALTERDATABASE_LOCATION, HiveOperation.ALTERDATABASE_LOCATION);
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
     commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
@@ -128,10 +130,9 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_COMMIT, HiveOperation.COMMIT);
     commandType.put(HiveParser.TOK_ROLLBACK, HiveOperation.ROLLBACK);
     commandType.put(HiveParser.TOK_SET_AUTOCOMMIT, HiveOperation.SET_AUTOCOMMIT);
-    commandType.put(HiveParser.TOK_REPL_DUMP, HiveOperation.EXPORT); // piggyback on EXPORT security handling for now
-    commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.IMPORT); // piggyback on IMPORT security handling for now
-    commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.SHOW_TBLPROPERTIES); // TODO : also actually DESCDATABASE
-
+    commandType.put(HiveParser.TOK_REPL_DUMP, HiveOperation.REPLDUMP);
+    commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.REPLLOAD);
+    commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.REPLSTATUS);
   }
 
   static {
@@ -171,7 +172,22 @@ public final class SemanticAnalyzerFactory {
         HiveOperation.ALTERTABLE_UPDATEPARTSTATS});
   }
 
-  public static BaseSemanticAnalyzer get(QueryState queryState, ASTNode tree)
+  
+  public static BaseSemanticAnalyzer get(QueryState queryState, ASTNode tree) throws SemanticException {
+    BaseSemanticAnalyzer sem = getInternal(queryState, tree);
+    if(queryState.getHiveOperation() == null) {
+      String query = queryState.getQueryString();
+      if(query != null && query.length() > 30) {
+        query = query.substring(0, 30);
+      }
+      String msg = "Unknown HiveOperation for query='" + query + "' queryId=" + queryState.getQueryId();
+      //throw new IllegalStateException(msg);
+      LOG.debug(msg);
+    }
+    return sem;
+  }
+  
+  private static BaseSemanticAnalyzer getInternal(QueryState queryState, ASTNode tree)
       throws SemanticException {
     if (tree.getToken() == null) {
       throw new RuntimeException("Empty Syntax Tree");
@@ -287,6 +303,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
       case HiveParser.TOK_ALTERDATABASE_OWNER:
+      case HiveParser.TOK_ALTERDATABASE_LOCATION:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:

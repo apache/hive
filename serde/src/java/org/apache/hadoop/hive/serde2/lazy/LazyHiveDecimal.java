@@ -126,7 +126,7 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
   /**
    * Writes HiveDecimalWritable object to output stream as string
    * @param outputStream
-   * @param hiveDecimal
+   * @param hiveDecimalWritable
    * @throws IOException
    */
   public static void writeUTF8(

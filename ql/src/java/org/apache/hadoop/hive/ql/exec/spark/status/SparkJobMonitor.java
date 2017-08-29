@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.fusesource.jansi.Ansi;
@@ -66,7 +66,6 @@ abstract class SparkJobMonitor {
   private int lines = 0;
   private final PrintStream out;
 
-
   private static final int COLUMN_1_WIDTH = 16;
   private static final String HEADER_FORMAT = "%16s%10s %13s  %5s  %9s  %7s  %7s  %6s  ";
   private static final String STAGE_FORMAT = "%-16s%10s %13s  %5s  %9s  %7s  %7s  %6s  ";
@@ -82,7 +81,7 @@ abstract class SparkJobMonitor {
   protected SparkJobMonitor(HiveConf hiveConf) {
     monitorTimeoutInterval = hiveConf.getTimeVar(
         HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT, TimeUnit.SECONDS);
-    inPlaceUpdate = InPlaceUpdates.inPlaceEligible(hiveConf);
+    inPlaceUpdate = InPlaceUpdate.canRenderInPlace(hiveConf) && !SessionState.getConsole().getIsSilent();
     console = SessionState.getConsole();
     out = SessionState.LogHelper.getInfoStream();
   }
@@ -173,11 +172,36 @@ abstract class SparkJobMonitor {
     lastPrintTime = System.currentTimeMillis();
   }
 
+  protected int getTotalTaskCount(Map<String, SparkStageProgress> progressMap) {
+    int totalTasks = 0;
+    for (SparkStageProgress progress: progressMap.values() ) {
+      totalTasks += progress.getTotalTaskCount();
+    }
+
+    return totalTasks;
+  }
+
+  protected int getStageMaxTaskCount(Map<String, SparkStageProgress> progressMap) {
+    int stageMaxTasks = 0;
+    for (SparkStageProgress progress: progressMap.values() ) {
+      int tasks = progress.getTotalTaskCount();
+      if (tasks > stageMaxTasks) {
+        stageMaxTasks = tasks;
+      }
+    }
+
+    return stageMaxTasks;
+  }
+
   private String getReport(Map<String, SparkStageProgress> progressMap) {
     StringBuilder reportBuffer = new StringBuilder();
     SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     String currentDate = dt.format(new Date());
     reportBuffer.append(currentDate + "\t");
+
+    // Num of total and completed tasks
+    int sumTotal = 0;
+    int sumComplete = 0;
 
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s : keys) {
@@ -186,6 +210,9 @@ abstract class SparkJobMonitor {
       final int total = progress.getTotalTaskCount();
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskCount();
+      sumTotal += total;
+      sumComplete += complete;
+
       String stageName = "Stage-" + s;
       if (total <= 0) {
         reportBuffer.append(String.format("%s: -/-\t", stageName));
@@ -230,6 +257,11 @@ abstract class SparkJobMonitor {
         }
       }
     }
+
+    if (SessionState.get() != null) {
+      final float progress = (sumTotal == 0) ? 1.0f : (float) sumComplete / (float) sumTotal;
+      SessionState.get().updateProgressedPercentage(progress);
+    }
     return reportBuffer.toString();
   }
 
@@ -270,7 +302,7 @@ abstract class SparkJobMonitor {
   }
 
   private void reprintLine(String line) {
-    InPlaceUpdates.reprintLine(out, line);
+    InPlaceUpdate.reprintLine(out, line);
     lines++;
   }
 

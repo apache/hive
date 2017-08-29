@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
@@ -142,6 +144,15 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     TException caughtException = null;
 
     boolean allowReconnect = ! method.isAnnotationPresent(NoReconnect.class);
+    boolean allowRetry = true;
+    Annotation[] directives = method.getDeclaredAnnotations();
+    if(directives != null) {
+      for(Annotation a : directives) {
+        if(a instanceof RetrySemantics.CannotRetry) {
+          allowRetry = false;
+        }
+      }
+    }
 
     while (true) {
       try {
@@ -200,12 +211,12 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       }
 
 
-      if (retriesMade >= retryLimit || base.isLocalMetaStore()) {
+      if (retriesMade >= retryLimit || base.isLocalMetaStore() || !allowRetry) {
         throw caughtException;
       }
       retriesMade++;
-      LOG.warn("MetaStoreClient lost connection. Attempting to reconnect.",
-          caughtException);
+      LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
+          retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
       Thread.sleep(retryDelaySeconds * 1000);
     }
     return ret;

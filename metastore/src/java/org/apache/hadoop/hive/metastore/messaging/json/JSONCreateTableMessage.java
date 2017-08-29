@@ -19,10 +19,15 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.google.common.collect.Lists;
 
 /**
  * JSON implementation of CreateTableMessage.
@@ -30,9 +35,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
   @JsonProperty
   Long timestamp;
+  @JsonProperty
+  List<String> files;
 
   /**
    * Default constructor, needed for Jackson.
@@ -41,23 +48,31 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
-      Long timestamp) {
+      String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
     checkValid();
   }
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
+  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
       Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(), timestamp);
+    this(server, servicePrincipal, db, table, null, timestamp);
+  }
+
+  public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
+      Iterator<String> fileIter, Long timestamp) {
+    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+        tableObj.getTableType(), timestamp);
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.files = Lists.newArrayList(fileIter);
   }
 
   @Override
@@ -86,6 +101,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
   public Table getTableObj() throws Exception {
     return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
   }
@@ -101,5 +121,10 @@ public class JSONCreateTableMessage extends CreateTableMessage {
     } catch (Exception exception) {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
+  }
+
+  @Override
+  public Iterable<String> getFiles() {
+    return files;
   }
 }

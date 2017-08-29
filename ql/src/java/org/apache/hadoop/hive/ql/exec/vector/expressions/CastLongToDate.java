@@ -94,6 +94,11 @@ public class CastLongToDate extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputColumn;
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)

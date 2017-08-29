@@ -105,7 +105,8 @@ public class LlapTokenIdentifier extends AbstractDelegationTokenIdentifier {
 
   @Override
   public String toString() {
-    return KIND + "; " + super.toString() + ", cluster " + clusterId + ", app ID " + appId;
+    return KIND + "; " + super.toString() + ", cluster " + clusterId
+        + ", app ID " + appId + ", signing " + isSigningRequired;
   }
 
   @InterfaceAudience.Private

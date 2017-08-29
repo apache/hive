@@ -32,10 +32,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test_vector_bround
 POSTHOOK: Lineage: test_vector_bround.v0 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: explain select bround(v0), bround(v1, 1) from test_vector_bround
+PREHOOK: query: explain vectorization select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select bround(v0), bround(v1, 1) from test_vector_bround
+POSTHOOK: query: explain vectorization select bround(v0), bround(v1, 1) from test_vector_bround
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -59,6 +63,14 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

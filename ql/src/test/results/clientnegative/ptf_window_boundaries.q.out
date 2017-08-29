@@ -1,1 +1,1 @@
-FAILED: ParseException line 2:44 mismatched input 'following' expecting KW_PRECEDING near 'unbounded' in windowframestartboundary
+FAILED: ParseException line 2:7 cannot recognize input near 'sum' '(' 'p_retailprice' in expression specification

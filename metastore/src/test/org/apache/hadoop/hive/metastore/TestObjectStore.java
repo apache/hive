@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -37,6 +38,9 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -46,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -54,8 +59,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+
+import javax.jdo.Query;
 
 public class TestObjectStore {
   private ObjectStore objectStore = null;
@@ -116,6 +126,56 @@ public class TestObjectStore {
   }
 
   /**
+   * Test notification operations
+   */
+  @Test
+  public void testNotificationOps() throws InterruptedException {
+    final int NO_EVENT_ID = 0;
+    final int FIRST_EVENT_ID = 1;
+    final int SECOND_EVENT_ID = 2;
+
+    NotificationEvent event =
+        new NotificationEvent(0, 0, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    NotificationEventResponse eventResponse;
+    CurrentNotificationEventId eventId;
+
+    // Verify that there is no notifications available yet
+    eventId = objectStore.getCurrentNotificationEventId();
+    Assert.assertEquals(NO_EVENT_ID, eventId.getEventId());
+
+    // Verify that addNotificationEvent() updates the NotificationEvent with the new event ID
+    objectStore.addNotificationEvent(event);
+    Assert.assertEquals(FIRST_EVENT_ID, event.getEventId());
+    objectStore.addNotificationEvent(event);
+    Assert.assertEquals(SECOND_EVENT_ID, event.getEventId());
+
+    // Verify that objectStore fetches the latest notification event ID
+    eventId = objectStore.getCurrentNotificationEventId();
+    Assert.assertEquals(SECOND_EVENT_ID, eventId.getEventId());
+
+    // Verify that getNextNotification() returns all events
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(2, eventResponse.getEventsSize());
+    Assert.assertEquals(FIRST_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+    Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(1).getEventId());
+
+    // Verify that getNextNotification(last) returns events after a specified event
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest(FIRST_EVENT_ID));
+    Assert.assertEquals(1, eventResponse.getEventsSize());
+    Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+
+    // Verify that getNextNotification(last) returns zero events if there are no more notifications available
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest(SECOND_EVENT_ID));
+    Assert.assertEquals(0, eventResponse.getEventsSize());
+
+    // Verify that cleanNotificationEvents() cleans up all old notifications
+    Thread.sleep(1);
+    objectStore.cleanNotificationEvents(1);
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(0, eventResponse.getEventsSize());
+  }
+
+  /**
    * Test database operations
    */
   @Test
@@ -146,21 +206,62 @@ public class TestObjectStore {
   public void testTableOps() throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     Database db1 = new Database(DB1, "description", "locationurl", null);
     objectStore.createDatabase(db1);
-    StorageDescriptor sd = new StorageDescriptor(null, "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
+    StorageDescriptor sd1 = new StorageDescriptor(ImmutableList.of(new FieldSchema("pk_col", "double", null)),
+            "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
+            null, null, null);
     HashMap<String,String> params = new HashMap<String,String>();
     params.put("EXTERNAL", "false");
-    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
+    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd1, null, params, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
 
     List<String> tables = objectStore.getAllTables(DB1);
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals(TABLE1, tables.get(0));
 
-    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
+    StorageDescriptor sd2 = new StorageDescriptor(ImmutableList.of(new FieldSchema("fk_col", "double", null)),
+            "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null),
+            null, null, null);
+    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd2, null, params, null, null, "MANAGED_TABLE");
     objectStore.alterTable(DB1, TABLE1, newTbl1);
     tables = objectStore.getTables(DB1, "new*");
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals("new" + TABLE1, tables.get(0));
+
+    objectStore.createTable(tbl1);
+    tables = objectStore.getAllTables(DB1);
+    Assert.assertEquals(2, tables.size());
+
+    List<SQLForeignKey> foreignKeys = objectStore.getForeignKeys(DB1, TABLE1, null, null);
+    Assert.assertEquals(0, foreignKeys.size());
+
+    SQLPrimaryKey pk = new SQLPrimaryKey(DB1, TABLE1, "pk_col", 1,
+            "pk_const_1", false, false, false);
+    objectStore.addPrimaryKeys(ImmutableList.of(pk));
+    SQLForeignKey fk = new SQLForeignKey(DB1, TABLE1, "pk_col",
+            DB1, "new" + TABLE1, "fk_col", 1,
+            0, 0, "fk_const_1", "pk_const_1", false, false, false);
+    objectStore.addForeignKeys(ImmutableList.of(fk));
+
+    // Retrieve from PK side
+    foreignKeys = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    Assert.assertEquals(1, foreignKeys.size());
+
+    List<SQLForeignKey> fks = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    if (fks != null) {
+      for (SQLForeignKey fkcol : fks) {
+        objectStore.dropConstraint(fkcol.getFktable_db(), fkcol.getFktable_name(), fkcol.getFk_name());
+      }
+    }
+    // Retrieve from FK side
+    foreignKeys = objectStore.getForeignKeys(DB1, TABLE1, null, null);
+    Assert.assertEquals(0, foreignKeys.size());
+    // Retrieve from PK side
+    foreignKeys = objectStore.getForeignKeys(null, null, DB1, "new" + TABLE1);
+    Assert.assertEquals(0, foreignKeys.size());
+
+    objectStore.dropTable(DB1, TABLE1);
+    tables = objectStore.getAllTables(DB1);
+    Assert.assertEquals(1, tables.size());
 
     objectStore.dropTable(DB1, "new" + TABLE1);
     tables = objectStore.getAllTables(DB1);
@@ -354,5 +455,16 @@ public class TestObjectStore {
       }
     } catch (NoSuchObjectException e) {
     }
+  }
+
+  @Test
+  public void testQueryCloseOnError() throws Exception {
+    ObjectStore spy = Mockito.spy(objectStore);
+    spy.getAllDatabases();
+    spy.getAllFunctions();
+    spy.getAllTables(DB1);
+    spy.getPartitionCount();
+    Mockito.verify(spy, Mockito.times(3))
+        .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
   }
 }

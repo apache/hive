@@ -95,9 +95,9 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@char_tbl2
 gpa=3    
 gpa=3.5  
-PREHOOK: query: explain select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
+PREHOOK: query: explain vectorization select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
+POSTHOOK: query: explain vectorization select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 

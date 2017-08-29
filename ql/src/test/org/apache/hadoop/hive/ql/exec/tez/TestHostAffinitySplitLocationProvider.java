@@ -166,7 +166,7 @@ public class TestHostAffinitySplitLocationProvider {
   }
 
 
-  @Test (timeout = 10000)
+  @Test (timeout = 20000)
   public void testConsistentHashingFallback() throws IOException {
     final int LOC_COUNT_TO = 20, SPLIT_COUNT = 500, MAX_MISS_COUNT = 4,
         LOC_COUNT_FROM = MAX_MISS_COUNT + 1;

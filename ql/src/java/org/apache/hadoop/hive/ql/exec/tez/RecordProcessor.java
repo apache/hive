@@ -47,9 +47,7 @@ import com.google.common.collect.Maps;
  * Process input from tez LogicalInput and write output
  * It has different subclasses for map and reduce processing
  */
-public abstract class RecordProcessor  {
-  protected static final int CHECK_INTERRUPTION_AFTER_ROWS = 1000;
-
+public abstract class RecordProcessor extends InterruptibleProcessing {
   protected final JobConf jconf;
   protected Map<String, LogicalInput> inputs;
   protected Map<String, LogicalOutput> outputs;
@@ -58,11 +56,6 @@ public abstract class RecordProcessor  {
 
   public static final Logger l4j = LoggerFactory.getLogger(RecordProcessor.class);
 
-  protected volatile boolean abort = false;
-
-  // used to log memory usage periodically
-  protected boolean isLogInfoEnabled = false;
-  protected boolean isLogTraceEnabled = false;
   protected MRTaskReporter reporter;
 
   protected PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -85,9 +78,6 @@ public abstract class RecordProcessor  {
     this.reporter = mrReporter;
     this.inputs = inputs;
     this.outputs = outputs;
-
-    isLogInfoEnabled = l4j.isInfoEnabled();
-    isLogTraceEnabled = l4j.isTraceEnabled();
 
     checkAbortCondition();
 
@@ -147,18 +137,6 @@ public abstract class RecordProcessor  {
       return mergeWorkList;
     } else {
       return null;
-    }
-  }
-
-  void abort() {
-    this.abort = true;
-  }
-
-  protected void checkAbortCondition() throws InterruptedException {
-    if (abort || Thread.currentThread().isInterrupted()) {
-      // Not cleaning the interrupt status.
-      boolean interruptState = Thread.currentThread().isInterrupted();
-      throw new InterruptedException("Processing thread aborted. Interrupt state: " + interruptState);
     }
   }
 }

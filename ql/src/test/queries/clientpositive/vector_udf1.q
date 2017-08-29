@@ -3,25 +3,26 @@ set hive.fetch.task.conversion=none;
 
 drop table varchar_udf_1;
 
-create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC;
+create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
+     d1 string, d2 string, d3 varchar(10), d4 varchar(10)) STORED AS ORC;
 insert overwrite table varchar_udf_1
-  select key, value, key, value from src where key = '238' limit 1;
+  select key, value, key, value, '2015-01-14', '2015-01-14', '2017-01-11', '2017-01-11' from src where key = '238' limit 1;
 
 -- UDFs with varchar support
-explain
-select 
+explain vectorization detail
+select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
 from varchar_udf_1 limit 1;
 
-select 
+select
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   upper(c2),
   upper(c4),
@@ -34,7 +35,7 @@ select
   upper(c2) = upper(c4)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   lower(c2),
   lower(c4),
@@ -48,7 +49,7 @@ select
 from varchar_udf_1 limit 1;
 
 -- Scalar UDFs
-explain
+explain vectorization detail
 select
   ascii(c2),
   ascii(c4),
@@ -61,20 +62,20 @@ select
   ascii(c2) = ascii(c4)
 from varchar_udf_1 limit 1;
 
-explain
-select 
+explain vectorization detail
+select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
 from varchar_udf_1 limit 1;
 
-select 
+select
   concat_ws('|', c1, c2),
   concat_ws('|', c3, c4),
   concat_ws('|', c1, c2) = concat_ws('|', c3, c4)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII'),
   decode(encode(c4, 'US-ASCII'), 'US-ASCII'),
@@ -87,7 +88,7 @@ select
   decode(encode(c2, 'US-ASCII'), 'US-ASCII') = decode(encode(c4, 'US-ASCII'), 'US-ASCII')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   instr(c2, '_'),
   instr(c4, '_'),
@@ -100,98 +101,20 @@ select
   instr(c2, '_') = instr(c4, '_')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
-  length(c2),
-  length(c4),
-  length(c2) = length(c4)
+  replace(c1, '_', c2),
+  replace(c3, '_', c4),
+  replace(c1, '_', c2) = replace(c3, '_', c4)
 from varchar_udf_1 limit 1;
 
 select
-  length(c2),
-  length(c4),
-  length(c2) = length(c4)
+  replace(c1, '_', c2),
+  replace(c3, '_', c4),
+  replace(c1, '_', c2) = replace(c3, '_', c4)
 from varchar_udf_1 limit 1;
 
-explain
-select
-  locate('a', 'abcdabcd', 3),
-  locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
-  locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1;
-
-select
-  locate('a', 'abcdabcd', 3),
-  locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
-  locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
-from varchar_udf_1 limit 1;
-
-explain
-select
-  lpad(c2, 15, ' '),
-  lpad(c4, 15, ' '),
-  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1;
-
-select
-  lpad(c2, 15, ' '),
-  lpad(c4, 15, ' '),
-  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
-from varchar_udf_1 limit 1;
-
-explain
-select
-  ltrim(c2),
-  ltrim(c4),
-  ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1;
-
-select
-  ltrim(c2),
-  ltrim(c4),
-  ltrim(c2) = ltrim(c4)
-from varchar_udf_1 limit 1;
-
-explain
-select
-  c2 regexp 'val',
-  c4 regexp 'val',
-  (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1;
-
-select
-  c2 regexp 'val',
-  c4 regexp 'val',
-  (c2 regexp 'val') = (c4 regexp 'val')
-from varchar_udf_1 limit 1;
-
-explain
-select
-  regexp_extract(c2, 'val_([0-9]+)', 1),
-  regexp_extract(c4, 'val_([0-9]+)', 1),
-  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1;
-
-select
-  regexp_extract(c2, 'val_([0-9]+)', 1),
-  regexp_extract(c4, 'val_([0-9]+)', 1),
-  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
-from varchar_udf_1 limit 1;
-
-explain
-select
-  regexp_replace(c2, 'val', 'replaced'),
-  regexp_replace(c4, 'val', 'replaced'),
-  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1;
-
-select
-  regexp_replace(c2, 'val', 'replaced'),
-  regexp_replace(c4, 'val', 'replaced'),
-  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
-from varchar_udf_1 limit 1;
-
-explain
+explain vectorization detail
 select
   reverse(c2),
   reverse(c4),
@@ -204,7 +127,137 @@ select
   reverse(c2) = reverse(c4)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
+select
+  next_day(d1, 'TU'),
+  next_day(d4, 'WE'),
+  next_day(d1, 'TU') = next_day(d4, 'WE')
+from varchar_udf_1 limit 1;
+
+select
+  next_day(d1, 'TU'),
+  next_day(d4, 'WE'),
+  next_day(d1, 'TU') = next_day(d4, 'WE')
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  months_between(d1, d3),
+  months_between(d2, d4),
+  months_between(d1, d3) = months_between(d2, d4)
+from varchar_udf_1 limit 1;
+
+select
+  months_between(d1, d3),
+  months_between(d2, d4),
+  months_between(d1, d3) = months_between(d2, d4)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  length(c2),
+  length(c4),
+  length(c2) = length(c4)
+from varchar_udf_1 limit 1;
+
+select
+  length(c2),
+  length(c4),
+  length(c2) = length(c4)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  locate('a', 'abcdabcd', 3),
+  locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
+  locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
+from varchar_udf_1 limit 1;
+
+select
+  locate('a', 'abcdabcd', 3),
+  locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3),
+  locate('a', 'abcdabcd', 3) = locate(cast('a' as varchar(1)), cast('abcdabcd' as varchar(10)), 3)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  lpad(c2, 15, ' '),
+  lpad(c4, 15, ' '),
+  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
+from varchar_udf_1 limit 1;
+
+select
+  lpad(c2, 15, ' '),
+  lpad(c4, 15, ' '),
+  lpad(c2, 15, ' ') = lpad(c4, 15, ' ')
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  ltrim(c2),
+  ltrim(c4),
+  ltrim(c2) = ltrim(c4)
+from varchar_udf_1 limit 1;
+
+select
+  ltrim(c2),
+  ltrim(c4),
+  ltrim(c2) = ltrim(c4)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
+from varchar_udf_1 limit 1;
+
+select
+  c2 regexp 'val',
+  c4 regexp 'val',
+  (c2 regexp 'val') = (c4 regexp 'val')
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  regexp_extract(c2, 'val_([0-9]+)', 1),
+  regexp_extract(c4, 'val_([0-9]+)', 1),
+  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
+from varchar_udf_1 limit 1;
+
+select
+  regexp_extract(c2, 'val_([0-9]+)', 1),
+  regexp_extract(c4, 'val_([0-9]+)', 1),
+  regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  regexp_replace(c2, 'val', 'replaced'),
+  regexp_replace(c4, 'val', 'replaced'),
+  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
+from varchar_udf_1 limit 1;
+
+select
+  regexp_replace(c2, 'val', 'replaced'),
+  regexp_replace(c4, 'val', 'replaced'),
+  regexp_replace(c2, 'val', 'replaced') = regexp_replace(c4, 'val', 'replaced')
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
+select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from varchar_udf_1 limit 1;
+
+select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from varchar_udf_1 limit 1;
+
+explain vectorization detail
 select
   rpad(c2, 15, ' '),
   rpad(c4, 15, ' '),
@@ -217,7 +270,7 @@ select
   rpad(c2, 15, ' ') = rpad(c4, 15, ' ')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   rtrim(c2),
   rtrim(c4),
@@ -230,7 +283,7 @@ select
   rtrim(c2) = rtrim(c4)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   sentences('See spot run.  See jane run.'),
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
@@ -241,7 +294,7 @@ select
   sentences(cast('See spot run.  See jane run.' as varchar(50)))
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   split(c2, '_'),
   split(c4, '_')
@@ -252,18 +305,18 @@ select
   split(c4, '_')
 from varchar_udf_1 limit 1;
 
-explain
-select 
+explain vectorization detail
+select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
 from varchar_udf_1 limit 1;
 
-select 
+select
   str_to_map('a:1,b:2,c:3',',',':'),
   str_to_map(cast('a:1,b:2,c:3' as varchar(20)),',',':')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   substr(c2, 1, 3),
   substr(c4, 1, 3),
@@ -276,7 +329,7 @@ select
   substr(c2, 1, 3) = substr(c4, 1, 3)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization detail
 select
   trim(c2),
   trim(c4),
@@ -291,18 +344,18 @@ from varchar_udf_1 limit 1;
 
 
 -- Aggregate Functions
-explain
+explain vectorization detail
 select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
 from varchar_udf_1;
 
 select
-  compute_stats(c2, 16),
-  compute_stats(c4, 16)
+  compute_stats(c2, 'fm', 16),
+  compute_stats(c4, 'fm', 16)
 from varchar_udf_1;
 
-explain
+explain vectorization detail
 select
   min(c2),
   min(c4)
@@ -313,7 +366,7 @@ select
   min(c4)
 from varchar_udf_1;
 
-explain
+explain vectorization detail
 select
   max(c2),
   max(c4)

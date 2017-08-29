@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * data bound to parameter types for <tt>DISTINCT</tt> implementation is
  * handled by the framework and not the <tt>COUNT</tt> UDAF implementation.
  */
+@Deprecated
 @SuppressWarnings("deprecation")
 public interface GenericUDAFResolver2 extends GenericUDAFResolver {
 

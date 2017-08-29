@@ -29,10 +29,10 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
 /*
- * Specialized class for native vectorized reduce sink that is reducing on multiple key columns
- * (or a single non-long / non-string column).
+ * Specialized class for native vectorized reduce sink that is reducing on Uniform Hash
+ * multiple key columns (or a single non-long / non-string column).
  */
-public class VectorReduceSinkMultiKeyOperator extends VectorReduceSinkCommonOperator {
+public class VectorReduceSinkMultiKeyOperator extends VectorReduceSinkUniformHashOperator {
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkMultiKeyOperator.class.getName();

@@ -18,25 +18,24 @@
 package org.apache.hive.service.cli.operation;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.OperationLog;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -47,17 +46,12 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
 public abstract class Operation {
-  // Constants of the key strings for the log4j ThreadContext.
-  public static final String SESSIONID_LOG_KEY = "sessionId";
-  public static final String QUERYID_LOG_KEY = "queryId";
-
   protected final HiveSession parentSession;
   private volatile OperationState state = OperationState.INITIALIZED;
   private volatile MetricsScope currentStateScope;
@@ -69,7 +63,6 @@ public abstract class Operation {
   protected volatile Future<?> backgroundHandle;
   protected OperationLog operationLog;
   protected boolean isOperationLogEnabled;
-  protected Map<String, String> confOverlay = new HashMap<String, String>();
 
   private long operationTimeout;
   private volatile long lastAccessTime;
@@ -96,16 +89,20 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession,
       Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
     this.parentSession = parentSession;
-    if (confOverlay != null) {
-      this.confOverlay = confOverlay;
-    }
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     beginTime = System.currentTimeMillis();
     lastAccessTime = beginTime;
     operationTimeout = HiveConf.getTimeVar(parentSession.getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_IDLE_OPERATION_TIMEOUT, TimeUnit.MILLISECONDS);
-    setMetrics(state);
-    queryState = new QueryState(parentSession.getHiveConf(), confOverlay, isAsyncQueryState);
+
+    currentStateScope = updateOperationStateMetrics(null, MetricsConstant.OPERATION_PREFIX,
+        MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
+    queryState = new QueryState.Builder()
+                     .withConfOverlay(confOverlay)
+                     .withRunAsync(isAsyncQueryState)
+                     .withGenerateNewQueryId(true)
+                     .withHiveConf(parentSession.getHiveConf())
+                     .build();
   }
 
   public Future<?> getBackgroundHandle() {
@@ -163,7 +160,8 @@ public abstract class Operation {
     state.validateTransition(newState);
     OperationState prevState = state;
     this.state = newState;
-    setMetrics(state);
+    currentStateScope = updateOperationStateMetrics(currentStateScope, MetricsConstant.OPERATION_PREFIX,
+        MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
     onNewState(state, prevState);
     this.lastAccessTime = System.currentTimeMillis();
     return this.state;
@@ -204,80 +202,17 @@ public abstract class Operation {
     this.lastAccessTime = System.currentTimeMillis();
   }
 
-  public boolean isRunning() {
-    return OperationState.RUNNING.equals(state);
-  }
-
-  public boolean isFinished() {
-    return OperationState.FINISHED.equals(state);
-  }
-
-  public boolean isCanceled() {
-    return OperationState.CANCELED.equals(state);
-  }
-
-  public boolean isFailed() {
-    return OperationState.ERROR.equals(state);
+  public boolean isDone() {
+    return state.isTerminal();
   }
 
   protected void createOperationLog() {
     if (parentSession.isOperationLogEnabled()) {
-      File operationLogFile = new File(parentSession.getOperationLogSessionDir(),
-          opHandle.getHandleIdentifier().toString());
+      File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
       isOperationLogEnabled = true;
 
-      // create log file
-      try {
-        if (operationLogFile.exists()) {
-          LOG.warn("The operation log file should not exist, but it is already there: " +
-              operationLogFile.getAbsolutePath());
-          operationLogFile.delete();
-        }
-        if (!operationLogFile.getParentFile().exists()) {
-          LOG.warn("Operations log directory for this session does not exist, it could have been deleted " +
-              "externally. Recreating the directory for future queries in this session but the older operation " +
-              "logs for this session are no longer available");
-          if (!operationLogFile.getParentFile().mkdir()) {
-            LOG.warn("Log directory for this session could not be created, disabling " +
-                "operation logs: " + operationLogFile.getParentFile().getAbsolutePath());
-            isOperationLogEnabled = false;
-            return;
-          }
-        }
-        if (!operationLogFile.createNewFile()) {
-          // the log file already exists and cannot be deleted.
-          // If it can be read/written, keep its contents and use it.
-          if (!operationLogFile.canRead() || !operationLogFile.canWrite()) {
-            LOG.warn("The already existed operation log file cannot be recreated, " +
-                "and it cannot be read or written: " + operationLogFile.getAbsolutePath());
-            isOperationLogEnabled = false;
-            return;
-          }
-        }
-      } catch (Exception e) {
-        LOG.warn("Unable to create operation log file: " + operationLogFile.getAbsolutePath(), e);
-        isOperationLogEnabled = false;
-        return;
-      }
-
       // create OperationLog object with above log file
-      try {
-        operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
-      } catch (FileNotFoundException e) {
-        LOG.warn("Unable to instantiate OperationLog object for operation: " +
-            opHandle, e);
-        isOperationLogEnabled = false;
-        return;
-      }
-
-      // register this operationLog to current thread
-      OperationLog.setCurrentOperationLog(operationLog);
-    }
-  }
-
-  protected void unregisterOperationLog() {
-    if (isOperationLogEnabled) {
-      OperationLog.removeCurrentOperationLog();
+      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
     }
   }
 
@@ -287,22 +222,7 @@ public abstract class Operation {
    */
   protected void beforeRun() {
     createOperationLog();
-    registerLoggingContext();
-  }
-
-  /**
-   * Register logging context so that Log4J can print QueryId and/or SessionId for each message
-   */
-  protected void registerLoggingContext() {
-    ThreadContext.put(SESSIONID_LOG_KEY, SessionState.get().getSessionId());
-    ThreadContext.put(QUERYID_LOG_KEY, confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname));
-  }
-
-  /**
-   * Unregister logging context
-   */
-  protected void unregisterLoggingContext() {
-    ThreadContext.clearAll();
+    LogUtils.registerLoggingContext(queryState.getConf());
   }
 
   /**
@@ -310,8 +230,7 @@ public abstract class Operation {
    * Clean up resources, which was set up in beforeRun().
    */
   protected void afterRun() {
-    unregisterLoggingContext();
-    unregisterOperationLog();
+    LogUtils.unregisterLoggingContext();
   }
 
   /**
@@ -325,11 +244,7 @@ public abstract class Operation {
     try {
       Metrics metrics = MetricsFactory.getInstance();
       if (metrics != null) {
-        try {
-          metrics.incrementCounter(MetricsConstant.OPEN_OPERATIONS);
-        } catch (Exception e) {
-          LOG.warn("Error Reporting open operation to Metrics system", e);
-        }
+        metrics.incrementCounter(MetricsConstant.OPEN_OPERATIONS);
       }
       runInternal();
     } finally {
@@ -350,6 +265,10 @@ public abstract class Operation {
       } else {
         operationLog.close();
       }
+      // stop the appenders for the operation log
+      String queryId = queryState.getQueryId();
+      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
   }
 
@@ -414,12 +333,7 @@ public abstract class Operation {
     OperationState.UNKNOWN
   );
 
-  private void setMetrics(OperationState state) {
-    currentStateScope = setMetrics(currentStateScope, MetricsConstant.OPERATION_PREFIX,
-      MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
-  }
-
-  protected static MetricsScope setMetrics(MetricsScope stateScope, String operationPrefix,
+  protected final MetricsScope updateOperationStateMetrics(MetricsScope stateScope, String operationPrefix,
       String completedOperationPrefix, OperationState state) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
@@ -428,7 +342,7 @@ public abstract class Operation {
         stateScope = null;
       }
       if (scopeStates.contains(state)) {
-        stateScope = metrics.createScope(operationPrefix + state);
+        stateScope = metrics.createScope(MetricsConstant.API_PREFIX + operationPrefix + state);
       }
       if (terminalStates.contains(state)) {
         metrics.incrementCounter(completedOperationPrefix + state);

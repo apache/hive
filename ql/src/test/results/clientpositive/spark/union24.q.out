@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+PREHOOK: query: create table src2 as select key, count(1) as count from src group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src2
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+POSTHOOK: query: create table src2 as select key, count(1) as count from src group by key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -130,6 +126,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -150,6 +147,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -167,7 +165,7 @@ STAGE PLANS:
                     name: default.src2
                   name: default.src2
             Truncated Path -> Alias:
-              /src2 [src2]
+              /src2 [null-subquery1-subquery1-subquery1:$hdt$_2-subquery1-subquery1-subquery1:src2]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -215,6 +213,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -235,6 +234,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -252,7 +252,7 @@ STAGE PLANS:
                     name: default.src3
                   name: default.src3
             Truncated Path -> Alias:
-              /src3 [src3]
+              /src3 [null-subquery1-subquery1-subquery2:$hdt$_2-subquery1-subquery1-subquery2:src3]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -300,6 +300,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -320,6 +321,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -337,7 +339,7 @@ STAGE PLANS:
                     name: default.src4
                   name: default.src4
             Truncated Path -> Alias:
-              /src4 [src4]
+              /src4 [null-subquery1-subquery2:$hdt$_2-subquery1-subquery2:src4]
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -348,25 +350,21 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: (UDFToDouble(key) < 10.0) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
+                    Group By Operator
+                      aggregations: count()
+                      keys: key (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count(1)
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: a
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
-                          tag: -1
-                          value expressions: _col1 (type: bigint)
-                          auto parallelism: false
+                        tag: -1
+                        value expressions: _col1 (type: bigint)
+                        auto parallelism: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -378,6 +376,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -398,6 +397,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -415,7 +415,7 @@ STAGE PLANS:
                     name: default.src5
                   name: default.src5
             Truncated Path -> Alias:
-              /src5 [src5]
+              /src5 [null-subquery2:$hdt$_2-subquery2:src5]
         Reducer 5 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -584,6 +584,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -604,6 +605,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -621,7 +623,7 @@ STAGE PLANS:
                     name: default.src2
                   name: default.src2
             Truncated Path -> Alias:
-              /src2 [src2]
+              /src2 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -669,6 +671,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -689,6 +692,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -706,7 +710,7 @@ STAGE PLANS:
                     name: default.src3
                   name: default.src3
             Truncated Path -> Alias:
-              /src3 [src3]
+              /src3 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -740,6 +744,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -760,6 +765,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -777,7 +783,7 @@ STAGE PLANS:
                     name: default.src4
                   name: default.src4
             Truncated Path -> Alias:
-              /src4 [a]
+              /src4 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -812,6 +818,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -832,6 +839,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -849,7 +857,7 @@ STAGE PLANS:
                     name: default.src5
                   name: default.src5
             Truncated Path -> Alias:
-              /src5 [b]
+              /src5 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
         Reducer 4 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1012,6 +1020,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1032,6 +1041,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1049,7 +1059,7 @@ STAGE PLANS:
                     name: default.src2
                   name: default.src2
             Truncated Path -> Alias:
-              /src2 [src2]
+              /src2 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1097,6 +1107,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1117,6 +1128,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1134,7 +1146,7 @@ STAGE PLANS:
                     name: default.src3
                   name: default.src3
             Truncated Path -> Alias:
-              /src3 [src3]
+              /src3 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1168,6 +1180,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1188,6 +1201,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1205,7 +1219,7 @@ STAGE PLANS:
                     name: default.src4
                   name: default.src4
             Truncated Path -> Alias:
-              /src4 [a]
+              /src4 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -1239,6 +1253,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1259,6 +1274,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1276,7 +1292,7 @@ STAGE PLANS:
                     name: default.src5
                   name: default.src5
             Truncated Path -> Alias:
-              /src5 [b]
+              /src5 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
         Reducer 4 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1289,7 +1305,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 113 Data size: 543 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   keys: _col0 (type: string)
                   mode: hash
                   outputColumnNames: _col0, _col1

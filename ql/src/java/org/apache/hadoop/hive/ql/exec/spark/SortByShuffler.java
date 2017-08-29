@@ -23,13 +23,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.HashPartitioner;
 import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.storage.StorageLevel;
-import scala.Tuple2;
 
-import java.util.*;
-
-public class SortByShuffler implements SparkShuffler {
+public class SortByShuffler implements SparkShuffler<BytesWritable> {
 
   private final boolean totalOrder;
   private final SparkPlan sparkPlan;
@@ -43,7 +39,7 @@ public class SortByShuffler implements SparkShuffler {
   }
 
   @Override
-  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> shuffle(
+  public JavaPairRDD<HiveKey, BytesWritable> shuffle(
       JavaPairRDD<HiveKey, BytesWritable> input, int numPartitions) {
     JavaPairRDD<HiveKey, BytesWritable> rdd;
     if (totalOrder) {
@@ -60,69 +56,12 @@ public class SortByShuffler implements SparkShuffler {
       Partitioner partitioner = new HashPartitioner(numPartitions);
       rdd = input.repartitionAndSortWithinPartitions(partitioner);
     }
-    return rdd.mapPartitionsToPair(new ShuffleFunction());
+    return rdd;
   }
 
   @Override
   public String getName() {
     return "SortBy";
-  }
-
-  private static class ShuffleFunction implements
-      PairFlatMapFunction<Iterator<Tuple2<HiveKey, BytesWritable>>,
-          HiveKey, Iterable<BytesWritable>> {
-    // make eclipse happy
-    private static final long serialVersionUID = 1L;
-
-    @Override
-    public Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> call(
-      final Iterator<Tuple2<HiveKey, BytesWritable>> it) throws Exception {
-      // Use input iterator to back returned iterable object.
-      return new Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>() {
-        HiveKey curKey = null;
-        List<BytesWritable> curValues = new ArrayList<BytesWritable>();
-
-        @Override
-        public boolean hasNext() {
-          return it.hasNext() || curKey != null;
-        }
-
-        @Override
-        public Tuple2<HiveKey, Iterable<BytesWritable>> next() {
-          // TODO: implement this by accumulating rows with the same key into a list.
-          // Note that this list needs to improved to prevent excessive memory usage, but this
-          // can be done in later phase.
-          while (it.hasNext()) {
-            Tuple2<HiveKey, BytesWritable> pair = it.next();
-            if (curKey != null && !curKey.equals(pair._1())) {
-              HiveKey key = curKey;
-              List<BytesWritable> values = curValues;
-              curKey = pair._1();
-              curValues = new ArrayList<BytesWritable>();
-              curValues.add(pair._2());
-              return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, values);
-            }
-            curKey = pair._1();
-            curValues.add(pair._2());
-          }
-          if (curKey == null) {
-            throw new NoSuchElementException();
-          }
-          // if we get here, this should be the last element we have
-          HiveKey key = curKey;
-          curKey = null;
-          return new Tuple2<HiveKey, Iterable<BytesWritable>>(key, curValues);
-        }
-
-        @Override
-        public void remove() {
-          // Not implemented.
-          // throw Unsupported Method Invocation Exception.
-          throw new UnsupportedOperationException();
-        }
-
-      };
-    }
   }
 
 }

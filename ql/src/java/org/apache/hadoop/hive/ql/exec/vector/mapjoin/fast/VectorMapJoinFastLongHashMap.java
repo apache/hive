@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.common.MemoryEstimate;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -37,7 +39,7 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class VectorMapJoinFastLongHashMap
              extends VectorMapJoinFastLongHashTable
-             implements VectorMapJoinLongHashMap {
+             implements VectorMapJoinLongHashMap, MemoryEstimate {
 
   public static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastLongHashMap.class);
 
@@ -107,9 +109,14 @@ public class VectorMapJoinFastLongHashMap
 
   public VectorMapJoinFastLongHashMap(
       boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-      int initialCapacity, float loadFactor, int writeBuffersSize) {
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
     super(minMaxEnabled, isOuterJoin, hashTableKeyType,
-        initialCapacity, loadFactor, writeBuffersSize);
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     valueStore = new VectorMapJoinFastValueStore(writeBuffersSize);
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    return super.getEstimatedMemorySize() + valueStore.getEstimatedMemorySize();
   }
 }

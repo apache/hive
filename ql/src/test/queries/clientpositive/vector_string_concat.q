@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE over1k;
 DROP TABLE over1korc;
@@ -15,7 +16,7 @@ CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
@@ -31,13 +32,13 @@ CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC;
 
 INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
-EXPLAIN SELECT s AS `string`,
+EXPLAIN VECTORIZATION EXPRESSION SELECT s AS `string`,
        CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
        CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
        FROM over1korc LIMIT 20;
@@ -86,7 +87,7 @@ STORED AS ORC;
 
 INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
     FROM vectortab2korc 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))

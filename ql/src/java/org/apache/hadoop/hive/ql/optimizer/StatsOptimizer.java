@@ -728,19 +728,6 @@ public class StatsOptimizer extends Transform {
               cselOpTocgbyOp.put(index, nameToIndex.get(exprColumnNodeDesc.getColumn()));
             }
           }
-          // cselOpTocgbyOp may be 0 to 1, where the 0th position of cgbyOp is '1' and 1st position of cgbyOp is count('1')
-          // Thus, we need to adjust it to the correct position.
-          List<Entry<Integer, Integer>> list = new ArrayList<>(cselOpTocgbyOp.entrySet());
-          Collections.sort(list, new Comparator<Entry<Integer, Integer>>() {
-            public int compare(Entry<Integer, Integer> o1, Entry<Integer, Integer> o2) {
-              return (o1.getValue()).compareTo(o2.getValue());
-            }
-          });
-          cselOpTocgbyOp.clear();
-          // adjust cselOpTocgbyOp
-          for (int index = 0; index < list.size(); index++) {
-            cselOpTocgbyOp.put(list.get(index).getKey(), index);
-          }
           List<Object> oneRowWithConstant = new ArrayList<>();
           for (int pos = 0; pos < cselOp.getSchema().getSignature().size(); pos++) {
             if (posToConstant.containsKey(pos)) {
@@ -748,7 +735,9 @@ public class StatsOptimizer extends Transform {
               oneRowWithConstant.add(posToConstant.get(pos));
             } else {
               // This position is an aggregation.
-              oneRowWithConstant.add(oneRow.get(cselOpTocgbyOp.get(pos)));
+              // As we store in oneRow only the aggregate results, we need to adjust to the correct position
+              // if there are keys in the GBy operator.
+              oneRowWithConstant.add(oneRow.get(cselOpTocgbyOp.get(pos) - cgbyOp.getConf().getKeys().size()));
             }
             ColumnInfo colInfo = cselOp.getSchema().getSignature().get(pos);
             colNames.add(colInfo.getInternalName());

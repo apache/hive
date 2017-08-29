@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
+import java.util.HashSet;
+
+import java.util.Set;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.hadoop.fs.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -47,7 +49,7 @@ public class TestTezSessionPool {
     }
 
     @Override
-    public TezSessionPoolManager.TezSessionPoolSession createSession(String sessionId) {
+    public TezSessionPoolSession createSession(String sessionId) {
       return new SampleTezSessionState(sessionId, this);
     }
   }
@@ -88,24 +90,49 @@ public class TestTezSessionPool {
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
       poolManager.startPool();
+      // this is now a LIFO operation
+
+      // draw 1 and replace
       TezSessionState sessionState = poolManager.getSession(null, conf, true, false);
       assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
       sessionState = poolManager.getSession(null, conf, true, false);
-      assertEquals("b", sessionState.getQueueName());
+      assertEquals("a", sessionState.getQueueName());
       poolManager.returnSession(sessionState, false);
 
-      sessionState = poolManager.getSession(null, conf, true, false);
-      assertEquals("c", sessionState.getQueueName());
-      poolManager.returnSession(sessionState, false);
+      // [a,b,c,a,b,c]
 
-      sessionState = poolManager.getSession(null, conf, true, false);
-      if (sessionState.getQueueName().compareTo("a") != 0) {
-        fail();
-      }
+      // draw 2 and return in order - further run should return last returned
+      TezSessionState first = poolManager.getSession(null, conf, true, false);
+      TezSessionState second = poolManager.getSession(null, conf, true, false);
+      assertEquals("a", first.getQueueName());
+      assertEquals("b", second.getQueueName());
+      poolManager.returnSession(first, false);
+      poolManager.returnSession(second, false);
+      TezSessionState third = poolManager.getSession(null, conf, true, false);
+      assertEquals("b", third.getQueueName());
+      poolManager.returnSession(third, false);
 
-      poolManager.returnSession(sessionState, false);
+      // [b,a,c,a,b,c]
+
+      first = poolManager.getSession(null, conf, true, false);
+      second = poolManager.getSession(null, conf, true, false);
+      third = poolManager.getSession(null, conf, true, false);
+
+      assertEquals("b", first.getQueueName());
+      assertEquals("a", second.getQueueName());
+      assertEquals("c", third.getQueueName());
+
+      poolManager.returnSession(first, false);
+      poolManager.returnSession(second, false);
+      poolManager.returnSession(third, false);
+
+      // [c,a,b,a,b,c]
+
+      first = poolManager.getSession(null, conf, true, false);
+      assertEquals("c", third.getQueueName());
+      poolManager.returnSession(first, false);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -158,23 +185,22 @@ public class TestTezSessionPool {
       Mockito.when(session.isDefault()).thenReturn(false);
       Mockito.when(session.getConf()).thenReturn(conf);
 
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
 
-      Mockito.verify(session).close(false);
-      String[] files = null;
-      Mockito.verify(session).open(conf, files);
+      Mockito.verify(session).close(true);
+      Mockito.verify(session).open(conf, new HashSet<String>(), null);
 
       // mocked session starts with default queue
       assertEquals("default", session.getQueueName());
 
       // user explicitly specified queue name
       conf.set("tez.queue.name", "tezq1");
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user unsets queue name, will fallback to default session queue
       conf.unset("tez.queue.name");
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
       assertEquals("default", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // session.open will unset the queue name from conf but Mockito intercepts the open call
@@ -182,17 +208,17 @@ public class TestTezSessionPool {
       conf.unset("tez.queue.name");
       // change session's default queue to tezq1 and rerun test sequence
       Mockito.when(session.getQueueName()).thenReturn("tezq1");
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user sets default queue now
       conf.set("tez.queue.name", "default");
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
       assertEquals("default", poolManager.getSession(null, conf, false, false).getQueueName());
 
       // user does not specify queue so use session default
       conf.unset("tez.queue.name");
-      poolManager.reopenSession(session, conf, null, false);
+      poolManager.reopenSession(session, conf);
       assertEquals("tezq1", poolManager.getSession(null, conf, false, false).getQueueName());
     } catch (Exception e) {
       e.printStackTrace();
@@ -294,12 +320,12 @@ public class TestTezSessionPool {
     poolManager = new TestTezSessionPoolManager();
     TezSessionState session = Mockito.mock(TezSessionState.class);
     Mockito.when(session.isDefault()).thenReturn(false);
+    Mockito.when(session.getConf()).thenReturn(conf);
 
-    poolManager.reopenSession(session, conf, null, false);
+    poolManager.reopenSession(session, conf);
 
-    Mockito.verify(session).close(false);
-    String[] files = null;
-    Mockito.verify(session).open(conf, files);
+    Mockito.verify(session).close(true);
+    Mockito.verify(session).open(conf, new HashSet<String>(), null);
   }
 
   @Test
@@ -309,18 +335,5 @@ public class TestTezSessionPool {
     Mockito.when(session.isDefault()).thenReturn(false);
 
     poolManager.destroySession(session);
-  }
-
-  @Test
-  public void testCloseAndOpenWithResources() throws Exception {
-    poolManager = new TestTezSessionPoolManager();
-    TezSessionState session = Mockito.mock(TezSessionState.class);
-    Mockito.when(session.isDefault()).thenReturn(false);
-    String[] extraResources = new String[] { "file:///tmp/foo.jar" };
-
-    poolManager.reopenSession(session, conf, extraResources, false);
-
-    Mockito.verify(session).close(false);
-    Mockito.verify(session).open(conf, extraResources);
   }
 }

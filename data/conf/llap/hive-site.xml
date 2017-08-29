@@ -285,6 +285,11 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.join.inner.residual</name>
+  <value>true</value>
+</property>
+
 <!-- llap properties -->
 
 <property>
@@ -327,6 +332,10 @@
   <name>ipc.clients-per-factory</name>
   <value>4</value>
   <description> </description>
+</property>
+<property>
+  <name>hive.stats.fetch.bitvector</name>
+  <value>true</value>
 </property>
 
 </configuration>

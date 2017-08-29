@@ -138,7 +138,7 @@ public class HiveRelMdUniqueKeys implements MetadataHandler<BuiltInMetadata.Uniq
       projectPos++;
     }
 
-    double numRows = tScan.getRows();
+    double numRows = mq.getRowCount(tScan);
     List<ColStatistics> colStats = tScan.getColStat(BitSets
         .toList(projectedCols));
     Set<ImmutableBitSet> keys = new HashSet<ImmutableBitSet>();

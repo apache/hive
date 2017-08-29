@@ -6,17 +6,11 @@ POSTHOOK: query: create table tbl_created_by_init(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_created_by_init
-PREHOOK: query: -- tbl_created_by_init is supposed to have been created for us
--- automatically by test_init_file.sql
-
-select * from tbl_created_by_init
+PREHOOK: query: select * from tbl_created_by_init
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_created_by_init
 #### A masked pattern was here ####
-POSTHOOK: query: -- tbl_created_by_init is supposed to have been created for us
--- automatically by test_init_file.sql
-
-select * from tbl_created_by_init
+POSTHOOK: query: select * from tbl_created_by_init
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_created_by_init
 #### A masked pattern was here ####

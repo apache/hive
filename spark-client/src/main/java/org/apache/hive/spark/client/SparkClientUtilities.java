@@ -83,7 +83,8 @@ public class SparkClientUtilities {
     try {
       if (StringUtils.indexOf(path, "file:/") == 0) {
         url = new URL(path);
-      } else if (StringUtils.indexOf(path, "hdfs:/") == 0) {
+      } else if (StringUtils.indexOf(path, "hdfs:/") == 0
+          || StringUtils.indexOf(path, "viewfs:/") == 0) {
         Path remoteFile = new Path(path);
         Path localFile =
             new Path(localTmpDir.getAbsolutePath() + File.separator + remoteFile.getName());
@@ -105,5 +106,34 @@ public class SparkClientUtilities {
       LOG.error("Bad URL " + path + ", ignoring path", err);
     }
     return url;
+  }
+
+  public static boolean isYarnClusterMode(String master, String deployMode) {
+    return "yarn-cluster".equals(master) ||
+        ("yarn".equals(master) && "cluster".equals(deployMode));
+  }
+
+  public static boolean isYarnClientMode(String master, String deployMode) {
+    return "yarn-client".equals(master) ||
+        ("yarn".equals(master) && "client".equals(deployMode));
+  }
+
+  public static boolean isYarnMaster(String master) {
+    return master != null && master.startsWith("yarn");
+  }
+
+  public static boolean isLocalMaster(String master) {
+    return master != null && master.startsWith("local");
+  }
+
+  public static String getDeployModeFromMaster(String master) {
+    if (master != null) {
+      if (master.equals("yarn-client")) {
+        return "client";
+      } else if (master.equals("yarn-cluster")) {
+        return "cluster";
+      }
+    }
+    return null;
   }
 }

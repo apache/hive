@@ -25,6 +25,8 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,12 +47,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapConstants;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.tez.dag.api.TezConfiguration;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -76,21 +78,24 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.eclipse.jetty.server.ssl.SslSocketConnector;
-import org.json.JSONObject;
+import org.eclipse.jetty.rewrite.handler.Rule;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.joda.time.DateTime;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapServiceDriver {
-
   protected static final Logger LOG = LoggerFactory.getLogger(LlapServiceDriver.class.getName());
 
   private static final String[] DEFAULT_AUX_CLASSES = new String[] {
-  "org.apache.hive.hcatalog.data.JsonSerDe" };
+    "org.apache.hive.hcatalog.data.JsonSerDe","org.apache.hadoop.hive.druid.DruidStorageHandler",
+    "org.apache.hive.storage.jdbc.JdbcStorageHandler"
+  };
   private static final String HBASE_SERDE_CLASS = "org.apache.hadoop.hive.hbase.HBaseSerDe";
   private static final String[] NEEDED_CONFIGS = LlapDaemonConfiguration.DAEMON_CONFIGS;
   private static final String[] OPTIONAL_CONFIGS = LlapDaemonConfiguration.SSL_DAEMON_CONFIGS;
+  private static final String OUTPUT_DIR_PREFIX = "llap-slider-";
 
   // This is not a config that users set in hive-site. It's only use is to share information
   // between the java component of the service driver and the python component.
@@ -100,7 +105,7 @@ public class LlapServiceDriver {
    * This is a working configuration for the instance to merge various variables.
    * It is not written out for llap server usage
    */
-  private final Configuration conf;
+  private final HiveConf conf;
 
   public LlapServiceDriver() {
     SessionState ss = SessionState.get();
@@ -111,7 +116,7 @@ public class LlapServiceDriver {
     LOG.info("LLAP service driver invoked with arguments={}", args);
     int ret = 0;
     try {
-      new LlapServiceDriver().run(args);
+      ret = new LlapServiceDriver().run(args);
     } catch (Throwable t) {
       System.err.println("Failed: " + t.getMessage());
       t.printStackTrace();
@@ -173,7 +178,7 @@ public class LlapServiceDriver {
     }
   }
 
-  private void run(String[] args) throws Exception {
+  private int run(String[] args) throws Exception {
     LlapOptionsProcessor optionsProcessor = new LlapOptionsProcessor();
     final LlapOptions options = optionsProcessor.processOptions(args);
 
@@ -181,7 +186,7 @@ public class LlapServiceDriver {
 
     if (options == null) {
       // help
-      return;
+      return 1;
     }
 
     // Working directory.
@@ -196,11 +201,12 @@ public class LlapServiceDriver {
     final FileSystem fs = FileSystem.get(conf);
     final FileSystem lfs = FileSystem.getLocal(conf).getRawFileSystem();
 
-    final ExecutorService executor =
-        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2,
+    int threadCount = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
+    final ExecutorService executor = Executors.newFixedThreadPool(threadCount,
             new ThreadFactoryBuilder().setNameFormat("llap-pkg-%d").build());
     final CompletionService<Void> asyncRunner = new ExecutorCompletionService<Void>(executor);
 
+    int rc = 0;
     try {
 
       // needed so that the file is actually loaded into configuration.
@@ -232,6 +238,7 @@ public class LlapServiceDriver {
         HiveConf.setVar(conf, ConfVars.LLAP_DAEMON_LOGGER, options.getLogger());
         propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_LOGGER.varname, options.getLogger());
       }
+      boolean isDirect = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT);
 
       if (options.getSize() != -1) {
         if (options.getCache() != -1) {
@@ -251,8 +258,7 @@ public class LlapServiceDriver {
               + " smaller than the container sizing (" + LlapUtil.humanReadableByteCount(options.getSize())
               + ")");
         }
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)
-            && false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
+        if (isDirect && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
           // direct and not memory mapped
           Preconditions.checkArgument(options.getXmx() + options.getCache() <= options.getSize(),
             "Working memory (Xmx=" + LlapUtil.humanReadableByteCount(options.getXmx()) + ") + cache size ("
@@ -261,19 +267,6 @@ public class LlapServiceDriver {
         }
       }
 
-      // This parameter is read in package.py - and nowhere else. Does not need to be part of
-      // HiveConf - that's just confusing.
-      final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
-      long containerSize = -1;
-      if (options.getSize() != -1) {
-        containerSize = options.getSize() / (1024 * 1024);
-        Preconditions.checkArgument(containerSize >= minAlloc, "Container size ("
-            + LlapUtil.humanReadableByteCount(options.getSize()) + ") should be greater"
-            + " than minimum allocation(" + LlapUtil.humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
-        conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
-        propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
-            String.valueOf(containerSize));
-      }
 
       if (options.getExecutors() != -1) {
         conf.setLong(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, options.getExecutors());
@@ -307,17 +300,30 @@ public class LlapServiceDriver {
             String.valueOf(xmxMb));
       }
 
-      final long currentHeadRoom = options.getSize() - options.getXmx() - options.getCache();
-      final long minHeadRoom = (long) (options.getXmx() * LlapDaemon.MIN_HEADROOM_PERCENT);
-      final long headRoom = currentHeadRoom < minHeadRoom ? minHeadRoom : currentHeadRoom;
-      final long headRoomMb = headRoom / (1024L * 1024L);
-      conf.setLong(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname, headRoomMb);
-      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
-        String.valueOf(headRoomMb));
+      long size = options.getSize();
+      if (size == -1) {
+        long heapSize = xmx;
+        if (!isDirect) {
+          heapSize += cache;
+        }
+        size = Math.min((long)(heapSize * 1.2), heapSize + 1024L*1024*1024);
+        if (isDirect) {
+          size += cache;
+        }
+      }
+      long containerSize = size / (1024 * 1024);
+      final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
+      Preconditions.checkArgument(containerSize >= minAlloc, "Container size ("
+          + LlapUtil.humanReadableByteCount(options.getSize()) + ") should be greater"
+          + " than minimum allocation(" + LlapUtil.humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
+      conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
+          String.valueOf(containerSize));
 
-      LOG.info("Memory settings: container memory: {} executor memory: {} cache memory: {} headroom memory: {}",
-        LlapUtil.humanReadableByteCount(options.getSize()), LlapUtil.humanReadableByteCount(options.getXmx()),
-        LlapUtil.humanReadableByteCount(options.getCache()), LlapUtil.humanReadableByteCount(headRoom));
+      LOG.info("Memory settings: container memory: {} executor memory: {} cache memory: {}",
+        LlapUtil.humanReadableByteCount(options.getSize()),
+        LlapUtil.humanReadableByteCount(options.getXmx()),
+        LlapUtil.humanReadableByteCount(options.getCache()));
 
       if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {
         conf.set(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
@@ -332,7 +338,8 @@ public class LlapServiceDriver {
       }
 
       Path home = new Path(System.getenv("HIVE_HOME"));
-      Path scripts = new Path(new Path(new Path(home, "scripts"), "llap"), "bin");
+      Path scriptParent = new Path(new Path(home, "scripts"), "llap");
+      Path scripts = new Path(scriptParent, "bin");
 
       if (!lfs.exists(home)) {
         throw new Exception("Unable to find HIVE_HOME:" + home);
@@ -344,7 +351,15 @@ public class LlapServiceDriver {
       final Path tezDir = new Path(libDir, "tez");
       final Path udfDir = new Path(libDir, "udfs");
       final Path confPath = new Path(tmpDir, "conf");
-      lfs.mkdirs(confPath);
+      if (!lfs.mkdirs(confPath)) {
+        LOG.warn("mkdirs for " + confPath + " returned false");
+      }
+      if (!lfs.mkdirs(tezDir)) {
+        LOG.warn("mkdirs for " + tezDir + " returned false");
+      }
+      if (!lfs.mkdirs(udfDir)) {
+        LOG.warn("mkdirs for " + udfDir + " returned false");
+      }
 
       NamedCallable<Void> downloadTez = new NamedCallable<Void>("downloadTez") {
         @Override
@@ -374,7 +389,8 @@ public class LlapServiceDriver {
               LlapTezUtils.class, // llap-tez
               LlapInputFormat.class, // llap-server
               HiveInputFormat.class, // hive-exec
-              SslSocketConnector.class, // hive-common (https deps)
+              SslContextFactory.class, // hive-common (https deps)
+              Rule.class, // Jetty rewrite class
               RegistryUtils.ServiceRecordMarshal.class, // ZK registry
               // log4j2
               com.lmax.disruptor.RingBuffer.class, // disruptor
@@ -431,17 +447,33 @@ public class LlapServiceDriver {
             }
           }
 
-          String auxJars = options.getAuxJars();
+          HashSet<String> auxJars = new HashSet<>();
+          // There are many ways to have AUX jars in Hive... sigh
+          if (options.getIsHiveAux()) {
+            // Note: we don't add ADDED jars, RELOADABLE jars, etc. That is by design; there are too many ways
+            // to add jars in Hive, some of which are session/etc. specific. Env + conf + arg should be enough.
+            addAuxJarsToSet(auxJars, conf.getAuxJars());
+            addAuxJarsToSet(auxJars, System.getenv("HIVE_AUX_JARS_PATH"));
+            LOG.info("Adding the following aux jars from the environment and configs: " + auxJars);
+          }
+
+          addAuxJarsToSet(auxJars, options.getAuxJars());
+          for (String jarPath : auxJars) {
+            lfs.copyFromLocalFile(new Path(jarPath), libDir);
+          }
+          return null;
+        }
+
+        private void addAuxJarsToSet(HashSet<String> auxJarSet, String auxJars) {
           if (auxJars != null && !auxJars.isEmpty()) {
             // TODO: transitive dependencies warning?
             String[] jarPaths = auxJars.split(",");
             for (String jarPath : jarPaths) {
               if (!jarPath.isEmpty()) {
-                lfs.copyFromLocalFile(new Path(jarPath), libDir);
+                auxJarSet.add(jarPath);
               }
             }
           }
-          return null;
         }
       };
 
@@ -505,29 +537,7 @@ public class LlapServiceDriver {
             }
           }
           createLlapDaemonConfig(lfs, confPath, conf, propsDirectOptions, options.getConfig());
-
-          // logger can be a resource stream or a real file (cannot use copy)
-          InputStream loggerContent = logger.openStream();
-          IOUtils.copyBytes(loggerContent,
-              lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
-
-          String metricsFile = LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE;
-          URL metrics2 = conf.getResource(metricsFile);
-          if (metrics2 == null) {
-            LOG.warn(LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " cannot be found."
-                + " Looking for " + LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE);
-            metricsFile = LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE;
-            metrics2 = conf.getResource(metricsFile);
-          }
-          if (metrics2 != null) {
-            InputStream metrics2FileStream = metrics2.openStream();
-            IOUtils.copyBytes(metrics2FileStream,
-                lfs.create(new Path(confPath, metricsFile), true), conf, true);
-            LOG.info("Copied hadoop metrics2 properties file from " + metrics2);
-          } else {
-            LOG.warn("Cannot find " + LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " or "
-                + LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE + " in classpath.");
-          }
+          setUpLogAndMetricConfigs(lfs, logger, confPath);
           return null;
         }
       };
@@ -546,60 +556,9 @@ public class LlapServiceDriver {
         asyncResults[i] = asyncRunner.submit(asyncWork[i]);
       }
 
-      // extract configs for processing by the python fragments in Slider
-      JSONObject configs = new JSONObject();
-
-      configs.put("java.home", java_home);
-
-      configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
-      configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
-
-      configs.put(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
-          HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
-
-      configs.put(HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT.varname,
-          HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT));
-
-      configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
-
-      configs.put(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
-        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB));
-
-      configs.put(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE));
-
-      configs.put(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname,
-          HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
-
-      // Let YARN pick the queue name, if it isn't provided in hive-site, or via the command-line
-      if (HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME) != null) {
-        configs.put(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname,
-            HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME));
-      }
-
-      // Propagate the cluster name to the script.
-      String clusterHosts = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
-      if (!StringUtils.isEmpty(clusterHosts) && clusterHosts.startsWith("@")
-          && clusterHosts.length() > 1) {
-        configs.put(CONFIG_CLUSTER_NAME, clusterHosts.substring(1));
-      }
-
-      configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,
-          conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1));
-
-      configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES,
-          conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES, -1));
-
-      long maxDirect = (xmx > 0 && cache > 0 && xmx < cache * 1.25) ? (long) (cache * 1.25) : -1;
-      configs.put("max_direct_memory", Long.toString(maxDirect));
-
-      FSDataOutputStream os = lfs.create(new Path(tmpDir, "config.json"));
-      OutputStreamWriter w = new OutputStreamWriter(os);
-      configs.write(w);
-      w.close();
-      os.close();
+      // TODO: need to move from Python to Java for the rest of the script.
+      JSONObject configs = createConfigJson(containerSize, cache, xmx, java_home);
+      writeConfigJson(tmpDir, lfs, configs);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Config generation took " + (System.nanoTime() - t0) + " ns");
@@ -612,15 +571,124 @@ public class LlapServiceDriver {
           LOG.debug(asyncWork[i].getName() + " waited for " + (t2 - t1) + " ns");
         }
       }
+      if (options.isStarting()) {
+        String version = System.getenv("HIVE_VERSION");
+        if (version == null || version.isEmpty()) {
+          version = DateTime.now().toString("ddMMMyyyy");
+        }
+
+        String outputDir = options.getOutput();
+        Path packageDir = null;
+        if (outputDir == null) {
+          outputDir = OUTPUT_DIR_PREFIX + version;
+          packageDir = new Path(Paths.get(".").toAbsolutePath().toString(),
+              OUTPUT_DIR_PREFIX + version);
+        } else {
+          packageDir = new Path(outputDir);
+        }
+        rc = runPackagePy(args, tmpDir, scriptParent, version, outputDir);
+        if (rc == 0) {
+          LlapSliderUtils.startCluster(conf, options.getName(), "llap-" + version + ".zip",
+              packageDir, HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME));
+        }
+      } else {
+        rc = 0;
+      }
     } finally {
       executor.shutdown();
       lfs.close();
       fs.close();
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Exiting successfully");
+    if (rc == 0) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Exiting successfully");
+      }
+    } else {
+      LOG.info("Exiting with rc = " + rc);
     }
+    return rc;
+  }
+
+  private int runPackagePy(String[] args, Path tmpDir, Path scriptParent,
+      String version, String outputDir) throws IOException, InterruptedException {
+    Path scriptPath = new Path(new Path(scriptParent, "slider"), "package.py");
+    List<String> scriptArgs = new ArrayList<>(args.length + 7);
+    scriptArgs.add("python");
+    scriptArgs.add(scriptPath.toString());
+    scriptArgs.add("--input");
+    scriptArgs.add(tmpDir.toString());
+    scriptArgs.add("--output");
+    scriptArgs.add(outputDir);
+    scriptArgs.add("--javaChild");
+    for (String arg : args) {
+      scriptArgs.add(arg);
+    }
+    LOG.debug("Calling package.py via: " + scriptArgs);
+    ProcessBuilder builder = new ProcessBuilder(scriptArgs);
+    builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+    builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+    builder.environment().put("HIVE_VERSION", version);
+    return builder.start().waitFor();
+  }
+
+  private void writeConfigJson(Path tmpDir, final FileSystem lfs,
+      JSONObject configs) throws IOException, JSONException {
+    FSDataOutputStream os = lfs.create(new Path(tmpDir, "config.json"));
+    OutputStreamWriter w = new OutputStreamWriter(os);
+    configs.write(w);
+    w.close();
+    os.close();
+  }
+
+  private JSONObject createConfigJson(long containerSize, long cache, long xmx,
+                                      String java_home) throws JSONException {
+    // extract configs for processing by the python fragments in Slider
+    JSONObject configs = new JSONObject();
+
+    configs.put("java.home", java_home);
+
+    configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB));
+    configs.put(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
+
+    configs.put(HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE.varname,
+        HiveConf.getSizeVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MAX_SIZE));
+
+    configs.put(HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT.varname,
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT));
+
+    configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
+
+    configs.put(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE));
+
+    configs.put(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS));
+
+    // Let YARN pick the queue name, if it isn't provided in hive-site, or via the command-line
+    if (HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME) != null) {
+      configs.put(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname,
+          HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_QUEUE_NAME));
+    }
+
+    // Propagate the cluster name to the script.
+    String clusterHosts = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (!StringUtils.isEmpty(clusterHosts) && clusterHosts.startsWith("@")
+        && clusterHosts.length() > 1) {
+      configs.put(CONFIG_CLUSTER_NAME, clusterHosts.substring(1));
+    }
+
+    configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB,
+        conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1));
+
+    configs.put(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES,
+        conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_VCORES, -1));
+
+    long maxDirect = (xmx > 0 && cache > 0 && xmx < cache * 1.25) ? (long) (cache * 1.25) : -1;
+    configs.put("max_direct_memory", Long.toString(maxDirect));
+    return configs;
   }
 
   private Set<String> downloadPermanentFunctions(Configuration conf, Path udfDir) throws HiveException,
@@ -714,5 +782,31 @@ public class LlapServiceDriver {
     HiveConf.getBoolVar(new Configuration(false), ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
     // they will be file:// URLs
     lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
+  }
+
+  private void setUpLogAndMetricConfigs(final FileSystem lfs, final URL logger,
+      final Path confPath) throws IOException {
+    // logger can be a resource stream or a real file (cannot use copy)
+    InputStream loggerContent = logger.openStream();
+    IOUtils.copyBytes(loggerContent,
+        lfs.create(new Path(confPath, "llap-daemon-log4j2.properties"), true), conf, true);
+
+    String metricsFile = LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE;
+    URL metrics2 = conf.getResource(metricsFile);
+    if (metrics2 == null) {
+      LOG.warn(LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " cannot be found."
+          + " Looking for " + LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE);
+      metricsFile = LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE;
+      metrics2 = conf.getResource(metricsFile);
+    }
+    if (metrics2 != null) {
+      InputStream metrics2FileStream = metrics2.openStream();
+      IOUtils.copyBytes(metrics2FileStream,
+          lfs.create(new Path(confPath, metricsFile), true), conf, true);
+      LOG.info("Copied hadoop metrics2 properties file from " + metrics2);
+    } else {
+      LOG.warn("Cannot find " + LlapConstants.LLAP_HADOOP_METRICS2_PROPERTIES_FILE + " or "
+          + LlapConstants.HADOOP_METRICS2_PROPERTIES_FILE + " in classpath.");
+    }
   }
 }

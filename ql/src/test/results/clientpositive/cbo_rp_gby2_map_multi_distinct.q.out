@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE dest1(key STRING, c1 INT, c2 STRING, c3 INT, c4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
@@ -120,17 +116,13 @@ POSTHOOK: Input: default@dest1
 7	6	7735.0	447	10
 8	8	8762.0	595	10
 9	7	91047.0	577	12
-PREHOOK: query: -- HIVE-5560 when group by key is used in distinct funtion, invalid result are returned
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1
 SELECT substr(src.key,1,1), count(DISTINCT substr(src.key,1,1)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value)
 GROUP BY substr(src.key,1,1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-5560 when group by key is used in distinct funtion, invalid result are returned
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1
 SELECT substr(src.key,1,1), count(DISTINCT substr(src.key,1,1)), concat(substr(src.key,1,1),sum(substr(src.value,5))), sum(DISTINCT substr(src.value, 5)), count(src.value)

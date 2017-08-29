@@ -18,11 +18,19 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapreduce.InputSplit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static junit.framework.TestCase.assertFalse;
 
 public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   static boolean isDictionaryEncoding = false;
@@ -87,5 +95,18 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   @Test
   public void decimalRead() throws Exception {
     decimalRead(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testNullSplitForParquetReader() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS,"int32_field");
+    conf.set(IOConstants.COLUMNS_TYPES,"int");
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, "//tmp");
+    initialVectorizedRowBatchCtx(conf);
+    VectorizedParquetRecordReader reader =
+        new VectorizedParquetRecordReader((InputSplit)null, new JobConf(conf));
+    assertFalse(reader.next(reader.createKey(), reader.createValue()));
   }
 }

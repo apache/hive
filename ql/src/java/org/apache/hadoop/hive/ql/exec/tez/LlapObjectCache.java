@@ -44,8 +44,6 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   private static ExecutorService staticPool = Executors.newCachedThreadPool();
 
-  private static final boolean isLogDebugEnabled = LOG.isDebugEnabled();
-
   private final Cache<String, Object> registry = CacheBuilder.newBuilder().softValues().build();
 
   private final Map<String, ReentrantLock> locks = new HashMap<String, ReentrantLock>();
@@ -60,6 +58,24 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   @SuppressWarnings("unchecked")
   @Override
+  public <T> T retrieve(String key) throws HiveException {
+
+    T value = null;
+
+    lock.lock();
+    try {
+      value = (T) registry.getIfPresent(key);
+      if (value != null && LOG.isDebugEnabled()) {
+        LOG.debug("Found " + key + " in cache");
+      }
+      return value;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
 
     T value = null;
@@ -69,7 +85,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
     try {
       value = (T) registry.getIfPresent(key);
       if (value != null) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Found " + key + " in cache");
         }
         return value;
@@ -91,7 +107,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
       try {
         value = (T) registry.getIfPresent(key);
         if (value != null) {
-          if (isLogDebugEnabled) {
+          if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + key + " in cache");
           }
           return value;
@@ -108,7 +124,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
       lock.lock();
       try {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Caching new object for key: " + key);
         }
 
@@ -135,7 +151,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   @Override
   public void remove(String key) {
-    if (isLogDebugEnabled) {
+    if (LOG.isDebugEnabled()) {
       LOG.debug("Removing key: " + key);
     }
     registry.invalidate(key);

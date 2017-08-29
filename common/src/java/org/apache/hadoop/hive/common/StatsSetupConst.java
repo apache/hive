@@ -17,18 +17,30 @@
  */
 package org.apache.hadoop.hive.common;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.LinkedHashMap;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 
 /**
@@ -37,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class StatsSetupConst {
 
-  protected final static Logger LOG = LoggerFactory.getLogger(StatsSetupConst.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(StatsSetupConst.class.getName());
 
   public enum StatDB {
     fs {
@@ -98,18 +110,18 @@ public class StatsSetupConst {
 
   public static final String STATS_FILE_PREFIX = "tmpstats-";
   /**
-   * @return List of all supported statistics
+   * List of all supported statistics
    */
   public static final String[] supportedStats = {NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
 
   /**
-   * @return List of all statistics that need to be collected during query execution. These are
+   * List of all statistics that need to be collected during query execution. These are
    * statistics that inherently require a scan of the data.
    */
   public static final String[] statsRequireCompute = new String[] {ROW_COUNT,RAW_DATA_SIZE};
 
   /**
-   * @return List of statistics that can be collected quickly without requiring a scan of the data.
+   * List of statistics that can be collected quickly without requiring a scan of the data.
    */
   public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
 
@@ -144,35 +156,62 @@ public class StatsSetupConst {
   public static final String[] TABLE_PARAMS_STATS_KEYS = new String[] {
     COLUMN_STATS_ACCURATE, NUM_FILES, TOTAL_SIZE,ROW_COUNT, RAW_DATA_SIZE, NUM_PARTITIONS};
 
+  private static class ColumnStatsAccurate {
+    private static ObjectReader objectReader;
+    private static ObjectWriter objectWriter;
+
+    static {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectReader = objectMapper.readerFor(ColumnStatsAccurate.class);
+      objectWriter = objectMapper.writerFor(ColumnStatsAccurate.class);
+    }
+
+    static class BooleanSerializer extends JsonSerializer<Boolean> {
+
+      @Override
+      public void serialize(Boolean value, JsonGenerator jsonGenerator,
+          SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+        jsonGenerator.writeString(value.toString());
+      }
+    }
+
+    static class BooleanDeserializer extends JsonDeserializer<Boolean> {
+
+      public Boolean deserialize(JsonParser jsonParser,
+          DeserializationContext deserializationContext)
+              throws IOException, JsonProcessingException {
+        return Boolean.valueOf(jsonParser.getValueAsString());
+      }
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonSerialize(using = BooleanSerializer.class)
+    @JsonDeserialize(using = BooleanDeserializer.class)
+    @JsonProperty(BASIC_STATS)
+    boolean basicStats;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonProperty(COLUMN_STATS)
+    @JsonSerialize(contentUsing = BooleanSerializer.class)
+    @JsonDeserialize(contentUsing = BooleanDeserializer.class)
+    TreeMap<String, Boolean> columnStats = new TreeMap<>();
+
+  };
+
   public static boolean areBasicStatsUptoDate(Map<String, String> params) {
-    JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    if (stats != null && stats.has(BASIC_STATS)) {
-      return true;
-    } else {
+    if (params == null) {
       return false;
     }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    return stats.basicStats;
   }
 
   public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
-    JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    try {
-      if (!stats.has(COLUMN_STATS)) {
-        return false;
-      } else {
-        JSONObject columns = stats.getJSONObject(COLUMN_STATS);
-        if (columns != null && columns.has(colName)) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    } catch (JSONException e) {
-      // For backward compatibility, if previous value can not be parsed to a
-      // json object, it will come here.
-      LOG.debug("In StatsSetupConst, JsonParser can not parse COLUMN_STATS.");
+    if (params == null) {
       return false;
     }
-
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    return stats.columnStats.containsKey(colName);
   }
 
   // It will only throw JSONException when stats.put(BASIC_STATS, TRUE)
@@ -180,95 +219,96 @@ public class StatsSetupConst {
   // note that set basic stats false will wipe out column stats too.
   public static void setBasicStatsState(Map<String, String> params, String setting) {
     if (setting.equals(FALSE)) {
-      if (params != null && params.containsKey(COLUMN_STATS_ACCURATE)) {
+      if (params!=null && params.containsKey(COLUMN_STATS_ACCURATE)) {
         params.remove(COLUMN_STATS_ACCURATE);
       }
-    } else {
-      JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-      
-      try {
-        stats.put(BASIC_STATS, TRUE);
-      } catch (JSONException e) {
-        // impossible to throw any json exceptions.
-        LOG.trace(e.getMessage());
-      }
-      params.put(COLUMN_STATS_ACCURATE, stats.toString());
+      return;
+    }
+    if (params == null) {
+      throw new RuntimeException("params are null...cant set columnstatstate!");
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    stats.basicStats = true;
+    try {
+      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("can't serialize column stats", e);
     }
   }
 
   public static void setColumnStatsState(Map<String, String> params, List<String> colNames) {
-    try {
-      JSONObject stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    if (params == null) {
+      throw new RuntimeException("params are null...cant set columnstatstate!");
+    }
+    if (colNames == null) {
+      return;
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
 
-      JSONObject colStats;
-      if (stats.has(COLUMN_STATS)) {
-        colStats = stats.getJSONObject(COLUMN_STATS);
-      } else {
-        colStats = new JSONObject(new TreeMap<String,String>());
+    for (String colName : colNames) {
+      if (!stats.columnStats.containsKey(colName)) {
+        stats.columnStats.put(colName, true);
       }
-      for (String colName : colNames) {
-        if (!colStats.has(colName)) {
-          colStats.put(colName, TRUE);
-        }
-      }
-      stats.put(COLUMN_STATS, colStats);
-      params.put(COLUMN_STATS_ACCURATE, stats.toString());
-    } catch (JSONException e) {
-      // impossible to throw any json exceptions.
+    }
+    try {
+      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+    } catch (JsonProcessingException e) {
       LOG.trace(e.getMessage());
     }
   }
 
   public static void clearColumnStatsState(Map<String, String> params) {
-    String statsAcc;
-    if (params != null && (statsAcc = params.get(COLUMN_STATS_ACCURATE)) != null) {
-      // statsAcc may not be jason format, which will throw exception
-      JSONObject stats = parseStatsAcc(statsAcc);
-      
-      if (stats.has(COLUMN_STATS)) {
-        stats.remove(COLUMN_STATS);
-      }
-      params.put(COLUMN_STATS_ACCURATE, stats.toString());
+    if (params == null) {
+      return;
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    stats.columnStats.clear();
+
+    try {
+      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+    } catch (JsonProcessingException e) {
+      LOG.trace(e.getMessage());
     }
   }
 
-  public static void setBasicStatsStateForCreateTable(Map<String, String> params, String setting) {
+  public static void removeColumnStatsState(Map<String, String> params, List<String> colNames) {
+    if (params == null) {
+      return;
+    }
+    try {
+      ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+      for (String string : colNames) {
+        stats.columnStats.remove(string);
+      }
+      params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
+    } catch (JsonProcessingException e) {
+      LOG.trace(e.getMessage());
+    }
+  }
+
+  public static void setStatsStateForCreateTable(Map<String, String> params,
+      List<String> cols, String setting) {
     if (TRUE.equals(setting)) {
       for (String stat : StatsSetupConst.supportedStats) {
         params.put(stat, "0");
       }
     }
     setBasicStatsState(params, setting);
+    setColumnStatsState(params, cols);
   }
   
-  private static JSONObject parseStatsAcc(String statsAcc) {
+  private static ColumnStatsAccurate parseStatsAcc(String statsAcc) {
     if (statsAcc == null) {
-      return new JSONObject(new LinkedHashMap<String,Object>());
-    } else {
-      try {
-        return new JSONObject(statsAcc);
-      } catch (JSONException e) {
-        return statsAccUpgrade(statsAcc);
-      }
+      return new ColumnStatsAccurate();
     }
-  }
-
-  private static JSONObject statsAccUpgrade(String statsAcc) {
-    JSONObject stats;
-    // old format of statsAcc, e.g., TRUE or FALSE
-    LOG.debug("In StatsSetupConst, JsonParser can not parse statsAcc.");
-    stats = new JSONObject(new LinkedHashMap<String,Object>());
     try {
-      if (statsAcc.equals(TRUE)) {
-        stats.put(BASIC_STATS, TRUE);
-      } else {
-        stats.put(BASIC_STATS, FALSE);
+      return ColumnStatsAccurate.objectReader.readValue(statsAcc);
+    } catch (Exception e) {
+      ColumnStatsAccurate ret = new ColumnStatsAccurate();
+      if (TRUE.equalsIgnoreCase(statsAcc)) {
+        ret.basicStats = true;
       }
-    } catch (JSONException e1) {
-      // impossible to throw any json exceptions.
-      LOG.trace(e1.getMessage());
+      return ret;
     }
-    return stats;
   }
-
 }

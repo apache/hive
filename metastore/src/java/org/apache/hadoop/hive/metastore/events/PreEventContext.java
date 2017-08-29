@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
 
 /**
  * Base class for all the events which are defined for metastore.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class PreEventContext {
 
   public static enum PreEventType {
@@ -42,7 +45,8 @@ public abstract class PreEventContext {
     READ_DATABASE,
     ADD_INDEX,
     ALTER_INDEX,
-    DROP_INDEX
+    DROP_INDEX,
+    ALTER_DATABASE
   }
 
   private final PreEventType eventType;

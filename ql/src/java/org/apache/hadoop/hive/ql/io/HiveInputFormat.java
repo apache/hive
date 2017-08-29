@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +51,17 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -67,6 +72,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 
 /**
@@ -77,14 +83,13 @@ import org.apache.hive.common.util.ReflectionUtil;
  */
 public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     implements InputFormat<K, V>, JobConfigurable {
-
   private static final String CLASS_NAME = HiveInputFormat.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   /**
    * A cache of InputFormat instances.
    */
-  private static Map<Class, InputFormat<WritableComparable, Writable>> inputFormats
+  private static final Map<Class, InputFormat<WritableComparable, Writable>> inputFormats
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
@@ -202,32 +207,91 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
-      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf) {
+      InputFormat<WritableComparable, Writable> inputFormat, Configuration conf,
+      PartitionDesc part) throws HiveException {
     if (!HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       return inputFormat; // LLAP not enabled, no-op.
     }
+    String ifName = inputFormat.getClass().getCanonicalName();
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
     if (!isVectorized) {
-      // Pretend it's vectorized.
+      // Pretend it's vectorized if the non-vector wrapped is enabled.
       isVectorized = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)
           && (Utilities.getPlanPath(conf) != null);
     }
+    boolean isSerdeBased = false;
+    if (isVectorized && !isSupported
+        && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED)) {
+      // See if we can use re-encoding to read the format thru IO elevator.
+      String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Checking " + ifName + " against " + formatList);
+      }
+      String[] formats = StringUtils.getStrings(formatList);
+      if (formats != null) {
+        for (String format : formats) {
+          // TODO: should we check isAssignableFrom?
+          if (ifName.equals(format)) {
+            if (LOG.isInfoEnabled()) {
+              LOG.info("Using SerDe-based LLAP reader for " + ifName);
+            }
+            isSupported = isSerdeBased = true;
+            break;
+          }
+        }
+      }
+    }
     if (!isSupported || !isVectorized) {
-      LOG.info("Not using llap for " + inputFormat + ": supported = " + isSupported
-          + ", vectorized = " + isVectorized);
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Not using llap for " + ifName + ": supported = "
+          + isSupported + ", vectorized = " + isVectorized);
+      }
       return inputFormat;
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Wrapping " + inputFormat);
+      LOG.debug("Wrapping " + ifName);
     }
+
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapProxy.getIo();
     if (llapIo == null) {
-      LOG.info("Not using LLAP IO because it is not initialized");
+      if (LOG.isInfoEnabled()) {
+        LOG.info("Not using LLAP IO because it is not initialized");
+      }
       return inputFormat;
     }
-    return castInputFormat(llapIo.getInputFormat(inputFormat));
+    Deserializer serde = null;
+    if (isSerdeBased) {
+      if (part == null) {
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Not using LLAP IO because there's no partition spec for SerDe-based IF");
+        }
+        return inputFormat;
+      }
+      VectorPartitionDesc vpart =  part.getVectorPartitionDesc();
+      if (vpart != null) {
+        VectorMapOperatorReadType old = vpart.getVectorMapOperatorReadType();
+        if (old != VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
+          if (LOG.isInfoEnabled()) {
+            LOG.info("Resetting VectorMapOperatorReadType from " + old + " for partition "
+              + part.getTableName() + " " + part.getPartSpec());
+          }
+          vpart.setVectorMapOperatorReadType(
+              VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT);
+        }
+      }
+      try {
+        serde = part.getDeserializer(conf);
+      } catch (Exception e) {
+        throw new HiveException("Error creating SerDe for LLAP IO", e);
+      }
+    }
+    InputFormat<?, ?> wrappedIf = llapIo.getInputFormat(inputFormat, serde);
+    if (wrappedIf == null) {
+      return inputFormat; // We cannot wrap; the cause is logged inside.
+    }
+    return castInputFormat(wrappedIf);
   }
 
 
@@ -248,7 +312,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return (InputFormat<T, U>)from;
   }
 
-
+  /** NOTE: this no longer wraps the IF for LLAP. Call wrapForLlap manually if needed. */
   public static InputFormat<WritableComparable, Writable> getInputFormatFromCache(
     Class inputFormatClass, JobConf job) throws IOException {
     InputFormat<WritableComparable, Writable> instance = inputFormats.get(inputFormatClass);
@@ -266,7 +330,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return wrapForLlap(instance, job);
+    return instance;
   }
 
   public RecordReader getRecordReader(InputSplit split, JobConf job,
@@ -287,15 +351,30 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     boolean nonNative = false;
-    PartitionDesc part = pathToPartitionInfo.get(hsplit.getPath());
-    if ((part != null) && (part.getTableDesc() != null)) {
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
-      nonNative = part.getTableDesc().isNonNative();
+    PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        pathToPartitionInfo, hsplit.getPath(), null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Found spec for " + hsplit.getPath() + " " + part + " from " + pathToPartitionInfo);
     }
 
-    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath(), nonNative);
+    try {
+      if ((part != null) && (part.getTableDesc() != null)) {
+        Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
+        nonNative = part.getTableDesc().isNonNative();
+      }
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
+
+    Path splitPath = hsplit.getPath();
+    pushProjectionsAndFilters(job, inputFormatClass, splitPath, nonNative);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+    try {
+      inputFormat = HiveInputFormat.wrapForLlap(inputFormat, job, part);
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
     RecordReader innerReader = null;
     try {
       innerReader = inputFormat.getRecordReader(inputSplit, job, reporter);
@@ -321,7 +400,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
       // Prune partitions
       if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-          && HiveConf.getBoolVar(job, HiveConf.ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
+          && HiveConf.isSparkDPPAny(job)) {
         SparkDynamicPartitionPruner pruner = new SparkDynamicPartitionPruner();
         try {
           pruner.prune(mrwork, job);
@@ -344,7 +423,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result) throws IOException {
 
-    Utilities.copyTablePropertiesToConf(table, conf);
+    try {
+      Utilities.copyTablePropertiesToConf(table, conf);
+    } catch (HiveException e) {
+      throw new IOException(e);
+    }
 
     if (tableScan != null) {
       pushFilters(conf, tableScan);
@@ -390,6 +473,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
     }
+    StringInternUtils.internUriStringsInPathArray(dirs);
     return dirs;
   }
 

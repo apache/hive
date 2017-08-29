@@ -59,14 +59,6 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     // from the supplied URI
     this.scheme = name.getScheme();
     String nameUriString = name.toString();
-    if (Shell.WINDOWS) {
-      // Replace the encoded backward slash with forward slash
-      // Remove the windows drive letter
-      nameUriString =
-          nameUriString.replaceAll("%5C", "/").replaceFirst("/[c-zC-Z]:", "/")
-              .replaceFirst("^[c-zC-Z]:", "");
-      name = URI.create(nameUriString);
-    }
 
     String authority = name.getAuthority() != null ? name.getAuthority() : "";
     String proxyUriString = scheme + "://" + authority + "/";

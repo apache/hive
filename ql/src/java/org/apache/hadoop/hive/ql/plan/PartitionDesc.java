@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -54,13 +56,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 @Explain(displayName = "Partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class PartitionDesc implements Serializable, Cloneable {
 
-  static {
-    STRING_INTERNER = Interners.newWeakInterner();
-    CLASS_INTERNER = Interners.newWeakInterner();
-  }
-
-  private static final Interner<String> STRING_INTERNER;
-  private static final Interner<Class<?>> CLASS_INTERNER;
+  private static final Interner<Class<?>> CLASS_INTERNER = Interners.newWeakInterner();
 
   private TableDesc tableDesc;
   private LinkedHashMap<String, String> partSpec;
@@ -73,7 +69,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private VectorPartitionDesc vectorPartitionDesc;
 
   public void setBaseFileName(String baseFileName) {
-    this.baseFileName = baseFileName;
+    this.baseFileName = baseFileName.intern();
   }
 
   public PartitionDesc() {
@@ -81,12 +77,12 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
     this.tableDesc = table;
-    this.partSpec = partSpec;
+    setPartSpec(partSpec);
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
     PartitionDescConstructorHelper(part, getTableDesc(part.getTable()), true);
-    if(Utilities.isInputFileFormatSelfDescribing(this)) {
+    if (Utilities.isInputFileFormatSelfDescribing(this)) {
       // if IF is self describing no need to send column info per partition, since its not used anyway.
       Table tbl = part.getTable();
       setProperties(MetaStoreUtils.getSchemaWithoutCols(part.getTPartition().getSd(), part.getTPartition().getSd(),
@@ -107,7 +103,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc(final Partition part,final TableDesc tblDesc,
     boolean usePartSchemaProperties)
     throws HiveException {
-    PartitionDescConstructorHelper(part,tblDesc, usePartSchemaProperties);
+    PartitionDescConstructorHelper(part, tblDesc, usePartSchemaProperties);
     //We use partition schema properties to set the partition descriptor properties
     // if usePartSchemaProperties is set to true.
     if (usePartSchemaProperties) {
@@ -120,8 +116,12 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   private void PartitionDescConstructorHelper(final Partition part,final TableDesc tblDesc, boolean setInputFileFormat)
     throws HiveException {
+
+    PlanUtils.configureInputJobPropertiesForStorageHandler(tblDesc);
+
     this.tableDesc = tblDesc;
-    this.partSpec = part.getSpec();
+
+    setPartSpec(part.getSpec());
     if (setInputFileFormat) {
       setInputFileFormatClass(part.getInputFormatClass());
     } else {
@@ -145,10 +145,11 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setPartSpec(final LinkedHashMap<String, String> partSpec) {
+    StringInternUtils.internValuesInMap(partSpec);
     this.partSpec = partSpec;
   }
 
-    public Class<? extends InputFormat> getInputFileFormatClass() {
+  public Class<? extends InputFormat> getInputFileFormatClass() {
     if (inputFileFormatClass == null && tableDesc != null) {
       setInputFileFormatClass(tableDesc.getInputFileFormatClass());
     }
@@ -218,8 +219,12 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
-    internProperties(properties);
-    this.properties = properties;
+    if (properties instanceof CopyOnFirstWriteProperties) {
+      this.properties = properties;
+    } else {
+      internProperties(properties);
+      this.properties = new CopyOnFirstWriteProperties(properties);
+    }
   }
 
   private static TableDesc getTableDesc(Table table) {
@@ -233,8 +238,7 @@ public class PartitionDesc implements Serializable, Cloneable {
       String key = (String) keys.nextElement();
       String oldValue = properties.getProperty(key);
       if (oldValue != null) {
-        String value = STRING_INTERNER.intern(oldValue);
-        properties.setProperty(key, value);
+        properties.setProperty(key, oldValue.intern());
       }
     }
   }
@@ -278,19 +282,12 @@ public class PartitionDesc implements Serializable, Cloneable {
     ret.inputFileFormatClass = inputFileFormatClass;
     ret.outputFileFormatClass = outputFileFormatClass;
     if (properties != null) {
-      Properties newProp = new Properties();
-      Enumeration<Object> keysProp = properties.keys();
-      while (keysProp.hasMoreElements()) {
-        Object key = keysProp.nextElement();
-        newProp.put(key, properties.get(key));
-      }
-      ret.setProperties(newProp);
+      ret.setProperties((Properties) properties.clone());
     }
     ret.tableDesc = (TableDesc) tableDesc.clone();
     // The partition spec is not present
     if (partSpec != null) {
-      ret.partSpec = new java.util.LinkedHashMap<String, String>();
-      ret.partSpec.putAll(partSpec);
+      ret.partSpec = new LinkedHashMap<>(partSpec);
     }
     if (vectorPartitionDesc != null) {
       ret.vectorPartitionDesc = vectorPartitionDesc.clone();
@@ -374,12 +371,11 @@ public class PartitionDesc implements Serializable, Cloneable {
    *          URI to the partition file
    */
   public void deriveBaseFileName(Path path) {
-    PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
 
     if (path == null) {
       return;
     }
-    baseFileName = path.getName();
+    baseFileName = path.getName().intern();
   }
 
   public void intern(Interner<TableDesc> interner) {

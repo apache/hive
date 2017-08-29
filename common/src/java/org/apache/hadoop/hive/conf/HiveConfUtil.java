@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.conf;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,11 +93,31 @@ public class HiveConfUtil {
    * @param hiddenSet The values to strip
    */
   public static void stripConfigurations(Configuration conf, Set<String> hiddenSet) {
-    for (String name : hiddenSet) {
-      if (conf.get(name) != null) {
-        conf.set(name, "");
-      }
-    }
+
+    // Find all configurations where the key contains any string from hiddenSet
+    Iterable<Map.Entry<String, String>> matching =
+        Iterables.filter(conf, confEntry -> {
+          for (String name : hiddenSet) {
+            if (confEntry.getKey().startsWith(name)) {
+              return true;
+            }
+          }
+          return false;
+        });
+
+    // Remove the value of every key found matching
+    matching.forEach(entry -> conf.set(entry.getKey(), StringUtils.EMPTY));
+  }
+
+  /**
+   * Searches the given configuration object and replaces all the configuration values for keys
+   * defined hive.conf.hidden.list by empty String
+   *
+   * @param conf - Configuration object which needs to be modified to remove sensitive keys
+   */
+  public static void stripConfigurations(Configuration conf) {
+    Set<String> hiddenSet = getHiddenSet(conf);
+    stripConfigurations(conf, hiddenSet);
   }
 
   public static void dumpConfig(Configuration originalConf, StringBuilder sb) {
@@ -140,6 +161,7 @@ public class HiveConfUtil {
    * password is through a file which stores the password in clear-text which needs to be readable
    * by all the consumers and therefore is not supported.
    *
+   *<ul>
    * <li>If HIVE_SERVER2_JOB_CREDENTIAL_PROVIDER_PATH is set in the hive configuration this method
    * overrides the MR job configuration property hadoop.security.credential.provider.path with its
    * value. If not set then it does not change the value of hadoop.security.credential.provider.path
@@ -150,7 +172,7 @@ public class HiveConfUtil {
    *   (2) If password is not set using (1) above we use HADOOP_CREDSTORE_PASSWORD if it is set.
    *   (3) If none of those are set, we do not set any password in the MR task environment. In this
    *       case the hadoop credential provider should use the default password of "none" automatically
-   *
+   *</ul>
    * @param jobConf - job specific configuration
    */
   public static void updateJobCredentialProviders(Configuration jobConf) {

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,6 +54,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
   @Before
   public void setUp() {
     dummyMRTask = new MapRedTask();
+    SessionState.start(hiveConf);
   }
 
   @Test

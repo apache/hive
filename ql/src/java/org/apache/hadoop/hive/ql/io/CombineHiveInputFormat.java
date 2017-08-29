@@ -35,12 +35,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -340,15 +344,19 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // combine splits only from same tables and same partitions. Do not combine splits from multiple
     // tables or multiple partitions.
-    Path[] paths = combine.getInputPathsShim(job);
+    Path[] paths = StringInternUtils.internUriStringsInPathArray(combine.getInputPathsShim(job));
 
     List<Path> inpDirs = new ArrayList<Path>();
     List<Path> inpFiles = new ArrayList<Path>();
     Map<CombinePathInputFormat, CombineFilter> poolMap =
       new HashMap<CombinePathInputFormat, CombineFilter>();
     Set<Path> poolSet = new HashSet<Path>();
+    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
 
     for (Path path : paths) {
+      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        throw new IOException("Operation is Canceled. ");
+
       PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
@@ -602,7 +610,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // 2. the alias it serves is not sampled
         // 3. it serves different alias than another path for the same split
         if (l.size() != 1 || !nameToSamples.containsKey(l.get(0)) ||
-            (alias != null && l.get(0) != alias)) {
+            (alias != null && !alias.equals(l.get(0)))) {
           alias = null;
           break;
         }
@@ -660,6 +668,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Map<Path, ArrayList<String>> result = new HashMap<>();
     for (Map.Entry <Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
       Path newKey = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
+      StringInternUtils.internUriStringsInPath(newKey);
       result.put(newKey, entry.getValue());
     }
     return result;

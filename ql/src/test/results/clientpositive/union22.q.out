@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+PREHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dst_union22
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+POSTHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dst_union22
@@ -48,9 +44,7 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -63,9 +57,7 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -107,6 +99,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns k0,k1,k2,k3,k4,k5
                     columns.comments 
                     columns.types string:string:string:string:string:string
@@ -128,6 +121,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
                       columns.types string:string:string:string:string:string
@@ -184,7 +178,7 @@ STAGE PLANS:
                 Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
-                       Left Outer Join0 to 1
+                       Left Outer Join 0 to 1
                   filter mappings:
                     0 [1, 1]
                   filter predicates:
@@ -209,6 +203,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           properties:
+                            column.name.delimiter ,
                             columns _col0,_col1,_col2,_col3
                             columns.types string,string,string,string
                             escape.delim \
@@ -232,6 +227,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns k1,k2,k3,k4
               columns.comments 
               columns.types string:string:string:string
@@ -253,6 +249,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
                 columns.types string:string:string:string
@@ -277,6 +274,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
               columns.comments 
               columns.types string:string:string:string:string:string
@@ -298,6 +296,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 
                 columns.types string:string:string:string:string:string
@@ -345,6 +344,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           bucket_count -1
+                          column.name.delimiter ,
                           columns k1,k2,k3,k4
                           columns.comments 
                           columns.types string:string:string:string
@@ -378,6 +378,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
                       columns.types string:string:string:string
@@ -403,6 +404,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col1,_col2,_col3
               columns.types string,string,string,string
               escape.delim \
@@ -412,6 +414,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col1,_col2,_col3
                 columns.types string,string,string,string
                 escape.delim \
@@ -427,6 +430,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
               columns.comments 
               columns.types string:string:string:string:string:string
@@ -448,6 +452,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 
                 columns.types string:string:string:string:string:string
@@ -478,6 +483,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
                 columns.types string:string:string:string
@@ -554,6 +560,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns k1,k2,k3,k4
               columns.comments 
               columns.types string:string:string:string
@@ -575,6 +582,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
                 columns.types string:string:string:string
@@ -599,6 +607,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns k0,k1,k2,k3,k4,k5
               columns.comments 
               columns.types string:string:string:string:string:string
@@ -620,6 +629,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k0,k1,k2,k3,k4,k5
                 columns.comments 
                 columns.types string:string:string:string:string:string
@@ -641,7 +651,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
+               Left Outer Join 0 to 1
           filter mappings:
             0 [1, 1]
           filter predicates:
@@ -665,6 +675,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   properties:
+                    column.name.delimiter ,
                     columns _col0,_col1,_col2,_col3
                     columns.types string,string,string,string
                     escape.delim \

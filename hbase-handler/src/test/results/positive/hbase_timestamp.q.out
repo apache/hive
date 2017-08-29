@@ -2,13 +2,13 @@ PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time timestamp)
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time timestamp)
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 POSTHOOK: type: CREATETABLE
@@ -69,13 +69,13 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 POSTHOOK: type: CREATETABLE
@@ -89,11 +89,11 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table SELECT key, value, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table
+PREHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table
+POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
@@ -125,13 +125,13 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+PREHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, time bigint)
+POSTHOOK: query: CREATE TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
 POSTHOOK: type: CREATETABLE
@@ -156,10 +156,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -193,21 +193,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+PREHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time < 200000000000
+POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` < 200000000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 165	val_165	1973-03-03 01:46:40
 396	val_396	1973-03-03 01:46:40
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -241,11 +241,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+PREHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time > 100000000000
+POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` > 100000000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
@@ -254,10 +254,10 @@ POSTHOOK: Input: default@hbase_table
 296	val_296	1976-05-03 12:33:20
 333	val_333	1976-05-03 12:33:20
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -291,21 +291,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+PREHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time <= 100000000000
+POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` <= 100000000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
 165	val_165	1973-03-03 01:46:40
 396	val_396	1973-03-03 01:46:40
 PREHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -339,11 +339,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+PREHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value, cast(time as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND time >= 200000000000
+POSTHOOK: query: SELECT key, value, cast(`time` as timestamp) FROM hbase_table WHERE key > 100 AND key < 400 AND `time` >= 200000000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table
 #### A masked pattern was here ####
@@ -359,13 +359,13 @@ POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
 POSTHOOK: Output: default@hbase_table
-PREHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, time timestamp)
+PREHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
-POSTHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, time timestamp)
+POSTHOOK: query: CREATE TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:,:timestamp")
 POSTHOOK: type: CREATETABLE

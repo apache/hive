@@ -5,9 +5,6 @@ set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set hive.default.fileformat=RCFILE;
 
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
 DROP TABLE IF EXISTS escape2;
 DROP TABLE IF EXISTS escape_raw;
 
@@ -29,12 +26,12 @@ SHOW PARTITIONS escape2;
 
 ALTER table escape2 PARTITION (ds='1', part=' ') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='!') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='"') CONCATENATE;
+ALTER TABLE escape2 PARTITION (ds='1', part='\"') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='#') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='$') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='%') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='&') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part="'") CONCATENATE;
+ALTER TABLE escape2 PARTITION (ds='1', part="\'") CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='(') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part=')') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='*') CONCATENATE;
@@ -89,32 +86,6 @@ ALTER TABLE escape2 PARTITION (ds='1', part='[') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part=']') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='_') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='`') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='a') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='b') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='c') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='d') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='e') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='f') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='g') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='h') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='i') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='j') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='k') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='l') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='m') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='n') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='o') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='p') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='q') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='r') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='s') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='t') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='u') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='v') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='w') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='x') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='y') CONCATENATE;
-ALTER TABLE escape2 PARTITION (ds='1', part='z') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='{') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='|') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='}') CONCATENATE;

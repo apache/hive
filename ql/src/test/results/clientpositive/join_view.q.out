@@ -22,22 +22,21 @@ POSTHOOK: query: create table invites2 (foo int, bar string) partitioned by (ds 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites2
-PREHOOK: query: -- test join views: see HIVE-1989
-
-create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
+PREHOOK: query: create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@invites
 PREHOOK: Input: default@invites2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v
-POSTHOOK: query: -- test join views: see HIVE-1989
-
-create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
+POSTHOOK: query: create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@invites
 POSTHOOK: Input: default@invites2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.bar SIMPLE [(invites)invites.FieldSchema(name:bar, type:string, comment:null), ]
+POSTHOOK: Lineage: v.ds SIMPLE [(invites2)invites2.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: v.foo SIMPLE [(invites2)invites2.FieldSchema(name:foo, type:int, comment:null), ]
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select * from v where ds='2011-09-01'
 PREHOOK: type: QUERY

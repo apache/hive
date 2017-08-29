@@ -15,6 +15,7 @@ load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_m
 
 
 
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 create table bucketmapjoin_tmp_result (key string , value1 string, value2 string);
 

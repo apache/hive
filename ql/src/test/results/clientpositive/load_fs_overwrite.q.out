@@ -1,10 +1,6 @@
-PREHOOK: query: --HIVE 6209
-
-drop table target
+PREHOOK: query: drop table target
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: --HIVE 6209
-
-drop table target
+POSTHOOK: query: drop table target
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table temp
 PREHOOK: type: DROPTABLE

@@ -120,7 +120,7 @@ public class Rpc implements Closeable {
       }
     };
     final ScheduledFuture<?> timeoutFuture = eloop.schedule(timeoutTask,
-        rpcConf.getServerConnectTimeoutMs(), TimeUnit.MILLISECONDS);
+        connectTimeoutMs, TimeUnit.MILLISECONDS);
 
     // The channel listener instantiates the Rpc instance when the connection is established,
     // and initiates the SASL handshake.
@@ -221,7 +221,6 @@ public class Rpc implements Closeable {
   private final Channel channel;
   private final Collection<Listener> listeners;
   private final EventExecutorGroup egroup;
-  private final Object channelLock;
   private volatile RpcDispatcher dispatcher;
 
   private Rpc(RpcConfiguration config, Channel channel, EventExecutorGroup egroup) {
@@ -229,7 +228,6 @@ public class Rpc implements Closeable {
     Preconditions.checkArgument(egroup != null);
     this.config = config;
     this.channel = channel;
-    this.channelLock = new Object();
     this.dispatcher = null;
     this.egroup = egroup;
     this.listeners = Lists.newLinkedList();
@@ -239,8 +237,9 @@ public class Rpc implements Closeable {
     // Note: this does not work for embedded channels.
     channel.pipeline().addLast("monitor", new ChannelInboundHandlerAdapter() {
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) {
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
           close();
+          super.channelInactive(ctx);
         }
     });
   }
@@ -271,13 +270,13 @@ public class Rpc implements Closeable {
    * @param retType Type of expected reply.
    * @return A future used to monitor the operation.
    */
-  public <T> Future<T> call(Object msg, Class<T> retType) {
+  public <T> Future<T> call(final Object msg, Class<T> retType) {
     Preconditions.checkArgument(msg != null);
     Preconditions.checkState(channel.isActive(), "RPC channel is closed.");
     try {
       final long id = rpcId.getAndIncrement();
       final Promise<T> promise = createPromise();
-      ChannelFutureListener listener = new ChannelFutureListener() {
+      final ChannelFutureListener listener = new ChannelFutureListener() {
           @Override
           public void operationComplete(ChannelFuture cf) {
             if (!cf.isSuccess() && !promise.isDone()) {
@@ -290,10 +289,13 @@ public class Rpc implements Closeable {
       };
 
       dispatcher.registerRpc(id, promise, msg.getClass().getName());
-      synchronized (channelLock) {
-        channel.write(new MessageHeader(id, Rpc.MessageType.CALL)).addListener(listener);
-        channel.writeAndFlush(msg).addListener(listener);
-      }
+      channel.eventLoop().submit(new Runnable() {
+        @Override
+        public void run() {
+          channel.write(new MessageHeader(id, Rpc.MessageType.CALL)).addListener(listener);
+          channel.writeAndFlush(msg).addListener(listener);
+        }
+      });
       return promise;
     } catch (Exception e) {
       throw Throwables.propagate(e);
@@ -489,7 +491,12 @@ public class Rpc implements Closeable {
     void sendHello(Channel c) throws Exception {
       byte[] hello = client.hasInitialResponse() ?
         client.evaluateChallenge(new byte[0]) : new byte[0];
-      c.writeAndFlush(new SaslMessage(clientId, hello));
+      c.writeAndFlush(new SaslMessage(clientId, hello)).addListener(future -> {
+        if (!future.isSuccess()) {
+          LOG.error("Failed to send hello to server", future.cause());
+          onError(future.cause());
+        }
+      });
     }
 
   }

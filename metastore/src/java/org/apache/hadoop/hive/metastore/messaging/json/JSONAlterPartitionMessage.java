@@ -34,7 +34,10 @@ import java.util.Map;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
+
+  @JsonProperty
+  String isTruncateOp;
 
   @JsonProperty
   Long timestamp;
@@ -52,11 +55,13 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   }
 
   public JSONAlterPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Partition partitionObjBefore, Partition partitionObjAfter, Long timestamp) {
+      Partition partitionObjBefore, Partition partitionObjAfter, boolean isTruncateOp, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
+    this.isTruncateOp = Boolean.toString(isTruncateOp);
     this.timestamp = timestamp;
     this.keyValues = JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObjBefore);
     try {
@@ -93,6 +98,14 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   public String getTable() {
     return table;
   }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
+  public boolean getIsTruncateOp() { return Boolean.parseBoolean(isTruncateOp); }
 
   @Override
   public Map<String, String> getKeyValues() {

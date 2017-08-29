@@ -96,7 +96,7 @@ public class TestTableOutputFormat {
       }
     });
 
-    when(mockResultSet.getString(Matchers.anyInt())).thenAnswer(new Answer<String>() {
+    when(mockResultSet.getObject(Matchers.anyInt())).thenAnswer(new Answer<String>() {
       @Override
       public String answer(final InvocationOnMock invocation) {
         Object[] args = invocation.getArguments();

@@ -59,6 +59,11 @@ public class VectorizedRowBatch implements Writable {
    */
   public static final int DEFAULT_SIZE = 1024;
 
+  /*
+   * This number is a safety limit for 32MB of writables.
+   */
+  public static final int DEFAULT_BYTES = 32 * 1024 * 1024;
+
   /**
    * Return a batch with the specified number of columns.
    * This is the standard constructor -- all batches should be the same size
@@ -137,6 +142,43 @@ public class VectorizedRowBatch implements Writable {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("Column vector types: ");
+    for (int k = 0; k < projectionSize; k++) {
+      int projIndex = projectedColumns[k];
+      ColumnVector cv = cols[projIndex];
+      if (k > 0) {
+        b.append(", ");
+      }
+      b.append(projIndex);
+      b.append(":");
+      String colVectorType = null;
+      if (cv instanceof LongColumnVector) {
+        colVectorType = "LONG";
+      } else if (cv instanceof DoubleColumnVector) {
+        colVectorType = "DOUBLE";
+      } else if (cv instanceof BytesColumnVector) {
+        colVectorType = "BYTES";
+      } else if (cv instanceof DecimalColumnVector) {
+        colVectorType = "DECIMAL";
+      } else if (cv instanceof TimestampColumnVector) {
+        colVectorType = "TIMESTAMP";
+      } else if (cv instanceof IntervalDayTimeColumnVector) {
+        colVectorType = "INTERVAL_DAY_TIME";
+      } else if (cv instanceof ListColumnVector) {
+        colVectorType = "LIST";
+      } else if (cv instanceof MapColumnVector) {
+        colVectorType = "MAP";
+      } else if (cv instanceof StructColumnVector) {
+        colVectorType = "STRUCT";
+      } else if (cv instanceof UnionColumnVector) {
+        colVectorType = "UNION";
+      } else {
+        colVectorType = "Unknown";
+      }
+      b.append(colVectorType);
+    }
+    b.append('\n');
+
     if (this.selectedInUse) {
       for (int j = 0; j < size; j++) {
         int i = selected[j];
@@ -164,7 +206,11 @@ public class VectorizedRowBatch implements Writable {
             b.append(", ");
           }
           if (cv != null) {
-            cv.stringifyValue(b, i);
+            try {
+              cv.stringifyValue(b, i);
+            } catch (Exception ex) {
+              b.append("<invalid>");
+            }
           }
         }
         b.append(']');

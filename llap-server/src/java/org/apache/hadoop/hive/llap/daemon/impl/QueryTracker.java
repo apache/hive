@@ -21,10 +21,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.MDC;
 import org.apache.logging.slf4j.Log4jMarker;
 import org.apache.tez.common.CallableWithNdc;
@@ -68,8 +70,6 @@ public class QueryTracker extends AbstractService {
 
   private final ConcurrentHashMap<QueryIdentifier, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
 
-
-
   private final String[] localDirsBase;
   private final FileSystem localFs;
   private final String clusterId;
@@ -89,7 +89,7 @@ public class QueryTracker extends AbstractService {
 
 
   private final Lock lock = new ReentrantLock();
-  private final ConcurrentMap<QueryIdentifier, ReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
+  private final ConcurrentMap<QueryIdentifier, ReentrantReadWriteLock> dagSpecificLocks = new ConcurrentHashMap<>();
 
   // Tracks various maps for dagCompletions. This is setup here since stateChange messages
   // may be processed by a thread which ends up executing before a task.
@@ -119,7 +119,7 @@ public class QueryTracker extends AbstractService {
     int numCleanerThreads = HiveConf.getIntVar(
         conf, ConfVars.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS);
     this.executorService = Executors.newScheduledThreadPool(numCleanerThreads,
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryFileCleaner %d").build());
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryCompletionThread %d").build());
 
     String logger = HiveConf.getVar(conf, ConfVars.LLAP_DAEMON_LOGGER);
     if (logger != null && (logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING))) {
@@ -136,19 +136,23 @@ public class QueryTracker extends AbstractService {
    * Register a new fragment for a specific query
    */
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
-      String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
-      String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-      String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
+    String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber,
+    int attemptNumber,
+    String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
+    String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
+    // Note: This is a readLock to prevent a race with queryComplete. Operations
+    // and mutations within this lock need to be on concurrent structures.
     dagLock.readLock().lock();
     try {
       if (completedDagMap.contains(queryIdentifier)) {
         // Cleanup the dag lock here, since it may have been created after the query completed
         dagSpecificLocks.remove(queryIdentifier);
-        throw new RuntimeException(
-            "Dag " + dagName + " already complete. Rejecting fragment ["
-                + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]");
+        String message = "Dag " + dagName + " already complete. Rejecting fragment ["
+            + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]";
+        LOG.info(message);
+        throw new RuntimeException(message);
       }
       // TODO: for now, we get the secure username out of UGI... after signing, we can take it
       //       out of the request provided that it's signed.
@@ -165,7 +169,8 @@ public class QueryTracker extends AbstractService {
             new QueryInfo(queryIdentifier, appIdString, dagIdString, dagName, hiveQueryIdString,
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
-                tokenInfo.userName, tokenInfo.appId);
+                tokenInfo.userName, tokenInfo.appId, amNodeId, vertex.getTokenIdentifier(), appToken,
+                vertex.getIsExternalSubmission());
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
@@ -184,9 +189,11 @@ public class QueryTracker extends AbstractService {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
       }
-      ShuffleHandler.get()
-          .registerDag(appIdString, dagIdentifier, appToken,
-              user, queryInfo.getLocalDirs());
+      if (!vertex.getIsExternalSubmission()) {
+        ShuffleHandler.get()
+            .registerDag(appIdString, dagIdentifier, appToken,
+                user, queryInfo.getLocalDirs());
+      }
 
       return queryInfo.registerFragment(
           vertexName, fragmentNumber, attemptNumber, vertex, fragmentIdString);
@@ -208,6 +215,25 @@ public class QueryTracker extends AbstractService {
       LOG.info("Ignoring fragmentComplete message for unknown query: {}", qId);
     } else {
       queryInfo.unregisterFragment(fragmentInfo);
+
+      // Try marking the query as complete if this is an external submission
+      handleFragmentCompleteExternalQuery(queryInfo);
+    }
+  }
+
+  List<QueryFragmentInfo> getRegisteredFragments(QueryIdentifier queryIdentifier) {
+    ReadWriteLock dagLock = getDagLock(queryIdentifier);
+    dagLock.readLock().lock();
+    try {
+      QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
+      if (queryInfo == null) {
+        // Race with queryComplete
+        LOG.warn("Unknown query: Returning an empty list of fragments");
+        return Collections.emptyList();
+      }
+      return queryInfo.getRegisteredFragments();
+    } finally {
+      dagLock.readLock().unlock();
     }
   }
 
@@ -216,46 +242,46 @@ public class QueryTracker extends AbstractService {
    * @param queryIdentifier
    * @param deleteDelay
    */
-  List<QueryFragmentInfo> queryComplete(QueryIdentifier queryIdentifier, long deleteDelay,
-      boolean isInternal) throws IOException {
+  QueryInfo queryComplete(QueryIdentifier queryIdentifier, long deleteDelay,
+      boolean isExternalQuery) throws IOException {
     if (deleteDelay == -1) {
       deleteDelay = defaultDeleteDelaySeconds;
     }
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     dagLock.writeLock().lock();
     try {
-      QueryInfo queryInfo = isInternal
+      // If isExternalQuery -> the call is from within hte daemon, so no permission check required
+      // to get access to the queryInfo instance.
+      QueryInfo queryInfo = isExternalQuery
           ? queryInfoMap.get(queryIdentifier) : checkPermissionsAndGetQuery(queryIdentifier);
-      rememberCompletedDag(queryIdentifier);
-      LOG.info("Processing queryComplete for queryIdentifier={} with deleteDelay={} seconds", queryIdentifier,
-          deleteDelay);
-      queryInfoMap.remove(queryIdentifier);
       if (queryInfo == null) {
+        // Should not happen.
         LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
-        return Collections.emptyList();
-      }
-      String[] localDirs = queryInfo.getLocalDirsNoCreate();
-      if (localDirs != null) {
-        for (String localDir : localDirs) {
-          cleanupDir(localDir, deleteDelay);
-          ShuffleHandler.get().unregisterDag(localDir, queryInfo.getAppIdString(), queryInfo.getDagIdentifier());
-        }
+        return null;
       }
 
-      if (routeBasedLoggingEnabled) {
-        // Inform the routing purgePolicy.
-        // Send out a fake log message at the ERROR level with the MDC for this query setup. With an
-        // LLAP custom appender this message will not be logged.
-        final String dagId = queryInfo.getDagIdString();
-        final String queryId = queryInfo.getHiveQueryIdString();
-        MDC.put("dagId", dagId);
-        MDC.put("queryId", queryId);
-        try {
-          LOG.error(QUERY_COMPLETE_MARKER, "Ignore this. Log line to interact with logger." +
-              " Query complete: " + queryInfo.getHiveQueryIdString() + ", " +
-              queryInfo.getDagIdString());
-        } finally {
-          MDC.clear();
+      LOG.info(
+          "Processing queryComplete for queryIdentifier={}, isExternalQuery={}, with deleteDelay={} seconds",
+          queryIdentifier, isExternalQuery,
+          deleteDelay);
+
+      queryInfoMap.remove(queryIdentifier);
+      if (!isExternalQuery) {
+        rememberCompletedDag(queryIdentifier);
+        cleanupLocalDirs(queryInfo, deleteDelay);
+        handleLogOnQueryCompletion(queryInfo.getHiveQueryIdString(), queryInfo.getDagIdString());
+      } else {
+        // If there's no pending fragments, queue some of the cleanup for a later point - locks, log rolling.
+        if (queryInfo.getRegisteredFragments().size() == 0) {
+          LOG.debug("Queueing future cleanup for external queryId: {}", queryInfo.getHiveQueryIdString());
+          executorService.schedule(new ExternalQueryCleanerCallable(queryInfo.getHiveQueryIdString(),
+                  queryInfo.getDagIdString(), queryInfo.getQueryIdentifier()), 1, TimeUnit.MINUTES);
+        } else {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace(
+                "NumRegisterFragments={}, Not queuing cleanup for external queryId={}",
+                queryInfo.getRegisteredFragments().size(), queryInfo.getHiveQueryIdString());
+          }
         }
       }
 
@@ -265,16 +291,49 @@ public class QueryTracker extends AbstractService {
       // should not be allowed after a query complete is received.
       sourceCompletionMap.remove(queryIdentifier);
       String savedQueryId = queryIdentifierToHiveQueryId.remove(queryIdentifier);
-      dagSpecificLocks.remove(queryIdentifier);
+      if (!isExternalQuery) {
+        removeQuerySpecificLock(queryIdentifier);
+      }
       if (savedQueryId != null) {
         ObjectCacheFactory.removeLlapQueryCache(savedQueryId);
       }
-      return queryInfo.getRegisteredFragments();
+      return queryInfo;
     } finally {
       dagLock.writeLock().unlock();
     }
   }
 
+
+  private void cleanupLocalDirs(QueryInfo queryInfo, long deleteDelay) {
+    String[] localDirs = queryInfo.getLocalDirsNoCreate();
+    if (localDirs != null) {
+      for (String localDir : localDirs) {
+        cleanupDir(localDir, deleteDelay);
+        ShuffleHandler.get().unregisterDag(localDir, queryInfo.getAppIdString(), queryInfo.getDagIdentifier());
+      }
+    }
+  }
+
+  private void handleLogOnQueryCompletion(String queryIdString, String dagIdString) {
+    if (routeBasedLoggingEnabled) {
+      // Inform the routing purgePolicy.
+      // Send out a fake log message at the ERROR level with the MDC for this query setup. With an
+      // LLAP custom appender this message will not be logged.
+      MDC.put("dagId", dagIdString);
+      MDC.put("queryId", queryIdString);
+      try {
+        LOG.error(QUERY_COMPLETE_MARKER, "Ignore this. Log line to interact with logger." +
+            " Query complete: " + queryIdString + ", " +
+            dagIdString);
+      } finally {
+        MDC.clear();
+      }
+    }
+  }
+
+  private void removeQuerySpecificLock(QueryIdentifier queryIdentifier) {
+    dagSpecificLocks.remove(queryIdentifier);
+  }
 
 
   public void rememberCompletedDag(QueryIdentifier queryIdentifier) {
@@ -304,11 +363,14 @@ public class QueryTracker extends AbstractService {
     }
   }
 
+  private ReentrantReadWriteLock getDagLockNoCreate(QueryIdentifier queryIdentifier) {
+    return dagSpecificLocks.get(queryIdentifier);
+  }
 
-  private ReadWriteLock getDagLock(QueryIdentifier queryIdentifier) {
+  private ReentrantReadWriteLock getDagLock(QueryIdentifier queryIdentifier) {
     lock.lock();
     try {
-      ReadWriteLock dagLock = dagSpecificLocks.get(queryIdentifier);
+      ReentrantReadWriteLock dagLock = dagSpecificLocks.get(queryIdentifier);
       if (dagLock == null) {
         dagLock = new ReentrantReadWriteLock();
         dagSpecificLocks.put(queryIdentifier, dagLock);
@@ -382,6 +444,58 @@ public class QueryTracker extends AbstractService {
     }
   }
 
+  private class ExternalQueryCleanerCallable extends CallableWithNdc<Void> {
+
+    private final String queryIdString;
+    private final String dagIdString;
+    private final QueryIdentifier queryIdentifier;
+
+    public ExternalQueryCleanerCallable(String queryIdString, String dagIdString,
+                                        QueryIdentifier queryIdentifier) {
+      this.queryIdString = queryIdString;
+      this.dagIdString = dagIdString;
+      this.queryIdentifier = queryIdentifier;
+    }
+
+    @Override
+    protected Void callInternal() {
+      LOG.info("External cleanup callable for {}", queryIdentifier);
+      ReentrantReadWriteLock dagLock = getDagLockNoCreate(queryIdentifier);
+      if (dagLock == null) {
+        if (LOG.isTraceEnabled()) {
+          LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
+        }
+        return null;
+      }
+      boolean locked = dagLock.writeLock().tryLock();
+      if (!locked) {
+        // Something else holds the lock at the moment. Don't bother cleaning up.
+        if (LOG.isTraceEnabled()) {
+          LOG.trace("Lock not obtained. Skipping cleanup for {}", queryIdString);
+        }
+        return null;
+      }
+      try {
+        // See if there are additional knownFragments. If there are, more fragments came in
+        // after this cleanup was scheduled, and there's nothing to be done.
+        QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
+        if (queryInfo != null) {
+          // QueryInfo will only exist if more work came in, after this was scheduled.
+          if (LOG.isTraceEnabled()) {
+            LOG.info("QueryInfo found for {}. Expecting future cleanup", queryIdString);
+          }
+          return null;
+        }
+        LOG.info("Processing cleanup for {}", queryIdString);
+        handleLogOnQueryCompletion(queryIdString, dagIdString);
+        removeQuerySpecificLock(queryIdentifier);
+      } finally {
+        dagLock.writeLock().unlock();
+      }
+      return null;
+    }
+  }
+
   private QueryInfo checkPermissionsAndGetQuery(QueryIdentifier queryId) throws IOException {
     QueryInfo queryInfo = queryInfoMap.get(queryId);
     if (queryInfo == null) return null;
@@ -392,5 +506,38 @@ public class QueryTracker extends AbstractService {
 
   public boolean checkPermissionsForQuery(QueryIdentifier queryId) throws IOException {
     return checkPermissionsAndGetQuery(queryId) != null;
+  }
+
+
+  private void handleFragmentCompleteExternalQuery(QueryInfo queryInfo) {
+    if (queryInfo.isExternalQuery()) {
+      ReentrantReadWriteLock dagLock = getDagLock(queryInfo.getQueryIdentifier());
+      if (dagLock == null) {
+        LOG.warn("Ignoring fragment completion for unknown query: {}",
+            queryInfo.getQueryIdentifier());
+      }
+      boolean locked = dagLock.writeLock().tryLock();
+      if (!locked) {
+        // Some other operation in progress using the same lock.
+        // A subsequent fragmentComplete is expected to come in.
+        return;
+      }
+      try {
+         if (queryInfo.getRegisteredFragments().size() == 0) {
+           queryComplete(queryInfo.getQueryIdentifier(), -1, true);
+         } else {
+           if (LOG.isTraceEnabled()) {
+             LOG.trace(
+                 "Not invoking queryComplete on fragmentComplete for {}, since there are known fragments. count={}",
+                 queryInfo.getHiveQueryIdString(), queryInfo.getRegisteredFragments().size());
+           }
+         }
+      } catch (IOException e) {
+        LOG.error("Failed to process query complete for external submission: {}",
+            queryInfo.getQueryIdentifier());
+      } finally {
+        dagLock.writeLock().unlock();
+      }
+    }
   }
 }

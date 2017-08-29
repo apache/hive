@@ -262,7 +262,7 @@ public class HCatLoader extends HCatBaseLoader {
       ResourceStatistics stats = new ResourceStatistics();
       InputJobInfo inputJobInfo = (InputJobInfo) HCatUtil.deserialize(
         job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
-      stats.setmBytes(getSizeInBytes(inputJobInfo) / 1024 / 1024);
+      stats.setSizeInBytes(getSizeInBytes(inputJobInfo));
       return stats;
     } catch (Exception e) {
       throw new IOException(e);

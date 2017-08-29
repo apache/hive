@@ -19,7 +19,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -113,7 +113,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -150,8 +150,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -173,6 +174,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -289,8 +291,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -312,6 +315,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -390,7 +394,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -428,8 +432,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -451,6 +456,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -539,8 +545,8 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -574,8 +580,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -597,6 +604,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -619,8 +627,9 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -642,6 +651,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -694,8 +704,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -717,6 +728,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -739,8 +751,9 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -762,6 +775,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -974,8 +988,9 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -997,6 +1012,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1019,8 +1035,9 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1042,6 +1059,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1064,8 +1082,9 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1087,6 +1106,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1213,8 +1233,9 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1236,6 +1257,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1259,8 +1281,9 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1282,6 +1305,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1305,8 +1329,9 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1328,6 +1353,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1412,7 +1438,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1450,8 +1476,9 @@ STAGE PLANS:
                   partition values:
                     ds 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1473,6 +1500,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1494,8 +1522,9 @@ STAGE PLANS:
                   partition values:
                     ds 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1517,6 +1546,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1620,12 +1650,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-08	2008-04-09
-PREHOOK: query: -- HIVE-3594 URI encoding for temporary path
-alter table TEST2 add partition (ds='01:10:10', hr='01')
+PREHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@test2
-POSTHOOK: query: -- HIVE-3594 URI encoding for temporary path
-alter table TEST2 add partition (ds='01:10:10', hr='01')
+POSTHOOK: query: alter table TEST2 add partition (ds='01:10:10', hr='01')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@ds=01%3A10%3A10/hr=01
@@ -1693,8 +1721,9 @@ STAGE PLANS:
                     ds 01:10:10
                     hr 01
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1716,6 +1745,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1738,8 +1768,9 @@ STAGE PLANS:
                     ds 01:10:20
                     hr 02
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1761,6 +1792,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1783,8 +1815,9 @@ STAGE PLANS:
                     ds 1
                     hr 1
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1806,6 +1839,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1828,8 +1862,9 @@ STAGE PLANS:
                     ds 1
                     hr 2
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1851,6 +1886,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double
@@ -1873,8 +1909,9 @@ STAGE PLANS:
                     ds 1
                     hr 3
                   properties:
-                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                    COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns a,b
                     columns.comments 
                     columns.types int:double
@@ -1896,6 +1933,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns a,b
                       columns.comments 
                       columns.types int:double

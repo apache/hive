@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +55,24 @@ public class SetProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
 
   private static final String prefix = "set: ";
-  private static final Set<String> removedConfigs = Sets.newHashSet("hive.mapred.supports.subdirectories","hive.enforce.sorting","hive.enforce.bucketing", "hive.outerjoin.supports.filters");
+  private static final Set<String> removedConfigs =
+      Sets.newHashSet("hive.mapred.supports.subdirectories",
+          "hive.enforce.sorting","hive.enforce.bucketing",
+          "hive.outerjoin.supports.filters");
+  // Allow the user to set the ORC properties without getting an error.
+  static {
+    for(OrcConf var: OrcConf.values()) {
+      String name = var.getHiveConfName();
+      if (name != null && name.startsWith("hive.")) {
+        removedConfigs.add(name);
+      }
+    }
+  }
 
   private static final String[] PASSWORD_STRINGS = new String[] {"password", "paswd", "pswd"};
+
+  private static final Pattern TIME_ZONE_PATTERN =
+      Pattern.compile("^time(\\s)+zone\\s", Pattern.CASE_INSENSITIVE);
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -196,17 +214,22 @@ public class SetProcessor implements CommandProcessor {
       : new CommandProcessorResponse(0, Lists.newArrayList(nonErrorMessage));
   }
 
+  static String setConf(String varname, String key, String varvalue, boolean register)
+        throws IllegalArgumentException {
+    return setConf(SessionState.get(), varname, key, varvalue, register);
+  }
+
   /**
    * @return A console message that is not strong enough to fail the command (e.g. deprecation).
    */
-  static String setConf(String varname, String key, String varvalue, boolean register)
+  static String setConf(SessionState ss, String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
     String result = null;
-    HiveConf conf = SessionState.get().getConf();
+    HiveConf conf = ss.getConf();
     String value = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
-        return SessionState.get().getHiveVariables();
+        return ss.getHiveVariables();
       }
     }).substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
@@ -233,7 +256,7 @@ public class SetProcessor implements CommandProcessor {
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if (!"spark".equals(value)) {
-        SessionState.get().closeSparkSession();
+        ss.closeSparkSession();
       }
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();
@@ -241,7 +264,7 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     if (register) {
-      SessionState.get().getOverriddenConfigurations().put(key, value);
+      ss.getOverriddenConfigurations().put(key, value);
     }
     return result;
   }
@@ -363,6 +386,12 @@ public class SetProcessor implements CommandProcessor {
       }
       dumpOptions(properties);
       return createProcessorSuccessResponse();
+    }
+
+    // Special handling for time-zone
+    Matcher matcher = TIME_ZONE_PATTERN.matcher(nwcmd);
+    if (matcher.find()) {
+      nwcmd = HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname + "=" + nwcmd.substring(matcher.end());
     }
 
     String[] part = new String[2];

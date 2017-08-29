@@ -1,10 +1,6 @@
-PREHOOK: query: -- -*- mode:sql -*-
-
-DROP TABLE IF EXISTS hbase_bulk
+PREHOOK: query: DROP TABLE IF EXISTS hbase_bulk
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- -*- mode:sql -*-
-
-DROP TABLE IF EXISTS hbase_bulk
+POSTHOOK: query: DROP TABLE IF EXISTS hbase_bulk
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE hbase_bulk (key INT, value STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

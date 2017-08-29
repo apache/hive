@@ -12,7 +12,7 @@ PREHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -29,7 +29,7 @@ POSTHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -368,11 +368,11 @@ POSTHOOK: Input: default@over10k
 49.09	2
 67.28	3
 10.6	1
-PREHOOK: query: select d, ntile(1000) over (partition by dec order by d) from over10k limit 100
+PREHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select d, ntile(1000) over (partition by dec order by d) from over10k limit 100
+POSTHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####

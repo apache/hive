@@ -9,6 +9,8 @@ set hive.tez.dynamic.partition.pruning=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
+set hive.tez.min.bloom.filter.entries=1;
+set hive.tez.bigtable.minsize.semijoin.reduction=1;
 
 -- SORT_QUERY_RESULTS
 

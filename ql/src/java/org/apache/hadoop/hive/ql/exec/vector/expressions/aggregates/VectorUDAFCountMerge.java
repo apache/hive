@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -60,16 +61,13 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
       }
     }
 
-    private VectorExpression inputExpression = null;
-    transient private final LongWritable result;
+    transient private LongWritable result;
 
-    public VectorUDAFCountMerge(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+    public VectorUDAFCountMerge(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    public VectorUDAFCountMerge() {
-      super();
+    private void init() {
       result = new LongWritable(0);
     }
 
@@ -379,7 +377,7 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
     }
 
     @Override
-    public int getAggregationBufferFixedSize() {
+    public long getAggregationBufferFixedSize() {
       JavaDataModel model = JavaDataModel.get();
       return JavaDataModel.alignUp(
         model.object() +
@@ -390,15 +388,7 @@ public class VectorUDAFCountMerge extends VectorAggregateExpression {
 
     @Override
     public void init(AggregationDesc desc) throws HiveException {
-      // No-op
-    }
-
-    public VectorExpression getInputExpression() {
-      return inputExpression;
-    }
-
-    public void setInputExpression(VectorExpression inputExpression) {
-      this.inputExpression = inputExpression;
+      init();
     }
 }
 

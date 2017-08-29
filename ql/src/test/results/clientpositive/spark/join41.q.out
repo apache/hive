@@ -64,7 +64,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -95,12 +95,10 @@ POSTHOOK: Input: default@s1
 0	val_0	NULL	NULL
 0	val_0	NULL	NULL
 0	val_0	NULL	NULL
-PREHOOK: query: -- Make sure the big table is chosen correctly as part of HIVE-4146
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Make sure the big table is chosen correctly as part of HIVE-4146
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM s1 src1 LEFT OUTER JOIN s1 src2 ON (src1.key = src2.key AND src2.key > 10)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -151,7 +149,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)

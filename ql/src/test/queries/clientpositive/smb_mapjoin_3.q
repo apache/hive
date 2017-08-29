@@ -1,3 +1,4 @@
+set hive.cbo.enable=false;
 set hive.strict.checks.bucketing=false;
 
 -- SORT_QUERY_RESULTS

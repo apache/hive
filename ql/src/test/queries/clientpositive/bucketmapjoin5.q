@@ -23,7 +23,7 @@ load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_m
 
 create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint);
 create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 bigint);
-
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 create table bucketmapjoin_tmp_result (key string , value1 string, value2 string);
 

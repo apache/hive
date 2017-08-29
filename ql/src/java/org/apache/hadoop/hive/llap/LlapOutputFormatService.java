@@ -30,6 +30,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.LlapOutputSocketInitMessage;
+import org.apache.hadoop.hive.llap.io.ChunkedOutputStream;
 import org.apache.hadoop.hive.llap.security.SecretManager;
 
 import com.google.common.base.Preconditions;
@@ -197,8 +198,10 @@ public class LlapOutputFormatService {
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
       @SuppressWarnings("rawtypes")
-      LlapRecordWriter writer = new LlapRecordWriter(
-          new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites));
+      LlapRecordWriter writer = new LlapRecordWriter(id,
+          new ChunkedOutputStream(
+              new ChannelOutputStream(ctx, id, sendBufferSize, maxPendingWrites),
+              sendBufferSize, id));
       boolean isFailed = true;
       synchronized (lock) {
         if (!writers.containsKey(id)) {

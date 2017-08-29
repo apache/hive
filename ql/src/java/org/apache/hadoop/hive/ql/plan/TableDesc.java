@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -52,6 +53,7 @@ public class TableDesc implements Serializable, Cloneable {
   private Class<? extends OutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private Map<String, String> jobProperties;
+  private Map<String, String> jobSecrets;
 
   public TableDesc() {
   }
@@ -67,7 +69,7 @@ public class TableDesc implements Serializable, Cloneable {
     this.inputFileFormatClass = inputFormatClass;
     outputFileFormatClass = HiveFileFormatUtils
         .getOutputFormatSubstitute(outputFormatClass);
-    this.properties = properties;
+    setProperties(properties);
   }
 
   public Class<? extends Deserializer> getDeserializerClass() {
@@ -129,6 +131,7 @@ public class TableDesc implements Serializable, Cloneable {
   }
 
   public void setProperties(final Properties properties) {
+    StringInternUtils.internValuesInMap((Map) properties);
     this.properties = properties;
   }
 
@@ -139,6 +142,14 @@ public class TableDesc implements Serializable, Cloneable {
   @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
   public Map<String, String> getJobProperties() {
     return jobProperties;
+  }
+
+  public void setJobSecrets(Map<String, String> jobSecrets) {
+    this.jobSecrets = jobSecrets;
+  }
+
+  public Map<String, String> getJobSecrets() {
+    return jobSecrets;
   }
 
   /**

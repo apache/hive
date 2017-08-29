@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -30,7 +32,8 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
  * to be performed before a particular event occurs on a metastore. These methods
  * are called before an event occurs on metastore.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public abstract class MetaStorePreEventListener implements Configurable {
 
   private Configuration conf;

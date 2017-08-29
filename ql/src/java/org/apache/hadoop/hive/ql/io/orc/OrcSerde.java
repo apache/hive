@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -84,13 +85,14 @@ public class OrcSerde extends VectorizedSerde {
     String columnNameProperty = table.getProperty(serdeConstants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
     String columnTypeProperty = table.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
+    final String columnNameDelimiter = table.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? table
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     String compressType = OrcConf.COMPRESS.getString(table, conf);
 
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<String>();
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      for (String name : columnNameProperty.split(",")) {
+      for (String name : columnNameProperty.split(columnNameDelimiter)) {
         columnNames.add(name);
       }
     }

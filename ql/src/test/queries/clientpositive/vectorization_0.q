@@ -1,11 +1,13 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.vectorized.execution.reduce.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
 -- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -20,7 +22,7 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(ctinyint) as c1
 FROM   alltypesorc
 ORDER BY c1;
@@ -29,7 +31,7 @@ SELECT SUM(ctinyint) as c1
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN 
+EXPLAIN VECTORIZATION 
 SELECT
   avg(ctinyint) as c1,
   variance(ctinyint),
@@ -54,7 +56,7 @@ SELECT
 FROM alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(cbigint) as c1,
        MAX(cbigint),
        COUNT(cbigint),
@@ -69,7 +71,7 @@ SELECT MIN(cbigint) as c1,
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(cbigint) as c1
 FROM   alltypesorc
 ORDER BY c1;
@@ -78,7 +80,7 @@ SELECT SUM(cbigint) as c1
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN 
+EXPLAIN VECTORIZATION 
 SELECT
   avg(cbigint) as c1,
   variance(cbigint),
@@ -103,7 +105,7 @@ SELECT
 FROM alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
        COUNT(cfloat),
@@ -118,7 +120,7 @@ SELECT MIN(cfloat) as c1,
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT SUM(cfloat) as c1
 FROM   alltypesorc
 ORDER BY c1;
@@ -127,7 +129,7 @@ SELECT SUM(cfloat) as c1
 FROM   alltypesorc
 ORDER BY c1;
 
-EXPLAIN 
+EXPLAIN VECTORIZATION 
 SELECT
   avg(cfloat) as c1,
   variance(cfloat),
@@ -152,7 +154,7 @@ SELECT
 FROM alltypesorc
 ORDER BY c1;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT AVG(cbigint),
        (-(AVG(cbigint))),
        (-6432 + AVG(cbigint)),

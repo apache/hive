@@ -35,10 +35,8 @@ public class ExprNodeSubQueryDesc extends ExprNodeDesc implements Serializable {
   public static enum SubqueryType{
     IN,
     EXISTS,
+    SCALAR
   };
-
-  public static final int IN=1;
-  public static final int EXISTS=2;
 
   /**
    * RexNode corresponding to subquery.

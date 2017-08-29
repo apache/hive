@@ -90,13 +90,17 @@ public class TestHS2HttpServer {
 
   @Test
   public void testContextRootUrlRewrite() throws Exception {
+    String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
+    String dateMask = "xxxMasked_DateTime_xxx";
     String baseURL = "http://localhost:" + webUIPort + "/";
     String contextRootContent = getURLResponseAsString(baseURL);
 
     String jspUrl = "http://localhost:" + webUIPort + "/hiveserver2.jsp";
     String jspContent = getURLResponseAsString(jspUrl);
 
-    Assert.assertEquals(contextRootContent, jspContent);
+    String expected = contextRootContent.replaceAll(datePattern, dateMask);
+    String actual = jspContent.replaceAll(datePattern, dateMask);
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
@@ -139,7 +143,7 @@ public class TestHS2HttpServer {
   private String getURLResponseAsString(String baseURL) throws IOException {
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    Assert.assertEquals("Got an HTTP response code other thank OK.", HttpURLConnection.HTTP_OK, conn.getResponseCode());
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();

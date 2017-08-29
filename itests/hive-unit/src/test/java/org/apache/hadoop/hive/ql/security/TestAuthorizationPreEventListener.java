@@ -32,15 +32,15 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * TestAuthorizationPreEventListener. Test case for
- * {@link org.apache.hadoop.hive.metastore.AuthorizationPreEventListener} and
+ * {@link org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener} and
  * {@link org.apache.hadoop.hive.metastore.MetaStorePreEventListener}
  */
 public class TestAuthorizationPreEventListener extends TestCase {
@@ -62,7 +62,7 @@ public class TestAuthorizationPreEventListener extends TestCase {
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         HadoopDefaultMetastoreAuthenticator.class.getName());
 
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
 
     clientHiveConf = new HiveConf(this.getClass());
 
@@ -157,6 +157,10 @@ public class TestAuthorizationPreEventListener extends TestCase {
   }
 
   private void validateDropDb(Database expectedDb, Database actualDb) {
+    assertEquals(expectedDb, actualDb);
+  }
+
+  private void validateAlterDb(Database expectedDb, Database actualDb) {
     assertEquals(expectedDb, actualDb);
   }
 
@@ -325,6 +329,19 @@ public class TestAuthorizationPreEventListener extends TestCase {
 
     validateDropTable(tCustom, table2FromDropTableEvent);
 
+    // Test ALTER DATABASE SET LOCATION.
+    String oldDatabaseLocation = db.getLocationUri();
+    String newDatabaseLocation = oldDatabaseLocation.replace(db.getName(), "new." + db.getName());
+    driver.run("ALTER DATABASE " + dbName + " SET LOCATION \"" + newDatabaseLocation + "\"");
+    listSize = authCalls.size();
+    Database dbFromAlterDatabaseEvent =
+        (Database)assertAndExtractSingleObjectFromEvent(listSize, authCalls,
+        DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.DB);
+    validateAlterDb(db, dbFromAlterDatabaseEvent);
+    // Reset database location.
+    driver.run("ALTER DATABASE " + dbName + " SET LOCATION \"" + oldDatabaseLocation + "\"");
+
+    // Test DROP DATABASE.
     driver.run("drop database " + dbName);
     listSize = authCalls.size();
     Database dbFromDropDatabaseEvent =

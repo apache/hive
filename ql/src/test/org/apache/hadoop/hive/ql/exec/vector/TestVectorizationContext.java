@@ -31,11 +31,13 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoub
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DynamicValueVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprLongColumnLongColumn;
@@ -66,6 +68,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorInBloomFilterColDynamicValue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
@@ -110,9 +113,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLong
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
@@ -123,6 +128,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLTrim;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -1583,5 +1589,36 @@ public class TestVectorizationContext {
     a = 0;
     b = 1;
     assertEquals(a != b ? 1 : 0, ((a - b) ^ (b - a)) >>> 63);
+  }
+
+  @Test
+  public void testInBloomFilter() throws Exception {
+    // Setup InBloomFilter() UDF
+    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(TypeInfoFactory.getDecimalTypeInfo(10, 5), "a", "table", false);
+    ExprNodeDesc bfExpr = new ExprNodeDynamicValueDesc(new DynamicValue("id1", TypeInfoFactory.binaryTypeInfo));
+
+    ExprNodeGenericFuncDesc inBloomFilterExpr = new ExprNodeGenericFuncDesc();
+    GenericUDF inBloomFilterUdf = new GenericUDFInBloomFilter();
+    inBloomFilterExpr.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    inBloomFilterExpr.setGenericUDF(inBloomFilterUdf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(colExpr);
+    children1.add(bfExpr);
+    inBloomFilterExpr.setChildren(children1);
+
+    // Setup VectorizationContext
+    List<String> columns = new ArrayList<String>();
+    columns.add("b");
+    columns.add("a");
+    VectorizationContext vc = new VectorizationContext("name", columns);
+
+    // Create vectorized expr
+    VectorExpression ve = vc.getVectorExpression(inBloomFilterExpr, VectorExpressionDescriptor.Mode.FILTER);
+    Assert.assertEquals(VectorInBloomFilterColDynamicValue.class, ve.getClass());
+    VectorInBloomFilterColDynamicValue vectorizedInBloomFilterExpr = (VectorInBloomFilterColDynamicValue) ve;
+    VectorExpression[] children = vectorizedInBloomFilterExpr.getChildExpressions();
+    // VectorInBloomFilterColDynamicValue should have all of the necessary information to vectorize.
+    // Should be no need for child vector expressions, which would imply casting/conversion.
+    Assert.assertNull(children);
   }
 }

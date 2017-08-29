@@ -8,7 +8,7 @@ PREHOOK: query: create table over1k(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -25,7 +25,7 @@ POSTHOOK: query: create table over1k(
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -40,4 +40,4 @@ POSTHOOK: query: load data local inpath '../../data/files/over1k' into table ove
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k
-FAILED: ParseException line 7:12 cannot recognize input near '{' '"key1"' ':' in function specification
+FAILED: ParseException line 7:11 cannot recognize input near 'lpad' '(' '{' in expression specification

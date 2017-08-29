@@ -4,12 +4,11 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- Mismatch between the number of matching groups and columns, throw run time exception. Ideally this should throw a compile time exception. See JIRA-3023 for more details.
- CREATE TABLE serde_regex(
+PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -23,12 +22,11 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@serde_regex
-POSTHOOK: query: -- Mismatch between the number of matching groups and columns, throw run time exception. Ideally this should throw a compile time exception. See JIRA-3023 for more details.
- CREATE TABLE serde_regex(
+POSTHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status STRING,
   size STRING,
@@ -58,8 +56,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@serde_regex
-PREHOOK: query: -- raise an exception 
-SELECT * FROM serde_regex ORDER BY time
+PREHOOK: query: SELECT * FROM serde_regex ORDER BY `time`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
 #### A masked pattern was here ####

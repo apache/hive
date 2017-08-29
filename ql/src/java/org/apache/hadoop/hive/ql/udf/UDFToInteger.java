@@ -22,7 +22,9 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToLong;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -43,7 +45,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
-    CastDecimalToLong.class})
+    CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToInteger extends UDF {
   private final IntWritable intWritable = new IntWritable();
 
@@ -219,7 +221,9 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      intWritable.set(i.getBucketId());
+      BucketCodec decoder =
+        BucketCodec.determineVersion(i.getBucketProperty());
+      intWritable.set(decoder.decodeWriterId(i.getBucketProperty()));
       return intWritable;
     }
   }

@@ -207,7 +207,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
       VectorExpression vectorExpr = bigTableValueExpressions[i];
 
       // This is a vectorized aware evaluator
-      ExprNodeEvaluator eval = new ExprNodeEvaluator<ExprNodeDesc>(desc) {
+      ExprNodeEvaluator eval = new ExprNodeEvaluator<ExprNodeDesc>(desc, hconf) {
         int columnIndex;;
         int writerIndex;
 
@@ -257,6 +257,9 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
         }
       }
 
+      for (VectorExpression ve : keyExpressions) {
+        ve.evaluate(inBatch);
+      }
       keyWrapperBatch.evaluateBatch(inBatch);
       keyValues = keyWrapperBatch.getVectorHashKeyWrappers();
 
@@ -304,7 +307,7 @@ public class VectorSMBMapJoinOperator extends SMBMapJoinOperator implements Vect
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null);
+    forward(outputBatch, null, true);
     outputBatch.reset();
   }
 

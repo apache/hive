@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -38,19 +38,14 @@
     <!-- Profile activation clause for accumulo-tests will flip skip.accumulo.tests to false
          as long as -DskipAccumuloTests is not specified -->
     <skip.accumulo.tests>true</skip.accumulo.tests>
-    <accumulo-thrift.version>0.9.0</accumulo-thrift.version>
+    <!-- Must correspond with the Accumulo version specified in the pom -->
+    <accumulo-thrift.version>0.9.1</accumulo-thrift.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>

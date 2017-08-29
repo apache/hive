@@ -72,7 +72,7 @@ public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper console = new LogHelper(LOG);
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private PerfLogger perfLogger;
   private static final long serialVersionUID = 1L;
   private transient String sparkJobID;
   private transient SparkStatistics sparkStatistics;
@@ -83,6 +83,9 @@ public class SparkTask extends Task<SparkWork> {
   private transient int totalTaskCount;
   private transient int failedTaskCount;
   private transient List<Integer> stageIds;
+  private transient SparkJobRef jobRef = null;
+  private transient boolean isShutdown = false;
+  private transient boolean jobKilled = false;
 
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
@@ -94,6 +97,7 @@ public class SparkTask extends Task<SparkWork> {
   public int execute(DriverContext driverContext) {
 
     int rc = 0;
+    perfLogger = SessionState.getPerfLogger();
     SparkSession sparkSession = null;
     SparkSessionManager sparkSessionManager = null;
     try {
@@ -106,8 +110,13 @@ public class SparkTask extends Task<SparkWork> {
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
-      SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
+      jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
+
+      if (driverContext.isShutdown()) {
+        killJob();
+        throw new HiveException("Operation is cancelled.");
+      }
 
       addToHistory(jobRef);
       sparkJobID = jobRef.getJobId();
@@ -126,8 +135,14 @@ public class SparkTask extends Task<SparkWork> {
         // TODO: If the timeout is because of lack of resources in the cluster, we should
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
         // it's difficult to do it on hive side alone. See HIVE-12650.
-        jobRef.cancelJob();
+        LOG.info("Failed to submit Spark job " + sparkJobID);
+        killJob();
+      } else if (rc == 4) {
+        LOG.info("The spark job or one stage of it has too many tasks" +
+            ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
+        killJob();
       }
+
       if (this.jobID == null) {
         this.jobID = sparkJobStatus.getAppID();
       }
@@ -143,6 +158,13 @@ public class SparkTask extends Task<SparkWork> {
       rc = 1;
     } finally {
       startTime = perfLogger.getEndTime(PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+      // The startTime may not be set if the sparkTask finished too fast,
+      // because SparkJobMonitor will sleep for 1 second then check the state,
+      // right after sleep, the spark job may be already completed.
+      // In this case, set startTime the same as submitTime.
+      if (startTime < submitTime) {
+        startTime = submitTime;
+      }
       finishTime = perfLogger.getEndTime(PerfLogger.SPARK_RUN_JOB);
       Utilities.clearWork(conf);
       if (sparkSession != null && sparkSessionManager != null) {
@@ -282,6 +304,36 @@ public class SparkTask extends Task<SparkWork> {
     return finishTime;
   }
 
+  public boolean isTaskShutdown() {
+    return isShutdown;
+  }
+
+  @Override
+  public void shutdown() {
+    super.shutdown();
+    killJob();
+    isShutdown = true;
+  }
+
+  private void killJob() {
+    boolean needToKillJob = false;
+    if (jobRef != null && !jobKilled) {
+      synchronized (this) {
+        if (!jobKilled) {
+          jobKilled = true;
+          needToKillJob = true;
+        }
+      }
+    }
+    if (needToKillJob) {
+      try {
+        jobRef.cancelJob();
+      } catch (Exception e) {
+        LOG.warn("failed to kill job", e);
+      }
+    }
+  }
+
   /**
    * Set the number of reducers for the spark work.
    */
@@ -360,6 +412,11 @@ public class SparkTask extends Task<SparkWork> {
       if (rc != 0) {
         Throwable error = sparkJobStatus.getError();
         if (error != null) {
+          if ((error instanceof InterruptedException) ||
+              (error instanceof HiveException &&
+              error.getCause() instanceof InterruptedException)) {
+            killJob();
+          }
           setException(error);
         }
       }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata.formatting;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +43,10 @@ import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
@@ -51,6 +55,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -173,6 +178,16 @@ public final class MetaDataFormatUtils {
     return writableValue.toString();
   }
 
+  private static String convertToString(byte[] buf) {
+    if (buf == null || buf.length == 0) {
+      return "";
+    }
+    byte[] sub = new byte[2];
+    sub[0] = (byte) buf[0];
+    sub[1] = (byte) buf[1];
+    return new String(sub);
+  }
+
   private static ColumnStatisticsObj getColumnStatisticsObject(String colName,
       String colType, List<ColumnStatisticsObj> colStats) {
     if (colStats != null && !colStats.isEmpty()) {
@@ -275,7 +290,8 @@ public final class MetaDataFormatUtils {
     return indexInfo.toString();
   }
 
-  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo) {
+  public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
+          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -286,6 +302,14 @@ public final class MetaDataFormatUtils {
     if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
       constraintsInfo.append(LINE_DELIM).append("# Foreign Keys").append(LINE_DELIM);
       getForeignKeysInformation(constraintsInfo, fkInfo);
+    }
+    if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Unique Constraints").append(LINE_DELIM);
+      getUniqueConstraintsInformation(constraintsInfo, ukInfo);
+    }
+    if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
+      getNotNullConstraintsInformation(constraintsInfo, nnInfo);
     }
     return constraintsInfo.toString();
   }
@@ -334,6 +358,55 @@ public final class MetaDataFormatUtils {
     if (foreignKeys != null && foreignKeys.size() > 0) {
       for (Map.Entry<String, List<ForeignKeyCol>> me : foreignKeys.entrySet()) {
         getForeignKeyRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getUniqueConstraintColInformation(StringBuilder constraintsInfo,
+      UniqueConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Key Sequence:" + ukCol.position;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getUniqueConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<UniqueConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (UniqueConstraintCol ukc : ukRel) {
+        getUniqueConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getUniqueConstraintsInformation(StringBuilder constraintsInfo,
+      UniqueConstraint ukInfo) {
+    formatOutput("Table:",
+                 ukInfo.getDatabaseName() + "." + ukInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, List<UniqueConstraintCol>> uniqueConstraints = ukInfo.getUniqueConstraints();
+    if (uniqueConstraints != null && uniqueConstraints.size() > 0) {
+      for (Map.Entry<String, List<UniqueConstraintCol>> me : uniqueConstraints.entrySet()) {
+        getUniqueConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getNotNullConstraintsInformation(StringBuilder constraintsInfo,
+      NotNullConstraint nnInfo) {
+    formatOutput("Table:",
+                 nnInfo.getDatabaseName() + "." + nnInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, String> notNullConstraints = nnInfo.getNotNullConstraints();
+    if (notNullConstraints != null && notNullConstraints.size() > 0) {
+      for (Map.Entry<String, String> me : notNullConstraints.entrySet()) {
+        formatOutput("Constraint Name:", me.getKey(), constraintsInfo);
+        formatOutput("Column Name:", me.getValue(), constraintsInfo);
+        constraintsInfo.append(LINE_DELIM);
       }
     }
   }
@@ -491,10 +564,10 @@ public final class MetaDataFormatUtils {
   static String getComment(FieldSchema col) {
     return col.getComment() != null ? col.getComment() : "";
   }
-  
+
   /**
    * Compares to lists of object T as vectors
-   * 
+   *
    * @param <T> the base object type. Must be {@link Comparable}
    */
   private static class VectorComparator<T extends Comparable<T>>  implements Comparator<List<T>>{
@@ -518,7 +591,7 @@ public final class MetaDataFormatUtils {
       return Integer.compare(listA.size(), listB.size());
     }
   }
-  
+
   /**
    * Returns a sorted version of the given list
    */
@@ -544,7 +617,7 @@ public final class MetaDataFormatUtils {
     Collections.sort(ret,comp);
     return ret;
   }
-  
+
   private static String formatDate(long timeInSeconds) {
     if (timeInSeconds != 0) {
       Date date = new Date(timeInSeconds * 1000);
@@ -616,7 +689,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    * @param isOutputPadded Should the value printed as a padded string?
    */
-  private static void formatOutput(String name, String value, StringBuilder tableInfo,
+  protected static void formatOutput(String name, String value, StringBuilder tableInfo,
       boolean isOutputPadded) {
     String unescapedValue =
         (isOutputPadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n"):value;
@@ -634,38 +707,44 @@ public final class MetaDataFormatUtils {
         ColumnStatisticsData csd = cso.getStatsData();
         if (csd.isSetBinaryStats()) {
           BinaryColumnStatsData bcsd = csd.getBinaryStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", bcsd.getAvgColLen(),
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", bcsd.getAvgColLen(),
               bcsd.getMaxColLen(), "", "");
         } else if (csd.isSetStringStats()) {
           StringColumnStatsData scsd = csd.getStringStats();
           appendColumnStats(tableInfo, "", "", scsd.getNumNulls(), scsd.getNumDVs(),
-              scsd.getAvgColLen(), scsd.getMaxColLen(), "", "");
+              convertToString(scsd.getBitVectors()), scsd.getAvgColLen(),
+              scsd.getMaxColLen(), "", "");
         } else if (csd.isSetBooleanStats()) {
           BooleanColumnStatsData bcsd = csd.getBooleanStats();
-          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "",
+          appendColumnStats(tableInfo, "", "", bcsd.getNumNulls(), "", "", "", "",
               bcsd.getNumTrues(), bcsd.getNumFalses());
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()), 
-              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(), 
+          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
+              convertToString(dcsd.getBitVectors()),
               "", "", "", "");
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();
           appendColumnStats(tableInfo, dcsd.getLowValue(), dcsd.getHighValue(), dcsd.getNumNulls(),
-              dcsd.getNumDVs(), "", "", "", "");
+              dcsd.getNumDVs(), convertToString(dcsd.getBitVectors()),
+              "", "", "", "");
         } else if (csd.isSetLongStats()) {
           LongColumnStatsData lcsd = csd.getLongStats();
           appendColumnStats(tableInfo, lcsd.getLowValue(), lcsd.getHighValue(), lcsd.getNumNulls(),
-              lcsd.getNumDVs(), "", "", "", "");
+              lcsd.getNumDVs(), convertToString(lcsd.getBitVectors()),
+              "", "", "", "");
         } else if (csd.isSetDateStats()) {
           DateColumnStatsData dcsd = csd.getDateStats();
           appendColumnStats(tableInfo,
               convertToString(dcsd.getLowValue()),
               convertToString(dcsd.getHighValue()),
-              dcsd.getNumNulls(), dcsd.getNumDVs(), "", "", "", "");
+              dcsd.getNumNulls(), dcsd.getNumDVs(),
+              convertToString(dcsd.getBitVectors()),
+              "", "", "", "");
         }
       } else {
-        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "");
+        appendColumnStats(tableInfo, "", "", "", "", "", "", "", "", "");
       }
     }
 
@@ -718,7 +797,7 @@ public final class MetaDataFormatUtils {
   }
 
   private static void appendColumnStats(StringBuilder sb, Object min, Object max, Object numNulls,
-      Object ndv, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
+      Object ndv, Object bitVector, Object avgColLen, Object maxColLen, Object numTrues, Object numFalses) {
     sb.append(String.format("%-" + ALIGNMENT + "s", min)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", max)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numNulls)).append(FIELD_DELIM);
@@ -727,6 +806,7 @@ public final class MetaDataFormatUtils {
     sb.append(String.format("%-" + ALIGNMENT + "s", maxColLen)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numTrues)).append(FIELD_DELIM);
     sb.append(String.format("%-" + ALIGNMENT + "s", numFalses)).append(FIELD_DELIM);
+    sb.append(String.format("%-" + ALIGNMENT + "s", bitVector)).append(FIELD_DELIM);
   }
 
   private static void appendColumnStatsNoFormatting(StringBuilder sb, Object min,

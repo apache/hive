@@ -1,3 +1,5 @@
+set hive.mapred.mode=nonstrict;
+-- start query 1 in stream 0 using template query86.tpl and seed 1819994127
 explain
 select   
     sum(ws_net_paid) as total_sum
@@ -5,9 +7,9 @@ select
    ,i_class
    ,grouping(i_category)+grouping(i_class) as lochierarchy
    ,rank() over (
-     partition by grouping(i_category)+grouping(i_class),
-     case when grouping(i_class) = 0 then i_category end 
-     order by sum(ws_net_paid) desc) as rank_within_parent
+ 	partition by grouping(i_category)+grouping(i_class),
+ 	case when grouping(i_class) = 0 then i_category end 
+ 	order by sum(ws_net_paid) desc) as rank_within_parent
  from
     web_sales
    ,date_dim       d1
@@ -23,3 +25,4 @@ select
    rank_within_parent
  limit 100;
 
+-- end query 1 in stream 0 using template query86.tpl

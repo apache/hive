@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Table;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class PreDropTableEvent extends PreEventContext {
 
   private final Table table;

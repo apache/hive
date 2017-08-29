@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapOperator;
@@ -46,6 +48,10 @@ public class MapRecordSource implements RecordSource {
   void init(JobConf jconf, AbstractMapOperator mapOp, KeyValueReader reader) throws IOException {
     execContext = mapOp.getExecContext();
     this.mapOp = mapOp;
+    if (reader instanceof KeyValueInputMerger) {
+      KeyValueInputMerger kvMerger = (KeyValueInputMerger) reader;
+      kvMerger.setIOCxt(execContext.getIoCxt());
+    }
     this.reader = reader;
   }
 
@@ -103,6 +109,12 @@ public class MapRecordSource implements RecordSource {
       LOG.warn("Cannot close " + (reader == null ? null : reader.getClass()));
       return;
     }
+    if (reader instanceof KeyValueInputMerger) {
+      // cleanup
+      KeyValueInputMerger kvMerger = (KeyValueInputMerger) reader;
+      kvMerger.clean();
+    }
+
     LOG.info("Closing MRReader on error");
     MRReader mrReader = (MRReader)reader;
     try {

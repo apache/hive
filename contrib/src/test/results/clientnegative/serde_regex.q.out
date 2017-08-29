@@ -4,13 +4,12 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: --  This should fail because Regex SerDe supports only columns of type string
-EXPLAIN
+PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status INT,
   size INT,
@@ -23,13 +22,12 @@ WITH SERDEPROPERTIES (
 )
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: --  This should fail because Regex SerDe supports only columns of type string
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status INT,
   size INT,
@@ -62,7 +60,7 @@ PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time STRING,
+  `time` STRING,
   request STRING,
   status INT,
   size INT,

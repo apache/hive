@@ -21,14 +21,17 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
-import org.apache.thrift.TBase;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +43,7 @@ import java.util.Map;
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -50,6 +53,9 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
 
   @JsonProperty
   List<String> partitionListJson;
+
+  @JsonProperty
+  List<PartitionFiles> partitionFiles;
 
   /**
    * Default Constructor. Required for Jackson.
@@ -61,11 +67,13 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
    * Note that we get an Iterator rather than an Iterable here: so we can only walk thru the list once
    */
   public JSONAddPartitionMessage(String server, String servicePrincipal, Table tableObj,
-      Iterator<Partition> partitionsIterator, Long timestamp) {
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter,
+      Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
     this.timestamp = timestamp;
     partitions = new ArrayList<Map<String, String>>();
     partitionListJson = new ArrayList<String>();
@@ -80,6 +88,7 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.partitionFiles = Lists.newArrayList(partitionFileIter);
     checkValid();
   }
 
@@ -101,6 +110,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override
@@ -148,4 +162,10 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
+  @Override
+  public Iterable<PartitionFiles> getPartitionFilesIter() {
+    return partitionFiles;
+  }
+
 }

@@ -27,6 +27,7 @@ import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rel.logical.LogicalFilter;
 import org.apache.calcite.rel.logical.LogicalIntersect;
 import org.apache.calcite.rel.logical.LogicalJoin;
+import org.apache.calcite.rel.logical.LogicalMatch;
 import org.apache.calcite.rel.logical.LogicalMinus;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.logical.LogicalSort;
@@ -139,6 +140,10 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
 
     public RelNode visit(RelNode other) {
         return visitChildren(other);
+    }
+
+    public RelNode visit(LogicalMatch match) {
+      return visitChildren(match);
     }
 }
 

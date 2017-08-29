@@ -39,7 +39,8 @@ public class ParquetFilterPredicateConverter {
   /**
    * Translate the search argument to the filter predicate parquet uses. It includes
    * only the columns from the passed schema.
-   * @return translate the sarg into a filter predicate
+   * @return  a filter predicate translated from search argument. null is returned
+   *          if failed to convert.
    */
   public static FilterPredicate toFilterPredicate(SearchArgument sarg, MessageType schema) {
     Set<String> columns = null;
@@ -50,25 +51,30 @@ public class ParquetFilterPredicateConverter {
       }
     }
 
-    return translate(sarg.getExpression(), sarg.getLeaves(), columns, schema);
+    try {
+      return translate(sarg.getExpression(), sarg.getLeaves(), columns, schema);
+    } catch(Exception e) {
+      return null;
+    }
   }
 
   private static FilterPredicate translate(ExpressionTree root,
                                            List<PredicateLeaf> leaves,
                                            Set<String> columns,
-                                           MessageType schema) {
+                                           MessageType schema) throws Exception {
     FilterPredicate p = null;
     switch (root.getOperator()) {
       case OR:
         for(ExpressionTree child: root.getChildren()) {
+          FilterPredicate childPredicate = translate(child, leaves, columns, schema);
+          if (childPredicate == null) {
+            return null;
+          }
+
           if (p == null) {
-            p = translate(child, leaves, columns, schema);
+            p = childPredicate;
           } else {
-            FilterPredicate right = translate(child, leaves, columns, schema);
-            // constant means no filter, ignore it when it is null
-            if(right != null){
-              p = FilterApi.or(p, right);
-            }
+            p = FilterApi.or(p, childPredicate);
           }
         }
         return p;
@@ -113,15 +119,13 @@ public class ParquetFilterPredicateConverter {
   }
 
   private static FilterPredicate buildFilterPredicateFromPredicateLeaf
-      (PredicateLeaf leaf, Type parquetType) {
+      (PredicateLeaf leaf, Type parquetType) throws Exception {
     LeafFilterFactory leafFilterFactory = new LeafFilterFactory();
     FilterPredicateLeafBuilder builder;
     try {
       builder = leafFilterFactory
           .getLeafFilterBuilderByType(leaf.getType(), parquetType);
-      if (builder == null) {
-        return null;
-      }
+
       if (isMultiLiteralsOperator(leaf.getOperator())) {
         return builder.buildPredicate(leaf.getOperator(),
             leaf.getLiteralList(),
@@ -134,7 +138,7 @@ public class ParquetFilterPredicateConverter {
       }
     } catch (Exception e) {
       LOG.error("fail to build predicate filter leaf with errors" + e, e);
-      return null;
+      throw e;
     }
   }
 

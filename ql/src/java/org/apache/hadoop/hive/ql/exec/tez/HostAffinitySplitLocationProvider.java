@@ -58,7 +58,7 @@ public class HostAffinitySplitLocationProvider implements SplitLocationProvider 
   @Override
   public String[] getLocations(InputSplit split) throws IOException {
     if (!(split instanceof FileSplit)) {
-      if (isDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Split: " + split + " is not a FileSplit. Using default locations");
       }
       return split.getLocations();

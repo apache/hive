@@ -147,7 +147,6 @@ public interface Repeated extends ConverterParent {
     private final ConverterParent parent;
     private final int index;
     private final List<Writable> list = new ArrayList<Writable>();
-    private final Map<String, String> metadata = new HashMap<String, String>();
 
 
     public RepeatedGroupConverter(GroupType groupType, ConverterParent parent, int index, TypeInfo hiveTypeInfo) {

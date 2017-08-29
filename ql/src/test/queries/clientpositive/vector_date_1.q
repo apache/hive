@@ -1,8 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-
 set hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 drop table if exists vector_date_1;
 create table vector_date_1 (dt1 date, dt2 date) stored as orc;
@@ -182,5 +181,10 @@ where
   and date '1970-01-01' < dt1
   and date '1970-01-01' <= dt1
 order by dt1;
+
+EXPLAIN VECTORIZATION EXPRESSION
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');
+
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');
 
 drop table vector_date_1;

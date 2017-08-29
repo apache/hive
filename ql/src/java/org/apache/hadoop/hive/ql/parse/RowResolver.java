@@ -56,6 +56,8 @@ public class RowResolver implements Serializable{
 
   private static final Logger LOG = LoggerFactory.getLogger(RowResolver.class.getName());
 
+  private NamedJoinInfo namedJoinInfo;
+
   public RowResolver() {
     rowSchema = new RowSchema();
     rslvMap = new LinkedHashMap<String, LinkedHashMap<String, ColumnInfo>>();
@@ -468,5 +470,13 @@ public class RowResolver implements Serializable{
 
   private HashMap<String, String[]> getInvRslvMap() {
     return invRslvMap; // If making this public, note that its ordering is undefined.
+  }
+
+  public NamedJoinInfo getNamedJoinInfo() {
+    return namedJoinInfo;
+  }
+
+  public void setNamedJoinInfo(NamedJoinInfo namedJoinInfo) {
+    this.namedJoinInfo = namedJoinInfo;
   }
 }

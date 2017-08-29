@@ -70,6 +70,11 @@ public class JSONCreateFunctionMessage extends CreateFunctionMessage {
   }
 
   @Override
+  public Function getFunctionObj() throws Exception {
+    return (Function) JSONMessageFactory.getTObj(functionObjJson,Function.class);
+  }
+
+  @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);

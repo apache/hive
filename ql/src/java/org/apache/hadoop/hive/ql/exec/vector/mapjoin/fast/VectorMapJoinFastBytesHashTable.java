@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashTable;
@@ -38,8 +39,6 @@ public abstract class VectorMapJoinFastBytesHashTable
         implements VectorMapJoinBytesHashTable {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastBytesHashTable.class);
-
-  private final boolean isLogDebugEnabled = LOG.isDebugEnabled();
 
   protected VectorMapJoinFastKeyStore keyStore;
 
@@ -89,7 +88,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     }
 
     if (largestNumberOfSteps < i) {
-      if (isLogDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Probed " + i + " slots (the longest so far) to find space");
       }
       largestNumberOfSteps = i;
@@ -105,6 +104,10 @@ public abstract class VectorMapJoinFastBytesHashTable
 
   private void expandAndRehash() {
 
+    // We allocate triples, so we cannot go above highest Integer power of 2 / 6.
+    if (logicalHashBucketCount > ONE_SIXTH_LIMIT) {
+      throwExpandError(ONE_SIXTH_LIMIT, "Bytes");
+    }
     int newLogicalHashBucketCount = logicalHashBucketCount * 2;
     int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
@@ -139,7 +142,7 @@ public abstract class VectorMapJoinFastBytesHashTable
         }
 
         if (newLargestNumberOfSteps < i) {
-          if (isLogDebugEnabled) {
+          if (LOG.isDebugEnabled()) {
             LOG.debug("Probed " + i + " slots (the longest so far) to find space");
           }
           newLargestNumberOfSteps = i;
@@ -210,8 +213,13 @@ public abstract class VectorMapJoinFastBytesHashTable
   }
 
   public VectorMapJoinFastBytesHashTable(
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     allocateBucketArray();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    return super.getEstimatedMemorySize() + JavaDataModel.get().lengthForLongArrayOfSize(slotTriples.length);
   }
 }

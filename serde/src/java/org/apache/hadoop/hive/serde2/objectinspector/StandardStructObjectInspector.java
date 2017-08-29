@@ -55,7 +55,7 @@ public class StandardStructObjectInspector extends
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
-      this.fieldName = fieldName.toLowerCase();
+      this.fieldName = fieldName.toLowerCase().intern();
       this.fieldObjectInspector = fieldObjectInspector;
     }
 

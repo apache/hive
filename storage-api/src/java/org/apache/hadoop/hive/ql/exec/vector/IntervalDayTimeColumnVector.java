@@ -364,4 +364,12 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
       }
     }
   }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    IntervalDayTimeColumnVector other = (IntervalDayTimeColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    other.totalSeconds = totalSeconds;
+    other.nanos = nanos;
+  }
 }

@@ -8,7 +8,7 @@ PREHOOK: query: create table over10k(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -25,7 +25,7 @@ POSTHOOK: query: create table over10k(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -50,7 +50,7 @@ PREHOOK: query: create table stats_tbl_part(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary) partitioned by (dt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -65,21 +65,21 @@ POSTHOOK: query: create table stats_tbl_part(
            bo boolean,
            s string,
            ts timestamp, 
-           dec decimal,  
+           `dec` decimal,  
            bin binary) partitioned by (dt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl_part
 PREHOOK: query: from over10k 
-insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,dec,bin where t>0 and t<30 
-insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,dec,bin where t > 30 and t<60
+insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
+insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 PREHOOK: Output: default@stats_tbl_part@dt=2010
 PREHOOK: Output: default@stats_tbl_part@dt=2014
 POSTHOOK: query: from over10k 
-insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,dec,bin where t>0 and t<30 
-insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,dec,bin where t > 30 and t<60
+insert overwrite table stats_tbl_part partition (dt=2010) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t>0 and t<30 
+insert overwrite table stats_tbl_part partition (dt=2014) select t,si,i,b,f,d,bo,s,ts,`dec`,bin where t > 30 and t<60
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 POSTHOOK: Output: default@stats_tbl_part@dt=2010
@@ -126,21 +126,29 @@ PREHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statisti
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2010
+PREHOOK: Output: default@stats_tbl_part
+PREHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2010
+POSTHOOK: Output: default@stats_tbl_part
+POSTHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2014
+PREHOOK: Output: default@stats_tbl_part
+PREHOOK: Output: default@stats_tbl_part@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2014
+POSTHOOK: Output: default@stats_tbl_part
+POSTHOOK: Output: default@stats_tbl_part@dt=2014
 #### A masked pattern was here ####
 PREHOOK: query: explain 
 select count(*), count(1), sum(1), count(s), count(bo), count(bin), count(si), max(i), min(b), max(f), min(d) from stats_tbl_part where dt = 2010

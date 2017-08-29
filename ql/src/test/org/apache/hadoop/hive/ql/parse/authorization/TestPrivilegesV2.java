@@ -40,7 +40,7 @@ public class TestPrivilegesV2 extends PrivilegesTestBase{
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     //set authorization mode to V2
     HiveConf conf = queryState.getConf();
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

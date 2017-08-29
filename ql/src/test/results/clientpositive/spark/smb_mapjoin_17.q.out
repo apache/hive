@@ -1,10 +1,8 @@
-PREHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
@@ -160,8 +158,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table8
 POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 JOIN test_table3 c ON a.key = c.key
@@ -170,8 +167,7 @@ JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Mapjoin followed by a aggregation should be performed in a single MR job upto 7 tables
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 JOIN test_table3 c ON a.key = c.key
@@ -188,7 +184,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 4 (PARTITION-LEVEL SORT, 1), Map 5 (PARTITION-LEVEL SORT, 1), Map 6 (PARTITION-LEVEL SORT, 1), Map 7 (PARTITION-LEVEL SORT, 1), Map 8 (PARTITION-LEVEL SORT, 1), Map 9 (PARTITION-LEVEL SORT, 1)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -199,33 +196,146 @@ STAGE PLANS:
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Sorted Merge Bucket Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                           Inner Join 0 to 2
-                           Inner Join 0 to 3
-                           Inner Join 0 to 4
-                           Inner Join 0 to 5
-                           Inner Join 0 to 6
-                      keys:
-                        0 key (type: int)
-                        1 key (type: int)
-                        2 key (type: int)
-                        3 key (type: int)
-                        4 key (type: int)
-                        5 key (type: int)
-                        6 key (type: int)
-                      Statistics: Num rows: 66 Data size: 462 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: f
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: g
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                     Inner Join 0 to 3
+                     Inner Join 0 to 4
+                     Inner Join 0 to 5
+                     Inner Join 0 to 6
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                  2 _col0 (type: int)
+                  3 _col0 (type: int)
+                  4 _col0 (type: int)
+                  5 _col0 (type: int)
+                  6 _col0 (type: int)
+                Statistics: Num rows: 66 Data size: 462 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -279,9 +389,7 @@ POSTHOOK: Input: default@test_table6
 POSTHOOK: Input: default@test_table7
 #### A masked pattern was here ####
 4378
-PREHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
--- a single MR job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
 LEFT OUTER JOIN test_table3 c ON a.key = c.key
@@ -290,9 +398,7 @@ LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should be automatically converted to a sort-merge join followed by a groupby in
--- a single MR job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
 LEFT OUTER JOIN test_table3 c ON a.key = c.key
@@ -323,12 +429,12 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -443,13 +549,13 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
-                           Left Outer Join0 to 7
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
+                           Left Outer Join 0 to 7
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -527,8 +633,7 @@ POSTHOOK: Input: default@test_table7
 POSTHOOK: Input: default@test_table8
 #### A masked pattern was here ####
 13126
-PREHOOK: query: -- outer join with max 16 aliases
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*
 FROM test_table1 a
 LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -551,8 +656,7 @@ LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
 LEFT OUTER JOIN test_table8 t ON a.key = t.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- outer join with max 16 aliases
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*
 FROM test_table1 a
 LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -673,21 +777,21 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Sorted Merge Bucket Map Join Operator
                       condition map:
-                           Left Outer Join0 to 1
-                           Left Outer Join0 to 2
-                           Left Outer Join0 to 3
-                           Left Outer Join0 to 4
-                           Left Outer Join0 to 5
-                           Left Outer Join0 to 6
-                           Left Outer Join0 to 7
-                           Left Outer Join0 to 8
-                           Left Outer Join0 to 9
-                           Left Outer Join0 to 10
-                           Left Outer Join0 to 11
-                           Left Outer Join0 to 12
-                           Left Outer Join0 to 13
-                           Left Outer Join0 to 14
-                           Left Outer Join0 to 15
+                           Left Outer Join 0 to 1
+                           Left Outer Join 0 to 2
+                           Left Outer Join 0 to 3
+                           Left Outer Join 0 to 4
+                           Left Outer Join 0 to 5
+                           Left Outer Join 0 to 6
+                           Left Outer Join 0 to 7
+                           Left Outer Join 0 to 8
+                           Left Outer Join 0 to 9
+                           Left Outer Join 0 to 10
+                           Left Outer Join 0 to 11
+                           Left Outer Join 0 to 12
+                           Left Outer Join 0 to 13
+                           Left Outer Join 0 to 14
+                           Left Outer Join 0 to 15
                       keys:
                         0 _col0 (type: int)
                         1 _col0 (type: int)
@@ -709,10 +813,10 @@ STAGE PLANS:
                       Statistics: Num rows: 165 Data size: 1155 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
-                             Left Outer Join0 to 2
-                             Left Outer Join0 to 3
-                             Left Outer Join0 to 4
+                             Left Outer Join 0 to 1
+                             Left Outer Join 0 to 2
+                             Left Outer Join 0 to 3
+                             Left Outer Join 0 to 4
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)

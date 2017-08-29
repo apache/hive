@@ -51,11 +51,13 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.DynamicValueRegistryTez.RegistryConfTez;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -88,9 +90,8 @@ public class MapRecordProcessor extends RecordProcessor {
   private final ExecMapperContext execContext;
   private MapWork mapWork;
   List<MapWork> mergeWorkList;
-  List<String> cacheKeys;
-  ObjectCache cache;
-  private int nRows;
+  List<String> cacheKeys, dynamicValueCacheKeys;
+  ObjectCache cache, dynamicValueCache;
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
@@ -99,10 +100,11 @@ public class MapRecordProcessor extends RecordProcessor {
       setLlapOfFragmentId(context);
     }
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
+    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
-    nRows = 0;
+    dynamicValueCacheKeys = new ArrayList<String>();
   }
 
   private void setLlapOfFragmentId(final ProcessorContext context) {
@@ -295,6 +297,21 @@ public class MapRecordProcessor extends RecordProcessor {
 
       mapOp.initializeLocalWork(jconf);
 
+      // Setup values registry
+      checkAbortCondition();
+      String valueRegistryKey = DynamicValue.DYNAMIC_VALUE_REGISTRY_CACHE_KEY;
+      // On LLAP dynamic value registry might already be cached.
+      final DynamicValueRegistryTez registryTez = dynamicValueCache.retrieve(valueRegistryKey,
+          new Callable<DynamicValueRegistryTez>() {
+            @Override
+            public DynamicValueRegistryTez call() {
+              return new DynamicValueRegistryTez();
+            }
+          });
+      dynamicValueCacheKeys.add(valueRegistryKey);
+      RegistryConfTez registryConf = new RegistryConfTez(jconf, mapWork, processorContext, inputs);
+      registryTez.init(registryConf);
+
       checkAbortCondition();
       initializeMapRecordSources();
       mapOp.initializeMapOperator(jconf);
@@ -324,7 +341,7 @@ public class MapRecordProcessor extends RecordProcessor {
       MapredContext.get().setReporter(reporter);
 
     } catch (Throwable e) {
-      abort = true;
+      setAborted(true);
       if (e instanceof OutOfMemoryError) {
         // will this be true here?
         // Don't create a new object if we are already out of memory
@@ -398,14 +415,11 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
+    startAbortChecks();
     while (sources[position].pushRecord()) {
-      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
-        checkAbortCondition();
-        nRows = 0;
-      }
+      addRowAndMaybeCheckAbort();
     }
   }
-
 
   @Override
   public void abort() {
@@ -425,8 +439,8 @@ public class MapRecordProcessor extends RecordProcessor {
   @Override
   void close(){
     // check if there are IOExceptions
-    if (!abort) {
-      abort = execContext.getIoCxt().getIOExceptions();
+    if (!isAborted()) {
+      setAborted(execContext.getIoCxt().getIOExceptions());
     }
 
     if (cache != null && cacheKeys != null) {
@@ -435,11 +449,18 @@ public class MapRecordProcessor extends RecordProcessor {
       }
     }
 
+    if (dynamicValueCache != null && dynamicValueCacheKeys != null) {
+      for (String k: dynamicValueCacheKeys) {
+        dynamicValueCache.release(k);
+      }
+    }
+
     // detecting failed executions by exceptions thrown by the operator tree
     try {
       if (mapOp == null || mapWork == null) {
         return;
       }
+      boolean abort = isAborted();
       mapOp.close(abort);
       if (mergeMapOpList.isEmpty() == false) {
         for (AbstractMapOperator mergeMapOp : mergeMapOpList) {
@@ -461,7 +482,7 @@ public class MapRecordProcessor extends RecordProcessor {
       mapOp.preorderMap(rps);
       return;
     } catch (Exception e) {
-      if (!abort) {
+      if (!isAborted()) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators", e);

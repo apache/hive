@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-
+set hive.fetch.task.conversion=none;
 
 DROP TABLE over1k;
 DROP TABLE over1korc;
@@ -16,7 +16,7 @@ CREATE TABLE over1k(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
@@ -32,13 +32,13 @@ CREATE TABLE over1korc(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS ORC;
 
 INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
-EXPLAIN SELECT 
+EXPLAIN VECTORIZATION EXPRESSION SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,

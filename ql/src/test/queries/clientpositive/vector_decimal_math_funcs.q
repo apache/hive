@@ -1,11 +1,13 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- Test math functions in vectorized mode to verify they run correctly end-to-end.
 
-explain 
+explain vectorization expression 
 select
    cdecimal1
   ,Round(cdecimal1, 2)

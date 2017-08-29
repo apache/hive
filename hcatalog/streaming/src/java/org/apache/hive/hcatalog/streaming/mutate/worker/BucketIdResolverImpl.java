@@ -19,6 +19,8 @@ package org.apache.hive.hcatalog.streaming.mutate.worker;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -68,7 +70,9 @@ public class BucketIdResolverImpl implements BucketIdResolver {
   @Override
   public Object attachBucketIdToRecord(Object record) {
     int bucketId = computeBucketId(record);
-    RecordIdentifier recordIdentifier = new RecordIdentifier(INVALID_TRANSACTION_ID, bucketId, INVALID_ROW_ID);
+    int bucketProperty =
+      BucketCodec.V1.encode(new AcidOutputFormat.Options(null).bucket(bucketId));
+    RecordIdentifier recordIdentifier = new RecordIdentifier(INVALID_TRANSACTION_ID, bucketProperty, INVALID_ROW_ID);
     structObjectInspector.setStructFieldData(record, recordIdentifierField, recordIdentifier);
     return record;
   }

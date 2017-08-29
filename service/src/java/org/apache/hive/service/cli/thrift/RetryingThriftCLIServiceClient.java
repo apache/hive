@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.cli.CLIServiceClient;
@@ -191,8 +190,8 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     }
 
     @Override
-    public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-      return cliService.getOperationStatus(opHandle);
+    public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+      return cliService.getOperationStatus(opHandle, getProgressUpdate);
     }
 
     @Override

@@ -1,11 +1,11 @@
-set hive.explain.user=true;
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
 SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
-set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=false;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
@@ -51,7 +51,7 @@ load data local inpath '../../data/files/schema_evolution/complex_struct1_c.txt'
 
 insert into table part_change_various_various_struct1 partition(part=1) select * from complex_struct1_c_txt;
 
-explain
+explain vectorization detail
 select insert_num,part,s1,b from part_change_various_various_struct1;
 
 select insert_num,part,s1,b from part_change_various_various_struct1;
@@ -111,7 +111,7 @@ load data local inpath '../../data/files/schema_evolution/complex_struct2_d.txt'
 
 insert into table part_add_various_various_struct2 partition(part=1) select * from complex_struct2_d_txt;
 
-explain
+explain vectorization detail
 select insert_num,part,b,s2 from part_add_various_various_struct2;
 
 select insert_num,part,b,s2 from part_add_various_various_struct2;
@@ -155,7 +155,7 @@ load data local inpath '../../data/files/schema_evolution/complex_struct4_c.txt'
 
 insert into table part_add_to_various_various_struct4 partition(part=1) select * from complex_struct4_c_txt;
 
-explain
+explain vectorization detail
 select insert_num,part,b,s3 from part_add_to_various_various_struct4;
 
 select insert_num,part,b,s3 from part_add_to_various_various_struct4;

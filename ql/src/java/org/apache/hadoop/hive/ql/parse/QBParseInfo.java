@@ -40,10 +40,11 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
  **/
 public class QBParseInfo {
 
-  private final boolean isSubQ;
-  private final String alias;
+  private boolean isSubQ;
+  private String alias;
   private ASTNode joinExpr;
   private ASTNode hints;
+  private List<ASTNode> hintList;
   private final HashMap<String, ASTNode> aliasToSrc;
   /**
    * insclause-0 -> TOK_TAB ASTNode
@@ -66,6 +67,7 @@ public class QBParseInfo {
   // insertIntoTables/insertOverwriteTables map a table's fullName to its ast;
   private final Map<String, ASTNode> insertIntoTables;
   private final Map<String, ASTNode> insertOverwriteTables;
+  private ASTNode queryFromExpr;
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isNoScanAnalyzeCommand; // used for the analyze command (statistics) (noscan)
@@ -235,6 +237,10 @@ public class QBParseInfo {
     destToSelExpr.put(clause, ast);
   }
 
+  public void setQueryFromExpr(ASTNode ast) {
+    queryFromExpr = ast;
+  }
+
   public void setWhrExprForClause(String clause, ASTNode ast) {
     destToWhereExpr.put(clause, ast);
   }
@@ -354,6 +360,10 @@ public class QBParseInfo {
     return destToSelExpr.get(clause);
   }
 
+  public ASTNode getQueryFrom() {
+    return queryFromExpr;
+  }
+
   /**
    * Get the Cluster By AST for the clause.
    *
@@ -415,8 +425,16 @@ public class QBParseInfo {
     return alias;
   }
 
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
   public boolean getIsSubQ() {
     return isSubQ;
+  }
+
+  public void setIsSubQ(boolean isSubQ) {
+    this.isSubQ = isSubQ;
   }
 
   public ASTNode getJoinExpr() {
@@ -533,6 +551,14 @@ public class QBParseInfo {
 
   public void setHints(ASTNode hint) {
     hints = hint;
+  }
+
+  public void setHintList(List<ASTNode> hintList) {
+    this.hintList = hintList;
+  }
+
+  public List<ASTNode> getHintList() {
+    return hintList;
   }
 
   public ASTNode getHints() {

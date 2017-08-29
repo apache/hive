@@ -12,5 +12,5 @@ analyze table decimal_1 compute statistics for columns;
 
 desc formatted decimal_1 v;
 
-explain select * from decimal_1 order by 1 limit 100;
+explain select * from decimal_1 order by t limit 100;
 drop table decimal_1;

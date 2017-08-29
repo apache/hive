@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table t1
+PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table t1
+POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
@@ -380,7 +376,7 @@ STAGE PLANS:
                     outputColumnNames: key
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -401,7 +397,7 @@ STAGE PLANS:
                     outputColumnNames: key
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -674,7 +670,7 @@ STAGE PLANS:
                     outputColumnNames: key
                     Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: key (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1

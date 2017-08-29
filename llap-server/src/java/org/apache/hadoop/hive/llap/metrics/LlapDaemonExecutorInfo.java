@@ -51,7 +51,15 @@ public enum LlapDaemonExecutorInfo implements MetricsInfo {
   ExecutorPercentileTimeLost("Percentile cluster time wasted due to pre-emption"),
   ExecutorMaxPreemptionTimeToKill("Max time for killing pre-empted task"),
   ExecutorMaxPreemptionTimeLost("Max cluster time lost due to pre-emption"),
-  ExecutorTotalEvictedFromWaitQueue("Total number of tasks evicted from wait queue because of low priority");
+  ExecutorTotalEvictedFromWaitQueue("Total number of tasks evicted from wait queue because of low priority"),
+  ExecutorFallOffSuccessTimeLost("Total time lost in an executor completing after informing the AM - successful fragments"),
+  ExecutorFallOffSuccessMaxTimeLost("Max value of time lost in an executor completing after informing the AM - successful fragments"),
+  ExecutorFallOffFailedTimeLost("Total time lost in an executor completing after informing the AM - failed fragments"),
+  ExecutorFallOffFailedMaxTimeLost("Max value of time lost in an executor completing after informing the AM - failed fragments"),
+  ExecutorFallOffKilledTimeLost("Total time lost in an executor completing after informing the AM - killed fragments"),
+  ExecutorFallOffKilledMaxTimeLost("Max value of time lost in an executor completing after informing the AM - killed fragments"),
+  ExecutorFallOffNumCompletedFragments("Number of completed fragments w.r.t falloff values"),
+  ;
 
   private final String desc;
 

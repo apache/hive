@@ -112,4 +112,9 @@ public class ListSinkOperator extends Operator<ListSinkDesc> {
   public static String getOperatorName() {
     return "LIST_SINK";
   }
+
+  @Override
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName());
+  }
 }

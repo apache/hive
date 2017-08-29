@@ -18,12 +18,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/encrypted_table' using key: 'key_128'
-PREHOOK: query: -- create database encrypted_db in its default warehouse location {hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db
-#### A masked pattern was here ####
-POSTHOOK: query: -- create database encrypted_db in its default warehouse location {hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db
@@ -48,12 +45,39 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should fail, since they are in different encryption zones
-ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
+PREHOOK: query: ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+POSTHOOK: query: ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table
+#### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
+PREHOOK: query: DESCRIBE FORMATTED encrypted_table key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@encrypted_table
+POSTHOOK: query: DESCRIBE FORMATTED encrypted_table key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@encrypted_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@encrypted_table
+POSTHOOK: query: DESCRIBE FORMATTED encrypted_table value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@encrypted_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for default.encrypted_table failed to move data due to: '/build/ql/test/data/warehouse/encrypted_table can't be moved from encryption zone /build/ql/test/data/warehouse/encrypted_table to encryption zone /build/ql/test/data/warehouse/encrypted_db.db.' See hive log file for details.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for default.encrypted_table failed to move data due to: 'Got exception: org.apache.hadoop.ipc.RemoteException /build/ql/test/data/warehouse/encrypted_table can't be moved into an encryption zone.' See hive log file for details.
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
@@ -62,13 +86,31 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+PREHOOK: query: DESCRIBE FORMATTED encrypted_table key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@encrypted_table
+POSTHOOK: query: DESCRIBE FORMATTED encrypted_table key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@encrypted_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	int                 	0                   	498                 	0                   	309                 	                    	                    	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: DESCRIBE FORMATTED encrypted_table value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@encrypted_table
+POSTHOOK: query: DESCRIBE FORMATTED encrypted_table value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@encrypted_table
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+value               	string              	                    	                    	0                   	309                 	6.812               	7                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+POSTHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table
@@ -81,15 +123,11 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 plain_table
 src
-PREHOOK: query: -- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
--- rename should succeed since it does not need to move data (HIVE-14909), otherwise, it would fail.
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_outloc
-POSTHOOK: query: -- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
--- rename should succeed since it does not need to move data (HIVE-14909), otherwise, it would fail.
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -115,12 +153,9 @@ POSTHOOK: Input: database:default
 plain_table
 renamed_encrypted_table_outloc
 src
-PREHOOK: query: -- create database encrypted_db_outloc in a specified location other than its default in warehouse
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db_outloc
-#### A masked pattern was here ####
-POSTHOOK: query: -- create database encrypted_db_outloc in a specified location other than its default in warehouse
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db_outloc
@@ -160,21 +195,18 @@ POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: encrypted_db_outloc@encrypted_table
 POSTHOOK: Output: encrypted_db_outloc@encrypted_table
 POSTHOOK: Output: encrypted_db_outloc@renamed_encrypted_table
-PREHOOK: query: -- should succeed since data moves within specified_db_location
-SHOW TABLES
+PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:encrypted_db_outloc
-POSTHOOK: query: -- should succeed since data moves within specified_db_location
-SHOW TABLES
+POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:encrypted_db_outloc
 renamed_encrypted_table
-PREHOOK: query: -- should fail, since they are in different encryption zones
-ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2
+PREHOOK: query: ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table
 PREHOOK: Output: encrypted_db_outloc@renamed_encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for encrypted_db_outloc.renamed_encrypted_table failed to move data due to: '/build/ql/test/data/specified_db_location/renamed_encrypted_table can't be moved from an encryption zone.' See hive log file for details.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for encrypted_db_outloc.renamed_encrypted_table failed to move data due to: 'Got exception: org.apache.hadoop.ipc.RemoteException /build/ql/test/data/specified_db_location/renamed_encrypted_table can't be moved from an encryption zone.' See hive log file for details.
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:encrypted_db_outloc

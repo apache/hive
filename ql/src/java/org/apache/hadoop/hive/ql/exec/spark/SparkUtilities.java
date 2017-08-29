@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import com.google.common.base.Preconditions;
@@ -30,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.spark.client.SparkClientUtilities;
 import org.apache.spark.Dependency;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -77,7 +80,7 @@ public class SparkUtilities {
     Path localFile = new Path(source.getPath());
     Path remoteFile = new Path(SessionState.get().getSparkSession().getHDFSSessionDir(),
         getFileName(source));
-    FileSystem fileSystem = FileSystem.get(conf);
+    FileSystem fileSystem = FileSystem.get(remoteFile.toUri(), conf);
     // Overwrite if the remote file already exists. Whether the file can be added
     // on executor is up to spark, i.e. spark.files.overwrite
     fileSystem.copyFromLocalFile(false, true, localFile, remoteFile);
@@ -87,8 +90,11 @@ public class SparkUtilities {
 
   // checks if a resource has to be uploaded to HDFS for yarn-cluster mode
   public static boolean needUploadToHDFS(URI source, SparkConf sparkConf) {
-    return sparkConf.get("spark.master").equals("yarn-cluster") &&
-        !source.getScheme().equals("hdfs");
+    String master = sparkConf.get("spark.master");
+    String deployMode = sparkConf.contains("spark.submit.deployMode") ?
+        sparkConf.get("spark.submit.deployMode") : null;
+    return SparkClientUtilities.isYarnClusterMode(master, deployMode) &&
+        !(source.getScheme().equals("hdfs") || source.getScheme().equals("viewfs"));
   }
 
   private static String getFileName(URI uri) {
@@ -102,7 +108,7 @@ public class SparkUtilities {
 
   public static boolean isDedicatedCluster(Configuration conf) {
     String master = conf.get("spark.master");
-    return master.startsWith("yarn-") || master.startsWith("local");
+    return SparkClientUtilities.isYarnMaster(master) || SparkClientUtilities.isLocalMaster(master);
   }
 
 /////////////  by zhaow chenh 
@@ -214,5 +220,23 @@ public class SparkUtilities {
     for (Operator<?> child : root.getChildOperators()) {
       collectOp(result, child, clazz);
     }
+  }
+
+  /**
+   * remove currTask from the children of its parentTask
+   * remove currTask from the parent of its childrenTask
+   * @param currTask
+   */
+  public static void removeEmptySparkTask(SparkTask currTask) {
+    //remove currTask from parentTasks
+    ArrayList<Task> parTasks = new ArrayList<Task>();
+    parTasks.addAll(currTask.getParentTasks());
+
+    Object[] parTaskArr = parTasks.toArray();
+    for (Object parTask : parTaskArr) {
+      ((Task) parTask).removeDependentTask(currTask);
+    }
+    //remove currTask from childTasks
+    currTask.removeFromChildrenTasks();
   }
 }

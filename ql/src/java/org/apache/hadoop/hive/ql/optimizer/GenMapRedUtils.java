@@ -38,6 +38,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -114,6 +115,8 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.session.LineageState;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -129,11 +132,7 @@ import com.google.common.collect.Interner;
  * map-reduce tasks.
  */
 public final class GenMapRedUtils {
-  private static Logger LOG;
-
-  static {
-    LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
-  }
+  private static final Logger LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
 
   public static boolean needsTagging(ReduceWork rWork) {
     return rWork != null && (rWork.getReducer().getClass() == JoinOperator.class ||
@@ -249,9 +248,11 @@ public final class GenMapRedUtils {
           TableDesc tt_desc = tt_descLst.get(pos);
           MapWork mWork = plan.getMapWork();
           if (mWork.getPathToAliases().get(taskTmpDir) == null) {
-            mWork.removePathToAlias(new Path(taskTmpDir));
-            mWork.addPathToAlias(new Path(taskTmpDir),taskTmpDir);
-            mWork.addPathToPartitionInfo(new Path(taskTmpDir), new PartitionDesc(tt_desc, null));
+            taskTmpDir = taskTmpDir.intern();
+            Path taskTmpDirPath = StringInternUtils.internUriStringsInPath(new Path(taskTmpDir));
+            mWork.removePathToAlias(taskTmpDirPath);
+            mWork.addPathToAlias(taskTmpDirPath, taskTmpDir);
+            mWork.addPathToPartitionInfo(taskTmpDirPath, new PartitionDesc(tt_desc, null));
             mWork.getAliasToWork().put(taskTmpDir, topOperators.get(pos));
           }
         }
@@ -771,7 +772,7 @@ public final class GenMapRedUtils {
 
     if (topOp instanceof TableScanOperator) {
       try {
-      Utilities.addSchemaEvolutionToTableScanOperator(
+        Utilities.addSchemaEvolutionToTableScanOperator(
           (StructObjectInspector) tt_desc.getDeserializer().getObjectInspector(),
           (TableScanOperator) topOp);
       } catch (Exception e) {
@@ -780,7 +781,7 @@ public final class GenMapRedUtils {
     }
 
     if (!local) {
-      plan.addPathToAlias(path,alias);
+      plan.addPathToAlias(path, alias);
       plan.addPathToPartitionInfo(path, new PartitionDesc(tt_desc, null));
       plan.getAliasToWork().put(alias, topOp);
     } else {
@@ -1543,16 +1544,17 @@ public final class GenMapRedUtils {
     TableScanOperator topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
-    Path inputDir = fsDesc.getFinalDirName();
+    Path inputDir = StringInternUtils.internUriStringsInPath(fsDesc.getFinalDirName());
+    String inputDirStr = inputDir.toString().intern();
     TableDesc tblDesc = fsDesc.getTableInfo();
-    aliases.add(inputDir.toString()); // dummy alias: just use the input path
+    aliases.add(inputDirStr); // dummy alias: just use the input path
 
     // constructing the default MapredWork
     MapredWork cMrPlan = GenMapRedUtils.getMapRedWorkFromConf(conf);
     MapWork cplan = cMrPlan.getMapWork();
     cplan.addPathToAlias(inputDir, aliases);
     cplan.addPathToPartitionInfo(inputDir, new PartitionDesc(tblDesc, null));
-    cplan.getAliasToWork().put(inputDir.toString(), topOp);
+    cplan.getAliasToWork().put(inputDirStr, topOp);
     cplan.setMapperCannotSpanPartns(true);
 
     return cplan;
@@ -1679,12 +1681,15 @@ public final class GenMapRedUtils {
     LoadFileDesc fileDesc = null;
     LoadTableDesc tableDesc = null;
 
+    LineageState lineageState = SessionState.get().getLineageState();
     if (linkedMoveWork.getLoadFileWork() != null) {
       fileDesc = new LoadFileDesc(linkedMoveWork.getLoadFileWork());
       fileDesc.setSourcePath(condInputPath);
+      lineageState.updateDirToOpMap(condInputPath, linkedMoveWork.getLoadFileWork().getSourcePath());
     } else if (linkedMoveWork.getLoadTableWork() != null) {
       tableDesc = new LoadTableDesc(linkedMoveWork.getLoadTableWork());
       tableDesc.setSourcePath(condInputPath);
+      lineageState.updateDirToOpMap(condInputPath, linkedMoveWork.getLoadTableWork().getSourcePath());
     } else {
       throw new IllegalArgumentException("Merging a path with a MoveWork with multi-files work is not allowed.");
     }

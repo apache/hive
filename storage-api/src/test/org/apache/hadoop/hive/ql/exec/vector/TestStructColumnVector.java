@@ -116,7 +116,8 @@ public class TestStructColumnVector {
       byte[] buffer = ("value " + r).getBytes(StandardCharsets.UTF_8);
       y.setRef(r, buffer, 0, buffer.length);
     }
-    final String EXPECTED = ("[[0, 2000-01-01 00:00:01.0], \"value 0\"]\n" +
+    final String EXPECTED = ("Column vector types: 0:STRUCT, 1:BYTES\n" +
+        "[[0, 2000-01-01 00:00:01.0], \"value 0\"]\n" +
         "[[3, 2000-01-01 00:00:02.0], \"value 1\"]\n" +
         "[[6, 2000-01-01 00:00:03.0], \"value 2\"]\n" +
         "[[9, 2000-01-01 00:00:04.0], \"value 3\"]\n" +

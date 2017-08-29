@@ -30,11 +30,14 @@ public class Constants {
           "org.apache.hadoop.hive.druid.io.DruidOutputFormat";
   public static final String DRUID_DATA_SOURCE = "druid.datasource";
   public static final String DRUID_SEGMENT_GRANULARITY = "druid.segment.granularity";
+  public static final String DRUID_QUERY_GRANULARITY = "druid.query.granularity";
   public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
   public static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";
+  public static final String DRUID_SEGMENT_INTERMEDIATE_DIRECTORY = "druid.storage.storageDirectory.intermediate";
+
   public static final String DRUID_SEGMENT_VERSION = "druid.segment.version";
   public static final String DRUID_JOB_WORKING_DIRECTORY = "druid.job.workingDirectory";
 

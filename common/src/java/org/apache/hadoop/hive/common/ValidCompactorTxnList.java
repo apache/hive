@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common;
 
 import java.util.Arrays;
+import java.util.BitSet;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
@@ -31,7 +32,7 @@ import java.util.Arrays;
  * open transaction when choosing which files to compact, but that it still ignores aborted
  * records when compacting.
  * 
- * See {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList()} for proper
+ * See org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList() for proper
  * way to construct this.
  */
 public class ValidCompactorTxnList extends ValidReadTxnList {
@@ -40,11 +41,12 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
   }
   /**
    * @param abortedTxnList list of all aborted transactions
+   * @param abortedBits bitset marking whether the corresponding transaction is aborted
    * @param highWatermark highest committed transaction to be considered for compaction,
    *                      equivalently (lowest_open_txn - 1).
    */
-  public ValidCompactorTxnList(long[] abortedTxnList, long highWatermark) {
-    super(abortedTxnList, highWatermark);
+  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark) {
+    super(abortedTxnList, abortedBits, highWatermark); // abortedBits should be all true as everything in exceptions are aborted txns
     if(this.exceptions.length <= 0) {
       return;
     }
@@ -68,11 +70,16 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
     super(value);
   }
   /**
-   * Returns {@link org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL} if all txns in
+   * Returns org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL if all txns in
    * the range are resolved and RangeResponse.NONE otherwise
    */
   @Override
   public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
     return highWatermark >= maxTxnId ? RangeResponse.ALL : RangeResponse.NONE;
+  }
+
+  @Override
+  public boolean isTxnAborted(long txnid) {
+    return Arrays.binarySearch(exceptions, txnid) >= 0;
   }
 }

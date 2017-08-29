@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -86,6 +86,11 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${joda.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
@@ -101,6 +106,10 @@
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.druid</groupId>
+          <artifactId>druid-aws-common</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -121,18 +130,43 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <exclusion>
+          <!--LGPL licenced library-->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
       <version>${druid.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
-    </dependency>
+       <exclusions>
+        <exclusion>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+        </exclusion>
+      </exclusions>
+   </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
@@ -188,6 +222,17 @@
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.calcite.avatica</groupId>
+      <artifactId>avatica</artifactId>
+      <version>${avatica.version}</version>
     </dependency>
     <!-- test inter-project -->
     <dependency>
@@ -201,6 +246,20 @@
       <artifactId>druid-indexing-hadoop</artifactId>
       <version>${druid.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -250,6 +309,10 @@
                   <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
                 </relocation>
                 <relocation>
+                  <pattern>org.apache.calcite</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>org.jboss.netty</pattern>
                   <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
                 </relocation>
@@ -261,6 +324,10 @@
                   <pattern>com.google.common</pattern>
                   <shadedPattern>org.apache.hive.druid.com.google.common</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.roaringbitmap</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.roaringbitmap</shadedPattern>
+                </relocation>
               </relocations>
               <artifactSet>
                 <includes>
@@ -268,6 +335,7 @@
                   <include>io.druid.extensions:*</include>
                   <include>com.metamx:*</include>
                   <include>io.netty:*</include>
+                  <include>org.apache.calcite:*</include>
                   <include>com.fasterxml.jackson.core:*</include>
                   <include>com.fasterxml.jackson.datatype:*</include>
                   <include>com.fasterxml.jackson.dataformat:*</include>
@@ -276,6 +344,7 @@
                   <include>org.jdbi:*</include>
                   <include>net.jpountz.lz4:*</include>
                   <include>org.apache.commons:*</include>
+                  <include>org.roaringbitmap:*</include>
                 </includes>
               </artifactSet>
               <filters>

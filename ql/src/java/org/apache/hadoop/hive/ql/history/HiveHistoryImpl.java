@@ -46,12 +46,11 @@ import org.apache.hadoop.mapred.Counters.Group;
  * Each session uses a new object, which creates a new file.
  */
 public class HiveHistoryImpl implements HiveHistory{
+  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.HiveHistoryImpl");
 
   PrintWriter histStream; // History File stream
 
   String histFileName; // History file name
-
-  private static final Logger LOG = LoggerFactory.getLogger("hive.ql.exec.HiveHistoryImpl");
 
   private static final Random randGen = new Random();
 
@@ -305,7 +304,7 @@ public class HiveHistoryImpl implements HiveHistory{
   /**
    * write out counters.
    */
-  static ThreadLocal<Map<String,String>> ctrMapFactory =
+  static final ThreadLocal<Map<String,String>> ctrMapFactory =
       new ThreadLocal<Map<String, String>>() {
     @Override
     protected Map<String,String> initialValue() {

@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests that when a multi insert inserts into a bucketed table and a table which is not bucketed
--- the bucketed table is not merged and the table which is not bucketed is
-
-CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucketed_table
-POSTHOOK: query: -- Tests that when a multi insert inserts into a bucketed table and a table which is not bucketed
--- the bucketed table is not merged and the table which is not bucketed is
-
-CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE bucketed_table(key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucketed_table
@@ -75,6 +69,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -95,6 +90,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -143,6 +139,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -163,6 +160,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -199,10 +197,11 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
-                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         SORTBUCKETCOLSPREFIX TRUE
                         bucket_count 2
                         bucket_field_name key
+                        column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
@@ -239,8 +238,9 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
-                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                        COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
@@ -269,10 +269,11 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -302,8 +303,9 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -414,24 +416,20 @@ POSTHOOK: Input: default@bucketed_table
 17	val_17
 19	val_19
 27	val_27
-PREHOOK: query: -- Should be 2 (not merged)
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should be 2 (not merged)
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
 #### A masked pattern was here ####
 2
-PREHOOK: query: -- Should be 1 (merged)
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@unbucketed_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should be 1 (merged)
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unbucketed_table
 #### A masked pattern was here ####

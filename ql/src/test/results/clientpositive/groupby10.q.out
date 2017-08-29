@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+PREHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+POSTHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
@@ -524,16 +520,12 @@ POSTHOOK: Input: default@dest2
 66	66	66
 86	86	86
 98	98	98
-PREHOOK: query: -- HIVE-3852 Multi-groupby optimization fails when same distinct column is used twice or more
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-3852 Multi-groupby optimization fails when same distinct column is used twice or more
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key

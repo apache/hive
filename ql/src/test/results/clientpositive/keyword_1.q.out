@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-create table test_user (`user` string, `group` string)
+PREHOOK: query: create table test_user (`user` string, `group` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_user
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
-create table test_user (`user` string, `group` string)
+POSTHOOK: query: create table test_user (`user` string, `group` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_user

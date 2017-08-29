@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
+import com.google.common.base.Preconditions;
+
 /*
  * Specialized class for doing a vectorized map join that is an outer join on Multi-Key
  * using a hash map.
@@ -47,8 +49,17 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenerateResultOperator {
 
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOuterMultiKeyOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinOuterMultiKeyOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -112,7 +123,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
 
         keyVectorSerializeWrite = new VectorSerializeRow(
                         new BinarySortableSerializeWrite(bigTableKeyColumnMap.length));
-        keyVectorSerializeWrite.init(bigTableKeyTypeNames, bigTableKeyColumnMap);
+        keyVectorSerializeWrite.init(bigTableKeyTypeInfos, bigTableKeyColumnMap);
 
         currentKeyOutput = new Output();
         saveKeyOutput = new Output();
@@ -138,7 +149,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -167,7 +178,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           if (batch.selectedInUse) {
             if (inputSelectedInUse) {
               LOG.debug(CLASS_NAME +
@@ -254,7 +265,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
@@ -265,7 +276,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -434,7 +445,7 @@ public class VectorMapJoinOuterMultiKeyOperator extends VectorMapJoinOuterGenera
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +

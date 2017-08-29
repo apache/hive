@@ -1,0 +1,3 @@
+FAILED: SemanticException Line 2:67 Invalid SubQuery expression 'p_type' in definition of SubQuery sq_1 [
+(select p_size, p_type from part)
+] used as sq_1 at Line 0:-1: SubQuery can contain only 1 item in Select List.

@@ -19,10 +19,7 @@
 package org.apache.hive.ptest.execution.conf;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import org.apache.hive.ptest.execution.Dirs;
 import org.apache.hive.ptest.execution.context.ExecutionContextProvider;
@@ -88,22 +85,11 @@ public class ExecutionContextConfiguration {
   public ExecutionContextProvider getExecutionContextProvider() {
     return mExecutionContextProvider;
   }
-  public static ExecutionContextConfiguration fromInputStream(InputStream inputStream)
-      throws IOException {
-    Properties properties = new Properties();
-    properties.load(inputStream);
-    Context context = new Context(Maps.fromProperties(properties));
-    return new ExecutionContextConfiguration(context);
-  }
-  public static ExecutionContextConfiguration fromFile(String file) throws IOException {
-    InputStream in = new FileInputStream(file);
-    try {
-      return fromInputStream(in);
-    } finally {
-      in.close();
-    }
-  }
 
+  public static ExecutionContextConfiguration withContext(Context ctx)
+      throws IOException {
+    return new ExecutionContextConfiguration(ctx);
+  }
   @Override
   public String toString() {
     return "ExecutionContextConfiguration{" +

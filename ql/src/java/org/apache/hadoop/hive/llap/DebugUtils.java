@@ -24,6 +24,7 @@ package org.apache.hadoop.hive.llap;
  */
 public class DebugUtils {
   public static String toString(boolean[] a) {
+    if (a == null) return "null";
     StringBuilder b = new StringBuilder();
     b.append('[');
     for (int i = 0; i < a.length; ++i) {

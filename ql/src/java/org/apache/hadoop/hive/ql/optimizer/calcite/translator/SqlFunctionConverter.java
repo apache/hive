@@ -127,9 +127,9 @@ public class SqlFunctionConverter {
     }
     // Make sure we handle unary + and - correctly.
     if (argsLength == 1) {
-      if (name == "+") {
+      if ("+".equals(name)) {
         name = FunctionRegistry.UNARY_PLUS_FUNC_NAME;
-      } else if (name == "-") {
+      } else if ("-".equals(name)) {
         name = FunctionRegistry.UNARY_MINUS_FUNC_NAME;
       }
     }
@@ -181,6 +181,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+      } else if (castType.equals(TypeInfoFactory.timestampLocalTZTypeInfo)) {
+        castUDF = handleCastForParameterizedType(castType,
+            FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {
@@ -329,6 +332,7 @@ public class SqlFunctionConverter {
 
     StaticBlockBuilder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
+      registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
       registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.DIVIDE, "/"));
       registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.Identifier, "%"));
@@ -349,8 +353,9 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
-      registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.TOK_ISNOTNULL, "TOK_ISNOTNULL"));
-      registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.TOK_ISNULL, "TOK_ISNULL"));
+      registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
+      registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));
+      registerFunction("is not distinct from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       // timebased
@@ -482,21 +487,29 @@ public class SqlFunctionConverter {
       // this.So, bail out for now.
       throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
     }
-    SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
-    if (calciteOp == null) {
-      CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-      if ("-".equals(hiveUdfName)) {
-        // Calcite native - has broken inference for return type, so we override it with explicit return type
-        // e.g. timestamp - timestamp is inferred as timestamp, where it really should be interval.
+    SqlOperator calciteOp;
+    CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+    switch (hiveUdfName) {
+      // Follow hive's rules for type inference as oppose to Calcite's
+      // for return type.
+      //TODO: Perhaps we should do this for all functions, not just +,-
+      case "-":
         calciteOp = new SqlMonotonicBinaryOperator("-", SqlKind.MINUS, 40, true,
             uInf.returnTypeInference, uInf.operandTypeInference, OperandTypes.MINUS_OPERATOR);
-      } else {
-        calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
-            uInf.operandTypeInference, uInf.operandTypeChecker,
-            SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
-      }
+        break;
+      case "+":
+        calciteOp = new SqlMonotonicBinaryOperator("+", SqlKind.PLUS, 40, true,
+            uInf.returnTypeInference, uInf.operandTypeInference, OperandTypes.PLUS_OPERATOR);
+        break;
+      default:
+        calciteOp = hiveToCalcite.get(hiveUdfName);
+        if (null == calciteOp) {
+          calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker,
+              SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
+        }
+        break;
     }
-
     return calciteOp;
   }
 

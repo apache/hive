@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -47,15 +49,23 @@ public class HiveLockObject {
      * Note: The parameters are used to uniquely identify a HiveLockObject. 
      * The parameters will be stripped off any ':' characters in order not 
      * to interfere with the way the data is serialized (':' delimited string).
+     * The query string might be truncated depending on HIVE_LOCK_QUERY_STRING_MAX_LENGTH
+     * @param queryId The query identifier will be added to the object without change
+     * @param lockTime The lock time  will be added to the object without change
+     * @param lockMode The lock mode  will be added to the object without change
+     * @param queryStr The query string might be truncated based on
+     *     HIVE_LOCK_QUERY_STRING_MAX_LENGTH conf variable
+     * @param conf The hive configuration based on which we decide if we should truncate the query
+     *     string or not
      */
-    public HiveLockObjectData(String queryId,
-        String lockTime,
-        String lockMode,
-        String queryStr) {
+    public HiveLockObjectData(String queryId, String lockTime, String lockMode, String queryStr,
+        HiveConf conf) {
       this.queryId = removeDelimiter(queryId);
-      this.lockTime = removeDelimiter(lockTime);
+      this.lockTime = StringInternUtils.internIfNotNull(removeDelimiter(lockTime));
       this.lockMode = removeDelimiter(lockMode);
-      this.queryStr = removeDelimiter(queryStr == null ? null : queryStr.trim());
+      this.queryStr = StringInternUtils.internIfNotNull(
+          queryStr == null ? null : StringUtils.substring(removeDelimiter(queryStr.trim()), 0,
+              conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH)));
     }
 
     /**
@@ -71,9 +81,9 @@ public class HiveLockObject {
 
       String[] elem = data.split(":");
       queryId = elem[0];
-      lockTime = elem[1];
+      lockTime = StringInternUtils.internIfNotNull(elem[1]);
       lockMode = elem[2];
-      queryStr = elem[3];
+      queryStr = StringInternUtils.internIfNotNull(elem[3]);
       if (elem.length >= 5) {
         clientIp = elem[4];
       }
@@ -178,12 +188,12 @@ public class HiveLockObject {
 
   public HiveLockObject(String path, HiveLockObjectData lockData) {
     this.pathNames = new String[1];
-    this.pathNames[0] = path;
+    this.pathNames[0] = StringInternUtils.internIfNotNull(path);
     this.data = lockData;
   }
 
   public HiveLockObject(String[] paths, HiveLockObjectData lockData) {
-    this.pathNames = paths;
+    this.pathNames = StringInternUtils.internStringsInArray(paths);
     this.data = lockData;
   }
 

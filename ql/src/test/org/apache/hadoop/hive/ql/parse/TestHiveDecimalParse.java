@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
@@ -28,34 +26,35 @@ import org.apache.hadoop.hive.ql.exec.DDLTask;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType() throws ParseException {
-    String query = "create table dec (d decimal)";
+    String query = "create table `dec` (d decimal)";
     String type = getColumnType(query);
     Assert.assertEquals("decimal(10,0)", type);
   }
 
   @Test
   public void testDecimalType1() throws ParseException {
-    String query = "create table dec (d decimal(5))";
+    String query = "create table `dec` (d decimal(5))";
     String type = getColumnType(query);
     Assert.assertEquals("decimal(5,0)", type);
   }
 
   @Test
   public void testDecimalType2() throws ParseException {
-    String query = "create table dec (d decimal(9,7))";
+    String query = "create table `dec` (d decimal(9,7))";
     String type = getColumnType(query);
     Assert.assertEquals("decimal(9,7)", type);
   }
 
   @Test
   public void testDecimalType3() throws ParseException {
-    String query = "create table dec (d decimal(66,7))";
+    String query = "create table `dec` (d decimal(66,7))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
@@ -66,7 +65,7 @@ public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType4() throws ParseException {
-    String query = "create table dec (d decimal(0,7))";
+    String query = "create table `dec` (d decimal(0,7))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
@@ -77,7 +76,7 @@ public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType5() throws ParseException {
-    String query = "create table dec (d decimal(7,33))";
+    String query = "create table `dec` (d decimal(7,33))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
@@ -88,7 +87,7 @@ public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType6() throws ParseException {
-    String query = "create table dec (d decimal(7,-1))";
+    String query = "create table `dec` (d decimal(7,-1))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
@@ -99,18 +98,18 @@ public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType7() throws ParseException {
-    String query = "create table dec (d decimal(7,33,4))";
+    String query = "create table `dec` (d decimal(7,33,4))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
-      driver.getErrorMsg().contains("missing ) at ',' near ',' in column name or primary key or foreign key"));
+      driver.getErrorMsg().contains("missing ) at ',' near ',' in column name or constraint"));
   }
 
   @Test
   public void testDecimalType8() throws ParseException {
-    String query = "create table dec (d decimal(7a))";
+    String query = "create table `dec` (d decimal(7a))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);
@@ -121,7 +120,7 @@ public class TestHiveDecimalParse {
 
   @Test
   public void testDecimalType9() throws ParseException {
-    String query = "create table dec (d decimal(20,23))";
+    String query = "create table `dec` (d decimal(20,23))";
 
     Driver driver = createDriver();
     int rc = driver.compile(query);

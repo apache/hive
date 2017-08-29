@@ -64,8 +64,6 @@ import org.apache.hadoop.util.StringUtils;
 public class ExecReducer extends MapReduceBase implements Reducer {
 
   private static final Logger LOG = LoggerFactory.getLogger("ExecReducer");
-  private static final boolean isInfoEnabled = LOG.isInfoEnabled();
-  private static final boolean isTraceEnabled = LOG.isTraceEnabled();
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
 
   // Input value serde needs to be an array to support different SerDe
@@ -96,7 +94,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    if (isInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       try {
         LOG.info("conf classpath = "
             + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
@@ -190,7 +188,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           groupKey = new BytesWritable();
         } else {
           // If a operator wants to do some work at the end of a group
-          if (isTraceEnabled) {
+          if (LOG.isTraceEnabled()) {
             LOG.trace("End Group");
           }
           reducer.endGroup();
@@ -207,7 +205,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
-        if (isTraceEnabled) {
+        if (LOG.isTraceEnabled()) {
           LOG.trace("Start Group");
         }
         reducer.startGroup();
@@ -263,14 +261,14 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   public void close() {
 
     // No row was processed
-    if (oc == null && isTraceEnabled) {
+    if (oc == null && LOG.isTraceEnabled()) {
       LOG.trace("Close called without any rows processed");
     }
 
     try {
       if (groupKey != null) {
         // If a operator wants to do some work at the end of a group
-        if (isTraceEnabled) {
+        if (LOG.isTraceEnabled()) {
           LOG.trace("End Group");
         }
         reducer.endGroup();

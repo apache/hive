@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -76,6 +75,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -121,8 +121,9 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
-import org.apache.orc.*;
-import org.apache.orc.impl.PhysicalFsWriter;
+import org.apache.orc.OrcConf;
+import org.apache.orc.OrcProto;
+import org.apache.orc.TypeDescription;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -462,8 +463,7 @@ public class TestInputOutputFormat {
   public void testSplitStrategySelection() throws Exception {
 
     conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
-    conf.setLong(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE.varname,
-        100);
+    conf.set(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "10Mb");
     final int[] counts = { 1, 10, 100, 256 };
     final int[] sizes = { 100, 1000 };
     final int[] numSplits = { 1, 9, 10, 11, 99, 111 };
@@ -542,7 +542,7 @@ public class TestInputOutputFormat {
     }
 
     k = 0;
-    conf.set("hive.orc.cache.stripe.details.size", "-1");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "0");
     for (int c : counts) {
       for (int s : sizes) {
         final FileSystem fs = generateMockFiles(c, s);
@@ -599,12 +599,13 @@ public class TestInputOutputFormat {
   @Test
   public void testACIDSplitStrategy() throws Exception {
     conf.set("bucket_count", "2");
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     MockFileSystem fs = new MockFileSystem(conf,
-        new MockFile("mock:/a/delta_000_001/part-00", 1000, new byte[1], new MockBlock("host1")),
-        new MockFile("mock:/a/delta_000_001/part-01", 1000, new byte[1], new MockBlock("host1")),
-        new MockFile("mock:/a/delta_001_002/part-02", 1000, new byte[1], new MockBlock("host1")),
-        new MockFile("mock:/a/delta_001_002/part-03", 1000, new byte[1], new MockBlock("host1")));
+        new MockFile("mock:/a/delta_000_001/bucket_000000", 1000, new byte[1], new MockBlock("host1")),
+        new MockFile("mock:/a/delta_000_001/bucket_000001", 1000, new byte[1], new MockBlock("host1")),
+        new MockFile("mock:/a/delta_001_002/bucket_000000", 1000, new byte[1], new MockBlock("host1")),
+        new MockFile("mock:/a/delta_001_002/bucket_000001", 1000, new byte[1], new MockBlock("host1")));
     OrcInputFormat.FileGenerator gen =
         new OrcInputFormat.FileGenerator(context, fs,
             new MockPath(fs, "mock:/a"), false, null);
@@ -613,9 +614,9 @@ public class TestInputOutputFormat {
     List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
     ColumnarSplitSizeEstimator splitSizeEstimator = new ColumnarSplitSizeEstimator();
     for (OrcSplit split: splits) {
-      assertEquals(Integer.MAX_VALUE, splitSizeEstimator.getEstimatedSize(split));
+      assertEquals(1, splitSizeEstimator.getEstimatedSize(split));
     }
-    assertEquals(2, splits.size());
+    assertEquals(4, splits.size());
   }
 
   @Test
@@ -911,7 +912,7 @@ public class TestInputOutputFormat {
       MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
     OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
     return OrcInputFormat.determineSplitStrategies(combineCtx, context,
-        adi.fs, adi.splitPath, adi.acidInfo, adi.baseFiles, adi.parsedDeltas,
+        adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
         null, null, true);
   }
 
@@ -925,7 +926,7 @@ public class TestInputOutputFormat {
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
     OrcInputFormat.AcidDirInfo adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseFiles, adi.parsedDeltas,
+        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
         null, null, true);
   }
 
@@ -1107,6 +1108,9 @@ public class TestInputOutputFormat {
     }
   }
 
+  /**
+   * WARNING: detele(Path...) don't actually delete
+   */
   public static class MockFileSystem extends FileSystem {
     final List<MockFile> files = new ArrayList<MockFile>();
     final Map<MockFile, FileStatus> fileStatusMap = new HashMap<>();
@@ -1232,14 +1236,32 @@ public class TestInputOutputFormat {
     public boolean delete(Path path) throws IOException {
       statistics.incrementWriteOps(1);
       checkAccess();
-      return false;
+      int removed = 0;
+      for(int i = 0; i < files.size(); i++) {
+        MockFile mf = files.get(i);
+        if(path.equals(mf.path)) {
+          files.remove(i);
+          removed++;
+          break;
+        }
+      }
+      for(int i = 0; i < globalFiles.size(); i++) {
+        MockFile mf = files.get(i);
+        if(path.equals(mf.path)) {
+          globalFiles.remove(i);
+          removed++;
+          break;
+        }
+      }
+      return removed > 0;
     }
 
     @Override
     public boolean delete(Path path, boolean b) throws IOException {
-      statistics.incrementWriteOps(1);
-      checkAccess();
-      return false;
+      if(b) {
+        throw new UnsupportedOperationException();
+      }
+      return delete(path);
     }
 
     @Override
@@ -1535,7 +1557,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, null, true,
-            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true, true);
     OrcSplit result = splitter.createSplit(0, 200, null);
     assertEquals(0, result.getStart());
     assertEquals(200, result.getLength());
@@ -1576,7 +1598,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, null, true,
-            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
     assertEquals(3, result.getStart());
@@ -1599,7 +1621,7 @@ public class TestInputOutputFormat {
     context = new OrcInputFormat.Context(conf);
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
       fs.getFileStatus(new Path("/a/file")), null, null, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true, true);
     results = splitter.call();
     for(int i=0; i < stripeSizes.length; ++i) {
       assertEquals("checking stripe " + i + " size",
@@ -1627,7 +1649,7 @@ public class TestInputOutputFormat {
     OrcInputFormat.SplitGenerator splitter =
         new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
             fs.getFileStatus(new Path("/a/file")), null, null, true,
-            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true);
+            new ArrayList<AcidInputFormat.DeltaMetaData>(), true, null, null), null, true, true);
     List<OrcSplit> results = splitter.call();
     OrcSplit result = results.get(0);
     assertEquals(3, results.size());
@@ -1650,7 +1672,7 @@ public class TestInputOutputFormat {
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(),
-        true, null, null), null, true);
+        true, null, null), null, true, true);
     results = splitter.call();
     assertEquals(5, results.size());
     for (int i = 0; i < stripeSizes.length; ++i) {
@@ -1670,7 +1692,7 @@ public class TestInputOutputFormat {
     splitter = new OrcInputFormat.SplitGenerator(new OrcInputFormat.SplitInfo(context, fs,
         fs.getFileStatus(new Path("/a/file")), null, null, true,
         new ArrayList<AcidInputFormat.DeltaMetaData>(),
-        true, null, null), null, true);
+        true, null, null), null, true, true);
     results = splitter.call();
     assertEquals(1, results.size());
     result = results.get(0);
@@ -2116,6 +2138,26 @@ public class TestInputOutputFormat {
   }
 
   /**
+   * Set the mockblocks for a file after it has been written
+   * @param path the path to modify
+   * @param conf the configuration
+   * @param blocks the blocks to uses
+   * @throws IOException
+   */
+  static void setBlocks(Path path, Configuration conf,
+                        MockBlock... blocks) throws IOException {
+    FileSystem mockFs = path.getFileSystem(conf);
+    MockOutputStream stream = (MockOutputStream) mockFs.create(path);
+    stream.setBlocks(blocks);
+  }
+
+  static int getLength(Path path, Configuration conf) throws IOException {
+    FileSystem mockFs = path.getFileSystem(conf);
+    FileStatus stat = mockFs.getFileStatus(path);
+    return (int) stat.getLen();
+  }
+
+  /**
    * Test vectorization, non-acid, non-combine.
    * @throws Exception
    */
@@ -2132,15 +2174,16 @@ public class TestInputOutputFormat {
         "vectorization", inspector, true, 1);
 
     // write the orc file to the mock file system
+    Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
     Writer writer =
-        OrcFile.createWriter(new Path(conf.get("mapred.input.dir") + "/0_0"),
+        OrcFile.createWriter(path,
            OrcFile.writerOptions(conf).blockPadding(false)
                   .bufferSize(1024).inspector(inspector));
     for(int i=0; i < 10; ++i) {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    getStreamFromWriter(writer).setBlocks(new MockBlock("host0", "host1"));
+    setBlocks(path, conf, new MockBlock("host0", "host1"));
 
     // call getsplits
     HiveInputFormat<?,?> inputFormat =
@@ -2161,11 +2204,6 @@ public class TestInputOutputFormat {
     assertEquals(false, reader.next(key, value));
   }
 
-  private MockOutputStream getStreamFromWriter(Writer writer) throws IOException {
-    PhysicalFsWriter pfr = (PhysicalFsWriter)((WriterImpl) writer).getPhysicalWriter();
-    return (MockOutputStream)pfr.getStream();
-  }
-
   /**
    * Test vectorization, non-acid, non-combine.
    * @throws Exception
@@ -2183,15 +2221,16 @@ public class TestInputOutputFormat {
         "vectorBuckets", inspector, true, 1);
 
     // write the orc file to the mock file system
+    Path path = new Path(conf.get("mapred.input.dir") + "/0_0");
     Writer writer =
-        OrcFile.createWriter(new Path(conf.get("mapred.input.dir") + "/0_0"),
+        OrcFile.createWriter(path,
             OrcFile.writerOptions(conf).blockPadding(false)
                 .bufferSize(1024).inspector(inspector));
     for(int i=0; i < 10; ++i) {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    getStreamFromWriter(writer).setBlocks(new MockBlock("host0", "host1"));
+    setBlocks(path, conf, new MockBlock("host0", "host1"));
 
     // call getsplits
     conf.setInt(hive_metastoreConstants.BUCKET_COUNT, 3);
@@ -2229,9 +2268,9 @@ public class TestInputOutputFormat {
       BigRow row = new BigRow(i);
       writer.insert(10, row);
     }
-    WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
-    getStreamFromWriter(baseWriter).setBlocks(new MockBlock("host0", "host1"));
+    Path path = new Path("mock:/vectorizationAcid/p=0/base_0000010/bucket_00000");
+    setBlocks(path, conf, new MockBlock("host0", "host1"));
 
     // call getsplits
     HiveInputFormat<?, ?> inputFormat =
@@ -2309,9 +2348,10 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    MockOutputStream outputStream = getStreamFromWriter(writer);
-    outputStream.setBlocks(new MockBlock("host0", "host1"));
-    int length0 = outputStream.file.length;
+    Path path = new Path("mock:/combination/p=0/0_0");
+    setBlocks(path, conf, new MockBlock("host0", "host1"));
+    MockFileSystem mockFs = (MockFileSystem) partDir.getFileSystem(conf);
+    int length0 = getLength(path, conf);
     writer =
         OrcFile.createWriter(new Path(partDir, "1_0"),
             OrcFile.writerOptions(conf).blockPadding(false)
@@ -2320,8 +2360,8 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    outputStream = getStreamFromWriter(writer);
-    outputStream.setBlocks(new MockBlock("host1", "host2"));
+    Path path1 = new Path("mock:/combination/p=0/1_0");
+    setBlocks(path1, conf, new MockBlock("host1", "host2"));
 
     // call getsplits
     HiveInputFormat<?,?> inputFormat =
@@ -2336,7 +2376,7 @@ public class TestInputOutputFormat {
     assertEquals(partDir.toString() + "/0_0", split.getPath(0).toString());
     assertEquals(partDir.toString() + "/1_0", split.getPath(1).toString());
     assertEquals(length0, split.getLength(0));
-    assertEquals(outputStream.file.length, split.getLength(1));
+    assertEquals(getLength(path1, conf), split.getLength(1));
     assertEquals(0, split.getOffset(0));
     assertEquals(0, split.getOffset(1));
     // hadoop-1 gets 3 and hadoop-2 gets 0. *sigh*
@@ -2384,11 +2424,11 @@ public class TestInputOutputFormat {
     for(int i=0; i < 10; ++i) {
       writer.insert(10, new MyRow(i, 2 * i));
     }
-    WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
 
-    MockOutputStream outputStream = getStreamFromWriter(baseWriter);
-    outputStream.setBlocks(new MockBlock("host1", "host2"));
+    // base file
+    Path base0 = new Path("mock:/combinationAcid/p=0/base_0000010/bucket_00000");
+    setBlocks(base0, conf, new MockBlock("host1", "host2"));
 
     // write a delta file in partition 0
     writer = new OrcRecordUpdater(partDir[0],
@@ -2397,23 +2437,22 @@ public class TestInputOutputFormat {
     for(int i=10; i < 20; ++i) {
       writer.insert(10, new MyRow(i, 2*i));
     }
-    WriterImpl deltaWriter = (WriterImpl) writer.getWriter();
-    outputStream = getStreamFromWriter(deltaWriter);
     writer.close(false);
-    outputStream.setBlocks(new MockBlock("host1", "host2"));
+    Path base1 = new Path("mock:/combinationAcid/p=0/base_0000010/bucket_00001");
+    setBlocks(base1, conf, new MockBlock("host1", "host2"));
 
     // write three files in partition 1
     for(int bucket=0; bucket < BUCKETS; ++bucket) {
+      Path path = new Path(partDir[1], "00000" + bucket + "_0");
       Writer orc = OrcFile.createWriter(
-          new Path(partDir[1], "00000" + bucket + "_0"),
+          path,
           OrcFile.writerOptions(conf)
               .blockPadding(false)
               .bufferSize(1024)
               .inspector(inspector));
       orc.addRow(new MyRow(1, 2));
-      outputStream = getStreamFromWriter(orc);
       orc.close();
-      outputStream.setBlocks(new MockBlock("host3", "host4"));
+      setBlocks(path, conf, new MockBlock("host3", "host4"));
     }
 
     // call getsplits
@@ -2429,14 +2468,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(607, split.getLength());
+    assertEquals(648, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(629, split.getLength());
+    assertEquals(674, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -2675,9 +2714,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktable
-    // call-2: open - mock:/mocktable/0_0
-    // call-3: open - mock:/mocktable/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check existence of side file for mock:/mocktable/0_0
+    // call-3: open - mock:/mocktable/0_0
+    // call-4: check existence of side file for mock:/mocktable/0_1
+    // call-5: open - mock:/mocktable/0_1
+    assertEquals(5, readOpsDelta);
 
     assertEquals(2, splits.length);
     // revert back to local fs
@@ -2689,7 +2730,7 @@ public class TestInputOutputFormat {
     MockFileSystem fs = new MockFileSystem(conf);
     // creates the static cache
     MockPath mockPath = new MockPath(fs, "mock:///mocktbl");
-    conf.set("hive.orc.cache.stripe.details.size", "-1");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "0");
     conf.set("mapred.input.dir", mockPath.toString());
     conf.set("fs.defaultFS", "mock:///");
     conf.set("fs.mock.impl", MockFileSystem.class.getName());
@@ -2733,9 +2774,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl
-    // call-2: open - mock:/mocktbl/0_0
-    // call-3: open - mock:/mocktbl/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check existence of side file for mock:/mocktbl/0_0
+    // call-3: open - mock:/mocktbl/0_0
+    // call-4: check existence of side file for  mock:/mocktbl/0_1
+    // call-5: open - mock:/mocktbl/0_1
+    assertEquals(5, readOpsDelta);
 
     // force BI to avoid reading footers
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "BI");
@@ -2753,10 +2796,12 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl
-    assertEquals(1, readOpsDelta);
+    // call-2: check existence of side file for mock:/mocktbl/0_0
+    // call-3: check existence of side file for  mock:/mocktbl/0_1
+    assertEquals(3, readOpsDelta);
 
     // enable cache and use default strategy
-    conf.set("hive.orc.cache.stripe.details.size", "100");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "10Mb");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "HYBRID");
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -2772,9 +2817,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl
-    // call-2: open - mock:/mocktbl/0_0
-    // call-3: open - mock:/mocktbl/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check existence of side file for mock:/mocktbl/0_0
+    // call-3: open - mock:/mocktbl/0_0
+    // call-4: check existence of side file for mock:/mocktbl/0_1
+    // call-5: open - mock:/mocktbl/0_1
+    assertEquals(5, readOpsDelta);
 
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -2844,9 +2891,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktable
-    // call-2: open - mock:/mocktbl1/0_0
-    // call-3: open - mock:/mocktbl1/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check side file for mock:/mocktbl1/0_0
+    // call-3: open - mock:/mocktbl1/0_0
+    // call-4: check side file for  mock:/mocktbl1/0_1
+    // call-5: open - mock:/mocktbl1/0_1
+    assertEquals(5, readOpsDelta);
 
     // change file length and look for cache misses
 
@@ -2883,9 +2932,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktable
-    // call-2: open - mock:/mocktbl1/0_0
-    // call-3: open - mock:/mocktbl1/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check side file for mock:/mocktbl1/0_0
+    // call-3: open - mock:/mocktbl1/0_0
+    // call-4: check side file for  mock:/mocktbl1/0_1
+    // call-5: open - mock:/mocktbl1/0_1
+    assertEquals(5, readOpsDelta);
 
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -2956,9 +3007,11 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl2
-    // call-2: open - mock:/mocktbl2/0_0
-    // call-3: open - mock:/mocktbl2/0_1
-    assertEquals(3, readOpsDelta);
+    // call-2: check side file for mock:/mocktbl2/0_0
+    // call-3: open - mock:/mocktbl2/0_0
+    // call-4: check side file for  mock:/mocktbl2/0_1
+    // call-5: open - mock:/mocktbl2/0_1
+    assertEquals(5, readOpsDelta);
 
     // change file modification time and look for cache misses
     FileSystem fs1 = FileSystem.get(conf);
@@ -2978,8 +3031,9 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl2
-    // call-2: open - mock:/mocktbl2/0_1
-    assertEquals(2, readOpsDelta);
+    // call-2: check side file for  mock:/mocktbl2/0_1
+    // call-3: open - mock:/mocktbl2/0_1
+    assertEquals(3, readOpsDelta);
 
     // touch the next file
     fs1 = FileSystem.get(conf);
@@ -2999,8 +3053,9 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: listLocatedStatus - mock:/mocktbl2
-    // call-2: open - mock:/mocktbl2/0_0
-    assertEquals(2, readOpsDelta);
+    // call-2: check side file for  mock:/mocktbl2/0_0
+    // call-3: open - mock:/mocktbl2/0_0
+    assertEquals(3, readOpsDelta);
 
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -3317,6 +3372,7 @@ public class TestInputOutputFormat {
     MockFileSystem fs = new MockFileSystem(conf);
     MockPath mockPath = new MockPath(fs, "mock:///mocktable5");
     conf.set("hive.transactional.table.scan", "true");
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
     conf.set("hive.orc.splits.include.file.footer", "false");
@@ -3364,6 +3420,7 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("hasFooter=false"));
       assertTrue(split.toString().contains("hasBase=true"));
       assertTrue(split.toString().contains("deltas=0"));
+      assertTrue(split.toString().contains("isOriginal=true"));
       if (split instanceof OrcSplit) {
         assertFalse("No footer serialize test for non-vector reader, hasFooter is not expected in" +
             " orc splits.", ((OrcSplit) split).hasFooter());
@@ -3379,9 +3436,13 @@ public class TestInputOutputFormat {
     }
     // call-1: open to read footer - split 1 => mock:/mocktable5/0_0
     // call-2: open to read data - split 1 => mock:/mocktable5/0_0
-    // call-3: open to read footer - split 2 => mock:/mocktable5/0_1
-    // call-4: open to read data - split 2 => mock:/mocktable5/0_1
-    assertEquals(4, readOpsDelta);
+    // call-3: getAcidState - split 1 => mock:/mocktable5 (to compute offset for original read)
+    // call-4: open to read footer - split 2 => mock:/mocktable5/0_1
+    // call-5: open to read data - split 2 => mock:/mocktable5/0_1
+    // call-6: getAcidState - split 2 => mock:/mocktable5 (to compute offset for original read)
+    // call-7: open to read footer - split 2 => mock:/mocktable5/0_0 (to get row count)
+    // call-8: file status - split 2 => mock:/mocktable5/0_0
+    assertEquals(8, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3392,6 +3453,7 @@ public class TestInputOutputFormat {
     MockFileSystem fs = new MockFileSystem(conf);
     MockPath mockPath = new MockPath(fs, "mock:///mocktable6");
     conf.set("hive.transactional.table.scan", "true");
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
     conf.set("hive.orc.splits.include.file.footer", "true");
@@ -3439,6 +3501,7 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("hasFooter=true"));
       assertTrue(split.toString().contains("hasBase=true"));
       assertTrue(split.toString().contains("deltas=0"));
+      assertTrue(split.toString().contains("isOriginal=true"));
       if (split instanceof OrcSplit) {
         assertTrue("Footer serialize test for ACID reader, hasFooter is expected in" +
             " orc splits.", ((OrcSplit) split).hasFooter());
@@ -3453,8 +3516,12 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: open to read data - split 1 => mock:/mocktable6/0_0
-    // call-2: open to read data - split 2 => mock:/mocktable6/0_1
-    assertEquals(2, readOpsDelta);
+    // call-2: AcidUtils.getAcidState - split 1 => ls mock:/mocktable6
+    // call-3: open to read data - split 2 => mock:/mocktable6/0_1
+    // call-4: AcidUtils.getAcidState - split 2 => ls mock:/mocktable6
+    // call-5: read footer - split 2 => mock:/mocktable6/0_0 (to get offset since it's original file)
+    // call-6: file stat - split 2 => mock:/mocktable6/0_0
+    assertEquals(6, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3462,15 +3529,14 @@ public class TestInputOutputFormat {
 
   @Test
   public void testACIDReaderNoFooterSerializeWithDeltas() throws Exception {
-    MockFileSystem fs = new MockFileSystem(conf);
+    conf.set("fs.defaultFS", "mock:///");
+    conf.set("fs.mock.impl", MockFileSystem.class.getName());
+    FileSystem fs = FileSystem.get(conf);
     MockPath mockPath = new MockPath(fs, "mock:///mocktable7");
-    conf.set("hive.transactional.table.scan", "true");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
     conf.set("hive.orc.splits.include.file.footer", "false");
     conf.set("mapred.input.dir", mockPath.toString());
-    conf.set("fs.defaultFS", "mock:///");
-    conf.set("fs.mock.impl", MockFileSystem.class.getName());
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -3486,17 +3552,22 @@ public class TestInputOutputFormat {
     }
     writer.close();
 
-    writer = OrcFile.createWriter(new Path(new Path(mockPath + "/delta_001_002") + "/0_1"),
-        OrcFile.writerOptions(conf).blockPadding(false)
-            .bufferSize(1024).inspector(inspector));
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumTransactionId(1)
+      .maximumTransactionId(1).inspector(inspector).finalDestination(mockPath);
+    OrcOutputFormat of = new OrcOutputFormat();
+    RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {
-      writer.addRow(new MyRow(i, 2 * i));
+      ru.insert(options.getMinimumTransactionId(), new MyRow(i, 2 * i));
     }
-    writer.close();
+    ru.close(false);//this deletes the side file
+
+    //set up props for read
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    AcidUtils.setTransactionalTableScan(conf, true);
 
     OrcInputFormat orcInputFormat = new OrcInputFormat();
     InputSplit[] splits = orcInputFormat.getSplits(conf, 2);
-    assertEquals(1, splits.length);
+    assertEquals(2, splits.length);
     int readOpsBefore = -1;
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -3511,14 +3582,8 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("start=3"));
       assertTrue(split.toString().contains("hasFooter=false"));
       assertTrue(split.toString().contains("hasBase=true"));
-      // NOTE: don't be surprised if deltas value is different
-      // in older release deltas=2 as min and max transaction are added separately to delta list.
-      // in newer release since both of them are put together deltas=1
-      assertTrue(split.toString().contains("deltas=1"));
-      if (split instanceof OrcSplit) {
-        assertFalse("No footer serialize test for ACID reader, hasFooter is not expected in" +
-            " orc splits.", ((OrcSplit) split).hasFooter());
-      }
+      assertFalse("No footer serialize test for ACID reader, hasFooter is not expected in" +
+        " orc splits.", ((OrcSplit) split).hasFooter());
       orcInputFormat.getRecordReader(split, conf, Reporter.NULL);
     }
 
@@ -3528,11 +3593,10 @@ public class TestInputOutputFormat {
         readOpsDelta = statistics.getReadOps() - readOpsBefore;
       }
     }
-    // call-1: open to read footer - split 1 => mock:/mocktable7/0_0
-    // call-2: open to read data - split 1 => mock:/mocktable7/0_0
-    // call-3: open side file (flush length) of delta directory
-    // call-4: fs.exists() check for delta_xxx_xxx/bucket_00000 file
-    assertEquals(4, readOpsDelta);
+    // call-1: open to read data - split 1 => mock:/mocktable8/0_0
+    // call-2: split 2 - find hive.acid.key.index in footer of delta_x_y/bucket_00001
+    // call-3: split 2 - read delta_x_y/bucket_00001
+    assertEquals(5, readOpsDelta);
 
     // revert back to local fs
     conf.set("fs.defaultFS", "file:///");
@@ -3540,15 +3604,14 @@ public class TestInputOutputFormat {
 
   @Test
   public void testACIDReaderFooterSerializeWithDeltas() throws Exception {
-    MockFileSystem fs = new MockFileSystem(conf);
+    conf.set("fs.defaultFS", "mock:///");
+    conf.set("fs.mock.impl", MockFileSystem.class.getName());
+    FileSystem fs = FileSystem.get(conf);//ensures that FS object is cached so that everyone uses the same instance
     MockPath mockPath = new MockPath(fs, "mock:///mocktable8");
-    conf.set("hive.transactional.table.scan", "true");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
     conf.set("hive.orc.splits.include.file.footer", "true");
     conf.set("mapred.input.dir", mockPath.toString());
-    conf.set("fs.defaultFS", "mock:///");
-    conf.set("fs.mock.impl", MockFileSystem.class.getName());
     StructObjectInspector inspector;
     synchronized (TestOrcFile.class) {
       inspector = (StructObjectInspector)
@@ -3564,17 +3627,22 @@ public class TestInputOutputFormat {
     }
     writer.close();
 
-    writer = OrcFile.createWriter(new Path(new Path(mockPath + "/delta_001_002") + "/0_1"),
-        OrcFile.writerOptions(conf).blockPadding(false)
-            .bufferSize(1024).inspector(inspector));
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumTransactionId(1)
+      .maximumTransactionId(1).inspector(inspector).finalDestination(mockPath);
+    OrcOutputFormat of = new OrcOutputFormat();
+    RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {
-      writer.addRow(new MyRow(i, 2 * i));
+      ru.insert(options.getMinimumTransactionId(), new MyRow(i, 2 * i));
     }
-    writer.close();
+    ru.close(false);//this deletes the side file
+
+    //set up props for read
+    conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
+    AcidUtils.setTransactionalTableScan(conf, true);
 
     OrcInputFormat orcInputFormat = new OrcInputFormat();
     InputSplit[] splits = orcInputFormat.getSplits(conf, 2);
-    assertEquals(1, splits.length);
+    assertEquals(2, splits.length);
     int readOpsBefore = -1;
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
@@ -3589,14 +3657,8 @@ public class TestInputOutputFormat {
       assertTrue(split.toString().contains("start=3"));
       assertTrue(split.toString().contains("hasFooter=true"));
       assertTrue(split.toString().contains("hasBase=true"));
-      // NOTE: don't be surprised if deltas value is different
-      // in older release deltas=2 as min and max transaction are added separately to delta list.
-      // in newer release since both of them are put together deltas=1
-      assertTrue(split.toString().contains("deltas=1"));
-      if (split instanceof OrcSplit) {
-        assertTrue("Footer serialize test for ACID reader, hasFooter is not expected in" +
-            " orc splits.", ((OrcSplit) split).hasFooter());
-      }
+      assertTrue("Footer serialize test for ACID reader, hasFooter is not expected in" +
+        " orc splits.", ((OrcSplit) split).hasFooter());
       orcInputFormat.getRecordReader(split, conf, Reporter.NULL);
     }
 
@@ -3607,8 +3669,8 @@ public class TestInputOutputFormat {
       }
     }
     // call-1: open to read data - split 1 => mock:/mocktable8/0_0
-    // call-2: open side file (flush length) of delta directory
-    // call-3: fs.exists() check for delta_xxx_xxx/bucket_00000 file
+    // call-2: split 2 - find hive.acid.key.index in footer of delta_x_y/bucket_00001
+    // call-3: split 2 - read delta_x_y/bucket_00001
     assertEquals(3, readOpsDelta);
 
     // revert back to local fs
@@ -3633,13 +3695,13 @@ public class TestInputOutputFormat {
     }
 
     // Save the conf variable values so that they can be restored later.
-    long oldDefaultStripeSize = conf.getLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname, -1L);
+    long oldDefaultStripeSize = conf.getLong(OrcConf.STRIPE_SIZE.getHiveConfName(), -1L);
     long oldMaxSplitSize = conf.getLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, -1L);
 
     // Set the conf variable values for this test.
     long newStripeSize = 10000L; // 10000 bytes per stripe
     long newMaxSplitSize = 100L; // 1024 bytes per split
-    conf.setLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname, newStripeSize);
+    conf.setLong(OrcConf.STRIPE_SIZE.getHiveConfName(), newStripeSize);
     conf.setLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, newMaxSplitSize);
 
     AbstractSerDe serde = new OrcSerde();
@@ -3681,10 +3743,10 @@ public class TestInputOutputFormat {
 
     // Reset the conf variable values that we changed for this test.
     if (oldDefaultStripeSize != -1L) {
-      conf.setLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname, oldDefaultStripeSize);
+      conf.setLong(OrcConf.STRIPE_SIZE.getHiveConfName(), oldDefaultStripeSize);
     } else {
       // this means that nothing was set for default stripe size previously, so we should unset it.
-      conf.unset(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname);
+      conf.unset(OrcConf.STRIPE_SIZE.getHiveConfName());
     }
     if (oldMaxSplitSize != -1L) {
       conf.setLong(HiveConf.ConfVars.MAPREDMAXSPLITSIZE.varname, oldMaxSplitSize);
@@ -3827,7 +3889,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
     OrcSplit split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
     OrcInputFormat inputFormat = new OrcInputFormat();
     AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
         new AcidInputFormat.Options(conf));
@@ -3836,7 +3898,7 @@ public class TestInputOutputFormat {
     OrcStruct struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
-      assertEquals("bucket " + record, 0, id.getBucketId());
+      assertEquals("bucket " + record, 0, id.getBucketProperty());
       assertEquals("trans " + record, 1, id.getTransactionId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());
@@ -3855,7 +3917,7 @@ public class TestInputOutputFormat {
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2,3");
     split = new OrcSplit(testFilePath, null, 0, fileLength,
         new String[0], null, false, true,
-        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength);
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
     inputFormat = new OrcInputFormat();
     reader = inputFormat.getReader(split, new AcidInputFormat.Options(conf));
     record = 0;
@@ -3863,7 +3925,7 @@ public class TestInputOutputFormat {
     struct = reader.createValue();
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
-      assertEquals("bucket " + record, 0, id.getBucketId());
+      assertEquals("bucket " + record, 0, id.getBucketProperty());
       assertEquals("trans " + record, 1, id.getTransactionId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());

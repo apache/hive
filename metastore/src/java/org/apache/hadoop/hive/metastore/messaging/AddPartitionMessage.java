@@ -37,6 +37,8 @@ public abstract class AddPartitionMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Table getTableObj() throws Exception;
 
   /**
@@ -55,4 +57,12 @@ public abstract class AddPartitionMessage extends EventMessage {
       throw new IllegalStateException("Partition-list unset.");
     return super.checkValid();
   }
+
+  /**
+   * Get iterable of partition name and file lists created as a result of this DDL operation
+   *
+   * @return The iterable of partition PartitionFiles
+   */
+  public abstract Iterable<PartitionFiles> getPartitionFilesIter();
+
 }

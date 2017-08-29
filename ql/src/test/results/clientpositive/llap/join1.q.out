@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_j1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_j1
@@ -81,14 +77,14 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col0, _col2
-                Statistics: Num rows: 1219 Data size: 216982 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 809 Data size: 144002 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: UDFToInteger(_col0) (type: int), _col2 (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1219 Data size: 115805 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 809 Data size: 76855 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1219 Data size: 115805 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 809 Data size: 76855 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

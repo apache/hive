@@ -1,16 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
-create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
-create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_1
@@ -137,7 +129,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -197,7 +189,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 222 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Right Outer Join0 to 1
+                         Right Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -384,7 +376,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Left Outer Join0 to 1
+                         Left Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)
@@ -444,7 +436,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                   Sorted Merge Bucket Map Join Operator
                     condition map:
-                         Right Outer Join0 to 1
+                         Right Outer Join 0 to 1
                     keys:
                       0 key (type: int)
                       1 key (type: int)

@@ -1,0 +1,10 @@
+PREHOOK: query: desc formatted src key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: desc formatted src key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 

@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+PREHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dst_union22
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+POSTHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dst_union22
@@ -48,9 +44,7 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -63,9 +57,7 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -128,6 +120,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns k0,k1,k2,k3,k4,k5
                     columns.comments 
                     columns.types string:string:string:string:string:string
@@ -149,6 +142,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
                       columns.types string:string:string:string:string:string
@@ -164,7 +158,7 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
             Truncated Path -> Alias:
-              /dst_union22_delta/ds=1 [dst_union22_delta]
+              /dst_union22_delta/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_1:dst_union22_delta]
 
   Stage: Stage-1
     Spark
@@ -197,6 +191,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
                               bucket_count -1
+                              column.name.delimiter ,
                               columns k1,k2,k3,k4
                               columns.comments 
                               columns.types string:string:string:string
@@ -226,6 +221,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns k0,k1,k2,k3,k4,k5
                     columns.comments 
                     columns.types string:string:string:string:string:string
@@ -247,6 +243,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
                       columns.types string:string:string:string:string:string
@@ -262,7 +259,7 @@ STAGE PLANS:
                     name: default.dst_union22_delta
                   name: default.dst_union22_delta
             Truncated Path -> Alias:
-              /dst_union22_delta/ds=1 [dst_union22_delta]
+              /dst_union22_delta/ds=1 [null-subquery1:$hdt$_0-subquery1:dst_union22_delta]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -279,7 +276,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         filter mappings:
                           0 [1, 1]
                         filter predicates:
@@ -310,6 +307,7 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 properties:
                                   bucket_count -1
+                                  column.name.delimiter ,
                                   columns k1,k2,k3,k4
                                   columns.comments 
                                   columns.types string:string:string:string
@@ -341,6 +339,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns k1,k2,k3,k4
                     columns.comments 
                     columns.types string:string:string:string
@@ -362,6 +361,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
                       columns.types string:string:string:string
@@ -377,7 +377,7 @@ STAGE PLANS:
                     name: default.dst_union22
                   name: default.dst_union22
             Truncated Path -> Alias:
-              /dst_union22/ds=1 [a]
+              /dst_union22/ds=1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:a]
 
   Stage: Stage-0
     Move Operator
@@ -391,6 +391,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 
                 columns.types string:string:string:string

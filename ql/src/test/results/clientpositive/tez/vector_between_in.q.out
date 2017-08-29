@@ -1,0 +1,1691 @@
+PREHOOK: query: CREATE TABLE decimal_date_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2, CAST(CAST((CAST(cint AS BIGINT) *ctinyint) AS TIMESTAMP) AS DATE) AS cdate FROM alltypesorc ORDER BY cdate
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_date_test
+POSTHOOK: query: CREATE TABLE decimal_date_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2, CAST(CAST((CAST(cint AS BIGINT) *ctinyint) AS TIMESTAMP) AS DATE) AS cdate FROM alltypesorc ORDER BY cdate
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_date_test
+POSTHOOK: Lineage: decimal_date_test.cdate EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_date_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColumnInList(col 3, values [-67, -171]) -> boolean
+                    predicate: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [3]
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsFalse(col 4)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 4:boolean) -> boolean
+                    predicate: (not (cdate) IN (1969-10-26, 1969-07-14, 1970-01-21)) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: []
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            vectorOutput: true
+                            native: false
+                            projectedOutputColumns: [0]
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    native: false
+                    projectedOutputColumns: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> boolean
+                    predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdecimal1 (type: decimal(20,10))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [1]
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(20,10))
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsFalse(col 4)(children: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean) -> boolean
+                    predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
+                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: []
+                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            vectorOutput: true
+                            native: false
+                            projectedOutputColumns: [0]
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    native: false
+                    projectedOutputColumns: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColumnBetween(col 3, left -2, right 1) -> boolean
+                    predicate: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
+                    Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [3]
+                      Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColumnNotBetween(col 3, left -610, right 608) -> boolean
+                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
+                    Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdate (type: date)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [3]
+                      Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: date)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnBetween(col 1, left -20, right 45.9918918919) -> boolean
+                    predicate: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
+                    Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: cdecimal1 (type: decimal(20,10))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [1]
+                      Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(20,10))
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: decimal(20,10))
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterDecimalColumnNotBetween(col 1, left -2000, right 4390.1351351351) -> boolean
+                    predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: []
+                      Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        Group By Vectorization:
+                            aggregators: VectorUDAFCountStar(*) -> bigint
+                            className: VectorGroupByOperator
+                            vectorOutput: true
+                            native: false
+                            projectedOutputColumns: [0]
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    native: false
+                    projectedOutputColumns: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1969-07-14
+1969-07-14
+1969-07-14
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+1969-10-26
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdate NOT IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE), CAST("1970-01-21" AS DATE))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+6026
+PREHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+-3367.6517567568
+881.0135135135
+2365.8945945946
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT IN (2365.8945945946, 881.0135135135, -3367.6517567568)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+9165
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-30
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1969-12-31
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-01
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+1970-01-02
+PREHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdate FROM decimal_date_test WHERE cdate NOT BETWEEN CAST("1968-05-01" AS DATE) AND CAST("1971-09-01" AS DATE) ORDER BY cdate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+1968-04-06
+1968-04-08
+1968-04-09
+1968-04-13
+1968-04-15
+1968-04-15
+1968-04-18
+1968-04-22
+1968-04-24
+1968-04-25
+1968-04-26
+1968-04-26
+1968-04-26
+1968-04-28
+1968-04-28
+1968-04-28
+1968-04-28
+1968-04-29
+1968-04-30
+1971-09-02
+1971-09-04
+1971-09-06
+1971-09-06
+1971-09-06
+1971-09-09
+1971-09-09
+1971-09-15
+1971-09-17
+1971-09-18
+1971-09-21
+1971-09-21
+1971-09-21
+1971-09-22
+1971-09-22
+1971-09-25
+PREHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cdecimal1 FROM decimal_date_test WHERE cdecimal1 BETWEEN -20 AND 45.9918918919 ORDER BY cdecimal1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+-18.5162162162
+-17.3216216216
+-16.7243243243
+-16.1270270270
+-15.5297297297
+-10.7513513514
+-9.5567567568
+-8.3621621622
+-5.9729729730
+-3.5837837838
+4.1810810811
+4.7783783784
+4.7783783784
+5.3756756757
+5.9729729730
+5.9729729730
+11.3486486486
+11.3486486486
+11.9459459459
+14.9324324324
+19.1135135135
+20.3081081081
+22.1000000000
+24.4891891892
+33.4486486486
+34.6432432432
+40.0189189189
+42.4081081081
+43.0054054054
+44.2000000000
+44.2000000000
+44.7972972973
+45.9918918919
+PREHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM decimal_date_test WHERE cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+6172
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Select Operator
+                    expressions: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4]
+                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 4:boolean
+                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 4
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: _col0 (type: boolean)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Select Operator
+                    expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4]
+                        selectExpressions: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean
+                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 4
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: _col0 (type: boolean)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Select Operator
+                    expressions: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4]
+                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN 1969-12-30 AND 1970-01-02) -> 4:boolean
+                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 4
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: _col0 (type: boolean)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: decimal_date_test
+                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                  Select Operator
+                    expressions: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4]
+                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 4:boolean
+                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 4
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: _col0 (type: boolean)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: boolean)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: boolean)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 1) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: KEY._col0 (type: boolean)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	6230
+false	6041
+true	17
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	3114
+false	9165
+true	9
+PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	6230
+false	5974
+true	84
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	3114
+false	3002
+true	6172
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	6230
+false	6041
+true	17
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	3114
+false	9165
+true	9
+PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	6230
+false	5974
+true	84
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_date_test
+#### A masked pattern was here ####
+NULL	3114
+false	3002
+true	6172

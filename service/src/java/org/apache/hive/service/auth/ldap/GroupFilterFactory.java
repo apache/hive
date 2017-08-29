@@ -17,6 +17,9 @@
  */
 package org.apache.hive.service.auth.ldap;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -48,22 +51,28 @@ public final class GroupFilterFactory implements FilterFactory {
       return null;
     }
 
-    return new GroupFilter(groupFilter);
+    if (conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY) == null) {
+      return new GroupMembershipKeyFilter(groupFilter);
+    } else {
+      return new UserMembershipKeyFilter(groupFilter);
+    }
   }
 
-  private static final class GroupFilter implements Filter {
+  @VisibleForTesting
+  static final class GroupMembershipKeyFilter implements Filter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GroupFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroupMembershipKeyFilter.class);
 
     private final Set<String> groupFilter = new HashSet<>();
 
-    GroupFilter(Collection<String> groupFilter) {
+    GroupMembershipKeyFilter(Collection<String> groupFilter) {
       this.groupFilter.addAll(groupFilter);
     }
 
     @Override
     public void apply(DirSearch ldap, String user) throws AuthenticationException {
-      LOG.info("Authenticating user '{}' using group membership", user);
+      LOG.info("Authenticating user '{}' using {}", user,
+          GroupMembershipKeyFilter.class.getSimpleName());
 
       List<String> memberOf = null;
 
@@ -78,6 +87,8 @@ public final class GroupFilterFactory implements FilterFactory {
       for (String groupDn : memberOf) {
         String shortName = LdapUtils.getShortName(groupDn);
         if (groupFilter.contains(shortName)) {
+          LOG.debug("GroupMembershipKeyFilter passes: user '{}' is a member of '{}' group",
+              user, groupDn);
           LOG.info("Authentication succeeded based on group membership");
           return;
         }
@@ -85,6 +96,61 @@ public final class GroupFilterFactory implements FilterFactory {
       LOG.info("Authentication failed based on user membership");
       throw new AuthenticationException("Authentication failed: "
           + "User not a member of specified list");
+    }
+  }
+
+  @VisibleForTesting
+  static final class UserMembershipKeyFilter implements Filter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(UserMembershipKeyFilter.class);
+
+    private final Collection<String> groupFilter;
+
+    UserMembershipKeyFilter(Collection<String> groupFilter) {
+      this.groupFilter = groupFilter;
+    }
+
+    @Override
+    public void apply(DirSearch ldap, String user) throws AuthenticationException {
+      LOG.info("Authenticating user '{}' using {}", user,
+          UserMembershipKeyFilter.class.getSimpleName());
+
+      List<String> groupDns = new ArrayList<>();
+      for (String groupId : groupFilter) {
+        try {
+          String groupDn = ldap.findGroupDn(groupId);
+          groupDns.add(groupDn);
+        } catch (NamingException e) {
+          LOG.warn("Cannot find DN for group", e);
+          LOG.debug("Cannot find DN for group " + groupId, e);
+        }
+      }
+
+      if (groupDns.isEmpty()) {
+        String msg = String.format("No DN(s) has been found for any of group(s): %s",
+            Joiner.on(',').join(groupFilter));
+        LOG.debug(msg);
+        throw new AuthenticationException("No DN(s) has been found for any of specified group(s)");
+      }
+
+      for (String groupDn : groupDns) {
+        try {
+          if (ldap.isUserMemberOfGroup(user, groupDn)) {
+            LOG.debug("UserMembershipKeyFilter passes: user '{}' is a member of '{}' group",
+                user, groupDn);
+            LOG.info("Authentication succeeded based on user membership");
+            return;
+          }
+        } catch (NamingException e) {
+          LOG.warn("Cannot match user and group", e);
+          if (LOG.isDebugEnabled()) {
+            String msg = String.format("Cannot match user '%s' and group '%s'", user, groupDn);
+            LOG.debug(msg, e);
+          }
+        }
+      }
+      throw new AuthenticationException(String.format(
+          "Authentication failed: User '%s' is not a member of listed groups", user));
     }
   }
 }

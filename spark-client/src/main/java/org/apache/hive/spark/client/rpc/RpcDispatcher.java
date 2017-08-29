@@ -37,14 +37,15 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 /**
  * An implementation of ChannelInboundHandler that dispatches incoming messages to an instance
  * method based on the method signature.
- * <p/>
+ * <p>
  * A handler's signature must be of the form:
- * <p/>
+ * </p>
  * <blockquote><tt>protected void handle(ChannelHandlerContext, MessageType)</tt></blockquote>
- * <p/>
+ * <p>
  * Where "MessageType" must match exactly the type of the message to handle. Polymorphism is not
  * supported. Handlers can return a value, which becomes the RPC reply; if a null is returned, then
  * a reply is still sent, with an empty payload.
+ * </p>
  */
 @InterfaceAudience.Private
 public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> {
@@ -152,12 +153,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
 
   @Override
   public final void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("[%s] Caught exception in channel pipeline.", name()), cause);
-    } else {
-      LOG.info("[{}] Closing channel due to exception in pipeline ({}).", name(),
-          cause.getMessage());
-    }
+    LOG.error(String.format("[%s] Closing channel due to exception in pipeline.", name()), cause);
 
     if (lastHeader != null) {
       // There's an RPC waiting for a reply. Exception was most probably caught while processing

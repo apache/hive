@@ -31,9 +31,9 @@ public class CommonFastHashTable {
   protected static final int LARGE_CAPACITY = 8388608;
   protected static Random random;
 
-  protected static int MAX_KEY_LENGTH = 100;
+  protected static final int MAX_KEY_LENGTH = 100;
 
-  protected static int MAX_VALUE_LENGTH = 1000;
+  protected static final int MAX_VALUE_LENGTH = 1000;
 
   public static int generateLargeCount() {
     int count = 0;

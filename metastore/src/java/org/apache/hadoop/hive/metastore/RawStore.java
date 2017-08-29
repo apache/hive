@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -53,7 +54,9 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -92,6 +95,8 @@ public interface RawStore extends Configurable {
    */
   @CanNotRetry
   public abstract boolean commitTransaction();
+
+  public boolean isActiveTransaction();
 
   /**
    * Rolls back the current transaction if it is active
@@ -404,7 +409,6 @@ public interface RawStore extends Configurable {
    * @return Relevant column statistics for the column for the given table
    * @throws NoSuchObjectException
    * @throws MetaException
-   * @throws InvalidInputException
    *
    */
   public abstract ColumnStatistics getTableColumnStatistics(String dbName, String tableName,
@@ -540,7 +544,6 @@ public interface RawStore extends Configurable {
    * Drop a function definition.
    * @param dbName
    * @param funcName
-   * @return
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws InvalidObjectException
@@ -576,6 +579,19 @@ public interface RawStore extends Configurable {
 
   public AggrStats get_aggr_stats_for(String dbName, String tblName,
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Get all partition column statistics for a table in a db
+   *
+   * @param dbName
+   * @param tableName
+   * @return Map of partition column statistics. Key in the map is partition name. Value is a list
+   *         of column stat object for each column in the partition
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
+      String tableName) throws MetaException, NoSuchObjectException;
 
   /**
    * Get the next notification event.
@@ -688,12 +704,30 @@ public interface RawStore extends Configurable {
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;
 
-  void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
-    List<SQLForeignKey> foreignKeys) throws InvalidObjectException, MetaException;
+  public abstract List<SQLUniqueConstraint> getUniqueConstraints(String db_name,
+    String tbl_name) throws MetaException;
+
+  public abstract List<SQLNotNullConstraint> getNotNullConstraints(String db_name,
+    String tbl_name) throws MetaException;
+
+  List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
+    List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
+    List<SQLNotNullConstraint> notNullConstraints) throws InvalidObjectException, MetaException;
 
   void dropConstraint(String dbName, String tableName, String constraintName) throws NoSuchObjectException;
 
-  void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
 
-  void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+
+  List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+
+  List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+
+  /**
+   * Gets the unique id of the backing datastore for the metadata
+   * @return
+   * @throws MetaException
+   */
+  String getMetastoreDbUuid() throws MetaException;
 }

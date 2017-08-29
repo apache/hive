@@ -99,12 +99,17 @@ public abstract class VectorMapJoinFastBytesHashMap
   }
 
   public VectorMapJoinFastBytesHashMap(
-      int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
 
     valueStore = new VectorMapJoinFastValueStore(writeBuffersSize);
 
     // Share the same write buffers with our value store.
     keyStore = new VectorMapJoinFastKeyStore(valueStore.writeBuffers());
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    return super.getEstimatedMemorySize() + valueStore.getEstimatedMemorySize() + keyStore.getEstimatedMemorySize();
   }
 }

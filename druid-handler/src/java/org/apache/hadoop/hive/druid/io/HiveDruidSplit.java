@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.druid.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
@@ -29,47 +30,41 @@ import org.apache.hadoop.mapred.FileSplit;
  */
 public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapred.InputSplit {
 
-  private String address;
-
   private String druidQuery;
+
+  private String[] hosts;
 
   // required for deserialization
   public HiveDruidSplit() {
     super((Path) null, 0, 0, (String[]) null);
   }
 
-  public HiveDruidSplit(String address, String druidQuery, Path dummyPath) {
-    super(dummyPath, 0, 0, (String[]) null);
-    this.address = address;
+  public HiveDruidSplit(String druidQuery, Path dummyPath, String hosts[]) {
+    super(dummyPath, 0, 0, hosts);
     this.druidQuery = druidQuery;
+    this.hosts = hosts;
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
     super.write(out);
-    out.writeUTF(address);
     out.writeUTF(druidQuery);
+    out.writeInt(hosts.length);
+    for (String host : hosts) {
+      out.writeUTF(host);
+    }
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
     super.readFields(in);
-    address = in.readUTF();
     druidQuery = in.readUTF();
-  }
-
-  @Override
-  public long getLength() {
-    return 0L;
-  }
-
-  @Override
-  public String[] getLocations() {
-    return new String[] { "" };
-  }
-
-  public String getAddress() {
-    return address;
+    int length = in.readInt();
+    String[] listHosts = new String[length];
+    for (int i = 0; i < length; i++) {
+      listHosts[i] = in.readUTF();
+    }
+    hosts = listHosts;
   }
 
   public String getDruidQuery() {
@@ -77,8 +72,14 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
   }
 
   @Override
+  public String[] getLocations() throws IOException {
+    return hosts;
+  }
+
+  @Override
   public String toString() {
-    return "HiveDruidSplit{" + address + ", " + druidQuery + "}";
+    return "HiveDruidSplit{" + druidQuery + ", "
+            + (hosts == null ? "empty hosts" : Arrays.toString(hosts)) + "}";
   }
 
 }

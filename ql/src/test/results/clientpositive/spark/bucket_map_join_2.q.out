@@ -42,18 +42,10 @@ POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1.txt' over
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@table2
-PREHOOK: query: -- The tables are bucketed in same columns in different order,
--- but sorted in different column orders
--- Neither bucketed map-join, nor sort-merge join should be performed
-
-explain extended
+PREHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The tables are bucketed in same columns in different order,
--- but sorted in different column orders
--- Neither bucketed map-join, nor sort-merge join should be performed
-
-explain extended
+POSTHOOK: query: explain extended
 select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -95,6 +87,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 1
                     bucket_field_name value
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -116,6 +109,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 1
                       bucket_field_name value
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string
@@ -187,6 +181,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 1
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types string:string
@@ -208,6 +203,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 1
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types string:string

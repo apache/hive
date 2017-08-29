@@ -50,6 +50,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Test HiveAuthorizer api invocation
@@ -390,6 +394,40 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals(dbName.toLowerCase(), dbObj.getDbname().toLowerCase());
   }
 
+  private void resetAuthorizer() throws HiveAuthzPluginException, HiveAccessControlException {
+    reset(mockedAuthorizer);
+    // HiveAuthorizer.filterListCmdObjects should not filter any object
+    when(mockedAuthorizer.filterListCmdObjects(any(List.class),
+      any(HiveAuthzContext.class))).thenAnswer(new Answer<List<HivePrivilegeObject>>() {
+        @Override
+        public List<HivePrivilegeObject> answer(InvocationOnMock invocation) throws Throwable {
+          Object[] args = invocation.getArguments();
+          return (List<HivePrivilegeObject>) args[0];
+        }
+      });
+  }
+
+  @Test
+  public void testReplDump() throws HiveAuthzPluginException, HiveAccessControlException,
+      CommandNeedRetryException {
+
+    resetAuthorizer();
+    int status = driver.compile("repl dump " + dbName);
+    assertEquals(0, status);
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
+
+    resetAuthorizer();
+    status = driver.compile("repl dump " + dbName + "." + inDbTableName);
+    assertEquals(0, status);
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, dbObj.getType());
+    assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
+    assertEquals("table name", inDbTableName.toLowerCase(), dbObj.getObjectName());
+  }
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
     assertEquals("number of inputs", 1, inputs.size());

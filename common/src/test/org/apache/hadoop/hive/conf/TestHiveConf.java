@@ -41,11 +41,6 @@ public class TestHiveConf {
   public void testHiveSitePath() throws Exception {
     String expectedPath = HiveTestUtils.getFileFromClasspath("hive-site.xml");
     String hiveSiteLocation = HiveConf.getHiveSiteLocation().getPath();
-    if (Shell.WINDOWS) {
-      // Do case-insensitive comparison on Windows, as drive letter can have different case.
-      expectedPath = expectedPath.toLowerCase();
-      hiveSiteLocation = hiveSiteLocation.toLowerCase();
-    }
     Assert.assertEquals(expectedPath, hiveSiteLocation);
   }
 
@@ -122,6 +117,17 @@ public class TestHiveConf {
   }
 
   @Test
+  public void testToSizeBytes() throws Exception {
+    Assert.assertEquals(1L, HiveConf.toSizeBytes("1b"));
+    Assert.assertEquals(1L, HiveConf.toSizeBytes("1bytes"));
+    Assert.assertEquals(1024L, HiveConf.toSizeBytes("1kb"));
+    Assert.assertEquals(1048576L, HiveConf.toSizeBytes("1mb"));
+    Assert.assertEquals(1073741824L, HiveConf.toSizeBytes("1gb"));
+    Assert.assertEquals(1099511627776L, HiveConf.toSizeBytes("1tb"));
+    Assert.assertEquals(1125899906842624L, HiveConf.toSizeBytes("1pb"));
+  }
+
+  @Test
   public void testHiddenConfig() throws Exception {
     HiveConf conf = new HiveConf();
     // check password configs are hidden
@@ -150,7 +156,7 @@ public class TestHiveConf {
     HiveConf conf = new HiveConf();
     Assert.assertFalse(conf.getSparkConfigUpdated());
 
-    conf.verifyAndSet("spark.master", "yarn-cluster");
+    conf.verifyAndSet("spark.master", "yarn");
     Assert.assertTrue(conf.getSparkConfigUpdated());
     conf.verifyAndSet("hive.execution.engine", "spark");
     Assert.assertTrue("Expected spark config updated.", conf.getSparkConfigUpdated());

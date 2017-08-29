@@ -39,12 +39,10 @@ POSTHOOK: query: ALTER TABLE t1 ADD PARTITION (ds='4', part='5')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: db1@t1
 POSTHOOK: Output: db1@t1@ds=4/part=5
-PREHOOK: query: -- describe table
-DESCRIBE t1
+PREHOOK: query: DESCRIBE t1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe table
-DESCRIBE t1
+POSTHOOK: query: DESCRIBE t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	                    
@@ -99,6 +97,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -111,12 +115,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe database.table
-DESCRIBE db1.t1
+PREHOOK: query: DESCRIBE db1.t1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe database.table
-DESCRIBE db1.t1
+POSTHOOK: query: DESCRIBE db1.t1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	                    
@@ -171,6 +173,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numPartitions       	3                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -183,12 +191,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe table column
-DESCRIBE t1 key1
+PREHOOK: query: DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe table column
-DESCRIBE t1 key1
+POSTHOOK: query: DESCRIBE t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	from deserializer   
@@ -205,15 +211,14 @@ PREHOOK: Input: db1@t1
 POSTHOOK: query: DESCRIBE FORMATTED t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- describe database.tabe column
-DESCRIBE db1.t1 key1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: DESCRIBE db1.t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe database.tabe column
-DESCRIBE db1.t1 key1
+POSTHOOK: query: DESCRIBE db1.t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	from deserializer   
@@ -230,15 +235,14 @@ PREHOOK: Input: db1@t1
 POSTHOOK: query: DESCRIBE FORMATTED db1.t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- describe table column
-DESCRIBE t1 key1
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe table column
-DESCRIBE t1 key1
+POSTHOOK: query: DESCRIBE t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	from deserializer   
@@ -255,15 +259,14 @@ PREHOOK: Input: db1@t1
 POSTHOOK: query: DESCRIBE FORMATTED t1 key1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- describe table partition
-DESCRIBE t1 PARTITION(ds='4', part='5')
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 	 
+PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe table partition
-DESCRIBE t1 PARTITION(ds='4', part='5')
+POSTHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	                    
@@ -317,7 +320,7 @@ Database:           	db1
 Table:              	t1                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key1\":\"true\",\"value1\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -334,12 +337,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- describe database.table partition
-DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+PREHOOK: query: DESCRIBE db1.t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
-POSTHOOK: query: -- describe database.table partition
-DESCRIBE db1.t1 PARTITION(ds='4', part='5')
+POSTHOOK: query: DESCRIBE db1.t1 PARTITION(ds='4', part='5')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: db1@t1
 key1                	int                 	                    
@@ -393,7 +394,7 @@ Database:           	db1
 Table:              	t1                  	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key1\":\"true\",\"value1\":\"true\"}}
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   

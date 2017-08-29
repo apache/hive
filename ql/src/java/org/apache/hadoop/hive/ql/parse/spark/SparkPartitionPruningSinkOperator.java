@@ -27,7 +27,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
@@ -95,6 +97,53 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
     }
   }
 
+  /* This function determines whether sparkpruningsink is with mapjoin.  This will be called
+     to check whether the tree should be split for dpp.  For mapjoin it won't be.  Also called
+     to determine whether dpp should be enabled for anything other than mapjoin.
+   */
+  public boolean isWithMapjoin() {
+    Operator<?> branchingOp = this.getBranchingOp();
+
+    // Check if this is a MapJoin. If so, do not split.
+    for (Operator<?> childOp : branchingOp.getChildOperators()) {
+      if (childOp instanceof ReduceSinkOperator &&
+          childOp.getChildOperators().get(0) instanceof MapJoinOperator) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /* Locate the op where the branch starts.  This function works only for the following pattern.
+   *     TS1       TS2
+   *      |         |
+   *     FIL       FIL
+   *      |         |
+   *      |     ---------
+   *      RS    |   |   |
+   *      |    RS  SEL SEL
+   *      |    /    |   |
+   *      |   /    GBY GBY
+   *      JOIN       |  |
+   *                 |  SPARKPRUNINGSINK
+   *                 |
+   *              SPARKPRUNINGSINK
+   */
+  public Operator<?> getBranchingOp() {
+    Operator<?> branchingOp = this;
+
+    while (branchingOp != null) {
+      if (branchingOp.getNumChild() > 1) {
+        break;
+      } else {
+        branchingOp = branchingOp.getParentOperators().get(0);
+      }
+    }
+
+    return branchingOp;
+  }
+
   private void flushToFile() throws IOException {
     // write an intermediate file to the specified path
     // the format of the path is: tmpPath/targetWorkId/sourceWorkId/randInt
@@ -116,7 +165,7 @@ public class SparkPartitionPruningSinkOperator extends Operator<SparkPartitionPr
 
     try {
       fsout = fs.create(path, numOfRepl);
-      out = new ObjectOutputStream(new BufferedOutputStream(fsout, 4096));
+      out = new ObjectOutputStream(new BufferedOutputStream(fsout));
       out.writeUTF(conf.getTargetColumnName());
       buffer.writeTo(out);
     } catch (Exception e) {

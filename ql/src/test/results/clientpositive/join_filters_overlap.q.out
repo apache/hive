@@ -1,26 +1,18 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- HIVE-3411 Filter predicates on outer join overlapped on single alias is not handled properly
-
-create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
+PREHOOK: query: create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@a
-POSTHOOK: query: -- SORT_QUERY_RESULTS
--- HIVE-3411 Filter predicates on outer join overlapped on single alias is not handled properly
-
-create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
+POSTHOOK: query: create table a as SELECT 100 as key, a.value as value FROM src LATERAL VIEW explode(array(40, 50, 60)) a as value limit 3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
 POSTHOOK: Lineage: a.key SIMPLE []
 POSTHOOK: Lineage: a.value SCRIPT []
-PREHOOK: query: -- overlap on a
-explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+PREHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- overlap on a
-explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
+POSTHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -100,6 +92,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:int
@@ -120,6 +113,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:int
@@ -142,8 +136,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Left Outer Join0 to 2
+               Left Outer Join 0 to 1
+               Left Outer Join 0 to 2
           filter mappings:
             0 [1, 1, 2, 1]
           filter predicates:
@@ -207,11 +201,9 @@ POSTHOOK: Input: default@a
 100	40	NULL	NULL	NULL	NULL
 100	50	100	50	NULL	NULL
 100	60	NULL	NULL	100	60
-PREHOOK: query: -- overlap on b
-explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+PREHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- overlap on b
-explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
+POSTHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -291,6 +283,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:int
@@ -311,6 +304,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:int
@@ -333,8 +327,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
-               Left Outer Join1 to 2
+               Right Outer Join 0 to 1
+               Left Outer Join 1 to 2
           filter mappings:
             1 [0, 1, 2, 1]
           filter predicates:
@@ -398,11 +392,9 @@ POSTHOOK: Input: default@a
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: -- overlap on b with two filters for each
-explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+PREHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- overlap on b with two filters for each
-explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
+POSTHOOK: query: explain extended select * from a right outer join a b on (a.key=b.key AND a.value=50 AND b.value=50 AND b.value>10) left outer join a c on (b.key=c.key AND b.value=60 AND b.value>20 AND c.value=60)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -482,6 +474,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:int
@@ -502,6 +495,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:int
@@ -524,13 +518,13 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Right Outer Join0 to 1
-               Left Outer Join1 to 2
+               Right Outer Join 0 to 1
+               Left Outer Join 1 to 2
           filter mappings:
-            1 [0, 2, 2, 2]
+            1 [0, 1, 2, 1]
           filter predicates:
             0 
-            1 {(VALUE._col0 = 50)} {(VALUE._col0 > 10)} {(VALUE._col0 = 60)} {(VALUE._col0 > 20)}
+            1 {(VALUE._col0 = 50)} {(VALUE._col0 = 60)}
             2 
           keys:
             0 _col0 (type: int)
@@ -589,11 +583,9 @@ POSTHOOK: Input: default@a
 100	50	100	50	NULL	NULL
 NULL	NULL	100	40	NULL	NULL
 NULL	NULL	100	60	100	60
-PREHOOK: query: -- overlap on a, b
-explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- overlap on a, b
-explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: explain extended select * from a full outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (b.key=c.key AND b.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -690,6 +682,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:int
@@ -710,6 +703,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:int
@@ -733,8 +727,8 @@ STAGE PLANS:
         Join Operator
           condition map:
                Outer Join 0 to 1
-               Left Outer Join1 to 2
-               Left Outer Join0 to 3
+               Left Outer Join 1 to 2
+               Left Outer Join 0 to 3
           filter mappings:
             0 [1, 1, 3, 1]
             1 [0, 1, 2, 1]
@@ -792,11 +786,9 @@ POSTHOOK: Input: default@a
 100	60	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	100	40	NULL	NULL	NULL	NULL
 NULL	NULL	100	60	100	60	NULL	NULL
-PREHOOK: query: -- triple overlap on a
-explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+PREHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- triple overlap on a
-explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
+POSTHOOK: query: explain extended select * from a left outer join a b on (a.key=b.key AND a.value=50 AND b.value=50) left outer join a c on (a.key=c.key AND a.value=60 AND c.value=60) left outer join a d on (a.key=d.key AND a.value=40 AND d.value=40)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -897,6 +889,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:int
@@ -917,6 +910,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:int
@@ -939,9 +933,9 @@ STAGE PLANS:
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join0 to 1
-               Left Outer Join0 to 2
-               Left Outer Join0 to 3
+               Left Outer Join 0 to 1
+               Left Outer Join 0 to 2
+               Left Outer Join 0 to 3
           filter mappings:
             0 [1, 1, 2, 1, 3, 1]
           filter predicates:

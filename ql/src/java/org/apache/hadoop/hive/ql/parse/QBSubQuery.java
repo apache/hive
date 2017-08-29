@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory.DefaultExprProcessor;
@@ -43,15 +44,30 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     EXISTS,
     NOT_EXISTS,
     IN,
-    NOT_IN;
+    NOT_IN,
+    SCALAR;
 
     public static SubQueryType get(ASTNode opNode) throws SemanticException {
+      if(opNode == null) {
+        return SCALAR;
+      }
+
       switch(opNode.getType()) {
+        // opNode's type is always either KW_EXISTS or KW_IN never NOTEXISTS or NOTIN
+        //  to figure this out we need to check it's grand parent's parent
       case HiveParser.KW_EXISTS:
+        if(opNode.getParent().getParent().getParent() != null
+                && opNode.getParent().getParent().getParent().getType() == HiveParser.KW_NOT) {
+          return NOT_EXISTS;
+        }
         return EXISTS;
       case HiveParser.TOK_SUBQUERY_OP_NOTEXISTS:
         return NOT_EXISTS;
       case HiveParser.KW_IN:
+        if(opNode.getParent().getParent().getParent() != null
+                && opNode.getParent().getParent().getParent().getType() == HiveParser.KW_NOT) {
+          return NOT_IN;
+        }
         return IN;
       case HiveParser.TOK_SUBQUERY_OP_NOTIN:
         return NOT_IN;
@@ -289,20 +305,14 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     }
 
     /*
-     * 1. The only correlation operator we check for is EQUAL; because that is
-     *    the one for which we can do a Algebraic transformation.
-     * 2. For expressions that are not an EQUAL predicate, we treat them as conjuncts
-     *    having only 1 side. These should only contain references to the SubQuery
-     *    table sources.
-     * 3. For expressions that are an EQUAL predicate; we analyze each side and let the
+     *  we analyze each side and let the
      *    left and right exprs in the Conjunct object.
      *
      * @return Conjunct  contains details on the left and right side of the conjunct expression.
      */
     Conjunct analyzeConjunct(ASTNode conjunct) throws SemanticException {
-      int type = conjunct.getType();
 
-      if ( type == HiveParser.EQUAL ) {
+       if(conjunct.getChildCount() == 2) {
         ASTNode left = (ASTNode) conjunct.getChild(0);
         ASTNode right = (ASTNode) conjunct.getChild(1);
         ObjectPair<ExprType,ColumnInfo> leftInfo = analyzeExpr(left);
@@ -503,6 +513,145 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         originalSQASTOrigin.getUsageNode());
   }
 
+  /**
+   * @param parentQueryRR
+   * @param forHavingClause
+   * @param outerQueryAlias
+   * @return true if it is correlated scalar subquery with an aggregate
+   * @throws SemanticException
+   */
+  void subqueryRestrictionsCheck(RowResolver parentQueryRR,
+                                 boolean forHavingClause,
+                                 String outerQueryAlias, boolean [] subqueryConfig)
+          throws SemanticException {
+    ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
+
+    ASTNode selectClause = (ASTNode) insertClause.getChild(1);
+
+
+    int selectExprStart = 0;
+    if ( selectClause.getChild(0).getType() == HiveParser.QUERY_HINT ) {
+      selectExprStart = 1;
+    }
+
+    /*
+     * Check.5.h :: For In and Not In the SubQuery must implicitly or
+     * explicitly only contain one select item.
+     */
+    if ( operator.getType() != SubQueryType.EXISTS &&
+            operator.getType() != SubQueryType.NOT_EXISTS &&
+            selectClause.getChildCount() - selectExprStart > 1 ) {
+      subQueryAST.setOrigin(originalSQASTOrigin);
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST, "SubQuery can contain only 1 item in Select List."));
+    }
+
+    boolean hasAggreateExprs = false;
+    boolean hasWindowing = false;
+
+    // we need to know if aggregate is COUNT since IN corr subq with count aggregate
+    // is not special cased later in subquery remove rule
+    boolean hasCount = false;
+    for(int i= selectExprStart; i < selectClause.getChildCount(); i++ ) {
+
+      ASTNode selectItem = (ASTNode) selectClause.getChild(i);
+      int r = SubQueryUtils.checkAggOrWindowing(selectItem);
+
+      hasWindowing = hasWindowing | ( r == 3);
+      hasAggreateExprs = hasAggreateExprs | ( r == 1 | r== 2 );
+      hasCount = hasCount | ( r == 2 );
+    }
+
+    // figure out correlation and presence of non-equi join predicate
+    boolean hasCorrelation = false;
+    boolean hasNonEquiJoinPred = false;
+
+    ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
+    if ( whereClause != null ) {
+      ASTNode searchCond = (ASTNode) whereClause.getChild(0);
+      List<ASTNode> conjuncts = new ArrayList<ASTNode>();
+      SubQueryUtils.extractConjuncts(searchCond, conjuncts);
+
+      ConjunctAnalyzer conjunctAnalyzer =
+          new ConjunctAnalyzer(parentQueryRR, forHavingClause, outerQueryAlias);
+
+      for (ASTNode conjunctAST : conjuncts) {
+        Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
+        if (conjunct.isCorrelated()) {
+          hasCorrelation = true;
+        }
+        if (conjunct.eitherSideRefersBoth() && conjunctAST.getType() != HiveParser.EQUAL) {
+          hasNonEquiJoinPred = true;
+        }
+      }
+    }
+
+    // figure out if there is group by
+    boolean noImplicityGby = true;
+    for(int i=0; i<insertClause.getChildCount(); i++) {
+      if(insertClause.getChild(i).getType() == HiveParser.TOK_GROUPBY) {
+        noImplicityGby = false;
+        break;
+      }
+    }
+
+    /*
+     * Restriction.14.h :: Correlated Sub Queries cannot contain Windowing clauses.
+     */
+    if (  hasWindowing && hasCorrelation) {
+      throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST, "Correlated Sub Queries cannot contain Windowing clauses."));
+    }
+
+    /*
+     * Restriction.13.m :: In the case of an implied Group By on a
+     * correlated SubQuery, the SubQuery always returns 1 row.
+     * An exists on a SubQuery with an implied GBy will always return true.
+     * Whereas Algebraically transforming to a Join may not return true. See
+     * Specification doc for details.
+     * Similarly a not exists on a SubQuery with a implied GBY will always return false.
+     */
+      // Following is special cases for different type of subqueries which have aggregate and no implicit group by
+      // and are correlatd
+      // * EXISTS/NOT EXISTS - NOT allowed, throw an error for now. We plan to allow this later
+      // * SCALAR - This should return true since later in subquery remove
+      //              rule we need to know about this case.
+      // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
+      //        rule we need to know about this case.
+      // * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
+      if (hasAggreateExprs &&
+              noImplicityGby) {
+
+        if(operator.getType() == SubQueryType.EXISTS
+                || operator.getType() == SubQueryType.NOT_EXISTS) {
+          if(hasCorrelation) {
+            throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+                    subQueryAST,
+                    "A predicate on EXISTS/NOT EXISTS SubQuery with implicit Aggregation(no Group By clause) " +
+                            "cannot be rewritten."));
+          }
+        }
+        else if(operator.getType() == SubQueryType.SCALAR) {
+            if(!hasWindowing) {
+              subqueryConfig[1] = true;
+            }
+            if(hasCorrelation) {
+              subqueryConfig[0] = true;
+            }
+        }
+        else if(operator.getType() == SubQueryType.IN) {
+          if(hasCount && hasCorrelation) {
+            subqueryConfig[0] = true;
+          }
+        }
+        else if (operator.getType() == SubQueryType.NOT_IN) {
+            if(hasCorrelation) {
+              subqueryConfig[0] = true;
+            }
+        }
+      }
+  }
+
   void validateAndRewriteAST(RowResolver outerQueryRR,
       boolean forHavingClause,
       String outerQueryAlias,
@@ -514,7 +663,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     ASTNode selectClause = (ASTNode) insertClause.getChild(1);
 
     int selectExprStart = 0;
-    if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
+    if ( selectClause.getChild(0).getType() == HiveParser.QUERY_HINT ) {
       selectExprStart = 1;
     }
 
@@ -558,7 +707,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       ASTNode selectItem = (ASTNode) selectClause.getChild(i);
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
-      containsWindowing = containsWindowing | ( r == 2);
+      containsWindowing = containsWindowing | ( r == 3);
       containsAggregationExprs = containsAggregationExprs | ( r == 1 );
     }
 
@@ -774,17 +923,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
     for(ASTNode conjunctAST : conjuncts) {
       Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
-
-      /*
-       *  Restriction.11.m :: A SubQuery predicate that refers to an Outer
-       *  Query column must be a valid Join predicate.
-       */
-      if ( conjunct.eitherSideRefersBoth() ) {
-        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-            conjunctAST,
-            "SubQuery expression refers to both Parent and SubQuery expressions and " +
-            "is not a valid join condition."));
-      }
 
       /*
        * Check.12.h :: SubQuery predicates cannot only refer to Outer Query columns.

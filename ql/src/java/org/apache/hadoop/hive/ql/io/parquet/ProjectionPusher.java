@@ -115,7 +115,9 @@ public class ProjectionPusher {
           allColumnsNeeded = true;
         } else {
           neededColumnIDs.addAll(ts.getNeededColumnIDs());
-          neededNestedColumnPaths.addAll(ts.getNeededNestedColumnPaths());
+          if (ts.getNeededNestedColumnPaths() != null) {
+            neededNestedColumnPaths.addAll(ts.getNeededNestedColumnPaths());
+          }
         }
 
         rowSchema = ts.getSchema();
@@ -183,9 +185,14 @@ public class ProjectionPusher {
     final JobConf cloneJobConf = new JobConf(jobConf);
     final PartitionDesc part = pathToPartitionInfo.get(path);
 
-    if ((part != null) && (part.getTableDesc() != null)) {
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+    try {
+      if ((part != null) && (part.getTableDesc() != null)) {
+        Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
     }
+
     pushProjectionsAndFilters(cloneJobConf, path.toString(), path.toUri().getPath());
     return cloneJobConf;
   }

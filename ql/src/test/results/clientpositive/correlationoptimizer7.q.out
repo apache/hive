@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -8,9 +6,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -29,11 +25,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -71,7 +67,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -209,11 +205,11 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -267,7 +263,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -365,13 +361,7 @@ POSTHOOK: Input: default@src1
 406	4	406	val_406
 66	1	66	val_66
 98	2	98	val_98
-PREHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -379,13 +369,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -404,11 +388,11 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -446,7 +430,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1
@@ -584,11 +568,11 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:$hdt$_1:y 
+        $hdt$_0:$hdt$_1:y 
           TableScan
             alias: y
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
@@ -642,7 +626,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0, _col1

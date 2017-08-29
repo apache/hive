@@ -77,6 +77,16 @@ public class JSONAlterIndexMessage extends AlterIndexMessage {
   }
 
   @Override
+  public Index getIndexObjBefore() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(beforeIndexObjJson, Index.class);
+  }
+
+  @Override
+  public Index getIndexObjAfter() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(afterIndexObjJson, Index.class);
+  }
+
+  @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);

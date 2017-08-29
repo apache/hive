@@ -22,10 +22,14 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
+import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.orc.TypeDescription;
 
 public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedColumnBatch<BatchKey>>
   implements Consumer<BatchType>, ReadPipeline {
@@ -73,9 +77,17 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
       return;
     }
     long start = System.currentTimeMillis();
-    decodeBatch(data, downstreamConsumer);
-    long end = System.currentTimeMillis();
-    ioMetrics.addDecodeBatchTime(end - start);
+    try {
+      decodeBatch(data, downstreamConsumer);
+    } catch (Throwable ex) {
+      // This probably should not happen; but it does... at least also stop the consumer.
+      LlapIoImpl.LOG.error("decodeBatch threw", ex);
+      downstreamConsumer.setError(ex);
+      throw ex;
+    } finally {
+      long end = System.currentTimeMillis();
+      ioMetrics.addDecodeBatchTime(end - start);
+    }
     returnSourceData(data);
   }
 

@@ -30,6 +30,7 @@ import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -57,7 +58,7 @@ public class Utils {
   private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
   // Thanks, HBase
-  public static void addDependencyJars(Configuration conf, Class<?>... classes) throws IOException {
+  public static void addDependencyJars(Configuration conf, List<Class<?>> classes) throws IOException {
     FileSystem localFs = FileSystem.getLocal(conf);
     Set<String> jars = new HashSet<String>();
     // Add jars that are already in the tmpjars variable

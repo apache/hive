@@ -1,5 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-CREATE TABLE tbl_pred(t tinyint,
+PREHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -8,14 +7,13 @@ CREATE TABLE tbl_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_pred
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-CREATE TABLE tbl_pred(t tinyint,
+POSTHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -24,7 +22,7 @@ CREATE TABLE tbl_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
@@ -39,7 +37,7 @@ PREHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -55,7 +53,7 @@ POSTHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal(4,2),
+           `dec` decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -89,15 +87,11 @@ POSTHOOK: Lineage: tbl_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:
 POSTHOOK: Lineage: tbl_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: tbl_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: tbl_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
-
-SELECT SUM(HASH(t)) FROM tbl_pred
+PREHOOK: query: SELECT SUM(HASH(t)) FROM tbl_pred
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-POSTHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
-
-SELECT SUM(HASH(t)) FROM tbl_pred
+POSTHOOK: query: SELECT SUM(HASH(t)) FROM tbl_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
@@ -124,7 +118,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -182,7 +176,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -227,19 +221,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
--- hive.optimize.index.filter is set to true. the explain plan should show filter expression
--- in table scan operator.
-
-SELECT * FROM tbl_pred WHERE t<2 limit 1
+PREHOOK: query: SELECT * FROM tbl_pred WHERE t<2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-POSTHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
--- hive.optimize.index.filter is set to true. the explain plan should show filter expression
--- in table scan operator.
-
-SELECT * FROM tbl_pred WHERE t<2 limit 1
+POSTHOOK: query: SELECT * FROM tbl_pred WHERE t<2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
@@ -740,7 +726,7 @@ STAGE PLANS:
                   alias: tbl_pred
                   Statistics: Num rows: 1049 Data size: 11539 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -816,10 +802,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tbl_pred
-                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 11539 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 11 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)

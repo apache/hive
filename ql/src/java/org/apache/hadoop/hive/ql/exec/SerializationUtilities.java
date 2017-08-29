@@ -29,21 +29,26 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.tez.TezJobMonitor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -222,8 +227,10 @@ public class SerializationUtilities {
       KryoWithHooks kryo = new KryoWithHooks();
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
+      kryo.register(TimestampTZ.class, new TimestampTZSerializer());
       kryo.register(Path.class, new PathSerializer());
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
+      kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
           .setFallbackInstantiatorStrategy(
@@ -246,6 +253,7 @@ public class SerializationUtilities {
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
       kryo.register(Pair.class);
+      kryo.register(MemoryMonitorInfo.class);
 
       // This must be called after all the explicit register calls.
       return kryo.processHooks(kryoTypeHooks, globalHook);
@@ -302,6 +310,24 @@ public class SerializationUtilities {
     public void write(Kryo kryo, Output output, Timestamp ts) {
       output.writeLong(ts.getTime());
       output.writeInt(ts.getNanos());
+    }
+  }
+
+  private static class TimestampTZSerializer extends com.esotericsoftware.kryo.Serializer<TimestampTZ> {
+
+    @Override
+    public void write(Kryo kryo, Output output, TimestampTZ object) {
+      output.writeLong(object.getEpochSecond());
+      output.writeInt(object.getNanos());
+      output.writeString(object.getZonedDateTime().getZone().getId());
+    }
+
+    @Override
+    public TimestampTZ read(Kryo kryo, Input input, Class<TimestampTZ> type) {
+      long seconds = input.readLong();
+      int nanos = input.readInt();
+      String zoneId = input.readString();
+      return new TimestampTZ(seconds, nanos, ZoneId.of(zoneId));
     }
   }
 
@@ -419,6 +445,33 @@ public class SerializationUtilities {
         }
       }
       return c;
+    }
+  }
+
+  /**
+   * CopyOnFirstWriteProperties needs a special serializer, since it extends Properties,
+   * which implements Map, so MapSerializer would be used for it by default. Yet it has
+   * the additional 'interned' field that the standard MapSerializer doesn't handle
+   * properly. But FieldSerializer doesn't work for it as well, because the Hashtable
+   * superclass declares most of its fields transient.
+   */
+  private static class CopyOnFirstWritePropertiesSerializer extends
+      com.esotericsoftware.kryo.serializers.MapSerializer {
+
+    @Override
+    public void write(Kryo kryo, Output output, Map map) {
+      super.write(kryo, output, map);
+      CopyOnFirstWriteProperties p = (CopyOnFirstWriteProperties) map;
+      Properties ip = p.getInterned();
+      kryo.writeObjectOrNull(output, ip, Properties.class);
+    }
+
+    @Override
+    public Map read(Kryo kryo, Input input, Class<Map> type) {
+      Map map = super.read(kryo, input, type);
+      Properties ip = kryo.readObjectOrNull(input, Properties.class);
+      ((CopyOnFirstWriteProperties) map).setInterned(ip);
+      return map;
     }
   }
 

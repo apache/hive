@@ -25,13 +25,15 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
@@ -53,7 +55,11 @@ public abstract class MessageFactory {
   public static final String CREATE_INDEX_EVENT = "CREATE_INDEX";
   public static final String DROP_INDEX_EVENT = "DROP_INDEX";
   public static final String ALTER_INDEX_EVENT = "ALTER_INDEX";
-
+  public static final String ADD_PRIMARYKEY_EVENT = "ADD_PRIMARYKEY";
+  public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
+  public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
+  public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
+  public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
 
   private static MessageFactory instance = null;
 
@@ -118,11 +124,6 @@ public abstract class MessageFactory {
   public abstract MessageDeserializer getDeserializer();
 
   /**
-   * Getter for version-string, corresponding to all constructed messages.
-   */
-  public abstract String getVersion();
-
-  /**
    * Getter for message-format.
    */
   public abstract String getMessageFormat();
@@ -144,9 +145,10 @@ public abstract class MessageFactory {
   /**
    * Factory method for CreateTableMessage.
    * @param table The Table being created.
+   * @param files Iterator of files
    * @return CreateTableMessage instance.
    */
-  public abstract CreateTableMessage buildCreateTableMessage(Table table);
+  public abstract CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> files);
 
   /**
    * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
@@ -155,9 +157,10 @@ public abstract class MessageFactory {
    * and some are not yet supported.
    * @param before The table before the alter
    * @param after The table after the alter
+   * @param isTruncateOp Flag to denote truncate table
    * @return
    */
-  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after);
+  public abstract AlterTableMessage buildAlterTableMessage(Table before, Table after, boolean isTruncateOp);
 
   /**
    * Factory method for DropTableMessage.
@@ -170,19 +173,22 @@ public abstract class MessageFactory {
      * Factory method for AddPartitionMessage.
      * @param table The Table to which the partitions are added.
      * @param partitions The iterator to set of Partitions being added.
+     * @param partitionFiles The iterator of partition files
      * @return AddPartitionMessage instance.
      */
-  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions);
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions,
+      Iterator<PartitionFiles> partitionFiles);
 
   /**
    * Factory method for building AlterPartitionMessage
    * @param table The table in which the partition is being altered
    * @param before The partition before it was altered
    * @param after The partition after it was altered
+   * @param isTruncateOp Flag to denote truncate partition
    * @return a new AlterPartitionMessage
    */
   public abstract AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before,
-                                                                   Partition after);
+                                                                   Partition after, boolean isTruncateOp);
 
   /**
    * Factory method for DropPartitionMessage.
@@ -231,27 +237,55 @@ public abstract class MessageFactory {
   /**
    * Factory method for building insert message
    *
-   * @param db Name of the database the insert occurred in
-   * @param table Name of the table the insert occurred in
-   * @param partVals Partition values for the partition that the insert occurred in, may be null if
+   * @param tableObj Table object where the insert occurred in
+   * @param ptnObj Partition object where the insert occurred in, may be null if
    *          the insert was done into a non-partitioned table
-   * @param files List of files created as a result of the insert, may be null.
+   * @param replace Flag to represent if INSERT OVERWRITE or INSERT INTO
+   * @param files Iterator of file created
    * @return instance of InsertMessage
    */
-  public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, List<String> files);
+  public abstract InsertMessage buildInsertMessage(Table tableObj, Partition ptnObj,
+                                                   boolean replace, Iterator<String> files);
 
-  /**
-   * Factory method for building insert message
+  /***
+   * Factory method for building add primary key message
    *
-   * @param db Name of the database the insert occurred in
-   * @param table Name of the table the insert occurred in
-   * @param partVals Partition values for the partition that the insert occurred in, may be null if
-   *          the insert was done into a non-partitioned table
-   * @param files List of files created as a result of the insert, may be null
-   * @param fileChecksums List of checksums corresponding to the files added during insert
-   * @return instance of InsertMessage
+   * @param pks list of primary keys
+   * @return instance of AddPrimaryKeyMessage
    */
-  public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, List<String> files, List<ByteBuffer> fileChecksums);
+  public abstract AddPrimaryKeyMessage buildAddPrimaryKeyMessage(List<SQLPrimaryKey> pks);
+
+  /***
+   * Factory method for building add foreign key message
+   *
+   * @param fks list of foreign keys
+   * @return instance of AddForeignKeyMessage
+   */
+  public abstract AddForeignKeyMessage buildAddForeignKeyMessage(List<SQLForeignKey> fks);
+
+  /***
+   * Factory method for building add unique constraint message
+   *
+   * @param uks list of unique constraints
+   * @return instance of SQLUniqueConstraint
+   */
+  public abstract AddUniqueConstraintMessage buildAddUniqueConstraintMessage(List<SQLUniqueConstraint> uks);
+
+  /***
+   * Factory method for building add not null constraint message
+   *
+   * @param nns list of not null constraints
+   * @return instance of SQLNotNullConstraint
+   */
+  public abstract AddNotNullConstraintMessage buildAddNotNullConstraintMessage(List<SQLNotNullConstraint> nns);
+
+  /***
+   * Factory method for building drop constraint message
+   * @param dbName
+   * @param tableName
+   * @param constraintName
+   * @return
+   */
+  public abstract DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
+      String constraintName);
 }

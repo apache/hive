@@ -31,11 +31,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
+import com.google.common.collect.Sets;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
@@ -67,9 +72,12 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
@@ -121,6 +129,9 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private static final String UNIQUE_IDENTIFIER = "llap.unique.id";
 
   private Set<ServiceInstanceStateChangeListener> stateChangeListeners;
+  private final Map<String, Set<ServiceInstance>> pathToInstanceCache;
+  private final Map<String, Set<ServiceInstance>> nodeToInstanceCache;
+  private final Lock instanceCacheLock = new ReentrantLock();
 
   // get local hostname
   private static final String hostname;
@@ -157,6 +168,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     this.instancesCache = null;
     this.instances = null;
     this.stateChangeListeners = new HashSet<>();
+    this.pathToInstanceCache = new ConcurrentHashMap<>();
+    this.nodeToInstanceCache = new ConcurrentHashMap<>();
 
     final boolean isSecure = UserGroupInformation.isSecurityEnabled();
     ACLProvider zooKeeperAclProvider = new ACLProvider() {
@@ -406,12 +419,13 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     private final int shufflePort;
     private final int outputFormatPort;
     private final String serviceAddress;
+    private final Resource resource;
 
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Working with ServiceRecord: {}", srv);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Working with ServiceRecord: {}", srv);
       }
 
       final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
@@ -437,6 +451,32 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
               AddressTypes.ADDRESS_PORT_FIELD));
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
+      String memStr = srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "");
+      String coreStr = srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, "");
+      try {
+        this.resource = Resource.newInstance(Integer.parseInt(memStr), Integer.parseInt(coreStr));
+      } catch (NumberFormatException ex) {
+        throw new IOException("Invalid resource configuration for a LLAP node: memory "
+            + memStr + ", vcores " + coreStr);
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      DynamicServiceInstance other = (DynamicServiceInstance) o;
+      return this.getWorkerIdentity().equals(other.getWorkerIdentity());
+    }
+
+    @Override
+    public int hashCode() {
+      return getWorkerIdentity().hashCode();
     }
 
     @Override
@@ -471,9 +511,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public Resource getResource() {
-      int memory = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
-      int vCores = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
-      return Resource.newInstance(memory, vCores);
+      return resource;
     }
 
     @Override
@@ -497,51 +535,115 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     // A new ServiceInstance is created each time.
   }
 
+  private void addToCache(String path, String host, ServiceInstance instance) {
+    instanceCacheLock.lock();
+    try {
+      putInCache(path, pathToInstanceCache, instance);
+      putInCache(host, nodeToInstanceCache, instance);
+    } finally {
+      instanceCacheLock.unlock();
+    }
+    LOG.debug("Added path={}, host={} instance={} to cache."
+            + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
+        path, host, instance, pathToInstanceCache.size(), nodeToInstanceCache.size());
+  }
+
+  private void removeFromCache(String path, String host) {
+    instanceCacheLock.lock();
+    try {
+      pathToInstanceCache.remove(path);
+      nodeToInstanceCache.remove(host);
+    } finally {
+      instanceCacheLock.unlock();
+    }
+    LOG.debug("Removed path={}, host={} from cache."
+            + " pathToInstanceCache:size={}, nodeToInstanceCache:size={}",
+        path, host, pathToInstanceCache.size(), nodeToInstanceCache.size());
+  }
+
+  private void putInCache(String key, Map<String, Set<ServiceInstance>> cache,
+      ServiceInstance instance) {
+    Set<ServiceInstance> instanceSet = cache.get(key);
+    if (instanceSet == null) {
+      instanceSet = Sets.newHashSet();
+      cache.put(key, instanceSet);
+    }
+    instanceSet.add(instance);
+  }
+
+
   private class DynamicServiceInstanceSet implements ServiceInstanceSet {
     private final PathChildrenCache instancesCache;
 
     public DynamicServiceInstanceSet(final PathChildrenCache cache) {
       this.instancesCache = cache;
+      populateCache();
     }
 
-    @Override
-    public Collection<ServiceInstance> getAll() {
-      List<ServiceInstance> instances = new ArrayList<>();
-      // TODO: we could refresh instanceCache here on previous failure
+    private void populateCache() {
       for (ChildData childData : instancesCache.getCurrentData()) {
-        if (childData == null) continue;
-        byte[] data = childData.getData();
+        byte[] data = getWorkerData(childData);
         if (data == null) continue;
-        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) continue;
         try {
           ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
           ServiceInstance instance = new DynamicServiceInstance(srv);
-          instances.add(instance);
+          addToCache(childData.getPath(), instance.getHost(), instance);
         } catch (IOException e) {
           LOG.error("Unable to decode data for zkpath: {}." +
               " Ignoring from current instances list..", childData.getPath());
         }
       }
+    }
+
+    @Override
+    public Collection<ServiceInstance> getAll() {
+      Set<ServiceInstance> instances =  new HashSet<>();
+      for(Set<ServiceInstance> instanceSet : pathToInstanceCache.values()) {
+        instances.addAll(instanceSet);
+      }
       return instances;
+    }
+
+    public ApplicationId getApplicationId() {
+      for (ChildData childData : instancesCache.getCurrentData()) {
+        byte[] data = getWorkerData(childData);
+        if (data == null) continue;
+        ServiceRecord sr = null;
+        try {
+          sr = encoder.fromBytes(childData.getPath(), data);
+        } catch (IOException e) {
+          LOG.error("Unable to decode data for zkpath: {}." +
+              " Ignoring from current instances list..", childData.getPath());
+          continue;
+        }
+        String containerStr = sr.get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+        if (containerStr == null || containerStr.isEmpty()) continue;
+        return ContainerId.fromString(containerStr).getApplicationAttemptId().getApplicationId();
+      }
+      return null;
+    }
+
+    private byte[] getWorkerData(ChildData childData) {
+        if (childData == null) return null;
+        byte[] data = childData.getData();
+        if (data == null) return null;
+        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) return null;
+        return data;
     }
 
     @Override
     public Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes) {
       Map<String, Long> slotByWorker = new HashMap<String, Long>();
-      List<ServiceInstance> unsorted = new LinkedList<ServiceInstance>();
+      Set<ServiceInstance> unsorted = Sets.newHashSet();
       for (ChildData childData : instancesCache.getCurrentData()) {
         if (childData == null) continue;
         byte[] data = childData.getData();
         if (data == null) continue;
         String nodeName = extractNodeName(childData);
         if (nodeName.startsWith(WORKER_PREFIX)) {
-          try {
-            ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
-            ServiceInstance instance = new DynamicServiceInstance(srv);
-            unsorted.add(instance);
-          } catch (IOException e) {
-            LOG.error("Unable to decode data for zkpath: {}." +
-                " Ignoring from current instances list..", childData.getPath());
+          Set<ServiceInstance> instances = pathToInstanceCache.get(childData.getPath());
+          if (instances != null) {
+            unsorted.addAll(instances);
           }
         } else if (nodeName.startsWith(SLOT_PREFIX)) {
           slotByWorker.put(extractWorkerIdFromSlot(childData),
@@ -599,27 +701,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public Set<ServiceInstance> getByHost(String host) {
-      Set<ServiceInstance> byHost = new HashSet<>();
-      for (ChildData childData : instancesCache.getCurrentData()) {
-        if (childData == null) continue;
-        byte[] data = childData.getData();
-        if (data == null) continue;
-        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) continue;
-        try {
-          ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
-          ServiceInstance instance = new DynamicServiceInstance(srv);
-          if (host.equals(instance.getHost())) {
-            byHost.add(instance);
-          }
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Locality comparing " + host + " to " + instance.getHost());
-          }
-        } catch (IOException e) {
-          LOG.error("Unable to decode data for zkpath: {}." +
-              " Ignoring host from current instances list..", childData.getPath());
-        }
-      }
-
+      Set<ServiceInstance> byHost = nodeToInstanceCache.get(host);
+      byHost = (byHost == null) ? Sets.<ServiceInstance>newHashSet() : byHost;
       if (LOG.isDebugEnabled()) {
         LOG.debug("Returning " + byHost.size() + " hosts for locality allocation on " + host);
       }
@@ -628,7 +711,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public int size() {
-      return instancesCache.getCurrentData().size();
+      // not using the path child cache here as there could be more than 1 path per host (worker and slot znodes)
+      return nodeToInstanceCache.size();
     }
   }
 
@@ -643,27 +727,35 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
           && client.getState() == CuratorFrameworkState.STARTED, "client is not started");
 
       synchronized (this) {
-        if (stateChangeListeners.isEmpty()) return;
         ChildData childData = event.getData();
-        if (childData == null) return;
+        if (childData == null)
+          return;
         String nodeName = extractNodeName(childData);
-        if (!nodeName.startsWith(WORKER_PREFIX)) return; // No need to propagate slot updates.
+        if (!nodeName.startsWith(WORKER_PREFIX))
+          return; // No need to propagate slot updates.
         LOG.info("{} for zknode {} in llap namespace", event.getType(), childData.getPath());
         ServiceInstance instance = extractServiceInstance(event, childData);
-        for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
-          switch (event.getType()) {
-          case CHILD_ADDED:
+        switch (event.getType()) {
+        case CHILD_ADDED:
+          addToCache(childData.getPath(), instance.getHost(), instance);
+          for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
             listener.onCreate(instance);
-            break;
-          case CHILD_UPDATED:
-            listener.onUpdate(instance);
-            break;
-          case CHILD_REMOVED:
-            listener.onRemove(instance);
-            break;
-          default:
-            // Ignore all the other events; logged above.
           }
+          break;
+        case CHILD_UPDATED:
+          addToCache(childData.getPath(), instance.getHost(), instance);
+          for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
+            listener.onUpdate(instance);
+          }
+          break;
+        case CHILD_REMOVED:
+          removeFromCache(childData.getPath(), instance.getHost());
+          for (ServiceInstanceStateChangeListener listener : stateChangeListeners) {
+            listener.onRemove(instance);
+          }
+          break;
+        default:
+          // Ignore all the other events; logged above.
         }
       }
     }
@@ -697,8 +789,9 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   }
   
   @Override
-  public ServiceInstanceSet getInstances(String component) throws IOException {
-    checkPathChildrenCache();
+  public ServiceInstanceSet getInstances(
+      String component, long clusterReadyTimeoutMs) throws IOException {
+    checkPathChildrenCache(clusterReadyTimeoutMs);
 
     // lazily create instances
     if (instances == null) {
@@ -708,31 +801,55 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   }
 
   @Override
+  public ApplicationId getApplicationId() throws IOException {
+    getInstances("LLAP", 0);
+    return instances.getApplicationId();
+  }
+
+  @Override
   public synchronized void registerStateChangeListener(
       final ServiceInstanceStateChangeListener listener)
       throws IOException {
-    checkPathChildrenCache();
+    checkPathChildrenCache(0);
 
     this.stateChangeListeners.add(listener);
   }
 
-  private synchronized void checkPathChildrenCache() throws IOException {
+  private synchronized void checkPathChildrenCache(long clusterReadyTimeoutMs) throws IOException {
     Preconditions.checkArgument(zooKeeperClient != null &&
-            zooKeeperClient.getState() == CuratorFrameworkState.STARTED,
-        "client is not started");
-
+            zooKeeperClient.getState() == CuratorFrameworkState.STARTED, "client is not started");
     // lazily create PathChildrenCache
-    if (instancesCache == null) {
-      this.instancesCache = new PathChildrenCache(zooKeeperClient, workersPath, true);
-      instancesCache.getListenable().addListener(new InstanceStateChangeListener(),
-          Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("StateChangeNotificationHandler")
-              .build()));
+    if (instancesCache != null) return;
+    ExecutorService tp = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
+              .setDaemon(true).setNameFormat("StateChangeNotificationHandler").build());
+    long startTimeNs = System.nanoTime(), deltaNs = clusterReadyTimeoutMs * 1000000L;
+    long sleepTimeMs = Math.min(16, clusterReadyTimeoutMs);
+    while (true) {
+      PathChildrenCache instancesCache = new PathChildrenCache(zooKeeperClient, workersPath, true);
+      instancesCache.getListenable().addListener(new InstanceStateChangeListener(), tp);
       try {
-        this.instancesCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+        instancesCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+        this.instancesCache = instancesCache;
+        break;
+      } catch (InvalidACLException e) {
+        // PathChildrenCache tried to mkdir when the znode wasn't there, and failed.
+        CloseableUtils.closeQuietly(instancesCache);
+        long elapsedNs = System.nanoTime() - startTimeNs;
+        if (deltaNs == 0 || deltaNs <= elapsedNs) {
+          LOG.error("Unable to start curator PathChildrenCache", e);
+          throw new IOException(e);
+        }
+        LOG.warn("The cluster is not started yet (InvalidACL); will retry");
+        try {
+          Thread.sleep(Math.min(sleepTimeMs, (deltaNs - elapsedNs)/1000000L));
+        } catch (InterruptedException e1) {
+          LOG.error("Interrupted while retrying the PathChildrenCache startup");
+          throw new IOException(e1);
+        }
+        sleepTimeMs = sleepTimeMs << 1;
       } catch (Exception e) {
-        LOG.error("Unable to start curator PathChildrenCache. Exception: {}", e);
+        CloseableUtils.closeQuietly(instancesCache);
+        LOG.error("Unable to start curator PathChildrenCache", e);
         throw new IOException(e);
       }
     }

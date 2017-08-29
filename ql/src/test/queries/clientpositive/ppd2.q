@@ -2,6 +2,8 @@ set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;
 
+-- SORT_QUERY_RESULTS
+
 explain
 select b.key,b.cc
 from (

@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public abstract class ShimLoader {
   private static final Logger LOG = LoggerFactory.getLogger(ShimLoader.class);
-  public static String HADOOP23VERSIONNAME = "0.23";
+  public static final String HADOOP23VERSIONNAME = "0.23";
 
   private static volatile HadoopShims hadoopShims;
   private static JettyShims jettyShims;
@@ -48,17 +48,6 @@ public abstract class ShimLoader {
 
   static {
     HADOOP_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Hadoop23Shims");
-  }
-
-  /**
-   * The names of the classes for shimming Jetty for each major version of
-   * Hadoop.
-   */
-  private static final HashMap<String, String> JETTY_SHIM_CLASSES =
-      new HashMap<String, String>();
-
-  static {
-    JETTY_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
 
   /**
@@ -105,17 +94,6 @@ public abstract class ShimLoader {
       }
     }
     return hadoopShims;
-  }
-
-  /**
-   * Factory method to get an instance of JettyShims based on the version
-   * of Hadoop on the classpath.
-   */
-  public static synchronized JettyShims getJettyShims() {
-    if (jettyShims == null) {
-      jettyShims = loadShims(JETTY_SHIM_CLASSES, JettyShims.class);
-    }
-    return jettyShims;
   }
 
   public static synchronized AppenderSkeleton getEventCounter() {
@@ -172,6 +150,7 @@ public abstract class ShimLoader {
 
     switch (Integer.parseInt(parts[0])) {
     case 2:
+    case 3:
       return HADOOP23VERSIONNAME;
     default:
       throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);

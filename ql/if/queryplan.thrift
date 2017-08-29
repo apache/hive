@@ -100,6 +100,8 @@ enum StageType {
   STATS,
   DEPENDENCY_COLLECTION,
   COLUMNSTATS,
+  REPL_DUMP,
+  REPL_BOOTSTRAP_LOAD,
 }
 
 struct Stage {

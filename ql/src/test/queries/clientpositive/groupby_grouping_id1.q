@@ -2,6 +2,8 @@ CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
 
+-- SORT_QUERY_RESULTS
+
 SELECT key, val, GROUPING__ID from T1 group by key, val with cube;
 SELECT key, val, GROUPING__ID from T1 group by cube(key, val);
 

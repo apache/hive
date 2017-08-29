@@ -187,7 +187,7 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
   }
 
   private String debugPrivPrint(Privilege[] privileges) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("Privileges{");
     if (privileges != null){
     for (Privilege p : privileges){

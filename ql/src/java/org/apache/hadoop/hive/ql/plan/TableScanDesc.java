@@ -24,12 +24,14 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
@@ -101,6 +103,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isAcidTable;
 
+  private boolean vectorized;
+
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
   private transient TableSample tableSample;
@@ -147,7 +151,7 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(explainLevels = { Level.USER })
   public String getTbl() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(this.tableMetadata.getCompleteName());
     sb.append("," + alias);
     if (isAcidTable()) {
@@ -175,6 +179,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {
+    if (filterExpr == null) {
+      return null;
+    }
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
@@ -415,4 +422,49 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return opProps;
   }
 
+  public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final TableScanDesc tableScanDesc;
+    private final VectorTableScanDesc vectorTableScanDesc;
+
+    public TableScanOperatorExplainVectorization(TableScanDesc tableScanDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.tableScanDesc = tableScanDesc;
+      vectorTableScanDesc = (VectorTableScanDesc) vectorDesc;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumns() {
+      return Arrays.toString(vectorTableScanDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "TableScan Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public TableScanOperatorExplainVectorization getTableScanVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new TableScanOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  public void setVectorized(boolean vectorized) {
+    this.vectorized = vectorized;
+  }
+
+  public boolean isVectorized() {
+    return vectorized;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      TableScanDesc otherDesc = (TableScanDesc) other;
+      return Objects.equals(getAlias(), otherDesc.getAlias()) &&
+          ExprNodeDescUtils.isSame(getFilterExpr(), otherDesc.getFilterExpr()) &&
+          getRowLimit() == otherDesc.getRowLimit() &&
+          isGatherStats() == otherDesc.isGatherStats();
+    }
+    return false;
+  }
 }

@@ -1,5 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;
+SET hive.fetch.task.conversion=none;
+
 create table test_vector_bround(v0 double, v1 double) stored as orc;
 insert into table test_vector_bround
 values
@@ -12,5 +14,5 @@ values
 (2.51, 1.251),
 (3.51, 1.351);
 set hive.vectorized.execution.enabled=true;
-explain select bround(v0), bround(v1, 1) from test_vector_bround;
+explain vectorization select bround(v0), bround(v1, 1) from test_vector_bround;
 select bround(v0), bround(v1, 1) from test_vector_bround;

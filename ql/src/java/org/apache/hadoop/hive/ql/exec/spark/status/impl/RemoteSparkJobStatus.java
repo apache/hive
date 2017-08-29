@@ -50,11 +50,13 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   private static final Logger LOG = LoggerFactory.getLogger(RemoteSparkJobStatus.class.getName());
   private final SparkClient sparkClient;
   private final JobHandle<Serializable> jobHandle;
+  private Throwable error;
   private final transient long sparkClientTimeoutInSeconds;
 
   public RemoteSparkJobStatus(SparkClient sparkClient, JobHandle<Serializable> jobHandle, long timeoutInSeconds) {
     this.sparkClient = sparkClient;
     this.jobHandle = jobHandle;
+    this.error = null;
     this.sparkClientTimeoutInSeconds = timeoutInSeconds;
   }
 
@@ -65,6 +67,9 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
       return getAppID.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
     } catch (Exception e) {
       LOG.warn("Failed to get APP ID.", e);
+      if (Thread.interrupted()) {
+        error = e;
+      }
       return null;
     }
   }
@@ -138,7 +143,23 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   @Override
   public Throwable getError() {
+    if (error != null) {
+      return error;
+    }
     return jobHandle.getError();
+  }
+
+  @Override
+  public void setError(Throwable e) {
+    this.error = e;
+  }
+
+  /**
+   * Indicates whether the remote context is active. SparkJobMonitor can use this to decide whether
+   * to stop monitoring.
+   */
+  public boolean isRemoteActive() {
+    return sparkClient.isActive();
   }
 
   private SparkJobInfo getSparkJobInfo() throws HiveException {
@@ -168,6 +189,9 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   public JobHandle.State getRemoteJobState() {
+    if (error != null) {
+      return JobHandle.State.FAILED;
+    }
     return jobHandle.getState();
   }
 

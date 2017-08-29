@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE join_1to1_1(key1 int, key2 int, value int)
+PREHOOK: query: CREATE TABLE join_1to1_1(key1 int, key2 int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@join_1to1_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE join_1to1_1(key1 int, key2 int, value int)
+POSTHOOK: query: CREATE TABLE join_1to1_1(key1 int, key2 int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@join_1to1_1

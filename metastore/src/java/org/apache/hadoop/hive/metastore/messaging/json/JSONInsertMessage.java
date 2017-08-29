@@ -19,13 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import com.google.common.collect.Lists;
+
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * JSON implementation of InsertMessage
@@ -33,19 +36,16 @@ import java.util.Map;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table;
+  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson;
 
   @JsonProperty
   Long timestamp;
 
   @JsonProperty
+  String replace;
+
+  @JsonProperty
   List<String> files;
-
-  @JsonProperty
-  Map<String, String> partKeyVals;
-
-  @JsonProperty
-  List<byte[]> fileChecksums;
 
   /**
    * Default constructor, needed for Jackson.
@@ -53,28 +53,35 @@ public class JSONInsertMessage extends InsertMessage {
   public JSONInsertMessage() {
   }
 
-  public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-      Map<String, String> partKeyVals, List<String> files, Long timestamp) {
+  public JSONInsertMessage(String server, String servicePrincipal, Table tableObj, Partition ptnObj,
+                           boolean replace, Iterator<String> fileIter, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.timestamp = timestamp;
-    this.partKeyVals = partKeyVals;
-    this.files = files;
-    checkValid();
-  }
 
-  public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-      Map<String, String> partKeyVals, List<String> files, List<ByteBuffer> checksums,
-      Long timestamp) {
-    this(server, servicePrincipal, db, table, partKeyVals, files, timestamp);
-    fileChecksums = new ArrayList<byte[]>();
-    for (ByteBuffer checksum : checksums) {
-      byte[] checksumBytes = new byte[checksum.remaining()];
-      checksum.get(checksumBytes);
-      fileChecksums.add(checksumBytes);
+    if (null == tableObj) {
+      throw new IllegalArgumentException("Table not valid.");
     }
+
+    this.db = tableObj.getDbName();
+    this.table = tableObj.getTableName();
+    this.tableType = tableObj.getTableType();
+
+    try {
+      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      if (null != ptnObj) {
+        this.ptnObjJson = JSONMessageFactory.createPartitionObjJson(ptnObj);
+      } else {
+        this.ptnObjJson = null;
+      }
+    } catch (TException e) {
+      throw new IllegalArgumentException("Could not serialize: ", e);
+    }
+
+    this.timestamp = timestamp;
+    this.replace = Boolean.toString(replace);
+    this.files = Lists.newArrayList(fileIter);
+
+    checkValid();
   }
 
   @Override
@@ -83,17 +90,17 @@ public class JSONInsertMessage extends InsertMessage {
   }
 
   @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
+  }
+
+  @Override
   public String getServer() {
     return server;
   }
 
   @Override
-  public Map<String, String> getPartitionKeyValues() {
-    return partKeyVals;
-  }
-
-  @Override
-  public List<String> getFiles() {
+  public Iterable<String> getFiles() {
     return files;
   }
 
@@ -112,8 +119,17 @@ public class JSONInsertMessage extends InsertMessage {
     return timestamp;
   }
 
-  public List<byte[]> getFileChecksums() {
-    return fileChecksums;
+  @Override
+  public boolean isReplace() { return Boolean.parseBoolean(replace); }
+
+  @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
+  public Partition getPtnObj() throws Exception {
+    return ((null == ptnObjJson) ? null : (Partition) JSONMessageFactory.getTObj(ptnObjJson, Partition.class));
   }
 
   @Override

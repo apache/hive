@@ -38,7 +38,10 @@ import org.apache.hadoop.hive.serde2.io.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
@@ -565,6 +568,50 @@ public final class VectorExpressionWriterFactory {
     }
 
     /**
+     * Specialized writer for ListColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterList extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for MapColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterMap extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for StructColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterStruct extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
+     * Specialized writer for UnionColumnVector. Will throw cast exception
+     * if the wrong vector column is used.
+     */
+    private static abstract class VectorExpressionWriterUnion extends VectorExpressionWriterBase {
+
+      // For now, we just use this to hold the object inspector.  There are no writeValue,
+      // setValue, etc methods yet...
+
+    }
+
+    /**
      * Compiles the appropriate vector expression writer based on an expression info (ExprNodeDesc)
      */
     public static VectorExpressionWriter genVectorExpressionWritable(
@@ -629,11 +676,22 @@ public final class VectorExpressionWriterFactory {
               ((PrimitiveObjectInspector) fieldObjInspector).getPrimitiveCategory());
         }
 
-      case STRUCT:
-      case UNION:
-      case MAP:
       case LIST:
-        return genVectorExpressionWritableEmpty();
+        return genVectorExpressionWritableList(
+            (SettableListObjectInspector) fieldObjInspector);
+
+      case MAP:
+        return genVectorExpressionWritableMap(
+            (SettableMapObjectInspector) fieldObjInspector);
+
+      case STRUCT:
+        return genVectorExpressionWritableStruct(
+            (SettableStructObjectInspector) fieldObjInspector);
+
+      case UNION:
+        return genVectorExpressionWritableUnion(
+            (SettableUnionObjectInspector) fieldObjInspector);
+
       default:
         throw new IllegalArgumentException("Unknown type " +
             fieldObjInspector.getCategory());
@@ -1335,6 +1393,130 @@ public final class VectorExpressionWriterFactory {
       public Object initValue(Object ignored) {
         return ((SettableFloatObjectInspector) this.objectInspector)
             .create(0f);
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableList(
+      SettableListObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterList() {
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableListObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableListObjectInspector) this.objectInspector).create(0);
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableMap(
+      SettableMapObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterMap() {
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableMapObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableMapObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableStruct(
+      SettableStructObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterMap() {
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableStructObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableStructObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableUnion(
+      SettableUnionObjectInspector fieldObjInspector) throws HiveException {
+
+    return new VectorExpressionWriterMap() {
+      private Object obj;
+
+      public VectorExpressionWriter init(SettableUnionObjectInspector objInspector) throws HiveException {
+        super.init(objInspector);
+        obj = initValue(null);
+        return this;
+      }
+
+      @Override
+      public Object initValue(Object ignored) {
+        return ((SettableUnionObjectInspector) this.objectInspector).create();
+      }
+
+      @Override
+      public Object writeValue(ColumnVector column, int row)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        throw new HiveException("Not implemented yet");
       }
     }.init(fieldObjInspector);
   }

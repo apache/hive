@@ -30,10 +30,12 @@ import java.util.Set;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -42,9 +44,11 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -120,7 +124,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   public void describeTable(DataOutputStream outStream,  String colPath,
       String tableName, Table tbl, Partition part, List<FieldSchema> cols,
       boolean isFormatted, boolean isExt, boolean isPretty,
-      boolean isOutputPadded, List<ColumnStatisticsObj> colStats, PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo) throws HiveException {
+      boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
+      PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
     try {
       String output;
       if (colPath.equals(tableName)) {
@@ -132,6 +138,14 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                   MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted, isOutputPadded, showPartColsSeparately);
       } else {
         output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted, isOutputPadded, colStats);
+        String statsState;
+        if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
+          StringBuilder str = new StringBuilder();
+          MetaDataFormatUtils.formatOutput(StatsSetupConst.COLUMN_STATS_ACCURATE,
+              isFormatted ? StringEscapeUtils.escapeJava(statsState) : HiveStringUtils.escapeJava(statsState),
+              str, isOutputPadded);
+          output = output.concat(str.toString());
+        }
       }
       outStream.write(output.getBytes("UTF-8"));
 
@@ -145,8 +159,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           outStream.write(output.getBytes("UTF-8"));
 
           if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
-              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty())) {
-            output = MetaDataFormatUtils.getConstraintsInformation(pkInfo, fkInfo);
+              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
+              (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
+              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty())) {
+            output = MetaDataFormatUtils.getConstraintsInformation(pkInfo, fkInfo, ukInfo, nnInfo);
             outStream.write(output.getBytes("UTF-8"));
           }
         }
@@ -172,17 +188,27 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(terminator);
           }
           if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
-              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty())) {
-              outStream.write(("Constraints").getBytes("UTF-8"));
-              outStream.write(separator);
-              if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
-                outStream.write(pkInfo.toString().getBytes("UTF-8"));
-                outStream.write(terminator);
-              }
-              if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
-                outStream.write(fkInfo.toString().getBytes("UTF-8"));
-                outStream.write(terminator);
-              }
+              (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
+              (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
+              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty())) {
+            outStream.write(("Constraints").getBytes("UTF-8"));
+            outStream.write(separator);
+            if (pkInfo != null && !pkInfo.getColNames().isEmpty()) {
+              outStream.write(pkInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
+            if (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) {
+              outStream.write(fkInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
+            if (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) {
+              outStream.write(ukInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
+            if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
+              outStream.write(nnInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
           }
         }
       }

@@ -114,6 +114,28 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(1.2346d, resultV.vector[7]);
   }
 
+  static int DAYS_LIMIT = 365 * 9999;
+
+  public static VectorizedRowBatch getVectorizedRowBatchDateInTimestampOut(int[] intValues) {
+    Random r = new Random(12099);
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    LongColumnVector inV;
+    TimestampColumnVector outV;
+    inV = new LongColumnVector();
+    outV = new TimestampColumnVector();
+
+    for (int i = 0; i < intValues.length; i++) {
+      intValues[i] = r.nextInt() % DAYS_LIMIT;
+      inV.vector[i] = intValues[i];
+    }
+
+    batch.cols[0] = inV;
+    batch.cols[1] = outV;
+
+    batch.size = intValues.length;
+    return batch;
+  }
+
   public static VectorizedRowBatch getVectorizedRowBatchDoubleInLongOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector lcv;

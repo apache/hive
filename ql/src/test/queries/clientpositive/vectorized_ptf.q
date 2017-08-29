@@ -1,4 +1,6 @@
 SET hive.vectorized.execution.enabled=true;
+set hive.vectorized.execution.ptf.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
@@ -42,11 +44,11 @@ insert into table part_orc select * from part_staging;
 
 --1. test1
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -63,7 +65,7 @@ from noop(on part_orc
 
 -- 2. testJoinWithNoop
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
@@ -80,7 +82,7 @@ sort by j.p_name)
 
 -- 3. testOnlyPTF
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
@@ -93,11 +95,11 @@ order by p_name);
 
 -- 4. testPTFAlias
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -106,7 +108,7 @@ from noop(on part_orc
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -114,7 +116,7 @@ from noop(on part_orc
 
 -- 5. testPTFAndWhereWithWindowing
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -137,7 +139,7 @@ from noop(on part_orc
 
 -- 6. testSWQAndPTFAndGBy
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -162,7 +164,7 @@ group by p_mfgr, p_name, p_size
 
 -- 7. testJoin
 
-explain extended
+explain vectorization detail
 select abc.* 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -177,7 +179,7 @@ order by p_name
 
 -- 8. testJoinRight
 
-explain extended
+explain vectorization detail
 select abc.* 
 from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
@@ -192,7 +194,7 @@ order by p_name
 
 -- 9. testNoopWithMap
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part_orc
@@ -207,11 +209,11 @@ order by p_name, p_size desc);
 
 -- 10. testNoopWithMapWithWindowing 
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name);
@@ -219,18 +221,18 @@ from noopwithmap(on part_orc
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name);
   
 -- 11. testHavingWithWindowingPTFNoGBY
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
@@ -239,7 +241,7 @@ order by p_name)
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
@@ -247,11 +249,11 @@ order by p_name)
   
 -- 12. testFunctionChain
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
@@ -260,7 +262,7 @@ order by p_mfgr, p_name
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
@@ -268,13 +270,13 @@ order by p_mfgr, p_name
  
 -- 13. testPTFAndWindowingInSubQ
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
-sum(p_retailprice) over w1  as s1
+round(sum(p_retailprice) over w1,2) as s1
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -286,7 +288,7 @@ sub1.cd, sub1.s1
 from (select p_mfgr, p_name, 
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
-sum(p_retailprice) over w1  as s1
+round(sum(p_retailprice) over w1,2) as s1
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -295,12 +297,12 @@ window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2
 
 -- 14. testPTFJoinWithWindowingWithCount
 
-explain extended
+explain vectorization detail
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_retailprice, round(sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row),2) as s1,
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -312,7 +314,7 @@ select abc.p_mfgr, abc.p_name,
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_retailprice, round(sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row),2) as s1,
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -322,7 +324,7 @@ order by p_name
 
 -- 15. testDistinctInSelectWithPTF
 
-explain extended
+explain vectorization detail
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -337,20 +339,20 @@ order by p_name);
 -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
-sum(p_retailprice) as s 
+round(sum(p_retailprice),2) as s
 from part_orc 
 group by p_mfgr, p_brand;
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_brand, s, 
-sum(s) over w1  as s1
+round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
 
 select p_mfgr, p_brand, s, 
-sum(s) over w1  as s1
+round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
@@ -375,14 +377,14 @@ dr INT,
 cud DOUBLE, 
 fv1 INT);
 
-explain extended
+explain vectorization detail
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
@@ -397,7 +399,7 @@ order by p_name)
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
@@ -412,7 +414,7 @@ select * from part_5;
 
 -- 18. testMulti2OperatorsFunctionChainWithMap
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -447,7 +449,7 @@ from noop(on
 
 -- 19. testMulti3OperatorsFunctionChain
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -482,7 +484,7 @@ from noop(on
         
 -- 20. testMultiOperatorChainWithNoWindowing
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -514,7 +516,7 @@ from noop(on
 
 -- 21. testMultiOperatorChainEndsWithNoopMap
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -549,7 +551,7 @@ from noopwithmap(on
 
 -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -582,7 +584,7 @@ from noop(on
 
 -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
 
-explain extended
+explain vectorization detail
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 

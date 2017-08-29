@@ -416,4 +416,12 @@ public class TimestampColumnVector extends ColumnVector {
       }
     }
   }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    TimestampColumnVector other = (TimestampColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    other.time = time;
+    other.nanos = nanos;
+  }
 }

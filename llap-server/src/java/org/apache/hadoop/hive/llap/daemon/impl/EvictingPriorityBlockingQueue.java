@@ -19,6 +19,11 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+
 /**
  * Bounded priority queue that evicts the last element based on priority order specified
  * through comparator. Elements that are added to the queue are sorted based on the specified
@@ -27,22 +32,51 @@ import java.util.Comparator;
  * returned back. If the queue is not full, new element will be added to queue and null is returned.
  */
 public class EvictingPriorityBlockingQueue<E> {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(EvictingPriorityBlockingQueue.class);
+
   private final PriorityBlockingDeque<E> deque;
   private final Comparator<E> comparator;
+  private final int waitQueueSize;
+
+  private int currentSize = 0;
 
   public EvictingPriorityBlockingQueue(Comparator<E> comparator, int maxSize) {
-    this.deque = new PriorityBlockingDeque<>(comparator, maxSize);
+    this.deque = new PriorityBlockingDeque<>(comparator);
+    this.waitQueueSize = maxSize;
     this.comparator = comparator;
   }
 
-  public synchronized E offer(E e) {
-    if (deque.offer(e)) {
+  public synchronized void apply(Function<E, Boolean> fn) {
+    for (E item : deque) {
+      boolean isOk = fn.apply(item);
+      if (!isOk) return;
+    }
+  }
+
+  public synchronized void forceOffer(E e) {
+    offerToDequeueInternal(e);
+    currentSize++;
+  }
+
+  public synchronized E offer(E e, int additionalElementsAllowed) {
+    if (currentSize < waitQueueSize + additionalElementsAllowed) {
+      // Capacity exists.
+      offerToDequeueInternal(e);
+      currentSize++;
       return null;
     } else {
+      if (isEmpty()) {
+        // Empty queue. But no capacity available, due to waitQueueSize and additionalElementsAllowed
+        // Return the element.
+        return e;
+      }
+      // No capacity. Check if an element needs to be evicted.
       E last = deque.peekLast();
       if (comparator.compare(e, last) < 0) {
         deque.removeLast();
-        deque.offer(e);
+        offerToDequeueInternal(e);
         return last;
       }
       return e;
@@ -50,7 +84,7 @@ public class EvictingPriorityBlockingQueue<E> {
   }
 
   public synchronized boolean isEmpty() {
-    return deque.isEmpty();
+    return currentSize == 0;
   }
 
   public synchronized E peek() {
@@ -58,19 +92,40 @@ public class EvictingPriorityBlockingQueue<E> {
   }
 
   public synchronized E take() throws InterruptedException {
-    return deque.take();
+    E e = deque.take();
+    currentSize--; // Decrement only if an element was removed.
+    return e;
   }
 
   public synchronized boolean remove(E e) {
-    return deque.remove(e);
+    boolean removed = deque.remove(e);
+    if (removed) {
+      currentSize--;
+    }
+    return removed;
+  }
+
+  private void offerToDequeueInternal(E e) {
+    boolean result = deque.offer(e);
+    if (!result) {
+      LOG.error(
+          "Failed to insert element into queue with capacity available. size={}, element={}",
+          size(), e);
+      throw new RuntimeException(
+          "Failed to insert element into queue with capacity available. size=" +
+              size());
+    }
   }
 
   public synchronized int size() {
-    return deque.size();
+    return currentSize;
   }
 
   @Override
   public synchronized String toString() {
-    return deque.toString();
+    StringBuilder sb = new StringBuilder();
+    sb.append("currentSize=").append(size()).append(", queue=")
+        .append(deque.toString());
+    return sb.toString();
   }
 }

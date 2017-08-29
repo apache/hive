@@ -119,7 +119,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
 
     // Do the columns used by the join appear in the output of the aggregate?
-    RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = call.getMetadataQuery();
     final ImmutableBitSet aggregateColumns = aggregate.getGroupSet();
     final ImmutableBitSet keyColumns = keyColumns(aggregateColumns,
         mq.getPulledUpPredicates(join).pulledUpPredicates);

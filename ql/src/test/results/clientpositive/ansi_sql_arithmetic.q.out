@@ -1,8 +1,6 @@
-PREHOOK: query: -- With ansi sql arithmetic enabled, int / int => exact numeric type
-explain select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- With ansi sql arithmetic enabled, int / int => exact numeric type
-explain select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -45,11 +43,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1.00000000000
-PREHOOK: query: -- With ansi sql arithmetic disabled, int / int => double
-explain select cast(key as int) / cast(key as int) from src limit 1
+PREHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- With ansi sql arithmetic disabled, int / int => double
-explain select cast(key as int) / cast(key as int) from src limit 1
+POSTHOOK: query: explain select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

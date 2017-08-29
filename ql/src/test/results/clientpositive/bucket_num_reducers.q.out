@@ -1,14 +1,8 @@
-PREHOOK: query: -- This test sets number of mapred tasks to 10 for a database with 50 buckets, 
--- and uses a post-hook to confirm that 10 tasks were created
-
-CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS
+PREHOOK: query: CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_nr
-POSTHOOK: query: -- This test sets number of mapred tasks to 10 for a database with 50 buckets, 
--- and uses a post-hook to confirm that 10 tasks were created
-
-CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS
+POSTHOOK: query: CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_nr

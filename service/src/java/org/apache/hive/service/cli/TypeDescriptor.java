@@ -116,6 +116,8 @@ public class TypeDescriptor {
       return 10;
     case TIMESTAMP_TYPE:
       return 29;
+    case TIMESTAMPLOCALTZ_TYPE:
+      return 31;
     default:
       return null;
     }

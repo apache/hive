@@ -8,3 +8,6 @@ select x from (select * from (select value as x from src order by x limit 5)a un
 set hive.cbo.returnpath.hiveop=false;
 -- HIVE-4837
 select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a;
+
+-- HIVE-16050
+select null as c1 UNION ALL select 1 as c1;

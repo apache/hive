@@ -74,7 +74,7 @@ public class SyntheticJoinPredicate extends Transform {
         && pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
       enabled = true;
     } else if ((queryEngine.equals("spark")
-        && pctx.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING))) {
+        && pctx.getConf().isSparkDPPAny())) {
       enabled = true;
     }
 
@@ -133,8 +133,6 @@ public class SyntheticJoinPredicate extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-
-      ParseContext pCtx = ((SyntheticContext) procCtx).getParseContext();
 
       @SuppressWarnings("unchecked")
       CommonJoinOperator<JoinDesc> join = (CommonJoinOperator<JoinDesc>) nd;

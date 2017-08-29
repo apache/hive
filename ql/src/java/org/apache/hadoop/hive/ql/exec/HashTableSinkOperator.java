@@ -143,19 +143,19 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // process join keys
     joinKeys = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias, hconf);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
         inputObjInspectors, posBigTableAlias, tagLen);
 
     // process join values
     joinValues = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias, hconf);
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
         inputObjInspectors, posBigTableAlias, tagLen);
 
     // process join filters
     joinFilters = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias, hconf);
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
         inputObjInspectors, posBigTableAlias, tagLen);
 
@@ -275,9 +275,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   public void closeOp(boolean abort) throws HiveException {
     try {
       if (mapJoinTables == null) {
-        if (isLogDebugEnabled) {
-          LOG.debug("mapJoinTables is null");
-        }
+        LOG.debug("mapJoinTables is null");
       } else {
         flushToFile();
       }
@@ -292,9 +290,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void flushToFile() throws IOException, HiveException {
     // get tmp file URI
     Path tmpURI = getExecContext().getLocalWork().getTmpPath();
-    if (isLogInfoEnabled) {
-      LOG.info("Temp URI for side table: " + tmpURI);
-    }
+    LOG.info("Temp URI for side table: {}", tmpURI);
     for (byte tag = 0; tag < mapJoinTables.length; tag++) {
       // get the key and value
       MapJoinPersistableTableContainer tableContainer = mapJoinTables[tag];
@@ -311,7 +307,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
           " with group count: " + tableContainer.size() + " into file: " + path);
       // get the hashtable file and path
       FileSystem fs = path.getFileSystem(hconf);
-      ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
+      ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path)));
       try {
         mapJoinTableSerdes[tag].persist(out, tableContainer);
       } finally {

@@ -8,7 +8,7 @@ d double,
 bo boolean,
 s string,
 ts timestamp,
-dec decimal(4,2),
+`dec` decimal(4,2),
 bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;

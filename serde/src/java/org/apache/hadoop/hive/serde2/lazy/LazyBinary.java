@@ -27,8 +27,7 @@ import org.apache.hadoop.io.BytesWritable;
 public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWritable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LazyBinary.class);
-  private static final boolean DEBUG_LOG_ENABLED = LOG.isDebugEnabled();
-  
+
   public LazyBinary(LazyBinaryObjectInspector oi) {
     super(oi);
     data = new BytesWritable();
@@ -56,7 +55,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
   // todo this should be configured in serde
   public static byte[] decodeIfNeeded(byte[] recv) {
     boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
-    if (DEBUG_LOG_ENABLED && arrayByteBase64) {
+    if (LOG.isDebugEnabled() && arrayByteBase64) {
       LOG.debug("Data only contains Base64 alphabets only so try to decode the data.");
     }
     return arrayByteBase64 ? Base64.decodeBase64(recv) : recv;

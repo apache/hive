@@ -93,7 +93,9 @@ struct StageType {
     MOVE = 8,
     STATS = 9,
     DEPENDENCY_COLLECTION = 10,
-    COLUMNSTATS = 11
+    COLUMNSTATS = 11,
+    REPL_DUMP = 12,
+    REPL_BOOTSTRAP_LOAD = 13
   };
 };
 

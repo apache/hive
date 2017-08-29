@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public final class ColumnProjectionUtils {
   /**
    * the nested column path is the string from the root to the leaf
    * e.g.
-   * c:struct<a:string,b:string>
+   * c:struct&lt;a:string,b:string&gt;
    * the column a's path is c.a and b's path is c.b
    */
   public static final String READ_NESTED_COLUMN_PATH_CONF_STR =
@@ -56,7 +57,7 @@ public final class ColumnProjectionUtils {
   private static final Joiner CSV_JOINER = Joiner.on(",").skipNulls();
 
   /**
-   * @deprecated for backwards compatibility with <= 0.12, use setReadAllColumns
+   * @deprecated for backwards compatibility with &lt;= 0.12, use setReadAllColumns
    */
   @Deprecated
   public static void setFullyReadColumns(Configuration conf) {
@@ -64,7 +65,7 @@ public final class ColumnProjectionUtils {
   }
 
   /**
-   * @deprecated for backwards compatibility with <= 0.12, use setReadAllColumns
+   * @deprecated for backwards compatibility with &lt;= 0.12, use setReadAllColumns
    * and appendReadColumns
    */
   @Deprecated
@@ -75,7 +76,7 @@ public final class ColumnProjectionUtils {
   }
 
   /**
-   * @deprecated for backwards compatibility with <= 0.12, use appendReadColumns
+   * @deprecated for backwards compatibility with &lt;= 0.12, use appendReadColumns
    */
   @Deprecated
   public static void appendReadColumnIDs(Configuration conf, List<Integer> ids) {
@@ -115,10 +116,7 @@ public final class ColumnProjectionUtils {
   public static void appendReadColumns(Configuration conf, List<Integer> ids) {
     String id = toReadColumnIDString(ids);
     String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
-    String newConfStr = id;
-    if (old != null && !old.isEmpty()) {
-      newConfStr = newConfStr + StringUtils.COMMA_STR + old;
-    }
+    String newConfStr = HiveStringUtils.joinIgnoringEmpty(new String[] {id, old}, StringUtils.COMMA);
     setReadColumnIDConf(conf, newConfStr);
     // Set READ_ALL_COLUMNS to false
     conf.setBoolean(READ_ALL_COLUMNS, false);

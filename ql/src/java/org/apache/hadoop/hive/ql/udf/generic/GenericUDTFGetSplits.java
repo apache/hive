@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
@@ -46,7 +47,6 @@ import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
-import org.apache.hadoop.hive.llap.TypeDesc;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -82,12 +82,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SplitLocationInfo;
@@ -96,6 +91,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.InputInitializerDescriptor;
@@ -305,6 +302,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
       LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+
+      LlapCoordinator coordinator = LlapCoordinator.getInstance();
+      if (coordinator == null) {
+        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
+            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
+      }
+
+      // Update the queryId to use the generated applicationId. See comment below about
+      // why this is done.
+      ApplicationId applicationId = coordinator.createExtClientAppId();
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, appJarLr,
           new ArrayList<LocalResource>(), fs, ctx, false, work,
           work.getVertexType(mapWork));
@@ -318,6 +326,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
               ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+
+
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
@@ -333,15 +343,6 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       if (LOG.isDebugEnabled()) {
         LOG.debug("NumEvents=" + eventList.size() + ", NumSplits=" + result.length);
       }
-
-      LlapCoordinator coordinator = LlapCoordinator.getInstance();
-      if (coordinator == null) {
-        throw new IOException("LLAP coordinator is not initialized; must be running in HS2 with "
-            + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
-      }
-
-      // See the discussion in the implementation as to why we generate app ID.
-      ApplicationId applicationId = coordinator.createExtClientAppId();
 
       // This assumes LLAP cluster owner is always the HS2 user.
       String llapUser = UserGroupInformation.getLoginUser().getShortUserName();
@@ -370,6 +371,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         queryUser = UserGroupInformation.getCurrentUser().getUserName();
       }
 
+      // Generate umbilical token (applies to all splits)
+      Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(applicationId);
+
       LOG.info("Number of splits: " + (eventList.size() - 1));
       SignedMessage signedSvs = null;
       for (int i = 0; i < eventList.size() - 1; i++) {
@@ -390,7 +394,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
             System.currentTimeMillis(), taskSpec.getVertexParallelism(), signedSvs.message,
-            signedSvs.signature);
+            signedSvs.signature, umbilicalToken);
         byte[] submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
 
         // 3. Generate input event.
@@ -405,6 +409,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       return result;
     } catch (Exception e) {
       throw new IOException(e);
+    }
+  }
+
+  private static class JobTokenCreator {
+    private static Token<JobTokenIdentifier> createJobToken(ApplicationId applicationId) {
+      String tokenIdentifier = applicationId.toString();
+      JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(
+          tokenIdentifier));
+      Token<JobTokenIdentifier> sessionToken = new Token<JobTokenIdentifier>(identifier,
+          new JobTokenSecretManager());
+      sessionToken.setService(identifier.getJobId());
+      return sessionToken;
     }
   }
 
@@ -446,6 +462,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
             .setDagIndex(taskSpec.getDagIdentifier()).setAppAttemptNumber(0).build();
     final SignableVertexSpec.Builder svsb = Converters.constructSignableVertexSpec(
         taskSpec, queryIdentifierProto, applicationId.toString(), queryUser, queryIdString);
+    svsb.setIsExternalSubmission(true);
     if (signer == null) {
       SignedMessage result = new SignedMessage();
       result.message = serializeVertexSpec(svsb);
@@ -526,76 +543,13 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     }
   }
 
-  private TypeDesc convertTypeString(String typeString) throws HiveException {
-    TypeDesc typeDesc;
-    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
-    Preconditions.checkState(
-        typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE,
-        "Unsupported non-primitive type " + typeString);
-
-    switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
-    case BOOLEAN:
-      typeDesc = new TypeDesc(TypeDesc.Type.BOOLEAN);
-      break;
-    case BYTE:
-      typeDesc = new TypeDesc(TypeDesc.Type.TINYINT);
-      break;
-    case SHORT:
-      typeDesc = new TypeDesc(TypeDesc.Type.SMALLINT);
-      break;
-    case INT:
-      typeDesc = new TypeDesc(TypeDesc.Type.INT);
-      break;
-    case LONG:
-      typeDesc = new TypeDesc(TypeDesc.Type.BIGINT);
-      break;
-    case FLOAT:
-      typeDesc = new TypeDesc(TypeDesc.Type.FLOAT);
-      break;
-    case DOUBLE:
-      typeDesc = new TypeDesc(TypeDesc.Type.DOUBLE);
-      break;
-    case STRING:
-      typeDesc = new TypeDesc(TypeDesc.Type.STRING);
-      break;
-    case CHAR:
-      CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
-      typeDesc = new TypeDesc(TypeDesc.Type.CHAR, charTypeInfo.getLength());
-      break;
-    case VARCHAR:
-      VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
-      typeDesc = new TypeDesc(TypeDesc.Type.VARCHAR,
-          varcharTypeInfo.getLength());
-      break;
-    case DATE:
-      typeDesc = new TypeDesc(TypeDesc.Type.DATE);
-      break;
-    case TIMESTAMP:
-      typeDesc = new TypeDesc(TypeDesc.Type.TIMESTAMP);
-      break;
-    case BINARY:
-      typeDesc = new TypeDesc(TypeDesc.Type.BINARY);
-      break;
-    case DECIMAL:
-      DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
-      typeDesc = new TypeDesc(TypeDesc.Type.DECIMAL,
-          decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
-      break;
-    default:
-      throw new HiveException("Unsupported type " + typeString);
-    }
-
-    return typeDesc;
-  }
-
   private Schema convertSchema(Object obj) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Schema schema = (org.apache.hadoop.hive.metastore.api.Schema) obj;
     List<FieldDesc> colDescs = new ArrayList<FieldDesc>();
     for (FieldSchema fs : schema.getFieldSchemas()) {
       String colName = fs.getName();
       String typeString = fs.getType();
-      TypeDesc typeDesc = convertTypeString(typeString);
-      colDescs.add(new FieldDesc(colName, typeDesc));
+      colDescs.add(new FieldDesc(colName, TypeInfoUtils.getTypeInfoFromTypeString(typeString)));
     }
     Schema Schema = new Schema(colDescs);
     return Schema;

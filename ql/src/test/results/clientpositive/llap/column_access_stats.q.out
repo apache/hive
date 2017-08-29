@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- This test is used for testing the ColumnAccessAnalyzer
-
-CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
@@ -21,8 +18,7 @@ PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T4
-PREHOOK: query: -- Simple select queries
-SELECT key FROM T1
+PREHOOK: query: SELECT key FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -79,8 +75,7 @@ PREHOOK: Input: default@t4
 Table:default@t4
 Columns:p,val
 
-PREHOOK: query: -- More complicated select queries
-EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1
+PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -166,8 +161,7 @@ Columns:key,val
 24.0
 26.0
 36.0
-PREHOOK: query: -- Work with union
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
@@ -343,8 +337,7 @@ Columns:key
 8
 8
 8
-PREHOOK: query: -- Work with insert overwrite
-FROM T1
+PREHOOK: query: FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key
 PREHOOK: type: QUERY
@@ -354,8 +347,7 @@ PREHOOK: Output: default@t3
 Table:default@t1
 Columns:key,val
 
-PREHOOK: query: -- Simple joins
-SELECT *
+PREHOOK: query: SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key
 PREHOOK: type: QUERY
@@ -486,8 +478,7 @@ Columns:key,val
 Table:default@t2
 Columns:key,val
 
-PREHOOK: query: -- Map join
-SELECT /*+ MAPJOIN(a) */ * 
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * 
 FROM T1 a JOIN T2 b 
 ON a.key = b.key
 PREHOOK: type: QUERY
@@ -506,8 +497,7 @@ Columns:key,val
 7	17	7	1
 8	18	8	2
 8	28	8	2
-PREHOOK: query: -- More joins
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
@@ -709,8 +699,7 @@ Columns:key,val
 Table:default@t2
 Columns:key,val
 
-PREHOOK: query: -- Join followed by join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM
 (
@@ -876,8 +865,7 @@ Columns:key,val
 7	7	17.0
 8	8	46.0
 8	8	46.0
-PREHOOK: query: -- for partitioned table
-SELECT * FROM srcpart TABLESAMPLE (10 ROWS)
+PREHOOK: query: SELECT * FROM srcpart TABLESAMPLE (10 ROWS)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11

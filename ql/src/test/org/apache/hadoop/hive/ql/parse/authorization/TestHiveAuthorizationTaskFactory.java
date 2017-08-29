@@ -99,7 +99,7 @@ public class TestHiveAuthorizationTaskFactory {
 
   @Before
   public void setup() throws Exception {
-    queryState = new QueryState(null);
+    queryState = new QueryState.Builder().build();
     HiveConf conf = queryState.getConf();
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_TASK_FACTORY,
         TestHiveAuthorizationTaskFactory.DummyHiveAuthorizationTaskFactoryImpl.class.getName());

@@ -22,15 +22,21 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
+import com.google.common.collect.ImmutableList;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +70,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     private final String name;
     private AlterTableTypes(String name) { this.name = name; }
     public String getName() { return name; }
+
+    public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
+        ImmutableList.of(ADDPROPS, DROPPROPS); 
   }
 
   public static enum ProtectModeType {
@@ -121,6 +130,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   String dropConstraintName;
   List<SQLPrimaryKey> primaryKeyCols;
   List<SQLForeignKey> foreignKeyCols;
+  List<SQLUniqueConstraint> uniqueConstraintCols;
+  List<SQLNotNullConstraint> notNullConstraintCols;
+  ReplicationSpec replicationSpec;
 
   public AlterTableDesc() {
   }
@@ -151,17 +163,44 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.isCascade = isCascade;
   }
 
+  public AlterTableDesc(String tblName, HashMap<String, String> partSpec,
+      String oldColName, String newColName, String newType, String newComment,
+      boolean first, String afterCol, boolean isCascade, List<SQLPrimaryKey> primaryKeyCols,
+      List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
+      List<SQLNotNullConstraint> notNullConstraintCols) {
+    super();
+    oldName = tblName;
+    this.partSpec = partSpec;
+    this.oldColName = oldColName;
+    this.newColName = newColName;
+    newColType = newType;
+    newColComment = newComment;
+    this.first = first;
+    this.afterCol = afterCol;
+    op = AlterTableTypes.RENAMECOLUMN;
+    this.isCascade = isCascade;
+    this.primaryKeyCols = primaryKeyCols;
+    this.foreignKeyCols = foreignKeyCols;
+    this.uniqueConstraintCols = uniqueConstraintCols;
+    this.notNullConstraintCols = notNullConstraintCols;
+  }
+
   /**
    * @param oldName
    *          old name of the table
    * @param newName
    *          new name of the table
+   * @param expectView
+   *          Flag to denote if current table can be a view
+   * @param replicationSpec
+   *          Replication specification with current event ID
    */
-  public AlterTableDesc(String oldName, String newName, boolean expectView) {
+  public AlterTableDesc(String oldName, String newName, boolean expectView, ReplicationSpec replicationSpec) {
     op = AlterTableTypes.RENAME;
     this.oldName = oldName;
     this.newName = newName;
     this.expectView = expectView;
+    this.replicationSpec = replicationSpec;
   }
 
   /**
@@ -182,6 +221,17 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @param alterType
    *          type of alter op
+   * @param replicationSpec
+   *          Replication specification with current event ID
+   */
+  public AlterTableDesc(AlterTableTypes alterType, ReplicationSpec replicationSpec) {
+    op = alterType;
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @param alterType
+   *          type of alter op
    */
   public AlterTableDesc(AlterTableTypes alterType) {
     this(alterType, null, false);
@@ -190,6 +240,10 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   /**
    * @param alterType
    *          type of alter op
+   * @param expectView
+   *          Flag to denote if current table can be a view
+   * @param partSpec
+   *          Partition specifier with map of key and values.
    */
   public AlterTableDesc(AlterTableTypes alterType, HashMap<String, String> partSpec, boolean expectView) {
     op = alterType;
@@ -268,16 +322,33 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.numberBuckets = numBuckets;
   }
 
-  public AlterTableDesc(String tableName, String dropConstraintName) {
+  public AlterTableDesc(String tableName, String dropConstraintName, ReplicationSpec replicationSpec) {
     this.oldName = tableName;
     this.dropConstraintName = dropConstraintName;
+    this.replicationSpec = replicationSpec;
     op = AlterTableTypes.DROPCONSTRAINT;
   }
 
-  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols, List<SQLForeignKey> foreignKeyCols) {
+  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
+          List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
+          ReplicationSpec replicationSpec) {
     this.oldName = tableName;
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
+    this.uniqueConstraintCols = uniqueConstraintCols;
+    this.replicationSpec = replicationSpec;
+    op = AlterTableTypes.ADDCONSTRAINT;
+  }
+
+  public AlterTableDesc(String tableName, List<SQLPrimaryKey> primaryKeyCols,
+      List<SQLForeignKey> foreignKeyCols, List<SQLUniqueConstraint> uniqueConstraintCols,
+      List<SQLNotNullConstraint> notNullConstraintCols, ReplicationSpec replicationSpec) {
+    this.oldName = tableName;
+    this.primaryKeyCols = primaryKeyCols;
+    this.foreignKeyCols = foreignKeyCols;
+    this.uniqueConstraintCols = uniqueConstraintCols;
+    this.notNullConstraintCols = notNullConstraintCols;
+    this.replicationSpec = replicationSpec;
     op = AlterTableTypes.ADDCONSTRAINT;
   }
 
@@ -453,6 +524,20 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public List<SQLForeignKey> getForeignKeyCols() {
     return foreignKeyCols;
+  }
+
+  /**
+   * @return the unique constraint cols
+   */
+  public List<SQLUniqueConstraint> getUniqueConstraintCols() {
+    return uniqueConstraintCols;
+  }
+
+  /**
+   * @return the not null constraint cols
+   */
+  public List<SQLNotNullConstraint> getNotNullConstraintCols() {
+    return notNullConstraintCols;
   }
 
   /**
@@ -810,4 +895,9 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.environmentContext = environmentContext;
   }
 
+  /**
+   * @return what kind of replication scope this alter is running under.
+   * This can result in a "ALTER IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec(){ return this.replicationSpec; }
 }

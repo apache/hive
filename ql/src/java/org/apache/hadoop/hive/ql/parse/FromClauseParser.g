@@ -110,9 +110,8 @@ atomjoinSource
 
 joinSource
     :
-    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}?)?)*
+    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}? | KW_USING! columnParenthesesList {$joinToken.start.getType() != COMMA}?)?)*
     ;
-
 
 joinSourcePart
 @init { gParent.pushMsg("joinSourcePart", state); }
@@ -295,7 +294,7 @@ valueRowConstructor
 @init { gParent.pushMsg("value row constructor", state); }
 @after { gParent.popMsg(state); }
     :
-    LPAREN precedenceUnaryPrefixExpression (COMMA precedenceUnaryPrefixExpression)* RPAREN -> ^(TOK_VALUE_ROW precedenceUnaryPrefixExpression+)
+    expressionsInParenthesis[false] -> ^(TOK_VALUE_ROW expressionsInParenthesis)
     ;
 
 valuesTableConstructor
@@ -314,7 +313,7 @@ valuesClause
 @init { gParent.pushMsg("values clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_VALUES valuesTableConstructor -> valuesTableConstructor
+    KW_VALUES! valuesTableConstructor
     ;
 
 /*

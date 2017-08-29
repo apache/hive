@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Arrays;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,6 +84,7 @@ public class QBJoinTree implements Serializable, Cloneable {
    * We then add a Filter Operator after the Join Operator for this QBJoinTree.
    */
   private final List<ASTNode> postJoinFilters;
+  private Map<String, SemiJoinHint> semiJoinHint;
 
   /**
    * constructor.
@@ -428,5 +431,18 @@ public class QBJoinTree implements Serializable, Cloneable {
     }
 
     return cloned;
+  }
+
+  public void setSemiJoinHint(Map<String, SemiJoinHint> semiJoinHint) {
+    this.semiJoinHint = semiJoinHint;
+  }
+
+  public Map<String, SemiJoinHint> getSemiJoinHint() {
+    return semiJoinHint;
+  }
+
+  @Override
+  public String toString() {
+    return "QBJoinTree [leftAlias=" + leftAlias + ", rightAliases=" + Arrays.toString(rightAliases) + ", leftAliases=" + Arrays.toString(leftAliases) + ", semiJoinHint=" + semiJoinHint + "]";
   }
 }

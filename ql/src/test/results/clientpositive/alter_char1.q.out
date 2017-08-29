@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create database ac
+PREHOOK: query: create database ac
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:ac
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create database ac
+POSTHOOK: query: create database ac
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:ac
 PREHOOK: query: create table ac.alter_char_1 (key string, value string)
@@ -41,23 +37,19 @@ POSTHOOK: Input: ac@alter_char_1
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: -- change column to char
-alter table ac.alter_char_1 change column value value char(20)
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: ac@alter_char_1
 PREHOOK: Output: ac@alter_char_1
-POSTHOOK: query: -- change column to char
-alter table ac.alter_char_1 change column value value char(20)
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(20)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: ac@alter_char_1
 POSTHOOK: Output: ac@alter_char_1
-PREHOOK: query: -- contents should still look the same
-select * from ac.alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
 PREHOOK: type: QUERY
 PREHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- contents should still look the same
-select * from ac.alter_char_1
+POSTHOOK: query: select * from ac.alter_char_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
@@ -66,23 +58,19 @@ POSTHOOK: Input: ac@alter_char_1
 0	val_0               
 10	val_10              
 100	val_100             
-PREHOOK: query: -- change column to smaller char
-alter table ac.alter_char_1 change column value value char(3)
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(3)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: ac@alter_char_1
 PREHOOK: Output: ac@alter_char_1
-POSTHOOK: query: -- change column to smaller char
-alter table ac.alter_char_1 change column value value char(3)
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(3)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: ac@alter_char_1
 POSTHOOK: Output: ac@alter_char_1
-PREHOOK: query: -- value column should be truncated now
-select * from ac.alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
 PREHOOK: type: QUERY
 PREHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- value column should be truncated now
-select * from ac.alter_char_1
+POSTHOOK: query: select * from ac.alter_char_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
@@ -91,23 +79,19 @@ POSTHOOK: Input: ac@alter_char_1
 0	val
 10	val
 100	val
-PREHOOK: query: -- change back to bigger char
-alter table ac.alter_char_1 change column value value char(20)
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: ac@alter_char_1
 PREHOOK: Output: ac@alter_char_1
-POSTHOOK: query: -- change back to bigger char
-alter table ac.alter_char_1 change column value value char(20)
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(20)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: ac@alter_char_1
 POSTHOOK: Output: ac@alter_char_1
-PREHOOK: query: -- column values should be full size again
-select * from ac.alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
 PREHOOK: type: QUERY
 PREHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- column values should be full size again
-select * from ac.alter_char_1
+POSTHOOK: query: select * from ac.alter_char_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ac@alter_char_1
 #### A masked pattern was here ####
@@ -116,13 +100,11 @@ POSTHOOK: Input: ac@alter_char_1
 0	val_0               
 10	val_10              
 100	val_100             
-PREHOOK: query: -- add char column
-alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
+PREHOOK: query: alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: ac@alter_char_1
 PREHOOK: Output: ac@alter_char_1
-POSTHOOK: query: -- add char column
-alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
+POSTHOOK: query: alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: ac@alter_char_1
 POSTHOOK: Output: ac@alter_char_1

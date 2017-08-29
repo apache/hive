@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -88,9 +87,6 @@ public class HCatBaseTest {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
-    }
   }
 
   protected void logAndRegister(PigServer server, String query) throws IOException {

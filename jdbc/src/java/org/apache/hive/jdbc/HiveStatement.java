@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -114,6 +115,8 @@ public class HiveStatement implements java.sql.Statement {
 
   private int queryTimeout = 0;
 
+  private InPlaceUpdateStream inPlaceUpdateStream = InPlaceUpdateStream.NO_OP;
+
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
     this(connection, client, sessHandle, false, DEFAULT_FETCH_SIZE);
@@ -146,7 +149,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void addBatch(String sql) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -184,7 +187,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void clearBatch() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -198,18 +201,27 @@ public class HiveStatement implements java.sql.Statement {
     warningChain = null;
   }
 
-  void closeClientOperation() throws SQLException {
+  /**
+   * Closes the statement if there is one running. Do not change the the flags.
+   * @throws SQLException If there is an error closing the statement
+   */
+  private void closeStatementIfNeeded() throws SQLException {
     try {
       if (stmtHandle != null) {
         TCloseOperationReq closeReq = new TCloseOperationReq(stmtHandle);
         TCloseOperationResp closeResp = client.CloseOperation(closeReq);
         Utils.verifySuccessWithInfo(closeResp.getStatus());
+        stmtHandle = null;
       }
     } catch (SQLException e) {
       throw e;
     } catch (Exception e) {
       throw new SQLException(e.toString(), "08S01", e);
     }
+  }
+
+  void closeClientOperation() throws SQLException {
+    closeStatementIfNeeded();
     isQueryClosed = true;
     isExecuteStatementFailed = false;
     stmtHandle = null;
@@ -236,7 +248,7 @@ public class HiveStatement implements java.sql.Statement {
 
   // JDK 1.7
   public void closeOnCompletion() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -292,8 +304,7 @@ public class HiveStatement implements java.sql.Statement {
   private void runAsyncOnServer(String sql) throws SQLException {
     checkConnection("execute");
 
-    closeClientOperation();
-    initFlags();
+    reInitState();
 
     TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
     /**
@@ -312,9 +323,11 @@ public class HiveStatement implements java.sql.Statement {
       isExecuteStatementFailed = false;
     } catch (SQLException eS) {
       isExecuteStatementFailed = true;
+      isLogBeingGenerated = false;
       throw eS;
     } catch (Exception ex) {
       isExecuteStatementFailed = true;
+      isLogBeingGenerated = false;
       throw new SQLException(ex.toString(), "08S01", ex);
     }
   }
@@ -342,6 +355,14 @@ public class HiveStatement implements java.sql.Statement {
 
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
+    boolean shouldGetProgressUpdate = inPlaceUpdateStream != InPlaceUpdateStream.NO_OP;
+    statusReq.setGetProgressUpdate(shouldGetProgressUpdate);
+    if (!shouldGetProgressUpdate) {
+      /**
+       * progress bar is completed if there is nothing we want to request in the first place.
+       */
+      inPlaceUpdateStream.getEventNotifier().progressBarCompleted();
+    }
     TGetOperationStatusResp statusResp = null;
 
     // Poll on the operation status, till the operation is complete
@@ -352,6 +373,7 @@ public class HiveStatement implements java.sql.Statement {
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
+        inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
@@ -386,6 +408,10 @@ public class HiveStatement implements java.sql.Statement {
       }
     }
 
+    /*
+      we set progress bar to be completed when hive query execution has completed
+    */
+    inPlaceUpdateStream.getEventNotifier().progressBarCompleted();
     return statusResp;
   }
 
@@ -395,7 +421,12 @@ public class HiveStatement implements java.sql.Statement {
     }
   }
 
-  private void initFlags() {
+  /**
+   * Close statement if needed, and reset the flags.
+   * @throws SQLException
+   */
+  private void reInitState() throws SQLException {
+    closeStatementIfNeeded();
     isCancelled = false;
     isQueryClosed = false;
     isLogBeingGenerated = true;
@@ -411,7 +442,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -422,7 +453,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -433,7 +464,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public boolean execute(String sql, String[] columnNames) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -444,7 +475,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int[] executeBatch() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -481,7 +512,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -492,7 +523,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -503,7 +534,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -561,7 +592,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getMaxFieldSize() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -630,7 +661,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getResultSetConcurrency() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -641,7 +672,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public int getResultSetHoldability() throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -732,7 +763,7 @@ public class HiveStatement implements java.sql.Statement {
   @Override
   public void setEscapeProcessing(boolean enable) throws SQLException {
     if (enable) {
-      throw new SQLException("Method not supported");
+      throw new SQLFeatureNotSupportedException("Method not supported");
     }
   }
 
@@ -779,7 +810,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setMaxFieldSize(int max) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -805,7 +836,7 @@ public class HiveStatement implements java.sql.Statement {
 
   @Override
   public void setPoolable(boolean poolable) throws SQLException {
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -898,10 +929,6 @@ public class HiveStatement implements java.sql.Statement {
         if (isQueryClosed) {
           throw new ClosedOrCancelledStatementException("Method getQueryLog() failed. The " +
               "statement has been closed or cancelled.");
-        }
-        if (isExecuteStatementFailed) {
-          throw new SQLException("Method getQueryLog() failed. Because the stmtHandle in " +
-              "HiveStatement is null and the statement execution might fail.");
         } else {
           return logs;
         }
@@ -950,5 +977,13 @@ public class HiveStatement implements java.sql.Statement {
       return guid64;
     }
     return null;
+  }
+
+  /**
+   * This is only used by the beeline client to set the stream on which in place progress updates
+   * are to be shown
+   */
+  public void setInPlaceUpdateStream(InPlaceUpdateStream stream) {
+    this.inPlaceUpdateStream = stream;
   }
 }

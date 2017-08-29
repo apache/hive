@@ -47,6 +47,7 @@ public class TestHiveCli {
   private final static String SOURCE_CONTEXT3 =
       "create table if not exists test.testSrcTbl3(sc3 string);";
   private final static String SOURCE_CONTEXT4 = "show tables;!ls;show tables;\nquit;";
+  private final static String SOURCE_CONTEXT5 = "-- test;\n;show tables;\nquit;";
   final static String CMD =
       "create database if not exists test;\ncreate table if not exists test.testTbl(a string, b "
           + "string);\n";
@@ -112,7 +113,7 @@ public class TestHiveCli {
 
   @Test
   public void testSetPromptValue() {
-    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", os, null,
+    verifyCMD("set hive.cli.prompt=MYCLI;SHOW\nTABLES;", "MYCLI> ", errS, null,
         ERRNO_OK, true);
   }
 
@@ -165,6 +166,14 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSourceCmd4() {
+    File f = generateTmpFile(SOURCE_CONTEXT5);
+    verifyCMD("source " + f.getPath() + ";", "testtbl", os,
+      new String[] { "--database", "test" }, ERRNO_OK, true);
+    f.delete();
+  }
+
+  @Test
   public void testSqlFromCmd() {
     verifyCMD(null, "", os, new String[] { "-e", "show databases;" }, ERRNO_OK, true);
   }
@@ -213,21 +222,21 @@ public class TestHiveCli {
   public void testUseCurrentDB1() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OTHER, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB2() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use\ntestDB;\nuse default;drop if exists testDB;",
-        "hive (testDB)>", os, null, ERRNO_OTHER, true);
+        "hive (testDB)>", errS, null, ERRNO_OTHER, true);
   }
 
   @Test
   public void testUseCurrentDB3() {
     verifyCMD(
         "create database if not exists testDB; set hive.cli.print.current.db=true;use  testDB;\n"
-            + "use default;drop if exists testDB;", "hive (testDB)>", os, null, ERRNO_OTHER, true);
+            + "use default;drop if exists testDB;", "hive (testDB)>", errS, null, ERRNO_OTHER, true);
   }
 
   @Test

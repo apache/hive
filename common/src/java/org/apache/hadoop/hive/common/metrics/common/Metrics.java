@@ -103,4 +103,10 @@ public interface Metrics {
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                            MetricsVariable<Integer> denominator);
 
+  /**
+   * Mark an event occurance for a meter. Meters measure the rate of an event and track
+   * 1/5/15 minute moving averages
+   * @param name name of the meter
+   */
+  public void markMeter(String name);
 }

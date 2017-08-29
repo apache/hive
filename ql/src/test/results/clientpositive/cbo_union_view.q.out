@@ -50,6 +50,8 @@ POSTHOOK: Input: default@src_union_2
 POSTHOOK: Input: default@src_union_3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_union_view
+POSTHOOK: Lineage: src_union_view.key EXPRESSION [(src_union_1)src_union_1.FieldSchema(name:key, type:int, comment:null), (src_union_2)src_union_2.FieldSchema(name:key, type:int, comment:null), (src_union_3)src_union_3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: src_union_view.value EXPRESSION [(src_union_1)src_union_1.FieldSchema(name:value, type:string, comment:null), (src_union_2)src_union_2.FieldSchema(name:value, type:string, comment:null), (src_union_3)src_union_3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key, value, ds FROM src_union_view WHERE key=86

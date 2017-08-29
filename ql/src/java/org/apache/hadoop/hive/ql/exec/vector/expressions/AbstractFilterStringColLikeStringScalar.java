@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -296,16 +296,10 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
    * Matches the middle of each string to its pattern.
    */
   protected static final class MiddleChecker implements Checker {
-    final byte[] byteSub;
-    final int lenSub;
+    final StringExpr.Finder finder;
 
     MiddleChecker(String pattern) {
-      try {
-        byteSub = pattern.getBytes("UTF-8");
-        lenSub = byteSub.length;
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
-      }
+      finder = StringExpr.compile(pattern.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean check(byte[] byteS, int start, int len) {
@@ -316,16 +310,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
      * Returns absolute offset of the match
      */
     public int index(byte[] byteS, int start, int len) {
-      if (len < lenSub) {
-        return -1;
-      }
-      int end = start + len - lenSub + 1;
-      for (int i = start; i < end; i++) {
-        if (StringExpr.equal(byteSub, 0, lenSub, byteS, i, lenSub)) {
-          return i;
-        }
-      }
-      return -1;
+      return finder.find(byteS, start, len);
     }
   }
 
@@ -469,7 +454,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     CharBuffer charBuffer;
 
     public FastUTF8Decoder() {
-      decoder = Charset.forName("UTF-8").newDecoder()
+      decoder = StandardCharsets.UTF_8.newDecoder()
           .onMalformedInput(CodingErrorAction.REPLACE)
           .onUnmappableCharacter(CodingErrorAction.REPLACE);
       byteBuffer = ByteBuffer.allocate(4);
@@ -515,6 +500,11 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
 
   public void setPattern(String pattern) {
     this.pattern = pattern;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", pattern " + pattern;
   }
 
   @Override

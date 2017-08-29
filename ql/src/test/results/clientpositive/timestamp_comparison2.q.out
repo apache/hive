@@ -1,5 +1,4 @@
-PREHOOK: query: -- Test timestamp-to-numeric comparison
-select count(*) 
+PREHOOK: query: select count(*) 
 FROM   alltypesorc
 WHERE  
 ((ctinyint != 0)
@@ -11,8 +10,7 @@ WHERE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test timestamp-to-numeric comparison
-select count(*) 
+POSTHOOK: query: select count(*) 
 FROM   alltypesorc
 WHERE  
 ((ctinyint != 0)
@@ -25,8 +23,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 1826
-PREHOOK: query: -- Should have same result as previous query
-select count(*)
+PREHOOK: query: select count(*)
 FROM   alltypesorc
 WHERE  
 ((ctinyint != 0)
@@ -38,8 +35,7 @@ WHERE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should have same result as previous query
-select count(*)
+POSTHOOK: query: select count(*)
 FROM   alltypesorc
 WHERE  
 ((ctinyint != 0)

@@ -19,18 +19,21 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AbstractAggregationBuffer;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationType;
+import org.apache.hadoop.hive.ql.udf.ptf.BasePartitionEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -219,6 +222,19 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
 
       };
     }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI) {
+      try {
+        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
+      } catch(HiveException e) {
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
+      }
+    }
   }
 
   public static class GenericUDAFAverageEvaluatorDecimal extends AbstractGenericUDAFAverageEvaluator<HiveDecimal> {
@@ -243,16 +259,18 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     }
 
     private DecimalTypeInfo deriveResultDecimalTypeInfo() {
-      int prec = inputOI.precision();
-      int scale = inputOI.scale();
+      return deriveResultDecimalTypeInfo(inputOI.precision(), inputOI.scale(), mode);
+    }
+
+    public static DecimalTypeInfo deriveResultDecimalTypeInfo(int precision, int scale, Mode mode) {
       if (mode == Mode.FINAL || mode == Mode.COMPLETE) {
-        int intPart = prec - scale;
+        int intPart = precision - scale;
         // The avg() result type has the same number of integer digits and 4 more decimal digits.
         scale = Math.min(scale + 4, HiveDecimal.MAX_SCALE - intPart);
         return TypeInfoFactory.getDecimalTypeInfo(intPart + scale, scale);
       } else {
         // For intermediate sum field
-        return GenericUDAFAverage.deriveSumFieldTypeInfo(prec, scale);
+        return GenericUDAFAverage.deriveSumFieldTypeInfo(precision, scale);
       }
     }
 
@@ -358,6 +376,19 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
 
       };
     }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI) {
+      try {
+        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
+      } catch(HiveException e) {
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
+      }
+    }
   }
 
   @AggregationType(estimable = true)
@@ -409,6 +440,8 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
 
       // init input
+      partialResult = new Object[2];
+      partialResult[0] = new LongWritable(0);
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
         copiedOI = (PrimitiveObjectInspector)ObjectInspectorUtils.getStandardObjectInspector(inputOI,
@@ -436,8 +469,6 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         fname.add("count");
         fname.add("sum");
         fname.add("input");
-        partialResult = new Object[2];
-        partialResult[0] = new LongWritable(0);
         // index 1 set by child
         return ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
       } else {
@@ -445,7 +476,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       }
     }
 
-    protected boolean isWindowingDistinct() {
+    public boolean isWindowingDistinct() {
       return isWindowing && avgDistinct;
     }
 

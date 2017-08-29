@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 
 public interface ContainerRunner {
 
@@ -36,5 +38,8 @@ public interface ContainerRunner {
       QueryCompleteRequestProto request) throws IOException;
 
   TerminateFragmentResponseProto terminateFragment(
-      TerminateFragmentRequestProto request)  throws IOException;
+      TerminateFragmentRequestProto request) throws IOException;
+
+  UpdateFragmentResponseProto updateFragment(
+      UpdateFragmentRequestProto request) throws IOException;
 }

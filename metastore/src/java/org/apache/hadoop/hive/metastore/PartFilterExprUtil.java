@@ -62,7 +62,7 @@ public class PartFilterExprUtil {
 
   /**
    * Creates the proxy used to evaluate expressions. This is here to prevent circular
-   * dependency - ql -&gt; metastore client &lt;-&gt metastore server -&gt ql. If server and
+   * dependency - ql -&gt; metastore client &lt;-&gt; metastore server -&gt; ql. If server and
    * client are split, this can be removed.
    * @param conf Configuration.
    * @return The partition expression proxy.

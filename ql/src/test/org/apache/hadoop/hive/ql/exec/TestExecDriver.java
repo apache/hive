@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -63,7 +62,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.util.Shell;
 
 /**
  * Mimics the actual query compiler in generating end to end plans and testing
@@ -84,7 +82,7 @@ public class TestExecDriver extends TestCase {
 
   static {
     try {
-      queryState = new QueryState(new HiveConf(ExecDriver.class));
+      queryState = new QueryState.Builder().withHiveConf(new HiveConf(ExecDriver.class)).build();
       conf = queryState.getConf();
       conf.setBoolVar(HiveConf.ConfVars.SUBMITVIACHILD, true);
       conf.setBoolVar(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD, true);
@@ -93,10 +91,6 @@ public class TestExecDriver extends TestCase {
 
       SessionState.start(conf);
 
-      //convert possible incompatible Windows path in config
-      if (Shell.WINDOWS) {
-        WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
-      }
       tmpdir = System.getProperty("test.tmp.dir");
       tmppath = new Path(tmpdir);
 
@@ -181,9 +175,8 @@ public class TestExecDriver extends TestCase {
     }
     FSDataInputStream fi_test = fs.open((fs.listStatus(di_test))[0].getPath());
 
-    boolean ignoreWhitespace = Shell.WINDOWS;
     FileInputStream fi_gold = new FileInputStream(new File(testFileDir,datafile));
-    if (!Utilities.contentsEqual(fi_gold, fi_test, ignoreWhitespace)) {
+    if (!Utilities.contentsEqual(fi_gold, fi_test, false)) {
       LOG.error(di_test.toString() + " does not match " + datafile);
       assertEquals(false, true);
     }

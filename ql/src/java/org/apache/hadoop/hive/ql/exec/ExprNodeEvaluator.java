@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -30,9 +31,11 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
 
   protected final T expr;
   protected ObjectInspector outputOI;
+  protected Configuration conf;
 
-  public ExprNodeEvaluator(T expr) {
+  public ExprNodeEvaluator(T expr, Configuration conf) {
     this.expr = expr;
+    this.conf = conf;
   }
 
   /**
@@ -108,5 +111,13 @@ public abstract class ExprNodeEvaluator<T extends ExprNodeDesc> {
   @Override
   public String toString() {
     return "ExprNodeEvaluator[" + expr + "]";
+  }
+
+  public Configuration getConf() {
+    return conf;
+  }
+
+  public void setConf(Configuration conf) {
+    this.conf = conf;
   }
 }

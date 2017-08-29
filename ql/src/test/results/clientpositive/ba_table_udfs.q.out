@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-USE default
+PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-USE default
+POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: CREATE TABLE dest1(bytes1 BINARY,
@@ -43,22 +39,18 @@ POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.bytes1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.bytes2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.string SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: --Add in a null row for good measure
-INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
+PREHOOK: query: INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 PREHOOK: Output: default@dest1
-POSTHOOK: query: --Add in a null row for good measure
-INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
+POSTHOOK: query: INSERT INTO TABLE dest1 SELECT NULL, NULL, NULL FROM dest1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.bytes1 EXPRESSION []
 POSTHOOK: Lineage: dest1.bytes2 EXPRESSION []
-POSTHOOK: Lineage: dest1.string SIMPLE []
-PREHOOK: query: -- this query tests all the udfs provided to work with binary types
-
-SELECT
+POSTHOOK: Lineage: dest1.string EXPRESSION []
+PREHOOK: query: SELECT
   bytes1,
   bytes2,
   string,
@@ -77,9 +69,7 @@ FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: -- this query tests all the udfs provided to work with binary types
-
-SELECT
+POSTHOOK: query: SELECT
   bytes1,
   bytes2,
   string,

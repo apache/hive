@@ -113,7 +113,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
           storage[alias].clearRows();
         }
       } else {
-        if (isLogInfoEnabled && (sz == nextSz)) {
+        if (LOG.isInfoEnabled() && (sz == nextSz)) {
           // Print a message if we reached at least 1000 rows for a join operand
           // We won't print a message for the last join operand since the size
           // will never goes to joinEmitInterval.

@@ -43,6 +43,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
+import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -292,6 +295,10 @@ public class DagUtils {
       mergeInputClass = ConcatenatedMergedKeyValueInput.class;
       break;
 
+    case ONE_TO_ONE_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
+
     case SIMPLE_EDGE:
       setupAutoReducerParallelism(edgeProp, w);
       // fall through
@@ -336,6 +343,11 @@ public class DagUtils {
       setupAutoReducerParallelism(edgeProp, w);
       break;
     }
+    case CUSTOM_SIMPLE_EDGE: {
+      setupQuickStart(edgeProp, w);
+      break;
+    }
+
     default:
       // nothing
     }
@@ -392,18 +404,26 @@ public class DagUtils {
           .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
           .build();
       return et3Conf.createDefaultEdgeProperty();
+    case ONE_TO_ONE_EDGE:
+      UnorderedKVEdgeConfig et4Conf = UnorderedKVEdgeConfig
+          .newBuilder(keyClass, valClass)
+          .setFromConfiguration(conf)
+          .setKeySerializationClass(TezBytesWritableSerialization.class.getName(), null)
+          .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
+          .build();
+      return et4Conf.createDefaultOneToOneEdgeProperty();
     case SIMPLE_EDGE:
     default:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      OrderedPartitionedKVEdgeConfig et4Conf = OrderedPartitionedKVEdgeConfig
+      OrderedPartitionedKVEdgeConfig et5Conf = OrderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf)
           .setKeySerializationClass(TezBytesWritableSerialization.class.getName(),
               TezBytesComparator.class.getName(), null)
           .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
           .build();
-      return et4Conf.createDefaultEdgeProperty();
+      return et5Conf.createDefaultEdgeProperty();
     }
   }
 
@@ -632,9 +652,17 @@ public class DagUtils {
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
       conf.setBoolean(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, mapWork.getUseVectorizedInputFileFormat());
 
-      dataSource = MRInputHelpers.configureMRInputWithLegacySplitGeneration(conf, new Path(tezDir,
-          "split_" + mapWork.getName().replaceAll(" ", "_")), true);
-      numTasks = dataSource.getNumberOfShards();
+      InputSplitInfo inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(conf, false, 0);
+      InputInitializerDescriptor descriptor = InputInitializerDescriptor.create(MRInputSplitDistributor.class.getName());
+      InputDescriptor inputDescriptor = InputDescriptor.create(MRInputLegacy.class.getName())
+              .setUserPayload(UserPayload
+                      .create(MRRuntimeProtos.MRInputUserPayloadProto.newBuilder()
+                              .setConfigurationBytes(TezUtils.createByteStringFromConf(conf))
+                              .setSplits(inputSplitInfo.getSplitsProto()).build().toByteString()
+                              .asReadOnlyByteBuffer()));
+
+      dataSource = DataSourceDescriptor.create(inputDescriptor, descriptor, null);
+      numTasks = inputSplitInfo.getNumTasks();
 
       // set up the operator plan. (after generating splits - that changes configs)
       Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
@@ -842,12 +870,15 @@ public class DagUtils {
       String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, getTempFilesFromConf(conf));
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE, getTempArchivesFromConf(conf));
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE,
+        getTempFilesFromConf(conf), null);
+    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.ARCHIVE,
+        getTempArchivesFromConf(conf), null);
     return tmpResources;
   }
 
-  private static String[] getTempFilesFromConf(Configuration conf) {
+  public static String[] getTempFilesFromConf(Configuration conf) {
+    if (conf == null) return new String[0]; // In tests.
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
@@ -883,19 +914,32 @@ public class DagUtils {
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
-      String[] inputOutputJars) throws IOException, LoginException {
+      String[] inputOutputJars, String[] skipJars) throws IOException, LoginException {
     if (inputOutputJars == null) return null;
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
-    addTempResources(conf, tmpResources, hdfsDirPathStr, LocalResourceType.FILE, inputOutputJars);
+    addTempResources(conf, tmpResources, hdfsDirPathStr,
+        LocalResourceType.FILE, inputOutputJars, skipJars);
     return tmpResources;
   }
 
   private void addTempResources(Configuration conf,
       List<LocalResource> tmpResources, String hdfsDirPathStr,
       LocalResourceType type,
-      String[] files) throws IOException {
+      String[] files, String[] skipFiles) throws IOException {
+    HashSet<Path> skipFileSet = null;
+    if (skipFiles != null) {
+      skipFileSet = new HashSet<>();
+      for (String skipFile : skipFiles) {
+        if (StringUtils.isBlank(skipFile)) continue;
+        skipFileSet.add(new Path(skipFile));
+      }
+    }
     for (String file : files) {
       if (!StringUtils.isNotBlank(file)) {
+        continue;
+      }
+      if (skipFileSet != null && skipFileSet.contains(new Path(file))) {
+        LOG.info("Skipping vertex resource " + file + " that already exists in the session");
         continue;
       }
       Path hdfsFilePath = new Path(hdfsDirPathStr, getResourceBaseName(new Path(file)));
@@ -965,10 +1009,9 @@ public class DagUtils {
    * @return true if the file names match else returns false.
    * @throws IOException when any file system related call fails
    */
-  private boolean checkPreExisting(Path src, Path dest, Configuration conf)
+  private boolean checkPreExisting(FileSystem sourceFS, Path src, Path dest, Configuration conf)
     throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    FileSystem sourceFS = src.getFileSystem(conf);
     FileStatus destStatus = FileUtils.getFileStatusOrNull(destFS, dest);
     if (destStatus != null) {
       return (sourceFS.getFileStatus(src).getLen() == destStatus.getLen());
@@ -988,7 +1031,9 @@ public class DagUtils {
   public LocalResource localizeResource(
       Path src, Path dest, LocalResourceType type, Configuration conf) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    if (src != null && !checkPreExisting(src, dest, conf)) {
+    // We call copyFromLocal below, so we basically assume src is a local file.
+    FileSystem srcFs = FileSystem.getLocal(conf);
+    if (src != null && !checkPreExisting(srcFs, src, dest, conf)) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
       String srcStr = src.toString();
@@ -1000,7 +1045,7 @@ public class DagUtils {
       // authoritative one), don't wait infinitely for the notifier, just wait a little bit
       // and check HDFS before and after.
       if (notifierOld != null
-          && checkOrWaitForTheFile(src, dest, conf, notifierOld, 1, 150, false)) {
+          && checkOrWaitForTheFile(srcFs, src, dest, conf, notifierOld, 1, 150, false)) {
         return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
       }
       try {
@@ -1022,7 +1067,7 @@ public class DagUtils {
             conf, HiveConf.ConfVars.HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
         // Only log on the first wait, and check after wait on the last iteration.
         if (!checkOrWaitForTheFile(
-            src, dest, conf, notifierOld, waitAttempts, sleepInterval, true)) {
+            srcFs, src, dest, conf, notifierOld, waitAttempts, sleepInterval, true)) {
           LOG.error("Could not find the jar that was being uploaded");
           throw new IOException("Previous writer likely failed to write " + dest +
               ". Failing because I am unlikely to write too.");
@@ -1037,10 +1082,10 @@ public class DagUtils {
         LocalResourceVisibility.PRIVATE);
   }
 
-  public boolean checkOrWaitForTheFile(Path src, Path dest, Configuration conf, Object notifier,
-      int waitAttempts, long sleepInterval, boolean doLog) throws IOException {
+  public boolean checkOrWaitForTheFile(FileSystem srcFs, Path src, Path dest, Configuration conf,
+      Object notifier, int waitAttempts, long sleepInterval, boolean doLog) throws IOException {
     for (int i = 0; i < waitAttempts; i++) {
-      if (checkPreExisting(src, dest, conf)) return true;
+      if (checkPreExisting(srcFs, src, dest, conf)) return true;
       if (doLog && i == 0) {
         LOG.info("Waiting for the file " + dest + " (" + waitAttempts + " attempts, with "
             + sleepInterval + "ms interval)");
@@ -1059,7 +1104,7 @@ public class DagUtils {
         throw new IOException(interruptedException);
       }
     }
-    return checkPreExisting(src, dest, conf); // One last check.
+    return checkPreExisting(srcFs, src, dest, conf); // One last check.
   }
 
   /**
@@ -1195,7 +1240,8 @@ public class DagUtils {
   /**
    * Set up credentials for the base work on secure clusters
    */
-  public void addCredentials(BaseWork work, DAG dag) {
+  public void addCredentials(BaseWork work, DAG dag) throws IOException {
+    dag.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
     if (work instanceof MapWork) {
       addCredentials((MapWork) work, dag);
     } else if (work instanceof ReduceWork) {
@@ -1259,6 +1305,20 @@ public class DagUtils {
       pluginConf.setLong(
           ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
           edgeProp.getInputSizePerReducer());
+      UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
+      desc.setUserPayload(payload);
+      v.setVertexManagerPlugin(desc);
+    }
+  }
+
+  private void setupQuickStart(TezEdgeProperty edgeProp, Vertex v)
+    throws IOException {
+    if (!edgeProp.isSlowStart()) {
+      Configuration pluginConf = new Configuration(false);
+      VertexManagerPluginDescriptor desc =
+              VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName());
+      pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION, 0);
+      pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION, 0);
       UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
       desc.setUserPayload(payload);
       v.setVertexManagerPlugin(desc);

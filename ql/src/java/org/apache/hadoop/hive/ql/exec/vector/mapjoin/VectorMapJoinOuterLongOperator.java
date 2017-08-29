@@ -45,8 +45,17 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  */
 public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateResultOperator {
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOuterLongOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinOuterLongOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 
@@ -135,7 +144,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
       final int inputLogicalSize = batch.size;
 
       if (inputLogicalSize == 0) {
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " empty");
         }
         return;
@@ -164,7 +173,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
           ve.evaluate(batch);
         }
         someRowsFilteredOut = (batch.size != inputLogicalSize);
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           if (batch.selectedInUse) {
             if (inputSelectedInUse) {
               LOG.debug(CLASS_NAME +
@@ -237,7 +246,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
          * Common repeated join result processing.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
@@ -248,7 +257,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
          * NOT Repeating.
          */
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -418,7 +427,7 @@ public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateRe
           }
         }
 
-        if (isLogDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +

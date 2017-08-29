@@ -135,6 +135,10 @@ public class LongScalarEqualLongColumn extends VectorExpression {
     this.outputColumn = outputColumn;
   }
 
+  public String vectorExpressionParameters() {
+    return "val " + value + ", col " + colNum;
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

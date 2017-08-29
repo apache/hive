@@ -20,9 +20,13 @@ package org.apache.hadoop.hive.metastore.events;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Table;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class LoadPartitionDoneEvent extends ListenerEvent {
 
   private final Table table;

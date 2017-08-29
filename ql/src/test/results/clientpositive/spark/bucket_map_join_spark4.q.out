@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1
@@ -119,6 +115,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -141,6 +138,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -158,7 +156,7 @@ STAGE PLANS:
                     name: default.tbl2
                   name: default.tbl2
             Truncated Path -> Alias:
-              /tbl2 [b]
+              /tbl2 [$hdt$_1:b]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -193,6 +191,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -215,6 +214,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -232,7 +232,7 @@ STAGE PLANS:
                     name: default.tbl3
                   name: default.tbl3
             Truncated Path -> Alias:
-              /tbl3 [c]
+              /tbl3 [$hdt$_2:c]
 
   Stage: Stage-1
     Spark
@@ -321,6 +321,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -343,6 +344,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -360,7 +362,7 @@ STAGE PLANS:
                     name: default.tbl1
                   name: default.tbl1
             Truncated Path -> Alias:
-              /tbl1 [a]
+              /tbl1 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator
@@ -492,6 +494,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -514,6 +517,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -531,7 +535,7 @@ STAGE PLANS:
                     name: default.tbl2
                   name: default.tbl2
             Truncated Path -> Alias:
-              /tbl2 [b]
+              /tbl2 [$hdt$_1:b]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -566,6 +570,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -588,6 +593,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -605,7 +611,7 @@ STAGE PLANS:
                     name: default.tbl3
                   name: default.tbl3
             Truncated Path -> Alias:
-              /tbl3 [c]
+              /tbl3 [$hdt$_2:c]
 
   Stage: Stage-1
     Spark
@@ -688,6 +694,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -710,6 +717,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -727,7 +735,7 @@ STAGE PLANS:
                     name: default.tbl1
                   name: default.tbl1
             Truncated Path -> Alias:
-              /tbl1 [a]
+              /tbl1 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator

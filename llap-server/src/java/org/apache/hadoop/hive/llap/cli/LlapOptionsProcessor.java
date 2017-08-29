@@ -48,6 +48,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SIZE = "size"; // forward via config.json
   public static final String OPTION_XMX = "xmx"; // forward as arg
   public static final String OPTION_AUXJARS = "auxjars"; // used to localize jars
+  public static final String OPTION_AUXHIVE = "auxhive"; // used to localize jars
   public static final String OPTION_AUXHBASE = "auxhbase"; // used to localize jars
   public static final String OPTION_JAVA_HOME = "javaHome"; // forward via config.json
   public static final String OPTION_HIVECONF = "hiveconf"; // llap-daemon-site if relevant parameter
@@ -67,7 +68,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_PLACEMENT = "slider-placement";
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
   public static final String OPTION_OUTPUT_DIR = "output";
-
+  public static final String OPTION_START = "startImmediately";
 
   public static class LlapOptions {
     private final int instances;
@@ -84,12 +85,14 @@ public class LlapOptionsProcessor {
     private final String javaPath;
     private final String llapQueueName;
     private final String logger;
+    private final boolean isStarting;
+    private final String output;
+    private final boolean isHiveAux;
 
     public LlapOptions(String name, int instances, String directory, int executors, int ioThreads,
-                       long cache, long size, long xmx, String jars, boolean isHbase,
-                       @Nonnull Properties hiveconf, String javaPath, String llapQueueName,
-                       String logger)
-        throws ParseException {
+        long cache, long size, long xmx, String jars, boolean isHbase,
+        @Nonnull Properties hiveconf, String javaPath, String llapQueueName, String logger,
+        boolean isStarting, String output, boolean isHiveAux) throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
             + " (should be greater than 0)");
@@ -104,10 +107,17 @@ public class LlapOptionsProcessor {
       this.xmx = xmx;
       this.jars = jars;
       this.isHbase = isHbase;
+      this.isHiveAux = isHiveAux;
       this.conf = hiveconf;
       this.javaPath = javaPath;
       this.llapQueueName = llapQueueName;
       this.logger = logger;
+      this.isStarting = isStarting;
+      this.output = output;
+    }
+
+    public String getOutput() {
+      return output;
     }
 
     public String getName() {
@@ -150,6 +160,10 @@ public class LlapOptionsProcessor {
       return isHbase;
     }
 
+    public boolean getIsHiveAux() {
+      return isHiveAux;
+    }
+
     public Properties getConfig() {
       return conf;
     }
@@ -164,6 +178,10 @@ public class LlapOptionsProcessor {
 
     public String getLogger() {
       return logger;
+    }
+
+    public boolean isStarting() {
+      return isStarting;
     }
   }
 
@@ -242,6 +260,9 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_AUXHBASE).withLongOpt(OPTION_AUXHBASE)
         .withDescription("whether to package the HBase jars (true by default)").create('h'));
 
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_AUXHIVE).withLongOpt(OPTION_AUXHIVE)
+        .withDescription("whether to package the Hive aux jars (true by default)").create(OPTION_AUXHIVE));
+
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_JAVA_HOME).withLongOpt(OPTION_JAVA_HOME)
         .withDescription(
             "Path to the JRE/JDK. This should be installed at the same location on all cluster nodes ($JAVA_HOME, java.home by default)")
@@ -264,6 +285,10 @@ public class LlapOptionsProcessor {
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
         .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
+
+    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_START)
+        .withLongOpt(OPTION_START).withDescription("immediately start the cluster")
+        .create('z'));
 
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
@@ -293,7 +318,12 @@ public class LlapOptionsProcessor {
     final long cache = parseSuffixed(commandLine.getOptionValue(OPTION_CACHE, "-1"));
     final long size = parseSuffixed(commandLine.getOptionValue(OPTION_SIZE, "-1"));
     final long xmx = parseSuffixed(commandLine.getOptionValue(OPTION_XMX, "-1"));
-    final boolean isHbase = Boolean.parseBoolean(commandLine.getOptionValue(OPTION_AUXHBASE, "true"));
+    final boolean isHbase = Boolean.parseBoolean(
+        commandLine.getOptionValue(OPTION_AUXHBASE, "true"));
+    final boolean isHiveAux = Boolean.parseBoolean(
+        commandLine.getOptionValue(OPTION_AUXHIVE, "true"));
+    final boolean doStart = commandLine.hasOption(OPTION_START);
+    final String output = commandLine.getOptionValue(OPTION_OUTPUT_DIR, null);
 
     final String queueName = commandLine.getOptionValue(OPTION_LLAP_QUEUE,
         HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.getDefaultValue());
@@ -322,8 +352,8 @@ public class LlapOptionsProcessor {
 
     // loglevel, chaosmonkey & args are parsed by the python processor
 
-    return new LlapOptions(name, instances, directory, executors, ioThreads, cache,
-        size, xmx, jars, isHbase, hiveconf, javaHome, queueName, logger);
+    return new LlapOptions(name, instances, directory, executors, ioThreads, cache, size, xmx,
+        jars, isHbase, hiveconf, javaHome, queueName, logger, doStart, output, isHiveAux);
   }
 
   private void printUsage() {

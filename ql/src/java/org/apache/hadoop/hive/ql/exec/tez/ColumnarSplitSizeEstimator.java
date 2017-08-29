@@ -31,7 +31,6 @@ import org.apache.hadoop.mapred.split.SplitSizeEstimator;
  */
 public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
   private static final Logger LOG = LoggerFactory.getLogger(ColumnarSplitSizeEstimator.class);
-  private static final boolean isDebugEnabled = LOG.isDebugEnabled();
 
   @Override
   public long getEstimatedSize(InputSplit inputSplit) throws IOException {
@@ -39,7 +38,7 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
 
     if (inputSplit instanceof ColumnarSplit) {
       colProjSize = ((ColumnarSplit) inputSplit).getColumnarProjectionSize();
-      if (isDebugEnabled) {
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Estimated column projection size: " + colProjSize);
       }
     } else if (inputSplit instanceof HiveInputFormat.HiveInputSplit) {
@@ -47,7 +46,7 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
 
       if (innerSplit instanceof ColumnarSplit) {
         colProjSize = ((ColumnarSplit) innerSplit).getColumnarProjectionSize();
-        if (isDebugEnabled) {
+        if (LOG.isDebugEnabled()) {
           LOG.debug("Estimated column projection size: " + colProjSize);
         }
       }

@@ -151,7 +151,7 @@ STAGE PLANS:
         Map 5 <- Union 2 (CONTAINS)
         Map 6 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (ONE_TO_ONE_EDGE), Reducer 9 (ONE_TO_ONE_EDGE)
         Reducer 8 <- Map 10 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
         Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -291,7 +291,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: bigint)
                   1 _col0 (type: bigint)

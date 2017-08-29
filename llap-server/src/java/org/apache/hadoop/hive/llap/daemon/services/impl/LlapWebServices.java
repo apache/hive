@@ -88,8 +88,10 @@ public class LlapWebServices extends AbstractService {
       builder.setUseSSL(this.useSSL);
       if (this.useSPNEGO) {
         builder.setUseSPNEGO(true); // this setups auth filtering in build()
-        builder.setSPNEGOPrincipal(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL));
-        builder.setSPNEGOKeytab(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE));
+        builder.setSPNEGOPrincipal(HiveConf.getVar(conf, ConfVars.LLAP_WEBUI_SPNEGO_PRINCIPAL,
+            HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL)));
+        builder.setSPNEGOKeytab(HiveConf.getVar(conf, ConfVars.LLAP_WEBUI_SPNEGO_KEYTAB_FILE,
+            HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE)));
       }
     }
 
@@ -100,6 +102,8 @@ public class LlapWebServices extends AbstractService {
       this.http = builder.build();
       this.http.addServlet("status", "/status", LlapStatusServlet.class);
       this.http.addServlet("peers", "/peers", LlapPeerRegistryServlet.class);
+      this.http.addServlet("iomem", "/iomem", LlapIoMemoryServlet.class);
+      this.http.addServlet("system", "/system", SystemConfigurationServlet.class);
     } catch (IOException e) {
       LOG.warn("LLAP web service failed to come up", e);
     }

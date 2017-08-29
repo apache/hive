@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.shims;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -43,7 +42,6 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobProfile;
@@ -168,7 +166,6 @@ public interface HadoopShims {
    * All updates to jobtracker/resource manager rpc address
    * in the configuration should be done through this shim
    * @param conf
-   * @return
    */
   public void setJobLauncherRpcAddress(Configuration conf, String val);
 
@@ -252,12 +249,12 @@ public interface HadoopShims {
 
   /**
    * For the block locations returned by getLocations() convert them into a Treemap
-   * <Offset,blockLocation> by iterating over the list of blockLocation.
+   * &lt;Offset,blockLocation&gt; by iterating over the list of blockLocation.
    * Using TreeMap from offset to blockLocation, makes it O(logn) to get a particular
    * block based upon offset.
    * @param fs the file system
    * @param status the file information
-   * @return TreeMap<Long, BlockLocation>
+   * @return TreeMap&lt;Long, BlockLocation&gt;
    * @throws IOException
    */
   TreeMap<Long, BlockLocation> getLocationsWithOffset(FileSystem fs,
@@ -480,14 +477,28 @@ public interface HadoopShims {
   /**
    * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
    * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This is a variation which allows proxying as a different user to perform
+   * the distcp, and requires that the caller have requisite proxy user privileges.
+   *
+   * @param srcPaths List of Path to the source files or directories to copy
+   * @param dst Path to the destination file or directory
+   * @param conf The hadoop configuration object
+   * @param doAsUser The user to perform the distcp as
+   * @return True if it is successfull; False otherwise.
+   */
+  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
    * copy is done.
    *
-   * @param src Path to the source file or directory to copy
+   * @param srcPaths List of Path to the source files or directories to copy
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
    * @return True if it is successfull; False otherwise.
    */
-  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException;
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException;
 
   /**
    * This interface encapsulates methods used to get encryption information from

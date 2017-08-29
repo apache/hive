@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.junit.Test;
@@ -71,6 +72,21 @@ public class TestVectorTypeCasts {
     VectorExpression expr = new CastDoubleToLong(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(1, resultV.vector[6]);
+  }
+
+  @Test
+  public void testCastDateToTimestamp() {
+    int[] intValues = new int[500];
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchDateInTimestampOut(intValues);
+    TimestampColumnVector resultV = (TimestampColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    VectorExpression expr = new CastDateToTimestamp(0, 1);
+    expr.evaluate(b);
+    for (int i = 0; i < intValues.length; i++) {
+      Timestamp timestamp = resultV.asScratchTimestamp(i);
+      long actual = DateWritable.millisToDays(timestamp.getTime());
+      assertEquals(actual, intValues[i]);
+    }
   }
 
   @Test

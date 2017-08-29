@@ -19,12 +19,16 @@
 package org.apache.hadoop.hive.metastore.hooks;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 
 /**
  * JDOConnectURLHook is used to get the URL that JDO uses to connect to the
  * database that stores the metastore data. Classes implementing this must be
  * thread-safe (for Thrift server).
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface JDOConnectionURLHook {
 
   /**

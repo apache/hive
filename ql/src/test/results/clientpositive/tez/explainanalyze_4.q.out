@@ -16,8 +16,7 @@ order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- First try with regular mergejoin
-explain analyze
+PREHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -25,8 +24,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- First try with regular mergejoin
-explain analyze
+POSTHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -46,11 +44,11 @@ Stage-0
     Stage-1
       Reducer 3
       File Output Operator [FS_12]
-        Select Operator [SEL_11] (rows=2166/10 width=620)
+        Select Operator [SEL_11] (rows=2076/10 width=553)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23"]
         <-Reducer 2 [SIMPLE_EDGE]
           SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_17] (rows=2166/10 width=620)
+            Merge Join Operator [MERGEJOIN_17] (rows=2076/10 width=553)
               Conds:RS_6._col2=RS_7._col2(Inner),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23"]
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -133,7 +131,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -143,9 +141,9 @@ Stage-0
       File Output Operator [FS_13]
         Group By Operator [GBY_11] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 2 [SIMPLE_EDGE]
-          SHUFFLE [RS_10]
-            Merge Join Operator [MERGEJOIN_18] (rows=2166/10 width=8)
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_10]
+            Merge Join Operator [MERGEJOIN_18] (rows=2076/10 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
               SHUFFLE [RS_6]
@@ -234,16 +232,16 @@ Stage-0
     Stage-1
       Reducer 4
       File Output Operator [FS_15]
-        Select Operator [SEL_14] (rows=615/5 width=12)
+        Select Operator [SEL_14] (rows=623/5 width=11)
           Output:["_col0","_col1"]
         <-Reducer 3 [SIMPLE_EDGE]
           SHUFFLE [RS_13]
-            Group By Operator [GBY_11] (rows=615/5 width=12)
+            Group By Operator [GBY_11] (rows=623/5 width=11)
               Output:["_col0","_col1"],aggregations:["count()"],keys:KEY._col0
             <-Reducer 2 [SIMPLE_EDGE]
               SHUFFLE [RS_10]
                 PartitionCols:_col0
-                Merge Join Operator [MERGEJOIN_20] (rows=2166/10 width=4)
+                Merge Join Operator [MERGEJOIN_20] (rows=2076/10 width=3)
                   Conds:RS_6._col1=RS_7._col0(Inner),Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_6]
@@ -307,8 +305,7 @@ order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- Try with dynamically partitioned hashjoin
-explain analyze
+PREHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -316,8 +313,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try with dynamically partitioned hashjoin
-explain analyze
+POSTHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -424,7 +420,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -434,8 +430,8 @@ Stage-0
       File Output Operator [FS_13]
         Group By Operator [GBY_11] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 2 [SIMPLE_EDGE]
-          SHUFFLE [RS_10]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_10]
             Map Join Operator [MAPJOIN_18] (rows=1501/10 width=215)
               Conds:RS_6.KEY.reducesinkkey0=RS_7.KEY.reducesinkkey0(Inner),HybridGraceHashJoin:true
             <-Map 4 [CUSTOM_SIMPLE_EDGE]

@@ -252,7 +252,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain select *
 from part p1 join part2 p2 join part3 p3 
 where p2_partkey + p1.p_partkey = p1.p_partkey and p3_name = p2_name

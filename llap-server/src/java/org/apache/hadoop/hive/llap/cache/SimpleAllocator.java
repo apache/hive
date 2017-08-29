@@ -32,9 +32,10 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
   private final boolean isDirect;
   private static Field cleanerField;
   static {
-    ByteBuffer tmp = ByteBuffer.allocateDirect(1);
     try {
-      cleanerField = tmp.getClass().getDeclaredField("cleaner");
+      // TODO: To make it work for JDK9 use CleanerUtil from https://issues.apache.org/jira/browse/HADOOP-12760
+      final Class<?> dbClazz = Class.forName("java.nio.DirectByteBuffer");
+      cleanerField = dbClazz.getDeclaredField("cleaner");
       cleanerField.setAccessible(true);
     } catch (Throwable t) {
       LlapIoImpl.LOG.warn("Cannot initialize DirectByteBuffer cleaner", t);
@@ -49,23 +50,32 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
     }
   }
 
+
   @Override
+  @Deprecated
   public void allocateMultiple(MemoryBuffer[] dest, int size) {
+    allocateMultiple(dest, size, null);
+  }
+
+  @Override
+  public void allocateMultiple(MemoryBuffer[] dest, int size, BufferObjectFactory factory) {
     for (int i = 0; i < dest.length; ++i) {
-      LlapDataBuffer buf = null;
+      LlapAllocatorBuffer buf = null;
       if (dest[i] == null) {
-        dest[i] = buf = createUnallocated();
+      // Note: this is backward compat only. Should be removed with createUnallocated.
+        dest[i] = buf = (factory != null)
+            ? (LlapAllocatorBuffer)factory.create() : createUnallocated();
       } else {
-        buf = (LlapDataBuffer)dest[i];
+        buf = (LlapAllocatorBuffer)dest[i];
       }
       ByteBuffer bb = isDirect ? ByteBuffer.allocateDirect(size) : ByteBuffer.allocate(size);
-      buf.initialize(0, bb, 0, size);
+      buf.initialize(bb, 0, size);
     }
   }
 
   @Override
   public void deallocate(MemoryBuffer buffer) {
-    LlapDataBuffer buf = (LlapDataBuffer)buffer;
+    LlapAllocatorBuffer buf = (LlapAllocatorBuffer)buffer;
     ByteBuffer bb = buf.byteBuffer;
     buf.byteBuffer = null;
     if (!bb.isDirect()) return;
@@ -85,7 +95,8 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
   }
 
   @Override
-  public LlapDataBuffer createUnallocated() {
+  @Deprecated
+  public LlapAllocatorBuffer createUnallocated() {
     return new LlapDataBuffer();
   }
 

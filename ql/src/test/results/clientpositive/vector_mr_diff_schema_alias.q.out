@@ -208,10 +208,7 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
-PREHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
--- the 2 TableScanOperators that have different schema.
-
-explain select
+PREHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales,
  store,
@@ -223,10 +220,7 @@ explain select
  order by s_state
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
--- the 2 TableScanOperators that have different schema.
-
-explain select
+POSTHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales,
  store,
@@ -238,6 +232,10 @@ explain select
  order by s_state
  limit 100
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -281,6 +279,13 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: string)
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -322,6 +327,13 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -331,22 +343,18 @@ STAGE PLANS:
             1 _col0 (type: int)
           outputColumnNames: _col3
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: _col3 (type: string)
-            outputColumnNames: _col0
+          Group By Operator
+            aggregations: count()
+            keys: _col3 (type: string)
+            mode: hash
+            outputColumnNames: _col0, _col1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Group By Operator
-              aggregations: count(1)
-              keys: _col0 (type: string)
-              mode: hash
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-3
     Map Reduce
@@ -359,6 +367,19 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -383,6 +404,19 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)

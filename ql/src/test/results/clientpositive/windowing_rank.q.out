@@ -12,7 +12,7 @@ PREHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -29,7 +29,7 @@ POSTHOOK: query: create table over10k(
            bo boolean,
            s string,
 	   ts timestamp, 
-           dec decimal(4,2),  
+           `dec` decimal(4,2),  
            bin binary)
        row format delimited
        fields terminated by '|'
@@ -368,11 +368,11 @@ fred ellison	0.019509251810136765
 gabriella hernandez	0.019710378117457763
 gabriella ovid	0.01991150442477876
 gabriella steinbeck	0.02011263073209976
-PREHOOK: query: select s, percent_rank() over (partition by dec order by f) from over10k limit 100
+PREHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select s, percent_rank() over (partition by dec order by f) from over10k limit 100
+POSTHOOK: query: select s, percent_rank() over (partition by `dec` order by f) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -476,14 +476,12 @@ ulysses steinbeck	0.0
 victor van buren	0.3333333333333333
 sarah carson	0.6666666666666666
 priscilla nixon	1.0
-PREHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
-
-select ts, dec, rnk
+PREHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
-          rank() over (partition by ts order by dec)  as rnk
+  (select ts, `dec`,
+          rank() over (partition by ts order by `dec`)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
             ) joined
@@ -492,14 +490,12 @@ where rnk =  1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- If following tests fail, look for the comments in class PTFPPD::process()
-
-select ts, dec, rnk
+POSTHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
-          rank() over (partition by ts order by dec)  as rnk
+  (select ts, `dec`,
+          rank() over (partition by ts order by `dec`)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
             ) joined
@@ -518,31 +514,31 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.70307	0.50	1
 2013-03-01 09:11:58.70307	0.50	1
 2013-03-01 09:11:58.70307	0.50	1
-PREHOOK: query: select ts, dec, rnk
+PREHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
+  (select ts, `dec`,
           rank() over (partition by ts)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
             ) joined
   ) ranked
-where dec = 89.5 limit 10
+where `dec` = 89.5 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, dec, rnk
+POSTHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
+  (select ts, `dec`,
           rank() over (partition by ts)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
             ) joined
   ) ranked
-where dec = 89.5 limit 10
+where `dec` = 89.5 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -556,12 +552,12 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703124	89.50	1
 2013-03-01 09:11:58.703124	89.50	1
 2013-03-01 09:11:58.703124	89.50	1
-PREHOOK: query: select ts, dec, rnk
+PREHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
-          rank() over (partition by ts order by dec)  as rnk
+  (select ts, `dec`,
+          rank() over (partition by ts order by `dec`)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
              where other.t < 10
@@ -571,12 +567,12 @@ where rnk = 1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: select ts, dec, rnk
+POSTHOOK: query: select ts, `dec`, rnk
 from
-  (select ts, dec,
-          rank() over (partition by ts order by dec)  as rnk
+  (select ts, `dec`,
+          rank() over (partition by ts order by `dec`)  as rnk
           from
-            (select other.ts, other.dec
+            (select other.ts, other.`dec`
              from over10k other
              join over10k on (other.b = over10k.b)
              where other.t < 10

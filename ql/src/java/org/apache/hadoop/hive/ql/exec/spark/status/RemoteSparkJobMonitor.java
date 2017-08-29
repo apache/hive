@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark.status;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
@@ -33,7 +34,10 @@ import org.apache.spark.JobExecutionStatus;
  * It print current job status to console and sleep current thread between monitor interval.
  */
 public class RemoteSparkJobMonitor extends SparkJobMonitor {
-
+  private int sparkJobMaxTaskCount = -1;
+  private int sparkStageMaxTaskCount = -1;
+  private int totalTaskCount = 0;
+  private int stageMaxTaskCount = 0;
   private RemoteSparkJobStatus sparkJobStatus;
   private final HiveConf hiveConf;
 
@@ -41,6 +45,8 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     super(hiveConf);
     this.sparkJobStatus = sparkJobStatus;
     this.hiveConf = hiveConf;
+    sparkJobMaxTaskCount = hiveConf.getIntVar(HiveConf.ConfVars.SPARK_JOB_MAX_TASKS);
+    sparkStageMaxTaskCount = hiveConf.getIntVar(HiveConf.ConfVars.SPARK_STAGE_MAX_TASKS);
   }
 
   @Override
@@ -99,10 +105,36 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
               } else {
                 console.logInfo(format);
               }
+            } else {
+              // Get the maximum of the number of tasks in the stages of the job and cancel the job if it goes beyond the limit.
+              if (sparkStageMaxTaskCount != -1 && stageMaxTaskCount == 0) {
+                stageMaxTaskCount = getStageMaxTaskCount(progressMap);
+                if (stageMaxTaskCount > sparkStageMaxTaskCount) {
+                  rc = 4;
+                  done = true;
+                  console.printInfo("\nThe number of task in one stage of the Spark job [" + stageMaxTaskCount + "] is greater than the limit [" +
+                      sparkStageMaxTaskCount + "]. The Spark job will be cancelled.");
+                }
+              }
+
+              // Count the number of tasks, and kill application if it goes beyond the limit.
+              if (sparkJobMaxTaskCount != -1 && totalTaskCount == 0) {
+                totalTaskCount = getTotalTaskCount(progressMap);
+                if (totalTaskCount > sparkJobMaxTaskCount) {
+                  rc = 4;
+                  done = true;
+                  console.printInfo("\nThe total number of task in the Spark job [" + totalTaskCount + "] is greater than the limit [" +
+                      sparkJobMaxTaskCount + "]. The Spark job will be cancelled.");
+                }
+              }
             }
 
             printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
+          } else if (sparkJobState == null) {
+            // in case the remote context crashes between JobStarted and JobSubmitted
+            Preconditions.checkState(sparkJobStatus.isRemoteActive(),
+                "Remote context becomes inactive.");
           }
           break;
         case SUCCEEDED:
@@ -150,7 +182,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         }
       } catch (Exception e) {
         String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
-        msg = "Failed to monitor Job[ " + sparkJobStatus.getJobId() + "]" + msg;
+        msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
         // Has to use full name to make sure it does not conflict with
         // org.apache.commons.lang.StringUtils
@@ -158,6 +190,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         rc = 1;
         done = true;
+        sparkJobStatus.setError(e);
       } finally {
         if (done) {
           break;

@@ -1,25 +1,18 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_rfail1(i int)
+PREHOOK: query: CREATE TABLE table_priv_rfail1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_priv_rfail1
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_rfail1(i int)
+POSTHOOK: query: CREATE TABLE table_priv_rfail1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv_rfail1
-PREHOOK: query: -- grant insert to user2
-GRANT INSERT ON table_priv_rfail1 TO USER user2
+PREHOOK: query: GRANT INSERT ON table_priv_rfail1 TO USER user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_rfail1
-POSTHOOK: query: -- grant insert to user2
-GRANT INSERT ON table_priv_rfail1 TO USER user2
+POSTHOOK: query: GRANT INSERT ON table_priv_rfail1 TO USER user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv_rfail1
-PREHOOK: query: -- try dropping the privilege as user3
-REVOKE INSERT ON TABLE table_priv_rfail1 FROM USER user2
+PREHOOK: query: REVOKE INSERT ON TABLE table_priv_rfail1 FROM USER user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@table_priv_rfail1
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Cannot find privilege Privilege [name=INSERT, columns=null] for Principal [name=user2, type=USER] on Object [type=TABLE_OR_VIEW, name=default.table_priv_rfail1] granted by user3

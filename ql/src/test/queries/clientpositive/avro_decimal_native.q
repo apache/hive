@@ -1,13 +1,13 @@
-DROP TABLE IF EXISTS dec;
+DROP TABLE IF EXISTS `dec`;
 
-CREATE TABLE dec (
+CREATE TABLE `dec` (
   name string,
   value decimal(8,4));
 
-LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE dec;
+LOAD DATA LOCAL INPATH '../../data/files/dec.txt' into TABLE `dec`;
 
-ANALYZE TABLE dec COMPUTE STATISTICS FOR COLUMNS value;
-DESC FORMATTED dec value;
+ANALYZE TABLE `dec` COMPUTE STATISTICS FOR COLUMNS value;
+DESC FORMATTED `dec` value;
 
 DROP TABLE IF EXISTS avro_dec;
 
@@ -19,7 +19,7 @@ STORED AS AVRO;
 
 DESC avro_dec;
 
-INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM dec;
+INSERT OVERWRITE TABLE avro_dec SELECT name, value FROM `dec`;
 
 SELECT * FROM avro_dec;
 
@@ -37,6 +37,6 @@ LOAD DATA LOCAL INPATH '../../data/files/dec.avro' INTO TABLE avro_dec1;
 
 SELECT value FROM avro_dec1;
 
-DROP TABLE dec;
+DROP TABLE `dec`;
 DROP TABLE avro_dec;
 DROP TABLE avro_dec1;

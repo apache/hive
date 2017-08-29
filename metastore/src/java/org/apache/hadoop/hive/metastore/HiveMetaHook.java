@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -32,6 +34,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
  * Implementations can use {@link MetaStoreUtils#isExternalTable} to
  * distinguish external tables from managed tables.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveMetaHook {
   /**
    * Called before a new table definition is added to the metastore

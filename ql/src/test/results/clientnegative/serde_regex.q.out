@@ -4,12 +4,11 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: --  This should fail because Regex SerDe doesn't support STRUCT
-CREATE TABLE serde_regex(
+PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   `user` STRING,
-  time TIMESTAMP,
+  `time` TIMESTAMP,
   request STRING,
   status INT,
   size INT,

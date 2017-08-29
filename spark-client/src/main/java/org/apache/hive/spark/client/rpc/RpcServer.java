@@ -105,12 +105,11 @@ public class RpcServer implements Closeable {
                 }
             };
             saslHandler.cancelTask = group.schedule(cancelTask,
-                RpcServer.this.config.getServerConnectTimeoutMs(),
+                RpcServer.this.config.getConnectTimeoutMs(),
                 TimeUnit.MILLISECONDS);
 
           }
       })
-      .option(ChannelOption.SO_BACKLOG, 1)
       .option(ChannelOption.SO_REUSEADDR, true)
       .childOption(ChannelOption.SO_KEEPALIVE, true);
 

@@ -19,7 +19,11 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.io.DataOutputBuffer;
 
 
@@ -59,5 +63,37 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
 
   public void writeEventHeader(DataOutputBuffer buffer) throws IOException {
     // nothing to add
+  }
+
+  public class AppMasterEventOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final AppMasterEventDesc appMasterEventDesc;
+    private final VectorAppMasterEventDesc vectorAppMasterEventDesc;
+
+    public AppMasterEventOperatorExplainVectorization(AppMasterEventDesc appMasterEventDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.appMasterEventDesc = appMasterEventDesc;
+      vectorAppMasterEventDesc = (VectorAppMasterEventDesc) vectorDesc;
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "App Master Event Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public AppMasterEventOperatorExplainVectorization getAppMasterEventVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new AppMasterEventOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      AppMasterEventDesc otherDesc = (AppMasterEventDesc) other;
+      return Objects.equals(getInputName(), otherDesc.getInputName()) &&
+          Objects.equals(getVertexName(), otherDesc.getVertexName()) &&
+          Objects.equals(getTable(), otherDesc.getTable());
+    }
+    return false;
   }
 }

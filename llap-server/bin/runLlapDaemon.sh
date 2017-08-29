@@ -51,7 +51,7 @@ shift
 JAVA=$JAVA_HOME/bin/java
 LOG_LEVEL_DEFAULT="INFO"
 LOGGER_DEFAULT="console"
-JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M"
+JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M -XX:+PrintGCDateStamps"
 
 if [ ! -d "${LLAP_DAEMON_HOME}" ]; then
   echo No LLAP_DAEMON_HOME set, or is not a directory. 
@@ -107,7 +107,7 @@ elif [ "$COMMAND" = "run" ] ; then
   CLASS='org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon'
 fi
 
-JAVA_OPTS_BASE="${JAVA_OPTS_BASE} -Xloggc:${LLAP_DAEMON_LOG_DIR}/gc.log"
+JAVA_OPTS_BASE="${JAVA_OPTS_BASE} -Xloggc:${LLAP_DAEMON_LOG_DIR}/gc_$(date +%Y-%m-%d-%H).log"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} ${JAVA_OPTS_BASE}"
 
 # Set the default GC option if none set
@@ -127,6 +127,6 @@ LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.file=${LLAP_DAEMON_LOG_F
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.root.logger=${LLAP_DAEMON_LOGGER}"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} -Dllap.daemon.log.level=${LLAP_DAEMON_LOG_LEVEL}"
 
+export JVM_PID="$$"
 exec "$JAVA" -Dproc_llapdaemon -Xms${LLAP_DAEMON_HEAPSIZE}m -Xmx${LLAP_DAEMON_HEAPSIZE}m ${LLAP_DAEMON_OPTS} -classpath "$CLASSPATH" $CLASS "$@"
-
 

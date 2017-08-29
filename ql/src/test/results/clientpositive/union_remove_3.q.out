@@ -1,32 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- This is to test the union->remove->filesink optimization
--- Union of 3 subqueries is performed (all of which are map-only queries)
--- followed by select star and a file sink.
--- There is no need for any optimization, since the whole query can be processed in
--- a single map-only job
--- It does not matter, whether the output is merged or not. In this case, merging is turned
--- off
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- Since this test creates sub-directories for the output table outputTbl1, it might be easier
--- to run the test only on hadoop 23
-
-create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: query: create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
--- This is to test the union->remove->filesink optimization
--- Union of 3 subqueries is performed (all of which are map-only queries)
--- followed by select star and a file sink.
--- There is no need for any optimization, since the whole query can be processed in
--- a single map-only job
--- It does not matter, whether the output is merged or not. In this case, merging is turned
--- off
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- Since this test creates sub-directories for the output table outputTbl1, it might be easier
--- to run the test only on hadoop 23
-
-create table inputTbl1(key string, val string) stored as textfile
+POSTHOOK: query: create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1

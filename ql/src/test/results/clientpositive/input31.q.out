@@ -40,7 +40,7 @@ STAGE PLANS:
               Select Operator
                 Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
-                  aggregations: count(1)
+                  aggregations: count()
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -90,7 +90,7 @@ select count(1) from srcbucket
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: default@tst_dest31
-POSTHOOK: Lineage: tst_dest31.a EXPRESSION []
+POSTHOOK: Lineage: tst_dest31.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: select * from tst_dest31
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest31

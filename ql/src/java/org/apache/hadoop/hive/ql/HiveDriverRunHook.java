@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 
 /**
@@ -29,6 +31,8 @@ import org.apache.hadoop.hive.ql.hooks.Hook;
  * Note that the lifetime of an instantiated hook object is scoped to
  * the analysis of a single statement; hook instances are never reused.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveDriverRunHook extends Hook {
   /**
    * Invoked before Hive begins any processing of a command in the Driver,

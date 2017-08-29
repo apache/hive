@@ -2,19 +2,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: ----------------------------------------
--- role granting with admin option
--- since user2 doesn't have admin option for role_noadmin, last grant should fail
-----------------------------------------
-
-create role role_noadmin
+PREHOOK: query: create role role_noadmin
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: ----------------------------------------
--- role granting with admin option
--- since user2 doesn't have admin option for role_noadmin, last grant should fail
-----------------------------------------
-
-create role role_noadmin
+POSTHOOK: query: create role role_noadmin
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: create role src_role_wadmin
 PREHOOK: type: CREATEROLE

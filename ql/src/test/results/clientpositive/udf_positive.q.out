@@ -10,11 +10,9 @@ POSTHOOK: type: DESCFUNCTION
 positive a - Returns a
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive
 Function type:BUILTIN
-PREHOOK: query: -- synonym
-DESCRIBE FUNCTION +
+PREHOOK: query: DESCRIBE FUNCTION +
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- synonym
-DESCRIBE FUNCTION +
+POSTHOOK: query: DESCRIBE FUNCTION +
 POSTHOOK: type: DESCFUNCTION
 a + b - Returns a+b
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED +

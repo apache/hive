@@ -110,7 +110,7 @@ STAGE PLANS:
                         arguments: _col3
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -151,3 +151,51 @@ NULL	0	2	1
 86	0	2	1
 238	0	2	1
 311	0	2	1
+PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+GROUPING SETS ((), (category))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+GROUPING SETS ((), (category))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	NULL
+0	NULL
+0	NULL
+1	NULL
+PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	0
+0	0
+0	NULL
+PREHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	NULL
+0	0
+0	0

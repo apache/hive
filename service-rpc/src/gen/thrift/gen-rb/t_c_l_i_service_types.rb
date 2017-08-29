@@ -16,8 +16,10 @@ module TProtocolVersion
   HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
   HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
   HIVE_CLI_SERVICE_PROTOCOL_V9 = 8
-  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7", 7 => "HIVE_CLI_SERVICE_PROTOCOL_V8", 8 => "HIVE_CLI_SERVICE_PROTOCOL_V9"}
-  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7, HIVE_CLI_SERVICE_PROTOCOL_V8, HIVE_CLI_SERVICE_PROTOCOL_V9]).freeze
+  HIVE_CLI_SERVICE_PROTOCOL_V10 = 9
+  HIVE_CLI_SERVICE_PROTOCOL_V11 = 10
+  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7", 7 => "HIVE_CLI_SERVICE_PROTOCOL_V8", 8 => "HIVE_CLI_SERVICE_PROTOCOL_V9", 9 => "HIVE_CLI_SERVICE_PROTOCOL_V10", 10 => "HIVE_CLI_SERVICE_PROTOCOL_V11"}
+  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7, HIVE_CLI_SERVICE_PROTOCOL_V8, HIVE_CLI_SERVICE_PROTOCOL_V9, HIVE_CLI_SERVICE_PROTOCOL_V10, HIVE_CLI_SERVICE_PROTOCOL_V11]).freeze
 end
 
 module TTypeId
@@ -43,8 +45,9 @@ module TTypeId
   CHAR_TYPE = 19
   INTERVAL_YEAR_MONTH_TYPE = 20
   INTERVAL_DAY_TIME_TYPE = 21
-  VALUE_MAP = {0 => "BOOLEAN_TYPE", 1 => "TINYINT_TYPE", 2 => "SMALLINT_TYPE", 3 => "INT_TYPE", 4 => "BIGINT_TYPE", 5 => "FLOAT_TYPE", 6 => "DOUBLE_TYPE", 7 => "STRING_TYPE", 8 => "TIMESTAMP_TYPE", 9 => "BINARY_TYPE", 10 => "ARRAY_TYPE", 11 => "MAP_TYPE", 12 => "STRUCT_TYPE", 13 => "UNION_TYPE", 14 => "USER_DEFINED_TYPE", 15 => "DECIMAL_TYPE", 16 => "NULL_TYPE", 17 => "DATE_TYPE", 18 => "VARCHAR_TYPE", 19 => "CHAR_TYPE", 20 => "INTERVAL_YEAR_MONTH_TYPE", 21 => "INTERVAL_DAY_TIME_TYPE"}
-  VALID_VALUES = Set.new([BOOLEAN_TYPE, TINYINT_TYPE, SMALLINT_TYPE, INT_TYPE, BIGINT_TYPE, FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, TIMESTAMP_TYPE, BINARY_TYPE, ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, USER_DEFINED_TYPE, DECIMAL_TYPE, NULL_TYPE, DATE_TYPE, VARCHAR_TYPE, CHAR_TYPE, INTERVAL_YEAR_MONTH_TYPE, INTERVAL_DAY_TIME_TYPE]).freeze
+  TIMESTAMPLOCALTZ_TYPE = 22
+  VALUE_MAP = {0 => "BOOLEAN_TYPE", 1 => "TINYINT_TYPE", 2 => "SMALLINT_TYPE", 3 => "INT_TYPE", 4 => "BIGINT_TYPE", 5 => "FLOAT_TYPE", 6 => "DOUBLE_TYPE", 7 => "STRING_TYPE", 8 => "TIMESTAMP_TYPE", 9 => "BINARY_TYPE", 10 => "ARRAY_TYPE", 11 => "MAP_TYPE", 12 => "STRUCT_TYPE", 13 => "UNION_TYPE", 14 => "USER_DEFINED_TYPE", 15 => "DECIMAL_TYPE", 16 => "NULL_TYPE", 17 => "DATE_TYPE", 18 => "VARCHAR_TYPE", 19 => "CHAR_TYPE", 20 => "INTERVAL_YEAR_MONTH_TYPE", 21 => "INTERVAL_DAY_TIME_TYPE", 22 => "TIMESTAMPLOCALTZ_TYPE"}
+  VALID_VALUES = Set.new([BOOLEAN_TYPE, TINYINT_TYPE, SMALLINT_TYPE, INT_TYPE, BIGINT_TYPE, FLOAT_TYPE, DOUBLE_TYPE, STRING_TYPE, TIMESTAMP_TYPE, BINARY_TYPE, ARRAY_TYPE, MAP_TYPE, STRUCT_TYPE, UNION_TYPE, USER_DEFINED_TYPE, DECIMAL_TYPE, NULL_TYPE, DATE_TYPE, VARCHAR_TYPE, CHAR_TYPE, INTERVAL_YEAR_MONTH_TYPE, INTERVAL_DAY_TIME_TYPE, TIMESTAMPLOCALTZ_TYPE]).freeze
 end
 
 module TStatusCode
@@ -146,6 +149,14 @@ module TFetchOrientation
   FETCH_LAST = 5
   VALUE_MAP = {0 => "FETCH_NEXT", 1 => "FETCH_PRIOR", 2 => "FETCH_RELATIVE", 3 => "FETCH_ABSOLUTE", 4 => "FETCH_FIRST", 5 => "FETCH_LAST"}
   VALID_VALUES = Set.new([FETCH_NEXT, FETCH_PRIOR, FETCH_RELATIVE, FETCH_ABSOLUTE, FETCH_FIRST, FETCH_LAST]).freeze
+end
+
+module TJobExecutionStatus
+  IN_PROGRESS = 0
+  COMPLETE = 1
+  NOT_AVAILABLE = 2
+  VALUE_MAP = {0 => "IN_PROGRESS", 1 => "COMPLETE", 2 => "NOT_AVAILABLE"}
+  VALID_VALUES = Set.new([IN_PROGRESS, COMPLETE, NOT_AVAILABLE]).freeze
 end
 
 class TTypeQualifierValue < ::Thrift::Union
@@ -956,7 +967,7 @@ class TOpenSessionReq
   CONFIGURATION = 4
 
   FIELDS = {
-    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     8, :enum_class => ::TProtocolVersion},
+    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     9, :enum_class => ::TProtocolVersion},
     USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username', :optional => true},
     PASSWORD => {:type => ::Thrift::Types::STRING, :name => 'password', :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
@@ -983,7 +994,7 @@ class TOpenSessionResp
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
-    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     8, :enum_class => ::TProtocolVersion},
+    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     9, :enum_class => ::TProtocolVersion},
     SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle, :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
@@ -1548,9 +1559,11 @@ end
 class TGetOperationStatusReq
   include ::Thrift::Struct, ::Thrift::Struct_Union
   OPERATIONHANDLE = 1
+  GETPROGRESSUPDATE = 2
 
   FIELDS = {
-    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle},
+    GETPROGRESSUPDATE => {:type => ::Thrift::Types::BOOL, :name => 'getProgressUpdate', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1573,6 +1586,7 @@ class TGetOperationStatusResp
   OPERATIONSTARTED = 7
   OPERATIONCOMPLETED = 8
   HASRESULTSET = 9
+  PROGRESSUPDATERESPONSE = 10
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
@@ -1583,7 +1597,8 @@ class TGetOperationStatusResp
     TASKSTATUS => {:type => ::Thrift::Types::STRING, :name => 'taskStatus', :optional => true},
     OPERATIONSTARTED => {:type => ::Thrift::Types::I64, :name => 'operationStarted', :optional => true},
     OPERATIONCOMPLETED => {:type => ::Thrift::Types::I64, :name => 'operationCompleted', :optional => true},
-    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true}
+    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true},
+    PROGRESSUPDATERESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'progressUpdateResponse', :class => ::TProgressUpdateResp, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1862,6 +1877,41 @@ class TRenewDelegationTokenResp
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TProgressUpdateResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  HEADERNAMES = 1
+  ROWS = 2
+  PROGRESSEDPERCENTAGE = 3
+  STATUS = 4
+  FOOTERSUMMARY = 5
+  STARTTIME = 6
+
+  FIELDS = {
+    HEADERNAMES => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
+    ROWS => {:type => ::Thrift::Types::LIST, :name => 'rows', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
+    PROGRESSEDPERCENTAGE => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
+    FOOTERSUMMARY => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
+    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field headerNames is unset!') unless @headerNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field rows is unset!') unless @rows
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field progressedPercentage is unset!') unless @progressedPercentage
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field footerSummary is unset!') unless @footerSummary
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field startTime is unset!') unless @startTime
+    unless @status.nil? || ::TJobExecutionStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

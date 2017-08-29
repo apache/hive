@@ -46,6 +46,7 @@ import java.io.IOException;
 
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -54,19 +55,23 @@ import java.util.Properties;
 public abstract class AbstractRecordWriter implements RecordWriter {
   static final private Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
-  final HiveConf conf;
-  final HiveEndPoint endPoint;
+  private final HiveConf conf;
+  private final HiveEndPoint endPoint;
   final Table tbl;
 
-  final IMetaStoreClient msClient;
-  protected final List<Integer> bucketIds;
-  ArrayList<RecordUpdater> updaters = null;
+  private final IMetaStoreClient msClient;
+  final List<Integer> bucketIds;
+  private ArrayList<RecordUpdater> updaters = null;
 
-  public final int totalBuckets;
+  private final int totalBuckets;
+  /**
+   * Indicates whether target table is bucketed
+   */
+  private final boolean isBucketed;
 
   private final Path partitionPath;
 
-  final AcidOutputFormat<?,?> outf;
+  private final AcidOutputFormat<?,?> outf;
   private Object[] bucketFieldData; // Pre-allocated in constructor. Updated on each write.
   private Long curBatchMinTxnId;
   private Long curBatchMaxTxnId;
@@ -109,16 +114,22 @@ public abstract class AbstractRecordWriter implements RecordWriter {
         this.tbl = twp.tbl;
         this.partitionPath = twp.partitionPath;
       }
-      this.totalBuckets = tbl.getSd().getNumBuckets();
-      if (totalBuckets <= 0) {
-        throw new StreamingException("Cannot stream to table that has not been bucketed : "
-          + endPoint);
+      this.isBucketed = tbl.getSd().getNumBuckets() > 0;
+      /**
+       *  For unbucketed tables we have exactly 1 RecrodUpdater for each AbstractRecordWriter which
+       *  ends up writing to a file bucket_000000
+       * See also {@link #getBucket(Object)}
+       */
+      this.totalBuckets = isBucketed ? tbl.getSd().getNumBuckets() : 1;
+      if(isBucketed) {
+        this.bucketIds = getBucketColIDs(tbl.getSd().getBucketCols(), tbl.getSd().getCols());
+        this.bucketFieldData = new Object[bucketIds.size()];
       }
-      this.bucketIds = getBucketColIDs(tbl.getSd().getBucketCols(), tbl.getSd().getCols());
-      this.bucketFieldData = new Object[bucketIds.size()];
+      else {
+        bucketIds = Collections.emptyList();
+      }
       String outFormatName = this.tbl.getSd().getOutputFormat();
       outf = (AcidOutputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(outFormatName), conf);
-      bucketFieldData = new Object[bucketIds.size()];
     } catch(InterruptedException e) {
       throw new StreamingException(endPoint2.toString(), e);
     } catch (MetaException | NoSuchObjectException e) {
@@ -169,6 +180,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   // returns the bucket number to which the record belongs to
   protected int getBucket(Object row) throws SerializationError {
+    if(!isBucketed) {
+      return 0;
+    }
     ObjectInspector[] inspectors = getBucketObjectInspectors();
     Object[] bucketFields = getBucketFields(row);
     return ObjectInspectorUtils.getBucketNumber(bucketFields, inspectors, totalBuckets);
@@ -204,7 +218,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     curBatchMaxTxnId = maxTxnID;
     updaters = new ArrayList<RecordUpdater>(totalBuckets);
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
-      updaters.add(bucket, null);
+      updaters.add(bucket, null);//so that get(i) returns null rather than ArrayOutOfBounds
     }
   }
 

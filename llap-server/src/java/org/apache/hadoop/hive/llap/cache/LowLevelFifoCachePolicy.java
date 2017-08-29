@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -34,7 +33,7 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   private EvictionListener evictionListener;
   private LlapOomDebugDump parentDebugDump;
 
-  public LowLevelFifoCachePolicy(Configuration conf) {
+  public LowLevelFifoCachePolicy() {
     LlapIoImpl.LOG.info("FIFO cache policy");
     buffers = new LinkedList<LlapCacheableBuffer>();
   }
@@ -83,8 +82,9 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
       while (evicted < memoryToReserve && iter.hasNext()) {
         LlapCacheableBuffer buffer = iter.next();
         long memUsage = buffer.getMemoryUsage();
-        if (memUsage < minSize || (minSize > 0  && !(buffer instanceof LlapDataBuffer))) continue;
-        if (buffer.invalidate()) {
+        if (memUsage < minSize || (minSize > 0
+            && !(buffer instanceof LlapAllocatorBuffer))) continue;
+        if (LlapCacheableBuffer.INVALIDATE_OK == buffer.invalidate()) {
           iter.remove();
           evicted += memUsage;
           evictionListener.notifyEvicted(buffer);
@@ -116,10 +116,16 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public int tryEvictContiguousData(int allocationSize, int count) {
-    long evicted = evictInternal(allocationSize * count, allocationSize);
-    // This makes granularity assumptions.
-    assert evicted % allocationSize == 0;
-    return (int)(evicted / allocationSize);
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nFIFO eviction list: ");
+    lock.lock();
+    try {
+      sb.append(buffers.size()).append(" elements)");
+    } finally {
+      lock.unlock();
+    }
+    if (parentDebugDump != null) {
+      parentDebugDump.debugDumpShort(sb);
+    }
   }
 }

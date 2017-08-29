@@ -46,6 +46,8 @@ public class TestCommandProcessorFactory {
       CommandProcessorFactory.getForHiveCommand(new String[]{" "}, conf));
     Assert.assertNull("Set role should have returned null",
       CommandProcessorFactory.getForHiveCommand(new String[]{"set role"}, conf));
+    Assert.assertNull("Set role should have returned null",
+      CommandProcessorFactory.getForHiveCommand(new String[]{"set", "role"}, conf));
     Assert.assertNull("SQL should have returned null",
       CommandProcessorFactory.getForHiveCommand(new String[]{"SELECT * FROM TABLE"}, conf));
     Assert.assertNull("Test only command should have returned null",

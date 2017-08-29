@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -47,6 +49,8 @@ import org.apache.hadoop.mapred.OutputFormat;
  * Storage handler classes are plugged in using the STORED BY 'classname'
  * clause in CREATE TABLE.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
   /**
    * @return Class providing an implementation of {@link InputFormat}
@@ -97,6 +101,12 @@ public interface HiveStorageHandler extends Configurable {
    */
   public abstract void configureInputJobProperties(TableDesc tableDesc,
     Map<String, String> jobProperties);
+
+  /**
+   * This method is called to allow the StorageHandlers the chance to
+   * populate secret keys into the job's credentials.
+   */
+  public abstract void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets);
 
   /**
    * This method is called to allow the StorageHandlers the chance

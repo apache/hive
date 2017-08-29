@@ -1,24 +1,26 @@
 set hive.mapred.mode=nonstrict;
-explain WITH web_v1 as (
+-- start query 1 in stream 0 using template query51.tpl and seed 1819994127
+explain
+WITH web_v1 as (
 select
-  ws_item_sk item_sk, d_date, sum(ws_sales_price),
+  ws_item_sk item_sk, d_date,
   sum(sum(ws_sales_price))
       over (partition by ws_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from web_sales
     ,date_dim
 where ws_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ws_item_sk is not NULL
 group by ws_item_sk, d_date),
 store_v1 as (
 select
-  ss_item_sk item_sk, d_date, sum(ss_sales_price),
+  ss_item_sk item_sk, d_date,
   sum(sum(ss_sales_price))
       over (partition by ss_item_sk order by d_date rows between unbounded preceding and current row) cume_sales
 from store_sales
     ,date_dim
 where ss_sold_date_sk=d_date_sk
-  and d_month_seq between 1193 and 1193+11
+  and d_month_seq between 1212 and 1212+11
   and ss_item_sk is not NULL
 group by ss_item_sk, d_date)
  select  *
@@ -41,3 +43,5 @@ where web_cumulative > store_cumulative
 order by item_sk
         ,d_date
 limit 100;
+
+-- end query 1 in stream 0 using template query51.tpl

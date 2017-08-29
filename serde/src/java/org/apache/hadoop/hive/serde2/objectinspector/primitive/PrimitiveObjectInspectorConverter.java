@@ -20,19 +20,20 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -292,6 +293,31 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class TimestampLocalTZConverter implements Converter {
+    final PrimitiveObjectInspector inputOI;
+    final SettableTimestampLocalTZObjectInspector outputOI;
+    final Object r;
+    final ZoneId timeZone;
+
+    public TimestampLocalTZConverter(
+        PrimitiveObjectInspector inputOI,
+        SettableTimestampLocalTZObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      this.r = outputOI.create(new TimestampTZ());
+      this.timeZone = ((TimestampLocalTZTypeInfo) outputOI.getTypeInfo()).timeZone();
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampLocalTZ(input, inputOI, timeZone));
+    }
+  }
+
   public static class HiveIntervalYearMonthConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     SettableHiveIntervalYearMonthObjectInspector outputOI;
@@ -465,6 +491,9 @@ public class PrimitiveObjectInspectorConverter {
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
+        return t;
+      case TIMESTAMPLOCALTZ:
+        t.set(((TimestampLocalTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       case INTERVAL_YEAR_MONTH:
         t.set(((HiveIntervalYearMonthObjectInspector) inputOI)

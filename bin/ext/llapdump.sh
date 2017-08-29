@@ -17,7 +17,7 @@ THISSERVICE=llapdump
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 llapdump () {
-  CLASS=org.apache.hive.jdbc.LlapDump
+  CLASS=org.apache.hadoop.hive.llap.LlapDump
   HIVE_OPTS=''
   execHiveCmd $CLASS "$@"
 }

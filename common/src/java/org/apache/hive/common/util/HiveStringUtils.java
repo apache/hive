@@ -40,6 +40,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
@@ -86,18 +87,11 @@ public class HiveStringUtils {
       }).with(
         new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()));
 
-  /**
-   * Maintain a String pool to reduce memory.
-   */
-  private static final Interner<String> STRING_INTERNER;
-
   static {
     NumberFormat numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH);
     decimalFormat = (DecimalFormat) numberFormat;
     decimalFormat.applyPattern("#.##");
-
-    STRING_INTERNER = Interners.newWeakInterner();
-  }
+}
 
   /**
    * Return the internalized string, or null if the given string is null.
@@ -108,7 +102,7 @@ public class HiveStringUtils {
     if(str == null) {
       return null;
     }
-    return STRING_INTERNER.intern(str);
+    return str.intern();
   }
 
   /**
@@ -426,7 +420,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return a <code>Collection</code> of <code>String</code> values
    */
   public static Collection<String> getTrimmedStringCollection(String str){
@@ -436,7 +430,7 @@ public class HiveStringUtils {
 
   /**
    * Splits a comma separated value <code>String</code>, trimming leading and trailing whitespace on each value.
-   * @param str a comma separated <String> with values
+   * @param str a comma separated <code>String</code> with values
    * @return an array of <code>String</code> values
    */
   public static String[] getTrimmedStrings(String str){
@@ -1073,4 +1067,84 @@ public class HiveStringUtils {
   
     return null;
   }
+
+  /**
+   * Strip comments from a sql statement, tracking when the statement contains a string literal.
+   *
+   * @param statement the input string
+   * @return a stripped statement
+   */
+  public static String removeComments(String statement) {
+    if (statement == null) {
+      return null;
+    }
+    Iterator<String> iterator = Splitter.on("\n").omitEmptyStrings().split(statement).iterator();
+    int[] startQuote = {-1};
+    StringBuilder ret = new StringBuilder(statement.length());
+    while (iterator.hasNext()) {
+      String lineWithComments = iterator.next();
+      String lineNoComments = removeComments(lineWithComments, startQuote);
+      ret.append(lineNoComments);
+      if (iterator.hasNext() && !lineNoComments.isEmpty()) {
+        ret.append("\n");
+      }
+    }
+    return ret.toString();
+  }
+
+  /**
+   * Remove comments from the current line of a query.
+   * Avoid removing comment-like strings inside quotes.
+   * @param line a line of sql text
+   * @param startQuote The value -1 indicates that line does not begin inside a string literal.
+   *                   Other values indicate that line does begin inside a string literal
+   *                   and the value passed is the delimiter character.
+   *                   The array type is used to pass int type as input/output parameter.
+   * @return the line with comments removed.
+   */
+  public static String removeComments(String line, int[] startQuote) {
+    if (line == null || line.isEmpty()) {
+      return line;
+    }
+    if (startQuote[0] == -1 && isComment(line)) {
+      return "";  //assume # can only be used at the beginning of line.
+    }
+    StringBuilder builder = new StringBuilder();
+    for (int index = 0; index < line.length();) {
+      if (startQuote[0] == -1 && index < line.length() - 1 && line.charAt(index) == '-'
+          && line.charAt(index + 1) == '-') {
+        // Jump to the end of current line. When a multiple line query is executed with -e parameter,
+        // it is passed in as one line string separated with '\n'
+        for (; index < line.length() && line.charAt(index) != '\n'; ++index);
+        continue;
+      }
+
+      char letter = line.charAt(index);
+      if (startQuote[0] == letter && (index == 0 || line.charAt(index - 1) != '\\')) {
+        startQuote[0] = -1; // Turn escape off.
+      } else if (startQuote[0] == -1 && (letter == '\'' || letter == '"') && (index == 0
+          || line.charAt(index - 1) != '\\')) {
+        startQuote[0] = letter; // Turn escape on.
+      }
+
+      builder.append(letter);
+      index++;
+    }
+
+    return builder.toString().trim();
+  }
+
+  /**
+   * Test whether a line is a comment.
+   *
+   * @param line the line to be tested
+   * @return true if a comment
+   */
+  private static boolean isComment(String line) {
+    // SQL92 comment prefix is "--"
+    // beeline also supports shell-style "#" prefix
+    String lineTrimmed = line.trim();
+    return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
+  }
+
 }

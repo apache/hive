@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -70,7 +71,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("unchecked")
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    for (int i = 1; i < ast.getChildCount(); i++) {
+    final int childCount = ast.getChildCount();
+    int i = 1;   // Skip TOK_QUERY.
+    while (i < childCount) {
       int explainOptions = ast.getChild(i).getType();
       if (explainOptions == HiveParser.KW_FORMATTED) {
         config.setFormatted(true);
@@ -85,10 +88,44 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (explainOptions == HiveParser.KW_ANALYZE) {
         config.setAnalyze(AnalyzeState.RUNNING);
         config.setExplainRootPath(ctx.getMRTmpPath());
+      } else if (explainOptions == HiveParser.KW_VECTORIZATION) {
+        config.setVectorization(true);
+        if (i + 1 < childCount) {
+          int vectorizationOption = ast.getChild(i + 1).getType();
+
+          // [ONLY]
+          if (vectorizationOption == HiveParser.TOK_ONLY) {
+            config.setVectorizationOnly(true);
+            i++;
+            if (i + 1 >= childCount) {
+              break;
+            }
+            vectorizationOption = ast.getChild(i + 1).getType();
+          }
+
+          // [SUMMARY|OPERATOR|EXPRESSION|DETAIL]
+          if (vectorizationOption == HiveParser.TOK_SUMMARY) {
+            config.setVectorizationDetailLevel(VectorizationDetailLevel.SUMMARY);
+            i++;
+          } else if (vectorizationOption == HiveParser.TOK_OPERATOR) {
+            config.setVectorizationDetailLevel(VectorizationDetailLevel.OPERATOR);
+            i++;
+          } else if (vectorizationOption == HiveParser.TOK_EXPRESSION) {
+            config.setVectorizationDetailLevel(VectorizationDetailLevel.EXPRESSION);
+            i++;
+          } else if (vectorizationOption == HiveParser.TOK_DETAIL) {
+            config.setVectorizationDetailLevel(VectorizationDetailLevel.DETAIL);
+            i++;
+          }
+        }
+      } else {
+        // UNDONE: UNKNOWN OPTION?
       }
+      i++;
     }
 
     ctx.setExplainConfig(config);
+    ctx.setExplainPlan(true);
 
     ASTNode input = (ASTNode) ast.getChild(0);
     // explain analyze is composed of two steps
@@ -101,7 +138,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       Context runCtx = null;
       try {
         runCtx = new Context(conf);
-        // runCtx and ctx share the configuration
+        // runCtx and ctx share the configuration, but not isExplainPlan()
         runCtx.setExplainConfig(config);
         Driver driver = new Driver(conf, runCtx);
         CommandProcessorResponse ret = driver.run(query);
@@ -125,6 +162,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Explain analyze (analyzing phase) for query " + query);
       config.setAnalyze(AnalyzeState.ANALYZING);
     }
+    //Creating new QueryState unfortunately causes all .q.out to change - do this in a separate ticket
+    //Sharing QueryState between generating the plan and executing the query seems bad
+    //BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(new QueryState(queryState.getConf()), input);
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, input);
     sem.analyze(input, ctx);
     sem.validate();
@@ -151,8 +191,20 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         && !config.isDependency()
         && !config.isLogical()
         && !config.isAuthorize()
-        && (HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER) && HiveConf
-            .getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")));
+        && (
+             (
+               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_EXPLAIN_USER)
+               &&
+               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")
+             )
+             ||
+             (
+               HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_SPARK_EXPLAIN_USER)
+               &&
+               HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
+             )
+           )
+        );
 
     ExplainWork work = new ExplainWork(ctx.getResFile(),
         pCtx,

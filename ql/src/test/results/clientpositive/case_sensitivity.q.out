@@ -30,7 +30,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src_thrift
-            Pruned Column Paths: lintstring.mystring
             Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (lint[0] > 0) (type: boolean)

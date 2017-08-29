@@ -122,12 +122,10 @@ POSTHOOK: Lineage: orc_llap_small.cint SIMPLE [(alltypesorc)alltypesorc.FieldSch
 POSTHOOK: Lineage: orc_llap_small.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
-PREHOOK: query: -- Cross join with no projection - do it on small table
-explain
+PREHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Cross join with no projection - do it on small table
-explain
+POSTHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -140,7 +138,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -214,34 +212,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 225
-PREHOOK: query: -- All row groups selected, no projection
-select count(*) from orc_llap_small
+PREHOOK: query: select count(*) from orc_llap_small
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
-POSTHOOK: query: -- All row groups selected, no projection
-select count(*) from orc_llap_small
+POSTHOOK: query: select count(*) from orc_llap_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 15
-PREHOOK: query: -- All row groups pruned
-select count(*) from orc_llap_small where cint < 60000000
+PREHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
-POSTHOOK: query: -- All row groups pruned
-select count(*) from orc_llap_small where cint < 60000000
+POSTHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- Hash cannot be vectorized, but now we have row-by-row reader, so the subquery runs in llap but with row-by-row reader
-explain
+PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Hash cannot be vectorized, but now we have row-by-row reader, so the subquery runs in llap but with row-by-row reader
-explain
+POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -253,7 +245,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -278,7 +270,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -326,7 +318,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -351,7 +343,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -399,7 +391,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -424,7 +416,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -473,7 +465,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -500,7 +492,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -567,8 +559,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Map 5 <- Reducer 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -590,16 +584,29 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: smallint)
                         Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: smallint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=122880)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+                  filterExpr: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+                    predicate: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cstring2 (type: string)
@@ -652,6 +659,18 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=122880)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator
@@ -669,16 +688,14 @@ POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 -735462183586256
 Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 1' is a cross product
-PREHOOK: query: -- multi-stripe test
-insert into table orc_llap
+PREHOOK: query: insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@cross_numbers
 PREHOOK: Output: default@orc_llap
-POSTHOOK: query: -- multi-stripe test
-insert into table orc_llap
+POSTHOOK: query: insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers
 POSTHOOK: type: QUERY
@@ -720,7 +737,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -745,7 +762,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -793,7 +810,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -818,7 +835,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -866,7 +883,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -891,7 +908,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -940,7 +957,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -967,7 +984,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1034,8 +1051,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Map 5 <- Reducer 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1057,16 +1076,29 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: smallint)
                         Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: smallint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=245760)
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null) (type: boolean)
+                  filterExpr: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (csmallint is not null and cbigint is not null) (type: boolean)
+                    predicate: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cstring2 (type: string)
@@ -1119,6 +1151,18 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=245760)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
 
   Stage: Stage-0
     Fetch Operator

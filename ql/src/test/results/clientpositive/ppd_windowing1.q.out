@@ -1,8 +1,6 @@
-PREHOOK: query: -- Test simple PPD through Windowing
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test simple PPD through Windowing
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -46,7 +44,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -112,7 +110,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -178,7 +176,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -244,7 +242,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -310,7 +308,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
@@ -330,11 +328,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -378,7 +374,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -444,7 +440,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -510,7 +506,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -576,7 +572,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -642,7 +638,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(_col0) + 2) (type: int), sum_window_0 (type: double)
@@ -662,11 +658,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF is same
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF is same
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -711,11 +705,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string)
+              outputColumnNames: sum_window_0, _col0
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -757,7 +751,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -824,11 +818,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string)
+              outputColumnNames: sum_window_0, _col0
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -870,7 +864,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -937,11 +931,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string)
+              outputColumnNames: sum_window_0, _col0
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -983,7 +977,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1050,11 +1044,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string)
+              outputColumnNames: sum_window_0, _col0
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1096,7 +1090,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
@@ -1116,11 +1110,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF has different args 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF has different args 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1165,11 +1157,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, _col1, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
+              outputColumnNames: sum_window_0, _col0, _col1
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1211,7 +1203,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1278,11 +1270,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, _col1, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
+              outputColumnNames: sum_window_0, _col0, _col1
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1324,7 +1316,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1391,11 +1383,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, _col1, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
+              outputColumnNames: sum_window_0, _col0, _col1
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1437,7 +1429,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), sum_window_1 (type: double)
@@ -1504,11 +1496,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, _col1, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
+              outputColumnNames: sum_window_0, _col0, _col1
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1550,7 +1542,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (UDFToInteger(_col1) + 2) (type: int), _col0 (type: double), sum_window_1 (type: double)
@@ -1570,11 +1562,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when multiple windows are involved and they don't have common partition keys 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when multiple windows are involved and they don't have common partition keys 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1616,11 +1606,11 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
-              outputColumnNames: _col0, _col1, sum_window_0
+              expressions: sum_window_0 (type: double), _col0 (type: string), _col1 (type: string)
+              outputColumnNames: sum_window_0, _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
@@ -1662,7 +1652,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col1 (type: string), _col0 (type: double), avg_window_1 (type: double)
@@ -1685,11 +1675,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when window has compound partition key
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when window has compound partition key
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1731,7 +1719,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -1798,7 +1786,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), sum_window_0 (type: double)
@@ -1821,11 +1809,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when predicate involves more than one col 
-EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when predicate involves more than one col 
-EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1866,7 +1852,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
@@ -1933,7 +1919,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)
@@ -2000,7 +1986,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumDouble
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string), sum_window_0 (type: double)

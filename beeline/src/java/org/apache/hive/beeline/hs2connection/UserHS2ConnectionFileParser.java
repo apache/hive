@@ -44,7 +44,7 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
           + (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1 ? "" : ".")
           + "beeline" + File.separator;
   public static final String ETC_HIVE_CONF_LOCATION =
-      File.separator + "etc" + File.separator + "conf" + File.separator + "hive";
+      File.separator + "etc" + File.separator + "hive" + File.separator + "conf";
 
   private final List<String> locations = new ArrayList<>();
   private static final Logger log = LoggerFactory.getLogger(UserHS2ConnectionFileParser.class);

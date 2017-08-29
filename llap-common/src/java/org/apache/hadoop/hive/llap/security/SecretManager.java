@@ -50,15 +50,27 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   implements SigningSecretManager {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
   private static final String DISABLE_MESSAGE =
-      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
+      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation (note"
+      +  " that invalid ACLs on secret key paths would mean that security is compromised)";
   private final Configuration conf;
   private final String clusterId;
 
   public SecretManager(Configuration conf, String clusterId) {
-    super(conf);
+    super(validateConfigBeforeCtor(conf));
     this.clusterId = clusterId;
     this.conf = conf;
     checkForZKDTSMBug();
+  }
+
+  private static Configuration validateConfigBeforeCtor(Configuration conf) {
+    setCurator(null); // Ensure there's no threadlocal. We don't expect one.
+    // We don't ever want to create key paths with world visibility. Why is that even an option?!!
+    String authType = conf.get(ZK_DTSM_ZK_AUTH_TYPE);
+    if (!"sasl".equals(authType)) {
+      throw new RuntimeException("Inconsistent configuration: secure cluster, but ZK auth is "
+          + authType + " instead of sasl");
+    }
+    return conf;
   }
 
   @Override
@@ -163,17 +175,26 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     zkConf.setLong(DelegationTokenManager.MAX_LIFETIME, tokenLifetime);
     zkConf.setLong(DelegationTokenManager.RENEW_INTERVAL, tokenLifetime);
     try {
-      zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_PRINCIPAL,
+      zkConf.set(ZK_DTSM_ZK_KERBEROS_PRINCIPAL,
           SecurityUtil.getServerPrincipal(principal, "0.0.0.0"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    zkConf.set(SecretManager.ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
+    zkConf.set(ZK_DTSM_ZK_KERBEROS_KEYTAB, keyTab);
     String zkPath = "zkdtsm_" + clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
-    zkConf.set(SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, zkPath);
-    setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");
-    setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_CONNECTION_STRING,
+    zkConf.set(ZK_DTSM_ZNODE_WORKING_PATH, zkPath);
+    // Hardcode SASL here. ZKDTSM only supports none or sasl and we never want none.
+    zkConf.set(ZK_DTSM_ZK_AUTH_TYPE, "sasl");
+    long sessionTimeoutMs = HiveConf.getTimeVar(
+        zkConf, ConfVars.LLAP_ZKSM_ZK_SESSION_TIMEOUT, TimeUnit.MILLISECONDS);
+    long newRetryCount =
+        (ZK_DTSM_ZK_NUM_RETRIES_DEFAULT * sessionTimeoutMs) / ZK_DTSM_ZK_SESSION_TIMEOUT_DEFAULT;
+    long connTimeoutMs = Math.max(sessionTimeoutMs, ZK_DTSM_ZK_CONNECTION_TIMEOUT_DEFAULT);
+    zkConf.set(ZK_DTSM_ZK_SESSION_TIMEOUT, Long.toString(sessionTimeoutMs));
+    zkConf.set(ZK_DTSM_ZK_CONNECTION_TIMEOUT, Long.toString(connTimeoutMs));
+    zkConf.set(ZK_DTSM_ZK_NUM_RETRIES, Long.toString(newRetryCount));
+    setZkConfIfNotSet(zkConf, ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
 
     UserGroupInformation zkUgi = null;
@@ -188,7 +209,7 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   public static SecretManager createSecretManager(Configuration conf, String clusterId) {
     String llapPrincipal = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         llapKeytab = HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
-    return SecretManager.createSecretManager(conf, llapPrincipal, llapKeytab, clusterId);
+    return createSecretManager(conf, llapPrincipal, llapKeytab, clusterId);
   }
 
   public static SecretManager createSecretManager(

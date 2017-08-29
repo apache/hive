@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   private static boolean isServerStarted = false;
-  private static int port;
+  protected static int port;
 
   public TestRemoteHiveMetaStore() {
     super();
@@ -44,16 +44,17 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
 
     port = MetaStoreUtils.findFreePort();
     System.out.println("Starting MetaStore Server on port " + port);
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge(), hiveConf);
+    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), hiveConf);
     isServerStarted = true;
 
     // This is default case with setugi off for both client and server
-    createClient(false);
+    client = createClient();
   }
 
-  protected void createClient(boolean setugi) throws Exception {
+  @Override
+  protected HiveMetaStoreClient createClient() throws Exception {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI,setugi);
-    client = new HiveMetaStoreClient(hiveConf);
+    hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, false);
+    return new HiveMetaStoreClient(hiveConf);
   }
 }

@@ -257,7 +257,7 @@ public abstract class TaskCompiler {
                     + " does not exist.");
               }
               Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getTablePath(db.getDatabase(names[0]), names[1]);
+              targetPath = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1]);
             } catch (HiveException e) {
               throw new SemanticException(e);
             } catch (MetaException e) {
@@ -530,6 +530,11 @@ public abstract class TaskCompiler {
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
+    clone.setRsToRuntimeValuesInfoMap(pCtx.getRsToRuntimeValuesInfoMap());
+    clone.setRsToSemiJoinBranchInfo(pCtx.getRsToSemiJoinBranchInfo());
+    clone.setColExprToGBMap(pCtx.getColExprToGBMap());
+    clone.setSemiJoinHints(pCtx.getSemiJoinHints());
+
     return clone;
   }
 

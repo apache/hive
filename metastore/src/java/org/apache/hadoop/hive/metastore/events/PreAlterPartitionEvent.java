@@ -20,9 +20,13 @@ package org.apache.hadoop.hive.metastore.events;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class PreAlterPartitionEvent extends PreEventContext {
 
   private final String dbName;

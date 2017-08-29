@@ -63,13 +63,13 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
     eval = new ExprNodeEvaluator[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
       assert (colList.get(i) != null);
-      eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
+      eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i), hconf);
     }
     if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
       eval = ExprNodeEvaluatorFactory.toCachedEvals(eval);
     }
     output = new Object[eval.length];
-    if (isLogInfoEnabled) {
+    if (LOG.isInfoEnabled()) {
       LOG.info("SELECT " + inputObjInspectors[0].getTypeName());
     }
     outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf.getOutputColumnNames(),
@@ -201,5 +201,4 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
 
     return true;
   }
-
 }

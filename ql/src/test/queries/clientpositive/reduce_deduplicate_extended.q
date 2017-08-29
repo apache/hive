@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.optimize.reducededuplication=true;
 set hive.optimize.reducededuplication.min.reducer=1;
 set hive.map.aggr=true;
+set hive.remove.orderby.in.subquery=false;
 
 -- HIVE-2340 deduplicate RS followed by RS
 -- hive.optimize.reducededuplication : wherther using this optimization

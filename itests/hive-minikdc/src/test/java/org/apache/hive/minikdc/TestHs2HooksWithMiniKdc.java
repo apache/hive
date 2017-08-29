@@ -24,7 +24,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -114,16 +114,16 @@ public class TestHs2HooksWithMiniKdc {
       throw error;
     }
 
-    Assert.assertNotNull(PostExecHook.ipAddress, "ipaddress is null");
-    Assert.assertNotNull(PostExecHook.userName, "userName is null");
-    Assert.assertNotNull(PostExecHook.operation , "operation is null");
+    Assert.assertNotNull("ipaddress is null", PostExecHook.ipAddress);
+    Assert.assertNotNull("userName is null", PostExecHook.userName);
+    Assert.assertNotNull("operation is null", PostExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PostExecHook.userName);
     Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
-    Assert.assertNotNull(PreExecHook.ipAddress, "ipaddress is null");
-    Assert.assertNotNull(PreExecHook.userName, "userName is null");
-    Assert.assertNotNull(PreExecHook.operation , "operation is null");
+    Assert.assertNotNull("ipaddress is null", PreExecHook.ipAddress);
+    Assert.assertNotNull("userName is null", PreExecHook.userName);
+    Assert.assertNotNull("operation is null", PreExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PreExecHook.userName);
     Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
@@ -137,12 +137,14 @@ public class TestHs2HooksWithMiniKdc {
       throw error;
     }
 
-    Assert.assertNotNull(SemanticAnalysisHook.ipAddress,
-        "semantic hook context ipaddress is null");
-    Assert.assertNotNull(SemanticAnalysisHook.userName,
-        "semantic hook context userName is null");
-    Assert.assertNotNull(SemanticAnalysisHook.command ,
-        "semantic hook context command is null");
+    Assert.assertNotNull("semantic hook context ipaddress is null",
+        SemanticAnalysisHook.ipAddress);
+    Assert.assertNotNull("semantic hook context userName is null",
+        SemanticAnalysisHook.userName);
+    Assert.assertNotNull("semantic hook context command is null",
+        SemanticAnalysisHook.command);
+    Assert.assertNotNull("semantic hook context commandType is null",
+        SemanticAnalysisHook.commandType);
     Assert.assertTrue(SemanticAnalysisHook.ipAddress,
         SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);

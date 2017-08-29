@@ -85,8 +85,7 @@ public class SparkCrossProductCheck implements PhysicalPlanResolver, Dispatcher 
   }
 
   private void warn(String msg) {
-    SessionState.getConsole().getInfoStream().println(
-        String.format("Warning: %s", msg));
+    SessionState.getConsole().printInfo("Warning: " + msg, false);
   }
 
   private void checkShuffleJoin(SparkWork sparkWork) throws SemanticException {

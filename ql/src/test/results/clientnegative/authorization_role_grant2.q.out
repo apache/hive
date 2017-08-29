@@ -2,19 +2,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: ----------------------------------------
--- grant role with admin option, then revoke admin option
--- once the admin option has been revoked, last grant should fail
-----------------------------------------
-
-create role src_role_wadmin
+PREHOOK: query: create role src_role_wadmin
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: ----------------------------------------
--- grant role with admin option, then revoke admin option
--- once the admin option has been revoked, last grant should fail
-----------------------------------------
-
-create role src_role_wadmin
+POSTHOOK: query: create role src_role_wadmin
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: grant  src_role_wadmin to user user2 with admin option
 PREHOOK: type: GRANT_ROLE
@@ -56,7 +46,6 @@ PREHOOK: query: set role src_role_wadmin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role src_role_wadmin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- grant/revoke should now fail
-grant  src_role_wadmin to user user3
+PREHOOK: query: grant  src_role_wadmin to user user3
 PREHOOK: type: GRANT_ROLE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Current user : user2 is not allowed to grant role. User has to belong to ADMIN role and have it as current role, for this action. Otherwise, grantor need to have ADMIN OPTION on role being granted and have it as a current role for this action.

@@ -93,6 +93,11 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   }
 
   @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
+    //do nothing by default
+  }
+
+  @Override
   public Configuration getConf() {
     return conf;
   }

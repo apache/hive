@@ -29,6 +29,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -43,11 +44,13 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
+  private final RelMetadataQuery mq;
 
-  protected FilterSelectivityEstimator(RelNode childRel) {
+  protected FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
+    this.mq = mq;
     this.childRel = childRel;
-    this.childCardinality = RelMetadataQuery.instance().getRowCount(childRel);
+    this.childCardinality = mq.getRowCount(childRel);
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -90,7 +93,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case IS_NOT_NULL: {
       if (childRel instanceof HiveTableScan) {
         double noOfNulls = getMaxNulls(call, (HiveTableScan) childRel);
-        double totalNoOfTuples = childRel.getRows();
+        double totalNoOfTuples = mq.getRowCount(childRel);
         if (totalNoOfTuples >= noOfNulls) {
           selectivity = (totalNoOfTuples - noOfNulls) / Math.max(totalNoOfTuples, 1);
         } else {
@@ -251,7 +254,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     double tmpNDV;
     double maxNDV = 1.0;
     InputReferencedVisitor irv;
-    RelMetadataQuery mq = RelMetadataQuery.instance();
     for (RexNode op : call.getOperands()) {
       if (op instanceof RexInputRef) {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
@@ -300,5 +302,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return op;
+  }
+
+  public Double visitLiteral(RexLiteral literal) {
+    if (literal.isAlwaysFalse()) {
+      return 0.0;
+    } else if (literal.isAlwaysTrue()) {
+      return 1.0;
+    } else {
+      assert false;
+    }
+    return null;
   }
 }

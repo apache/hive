@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,8 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -33,9 +36,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
+import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.tez.common.security.JobTokenIdentifier;
 
 public class QueryInfo {
   private final QueryIdentifier queryIdentifier;
@@ -48,6 +57,10 @@ public class QueryInfo {
   private final String[] localDirsBase;
   private final FileSystem localFs;
   private String[] localDirs;
+  private final LlapNodeId amNodeId;
+  private final String appTokenIdentifier;
+  private final Token<JobTokenIdentifier> appToken;
+  private final boolean isExternalQuery;
   // Map of states for different vertices.
 
   private final Set<QueryFragmentInfo> knownFragments =
@@ -59,11 +72,14 @@ public class QueryInfo {
   private final String tokenUserName, appId;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
-                   String dagName, String hiveQueryIdString,
-                   int dagIdentifier, String user,
-                   ConcurrentMap<String, SourceStateProto> sourceStateMap,
-                   String[] localDirsBase, FileSystem localFs, String tokenUserName,
-                   String tokenAppId) {
+    String dagName, String hiveQueryIdString,
+    int dagIdentifier, String user,
+    ConcurrentMap<String, SourceStateProto> sourceStateMap,
+    String[] localDirsBase, FileSystem localFs, String tokenUserName,
+    String tokenAppId, final LlapNodeId amNodeId,
+    String tokenIdentifier,
+    Token<JobTokenIdentifier> appToken,
+    boolean isExternalQuery) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -76,6 +92,15 @@ public class QueryInfo {
     this.localFs = localFs;
     this.tokenUserName = tokenUserName;
     this.appId = tokenAppId;
+    this.amNodeId = amNodeId;
+    this.appTokenIdentifier = tokenIdentifier;
+    this.appToken = appToken;
+    this.isExternalQuery = isExternalQuery;
+    final InetSocketAddress address =
+        NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
+    SecurityUtil.setTokenService(appToken, address);
+    // TODO Caching this and re-using across submissions breaks AM recovery, since the
+    // new AM may run on a different host/port.
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -106,6 +131,10 @@ public class QueryInfo {
     return sourceStateMap;
   }
 
+  public LlapNodeId getAmNodeId() {
+    return amNodeId;
+  }
+
   public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber,
       int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
     QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
@@ -120,6 +149,10 @@ public class QueryInfo {
 
   public List<QueryFragmentInfo> getRegisteredFragments() {
     return Lists.newArrayList(knownFragments);
+  }
+
+  public boolean isExternalQuery() {
+    return isExternalQuery;
   }
 
   private synchronized void createLocalDirs() throws IOException {
@@ -203,11 +236,13 @@ public class QueryInfo {
           sourceToEntity.put(source, entityInfo);
         }
 
-        if (lastFinishableState != fragmentInfo.canFinish()) {
-          entityInfo.setLastFinishableState(fragmentInfo.canFinish());
-          return false;
-        } else {
+        boolean canFinish = QueryFragmentInfo.canFinish(fragmentInfo);
+        if (lastFinishableState == canFinish) {
+          // State has not changed.
           return true;
+        } else {
+          entityInfo.setLastFinishableState(canFinish);
+          return false;
         }
       } finally {
         lock.unlock();
@@ -242,7 +277,7 @@ public class QueryInfo {
       }
       if (interestedEntityInfos != null) {
         for (EntityInfo entityInfo : interestedEntityInfos) {
-          boolean newFinishState = entityInfo.getFragmentInfo().canFinish();
+          boolean newFinishState = QueryFragmentInfo.canFinish(entityInfo.getFragmentInfo());
           if (newFinishState != entityInfo.getLastFinishableState()) {
             // State changed. Callback
             entityInfo.setLastFinishableState(newFinishState);
@@ -295,5 +330,23 @@ public class QueryInfo {
 
   public String getTokenAppId() {
     return appId;
+  }
+
+
+  private final BlockingQueue<UserGroupInformation> ugiPool = new LinkedBlockingQueue<>();
+
+  public UserGroupInformation getUmbilicalUgi() {
+
+    UserGroupInformation ugi;
+    ugi = ugiPool.poll();
+    if (ugi == null) {
+      ugi = UserGroupInformation.createRemoteUser(appTokenIdentifier);
+      ugi.addToken(appToken);
+    }
+    return ugi;
+  }
+
+  public void returnUmbilicalUgi(UserGroupInformation ugi) {
+    ugiPool.offer(ugi);
   }
 }

@@ -671,10 +671,11 @@ public final class ColumnPrunerProcFactory {
 
       List<FieldNode> colsAfterReplacement = new ArrayList<>();
       List<FieldNode> newCols = new ArrayList<>();
-      for (FieldNode col : cols) {
-        int index = outputCols.indexOf(col.getFieldName());
+      for (int index = 0; index < numSelColumns; index++) {
+        String colName = outputCols.get(index);
+        FieldNode col = lookupColumn(cols, colName);
         // colExprMap.size() == size of cols from SEL(*) branch
-        if (index >= 0 && index < numSelColumns) {
+        if (col != null) {
           ExprNodeDesc transformed = colExprMap.get(col.getFieldName());
           colsAfterReplacement = mergeFieldNodesWithDesc(colsAfterReplacement, transformed);
           newCols.add(col);
@@ -713,12 +714,14 @@ public final class ColumnPrunerProcFactory {
       RowSchema rs = op.getSchema();
       ArrayList<ExprNodeDesc> colList = new ArrayList<>();
       List<FieldNode> outputCols = new ArrayList<>();
-      for (FieldNode col : cols) {
-        // revert output cols of SEL(*) to ExprNodeColumnDesc
-        ColumnInfo colInfo = rs.getColumnInfo(col.getFieldName());
-        ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
-        colList.add(colExpr);
-        outputCols.add(col);
+      for (ColumnInfo colInfo : rs.getSignature()) {
+        FieldNode col = lookupColumn(cols, colInfo.getInternalName());
+        if (col != null) {
+          // revert output cols of SEL(*) to ExprNodeColumnDesc
+          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
+          colList.add(colExpr);
+          outputCols.add(col);
+        }
       }
       // replace SEL(*) to SEL(exprs)
       ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
@@ -810,11 +813,18 @@ public final class ColumnPrunerProcFactory {
         ArrayList<String> newOutputColumnNames = new ArrayList<String>();
         ArrayList<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
         ArrayList<ColumnInfo> rs_newsignature = new ArrayList<ColumnInfo>();
+        // The pruning needs to preserve the order of columns in the input schema
+        Set<String> colNames = new HashSet<String>();
         for (FieldNode col : cols) {
-          int index = originalOutputColumnNames.indexOf(col.getFieldName());
-          newOutputColumnNames.add(col.getFieldName());
-          newColList.add(originalColList.get(index));
-          rs_newsignature.add(rs_oldsignature.get(index));
+          colNames.add(col.getFieldName());
+        }
+        for (int i = 0; i < originalOutputColumnNames.size(); i++) {
+          String colName = originalOutputColumnNames.get(i);
+          if (colNames.contains(colName)) {
+            newOutputColumnNames.add(colName);
+            newColList.add(originalColList.get(i));
+            rs_newsignature.add(rs_oldsignature.get(i));
+          }
         }
         op.getSchema().setSignature(rs_newsignature);
         conf.setColList(newColList);

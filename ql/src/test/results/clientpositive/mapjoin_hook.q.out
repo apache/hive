@@ -13,8 +13,8 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest1
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
-RUN: Stage-4:MAPREDLOCAL
-RUN: Stage-1:MAPRED
+RUN: Stage-6:MAPREDLOCAL
+RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)

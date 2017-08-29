@@ -19,6 +19,7 @@
 package org.apache.hive.common.util;
 
 import static org.junit.Assert.assertEquals;
+import org.apache.hive.common.util.Murmur3.IncrementalHash32;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -219,6 +220,29 @@ public class TestMurmur3 {
       long m2 = hc[1];
       assertEquals(gl1, m1);
       assertEquals(gl2, m2);
+    }
+  }
+  
+
+  @Test
+  public void testIncremental() {
+    final int seed = 123, arraySize = 1023;
+    byte[] bytes = new byte[arraySize];
+    new Random(seed).nextBytes(bytes);
+    int expected = Murmur3.hash32(bytes);
+    Murmur3.IncrementalHash32 same = new IncrementalHash32(), diff = new IncrementalHash32();
+    for (int blockSize = 1; blockSize <= arraySize; ++blockSize) {
+      byte[] block = new byte[blockSize];
+      same.start(Murmur3.DEFAULT_SEED);
+      diff.start(Murmur3.DEFAULT_SEED);
+      for (int offset = 0; offset < arraySize; offset += blockSize) {
+        int length = Math.min(arraySize - offset, blockSize);
+        same.add(bytes, offset, length);
+        System.arraycopy(bytes, offset, block, 0, length);
+        diff.add(block, 0, length);
+      }
+      assertEquals("Block size " + blockSize, expected, same.end());
+      assertEquals("Block size " + blockSize, expected, diff.end());
     }
   }
 }

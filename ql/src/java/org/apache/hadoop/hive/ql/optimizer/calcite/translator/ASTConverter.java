@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
@@ -360,7 +359,8 @@ public class ASTConverter {
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s));
       boolean semiJoin = join instanceof SemiJoin;
-      if (join.getRight() instanceof Join) {
+      if (join.getRight() instanceof Join && !semiJoin) {
+          // should not be done for semijoin since it will change the semantics
         // Invert join inputs; this is done because otherwise the SemanticAnalyzer
         // methods to merge joins will not kick in
         JoinRelType type;

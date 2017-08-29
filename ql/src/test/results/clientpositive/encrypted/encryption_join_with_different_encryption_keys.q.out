@@ -1,12 +1,6 @@
-PREHOOK: query: --SORT_QUERY_RESULTS
-
--- Java JCE must be installed in order to hava a key length of 256 bits
-DROP TABLE IF EXISTS table_key_1 PURGE
+PREHOOK: query: DROP TABLE IF EXISTS table_key_1 PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: --SORT_QUERY_RESULTS
-
--- Java JCE must be installed in order to hava a key length of 256 bits
-DROP TABLE IF EXISTS table_key_1 PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS table_key_1 PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -121,6 +115,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -141,6 +136,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -165,6 +161,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -185,6 +182,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

@@ -40,6 +40,12 @@ public interface LlapDaemonMXBean {
   public int getNumExecutors();
 
   /**
+   * Gets the number of active executors.
+   * @return number of active executors
+   */
+  public int getNumActive();
+
+  /**
    * Gets the shuffle port.
    * @return the shuffle port
    */

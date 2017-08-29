@@ -401,9 +401,6 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
         return null;
       }
 
-      assert fsOp.getConf().getWriteType() == rsOp.getConf().getWriteType() :
-        "WriteType mismatch. fsOp is " + fsOp.getConf().getWriteType() +
-          "; rsOp is " + rsOp.getConf().getWriteType();
       // Don't do this optimization with updates or deletes
       if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
         fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
@@ -611,8 +608,11 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
             sourceTableBucketCols.clear();
             sourceTableSortCols.clear();
 
-            if (selectDesc.getColList().size() < bucketPositions.size()) {
-             // Some columns in select are pruned. This may happen if those are constants.
+            if (selectDesc.getColList().size() < bucketPositions.size()
+                || selectDesc.getColList().size() != fsOp.getSchema().getSignature().size()) {
+              // Some columns in select are pruned. This may happen if those are constants.
+              // TODO: the best solution is to hook the operator before fs with the select operator. 
+              // See smb_mapjoin_20.q for more details. 
               return null;
             }
             // Only columns can be selected for both sorted and bucketed positions

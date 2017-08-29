@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.optimize.reducededuplication=true;
 set hive.optimize.reducededuplication.min.reducer=1;
 set hive.optimize.correlation=true;
+set hive.remove.orderby.in.subquery=false;
 -- This file is used to show plans of queries involving cluster by, distribute by,
 -- order by, and sort by.
 -- Right now, Correlation optimizer check the most restrictive condition

@@ -27,12 +27,13 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
-public class OrcMetadataCache {
+public class OrcMetadataCache implements LlapOomDebugDump {
   private final ConcurrentHashMap<Object, OrcFileMetadata> metadata = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
       new ConcurrentHashMap<>();
@@ -50,7 +51,7 @@ public class OrcMetadataCache {
 
   public OrcFileMetadata putFileMetadata(OrcFileMetadata metaData) {
     long memUsage = metaData.getMemoryUsage();
-    memoryManager.reserveMemory(memUsage, false);
+    memoryManager.reserveMemory(memUsage);
     OrcFileMetadata val = metadata.putIfAbsent(metaData.getFileKey(), metaData);
     // See OrcFileMetadata; it is always unlocked, so we just "touch" it here to simulate use.
     return touchOnPut(metaData, val, memUsage);
@@ -58,7 +59,7 @@ public class OrcMetadataCache {
 
   public OrcStripeMetadata putStripeMetadata(OrcStripeMetadata metaData) {
     long memUsage = metaData.getMemoryUsage();
-    memoryManager.reserveMemory(memUsage, false);
+    memoryManager.reserveMemory(memUsage);
     OrcStripeMetadata val = stripeMetadata.putIfAbsent(metaData.getKey(), metaData);
     // See OrcStripeMetadata; it is always unlocked, so we just "touch" it here to simulate use.
     return touchOnPut(metaData, val, memUsage);
@@ -89,7 +90,7 @@ public class OrcMetadataCache {
         errorData.addError(range.getOffset(), range.getLength(), baseOffset);
       }
       long memUsage = errorData.estimateMemoryUsage();
-      memoryManager.reserveMemory(memUsage, false);
+      memoryManager.reserveMemory(memUsage);
       OrcFileEstimateErrors old = estimateErrors.putIfAbsent(fileKey, errorData);
       if (old != null) {
         errorData = old;
@@ -115,7 +116,6 @@ public class OrcMetadataCache {
   public OrcFileMetadata getFileMetadata(Object fileKey) throws IOException {
     return touchOnGet(metadata.get(fileKey));
   }
-
 
   private <T extends LlapCacheableBuffer> T touchOnGet(T result) {
     if (result != null) {
@@ -145,5 +145,19 @@ public class OrcMetadataCache {
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {
     estimateErrors.remove(buffer.getFileKey());
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    StringBuilder sb = new StringBuilder();
+    debugDumpShort(sb);
+    return sb.toString();
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nORC metadata cache state: ").append(metadata.size()).append(" files, ")
+      .append(stripeMetadata.size()).append(" stripes, ").append(estimateErrors.size())
+      .append(" files w/ORC estimate");
   }
 }

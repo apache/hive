@@ -1,14 +1,8 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+PREHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+POSTHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
@@ -23,7 +17,7 @@ STAGE PLANS:
       Edges:
         Map 1 <- Union 2 (CONTAINS)
         Map 4 <- Union 2 (CONTAINS)
-        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+        Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -36,7 +30,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -56,7 +50,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

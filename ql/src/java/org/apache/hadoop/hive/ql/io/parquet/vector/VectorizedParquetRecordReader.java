@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -72,6 +73,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<TypeInfo> columnTypesList;
   private VectorizedRowBatchCtx rbCtx;
   private List<Integer> indexColumnsWanted;
+  private Object[] partitionValues;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -82,7 +84,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   /**
    * The number of rows that have been returned.
    */
-  private long rowsReturned;
+  private long rowsReturned = 0;
 
   /**
    * The number of rows that have been reading, including the current in flight row group.
@@ -93,7 +95,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    * The total number of rows this RecordReader will eventually read. The sum of the
    * rows of all the row groups.
    */
-  protected long totalRowCount;
+  protected long totalRowCount = 0;
 
   @VisibleForTesting
   public VectorizedParquetRecordReader(
@@ -117,18 +119,36 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     try {
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
-      initialize(getSplit(oldInputSplit, conf), conf);
+      ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
+      if (inputSplit != null) {
+        initialize(inputSplit, conf);
+      }
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
+      initPartitionValues((FileSplit) oldInputSplit, conf);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
     }
   }
 
+   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
+      int partitionColumnCount = rbCtx.getPartitionColumnCount();
+      if (partitionColumnCount > 0) {
+        partitionValues = new Object[partitionColumnCount];
+        rbCtx.getPartitionValues(rbCtx, conf, fileSplit, partitionValues);
+      } else {
+        partitionValues = null;
+      }
+   }
+
   public void initialize(
     InputSplit oldSplit,
     JobConf configuration) throws IOException, InterruptedException {
+    // the oldSplit may be null during the split phase
+    if (oldSplit == null) {
+      return;
+    }
     jobConf = configuration;
     ParquetMetadata footer;
     List<BlockMetaData> blocks;
@@ -239,6 +259,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   @Override
   public void close() throws IOException {
+    if (reader != null) {
+      reader.close();
+    }
   }
 
   @Override
@@ -255,16 +278,23 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (rowsReturned >= totalRowCount) {
       return false;
     }
+
+    // Add partition cols if necessary (see VectorizedOrcInputFormat for details).
+    if (partitionValues != null) {
+      rbCtx.addPartitionColsToBatch(columnarBatch, partitionValues);
+    }
     checkEndOfRowGroup();
 
     int num = (int) Math.min(VectorizedRowBatch.DEFAULT_SIZE, totalCountLoadedSoFar - rowsReturned);
-    for (int i = 0; i < columnReaders.length; ++i) {
-      if (columnReaders[i] == null) {
-        continue;
+    if (colsToInclude.size() > 0) {
+      for (int i = 0; i < columnReaders.length; ++i) {
+        if (columnReaders[i] == null) {
+          continue;
+        }
+        columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
+        columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
+            columnTypesList.get(colsToInclude.get(i)));
       }
-      columnarBatch.cols[colsToInclude.get(i)].isRepeating = true;
-      columnReaders[i].readBatch(num, columnarBatch.cols[colsToInclude.get(i)],
-        columnTypesList.get(colsToInclude.get(i)));
     }
     rowsReturned += num;
     columnarBatch.size = num;

@@ -1,13 +1,11 @@
-PREHOOK: query: -- Currently, correlation optimizer does not support PTF operator
-EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
+PREHOOK: query: EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(x.value) OVER (PARTITION BY x.key) AS cnt FROM src x) xx
 JOIN
 (SELECT y.key as key, count(y.value) OVER (PARTITION BY y.key) AS cnt FROM src1 y) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Currently, correlation optimizer does not support PTF operator
-EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
+POSTHOOK: query: EXPLAIN SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(x.value) OVER (PARTITION BY x.key) AS cnt FROM src x) xx
 JOIN
@@ -59,7 +57,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)
@@ -144,7 +142,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)

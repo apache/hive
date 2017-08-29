@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.2.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <powermock.version>1.6.6</powermock.version>
   </properties>
 
   <dependencies>
@@ -37,7 +38,7 @@
     <!-- used for vector code-gen -->
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
+      <artifactId>hive-vector-code-gen</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -140,11 +141,6 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.iq80.snappy</groupId>
-      <artifactId>snappy</artifactId>
-      <version>${snappy.version}</version>
-    </dependency>
-    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>${commons-lang.version}</version>
@@ -234,6 +230,13 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-yarn-registry</artifactId>
+      <version>${hadoop.version}</version>
+      <optional>true</optional>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
@@ -290,6 +293,11 @@
       <artifactId>hadoop-yarn-client</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.orc</groupId>
+      <artifactId>orc-tools</artifactId>
+      <version>${orc.version}</version>
     </dependency>
 
     <dependency>
@@ -379,12 +387,22 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.calcite.avatica</groupId>
+          <artifactId>avatica-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.calcite.avatica</groupId>
@@ -428,9 +446,8 @@
       <version>${gson.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.json</groupId>
+      <groupId>com.tdunning</groupId>
       <artifactId>json</artifactId>
-      <version>${json.version}</version>
     </dependency>
     <dependency>
       <groupId>stax</groupId>
@@ -461,11 +478,6 @@
       <artifactId>mockito-all</artifactId>
       <version>${mockito-all.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>jline</groupId>
-      <artifactId>jline</artifactId>
-      <version>${jline.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -717,6 +729,24 @@
       <version>${glassfish.jersey.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -761,6 +791,7 @@
           <includes>
             <include>**/HiveLexer.g</include>
             <include>**/HiveParser.g</include>
+            <include>**/HintParser.g</include>
           </includes>
         </configuration>
       </plugin>
@@ -774,7 +805,7 @@
             <configuration>
               <target>
                 <property name="compile.classpath" refid="maven.compile.classpath"/>
-                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.ant.GenVectorCode"
+                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.tools.GenVectorCode"
                     classpath="${compile.classpath}"/>
                 <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
                 <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"/>
@@ -840,10 +871,11 @@
                   <include>org.apache.hive:hive-llap-common</include>
                   <include>org.apache.hive:hive-llap-client</include>
                   <include>org.apache.hive:hive-metastore</include>
+                  <include>org.apache.hive:hive-standalone-metastore</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware:kryo-shaded</include>
-		  <include>com.esotericsoftware:minlog</include>
-		  <include>org.objenesis:objenesis</include>
+                  <include>com.esotericsoftware:minlog</include>
+                  <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>org.apache.thrift:libfb303</include>
@@ -851,7 +883,7 @@
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
                   <include>org.jodd:jodd-core</include>
-                  <include>org.json:json</include>
+                  <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
                   <include>org.apache.hive.shims:hive-shims-0.23</include>
@@ -860,14 +892,15 @@
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
-                  <include>org.iq80.snappy:snappy</include>
+                  <include>io.airlift:aircompressor</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
-                  <include>org.apache.hive:hive-orc</include>
+                  <include>org.apache.orc:orc-core</include>
+                  <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>

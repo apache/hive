@@ -1,8 +1,6 @@
-PREHOOK: query: -- Single partition with buckets
-DROP TABLE table1
+PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Single partition with buckets
-DROP TABLE table1
+POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -130,6 +128,7 @@ STAGE PLANS:
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
               bucket_count -1
+              column.name.delimiter ,
               columns tmp_values_col1,tmp_values_col2
               columns.comments 
               columns.types string:string
@@ -144,6 +143,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns tmp_values_col1,tmp_values_col2
                 columns.comments 
                 columns.types string:string
@@ -167,6 +167,7 @@ STAGE PLANS:
             compressed: false
             GlobalTableId: 1
             directory: ### BLOBSTORE_STAGING_PATH ###
+            Dp Sort State: PARTITION_BUCKET_SORTED
             NumFilesPerFileSink: 1
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
@@ -176,6 +177,7 @@ STAGE PLANS:
                 properties:
                   bucket_count 2
                   bucket_field_name id
+                  column.name.delimiter ,
                   columns id
                   columns.comments 
                   columns.types int
@@ -207,6 +209,7 @@ STAGE PLANS:
               properties:
                 bucket_count 2
                 bucket_field_name id
+                column.name.delimiter ,
                 columns id
                 columns.comments 
                 columns.types int
@@ -234,13 +237,11 @@ POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: default@table1
-PREHOOK: query: -- Multiple partitions
-CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-POSTHOOK: query: -- Multiple partitions
-CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1

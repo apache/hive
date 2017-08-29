@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
@@ -41,7 +42,7 @@ STORED AS ORC;
 
 INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 
-explain
+explain vectorization expression
 select s, t, max(b) from vectortab2korc group by s, t;
 
 select s, t, max(b) from vectortab2korc group by s, t;

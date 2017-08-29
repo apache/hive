@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uat(ti tinyint,
+PREHOOK: query: create table acid_uat(ti tinyint,
                  si smallint,
                  i int,
                  j int,
@@ -17,9 +15,7 @@ create table acid_uat(ti tinyint,
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uat
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uat(ti tinyint,
+POSTHOOK: query: create table acid_uat(ti tinyint,
                  si smallint,
                  i int,
                  j int,

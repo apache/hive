@@ -182,14 +182,14 @@ public class PTFPartition {
     @Override
     public Object lead(int amt) throws HiveException {
       int i = idx + amt;
-      i = i >= end ? end - 1 : i;
+      i = i >= createTimeSz ? createTimeSz - 1 : i; // Lead on the whole partition not the iterator range
       return getAt(i);
     }
 
     @Override
     public Object lag(int amt) throws HiveException {
       int i = idx - amt;
-      i = i < start ? start : i;
+      i = i < 0 ? 0 : i; // Lag on the whole partition not the iterator range
       return getAt(i);
     }
 
@@ -215,7 +215,7 @@ public class PTFPartition {
   };
 
   /*
-   * provide an Iterator on the rows in a Partiton.
+   * provide an Iterator on the rows in a Partition.
    * Iterator exposes the index of the next location.
    * Client can invoke lead/lag relative to the next location.
    */

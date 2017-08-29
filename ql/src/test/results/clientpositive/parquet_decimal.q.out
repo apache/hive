@@ -1,20 +1,20 @@
-PREHOOK: query: DROP TABLE IF EXISTS dec
+PREHOOK: query: DROP TABLE IF EXISTS `dec`
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS dec
+POSTHOOK: query: DROP TABLE IF EXISTS `dec`
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dec(name string, value decimal(8,4))
+PREHOOK: query: CREATE TABLE `dec`(name string, value decimal(8,4))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dec
-POSTHOOK: query: CREATE TABLE dec(name string, value decimal(8,4))
+POSTHOOK: query: CREATE TABLE `dec`(name string, value decimal(8,4))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dec
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE dec
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec`
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@dec
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE dec
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec.txt' INTO TABLE `dec`
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@dec
@@ -38,11 +38,11 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parq_dec
 name                	string              	                    
 value               	decimal(5,2)        	                    
-PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM dec
+PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@parq_dec
-POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM dec
+POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, value FROM `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec
 POSTHOOK: Output: default@parq_dec
@@ -90,11 +90,11 @@ PREHOOK: Output: default@parq_dec
 POSTHOOK: query: TRUNCATE TABLE parq_dec
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@parq_dec
-PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM dec
+PREHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM `dec`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@parq_dec
-POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM dec
+POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec SELECT name, NULL FROM `dec`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dec
 POSTHOOK: Output: default@parq_dec
@@ -164,11 +164,11 @@ POSTHOOK: Input: default@parq_dec1
 0.2
 3.2
 8.0
-PREHOOK: query: DROP TABLE dec
+PREHOOK: query: DROP TABLE `dec`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dec
 PREHOOK: Output: default@dec
-POSTHOOK: query: DROP TABLE dec
+POSTHOOK: query: DROP TABLE `dec`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dec
 POSTHOOK: Output: default@dec

@@ -49,6 +49,7 @@ KW_AND : 'AND';
 KW_OR : 'OR';
 KW_NOT : 'NOT' | '!';
 KW_LIKE : 'LIKE';
+KW_ANY : 'ANY';
 
 KW_IF : 'IF';
 KW_EXISTS : 'EXISTS';
@@ -129,8 +130,11 @@ KW_PRECISION: 'PRECISION';
 KW_DATE: 'DATE';
 KW_DATETIME: 'DATETIME';
 KW_TIMESTAMP: 'TIMESTAMP';
+KW_TIMESTAMPLOCALTZ: 'TIMESTAMPLOCALTZ';
+KW_TIME: 'TIME';
+KW_ZONE: 'ZONE';
 KW_INTERVAL: 'INTERVAL';
-KW_DECIMAL: 'DECIMAL';
+KW_DECIMAL: 'DECIMAL' | 'DEC' | 'NUMERIC';
 KW_STRING: 'STRING';
 KW_CHAR: 'CHAR';
 KW_VARCHAR: 'VARCHAR';
@@ -332,6 +336,7 @@ KW_VALIDATE: 'VALIDATE';
 KW_NOVALIDATE: 'NOVALIDATE';
 KW_RELY: 'RELY';
 KW_NORELY: 'NORELY';
+KW_UNIQUE: 'UNIQUE';
 KW_KEY: 'KEY';
 KW_ABORT: 'ABORT';
 KW_EXTRACT: 'EXTRACT';
@@ -340,8 +345,13 @@ KW_MERGE: 'MERGE';
 KW_MATCHED: 'MATCHED';
 KW_REPL: 'REPL';
 KW_DUMP: 'DUMP';
-KW_BATCH: 'BATCH';
 KW_STATUS: 'STATUS';
+KW_VECTORIZATION: 'VECTORIZATION';
+KW_SUMMARY: 'SUMMARY';
+KW_OPERATOR: 'OPERATOR';
+KW_EXPRESSION: 'EXPRESSION';
+KW_DETAIL: 'DETAIL';
+KW_WAIT: 'WAIT';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -488,8 +498,10 @@ CharSetName
 WS  :  (' '|'\r'|'\t'|'\n') {$channel=HIDDEN;}
     ;
 
-COMMENT
-  : '--' (~('\n'|'\r'))*
-    { $channel=HIDDEN; }
-  ;
+LINE_COMMENT
+    : '--' (~('\n'|'\r'))* { $channel=HIDDEN; }
+    ;
 
+QUERY_HINT
+    : '/*' (options { greedy=false; } : QUERY_HINT|.)* '*/' { if(getText().charAt(2) != '+') { $channel=HIDDEN; } else { setText(getText().substring(3, getText().length() - 2)); } }
+    ;

@@ -105,7 +105,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * ","-separated column names columns.types: ",", ":", or ";"-separated column
    * types
    *
-   * @see AbstractSerDe#initialize(Configuration, Properties)
+   * @see  org.apache.hadoop.hive.serde2.AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration job, Properties tbl)
@@ -141,7 +141,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * @param field
    *          the Writable that contains the data
    * @return The deserialized row Object.
-   * @see AbstractSerDe#deserialize(Writable)
+   * @see  org.apache.hadoop.hive.serde2.AbstractSerDe#deserialize(Writable)
    */
   @Override
   public Object doDeserialize(Writable field) throws SerDeException {
@@ -167,7 +167,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
   /**
    * Returns the Writable Class after serialization.
    *
-   * @see AbstractSerDe#getSerializedClass()
+   * @see org.apache.hadoop.hive.serde2.AbstractSerDe#getSerializedClass()
    */
   @Override
   public Class<? extends Writable> getSerializedClass() {
@@ -185,8 +185,8 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
    * @param objInspector
    *          The ObjectInspector for the row object
    * @return The serialized Writable object
-   * @throws IOException
-   * @see AbstractSerDe#serialize(Object, ObjectInspector)
+   * @throws SerDeException
+   * @see org.apache.hadoop.hive.serde2.AbstractSerDe#serialize(Object, ObjectInspector)
    */
   @Override
   public Writable doSerialize(Object obj, ObjectInspector objInspector)
@@ -422,7 +422,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
 
   /**
    * This class is deprecated and is only used for backward compatibility. Replace by
-   * @see org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters.
+   * @see org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters .
    */
   @Deprecated
   public static class SerDeParameters extends org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters {

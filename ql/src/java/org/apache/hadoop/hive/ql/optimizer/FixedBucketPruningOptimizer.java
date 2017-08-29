@@ -135,7 +135,7 @@ public class FixedBucketPruningOptimizer extends Transform {
         return;
       }
       // the sargs are closely tied to hive.optimize.index.filter
-      SearchArgument sarg = ConvertAstToSearchArg.create(filter);
+      SearchArgument sarg = ConvertAstToSearchArg.create(ctxt.pctx.getConf(), filter);
       if (sarg == null) {
         return;
       }

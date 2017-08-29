@@ -1,11 +1,9 @@
-PREHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -78,17 +76,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_table2@ds=2
 POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -261,17 +255,13 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 9	val_9val_9	1
-PREHOOK: query: -- Since more than one partition of 'a' (the big table) is being selected,
--- it should be a map-reduce job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key WHERE a.ds is not null and b.ds = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since more than one partition of 'a' (the big table) is being selected,
--- it should be a map-reduce job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -468,17 +458,13 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 9	val_9val_9	1
 9	val_9val_9	1
-PREHOOK: query: -- Since a single partition of the big table ('a') is being selected, it should be a map-only
--- job even though multiple partitions of 'b' are being selected
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds is not null
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since a single partition of the big table ('a') is being selected, it should be a map-only
--- job even though multiple partitions of 'b' are being selected
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -675,8 +661,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 9	val_9val_9	1
 9	val_9val_9	1
-PREHOOK: query: -- This should be a map-only job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
@@ -685,8 +670,7 @@ JOIN
 (select key, value from test_table2 where ds = '1') b 
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This should be a map-only job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
@@ -868,8 +852,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 9	val_9val_9	1
-PREHOOK: query: -- This should be a map-only job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.v1, b.v2) 
 FROM 
@@ -878,8 +861,7 @@ JOIN
 (select key, concat(value, value) as v2 from test_table2 where ds = '1') b 
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This should be a map-only job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.v1, b.v2) 
 FROM 
@@ -1061,8 +1043,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5val_5val_5	1
 5	val_5val_5val_5val_5	1
 9	val_9val_9val_9val_9	1
-PREHOOK: query: -- This should be a map-reduce job
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key+a.key, concat(a.value, b.value) 
 FROM 
@@ -1071,8 +1052,7 @@ JOIN
 (select key, value from test_table2 where ds = '1') b 
 ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This should be a map-reduce job
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key+a.key, concat(a.value, b.value) 
 FROM 

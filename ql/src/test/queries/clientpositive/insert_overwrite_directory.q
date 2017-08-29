@@ -80,8 +80,8 @@ insert overwrite directory '../../data/files/array_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=',',
-'serialization.null.format'='-NA-', 'colelction.delim'='#') STORED AS TEXTFILE
+'quote.delim'= '(\"|\\[|\\])',  'field.delim'=',',
+'serialization.null.format'='-NA-', 'collection.delim'='#') STORED AS TEXTFILE
 select a, null, b from array_table;
 
 dfs -cat ../../data/files/array_table_4/000000_0;
@@ -97,8 +97,8 @@ insert overwrite directory '../../data/files/map_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=':',
-'serialization.null.format'='-NA-', 'colelction.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
+'quote.delim'= '(\"|\\[|\\])',  'field.delim'=':',
+'serialization.null.format'='-NA-', 'collection.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
 select foo, null, bar from map_table;
 
 dfs -cat ../../data/files/map_table_4/000000_0;

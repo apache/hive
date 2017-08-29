@@ -14,9 +14,7 @@ PREHOOK: query: DROP TABLE users_level
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE users_level
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- From HIVE-1257
-
-CREATE TABLE users(key string, state string, country string, country_id int)
+PREHOOK: query: CREATE TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
 "accumulo.columns.mapping" = ":rowID,info:state,info:country,info:country_id"
@@ -24,9 +22,7 @@ WITH SERDEPROPERTIES (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@users
-POSTHOOK: query: -- From HIVE-1257
-
-CREATE TABLE users(key string, state string, country string, country_id int)
+POSTHOOK: query: CREATE TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES (
 "accumulo.columns.mapping" = ":rowID,info:state,info:country,info:country_id"
@@ -246,18 +242,14 @@ WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowID,f:userid,f:level")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users_level
-PREHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
--- so no need to load any to test it
-SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
+PREHOOK: query: SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
  FROM users JOIN users_level ON (users.userid = users_level.userid) 
  GROUP BY year(from_unixtime(users.created)), level
 PREHOOK: type: QUERY
 PREHOOK: Input: default@users
 PREHOOK: Input: default@users_level
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
--- so no need to load any to test it
-SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
+POSTHOOK: query: SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
  FROM users JOIN users_level ON (users.userid = users_level.userid) 
  GROUP BY year(from_unixtime(users.created)), level
 POSTHOOK: type: QUERY

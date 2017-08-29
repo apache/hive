@@ -1,10 +1,6 @@
-PREHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-drop table partition_timestamp2_1
+PREHOOK: query: drop table partition_timestamp2_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-drop table partition_timestamp2_1
+POSTHOOK: query: drop table partition_timestamp2_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partition_timestamp2_1 (key string, value string) partitioned by (dt timestamp, region int)
 PREHOOK: type: CREATETABLE
@@ -14,8 +10,7 @@ POSTHOOK: query: create table partition_timestamp2_1 (key string, value string) 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_timestamp2_1
-PREHOOK: query: -- test timestamp literal syntax
-from (select * from src tablesample (1 rows)) x
+PREHOOK: query: from (select * from src tablesample (1 rows)) x
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1) select *
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 01:00:00', region=1) select *
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '1999-01-01 00:00:00', region=2) select *
@@ -26,8 +21,7 @@ PREHOOK: Output: default@partition_timestamp2_1@dt=1999-01-01 00%3A00%3A00.0/reg
 PREHOOK: Output: default@partition_timestamp2_1@dt=1999-01-01 01%3A00%3A00.0/region=2
 PREHOOK: Output: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
 PREHOOK: Output: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/region=1
-POSTHOOK: query: -- test timestamp literal syntax
-from (select * from src tablesample (1 rows)) x
+POSTHOOK: query: from (select * from src tablesample (1 rows)) x
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1) select *
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 01:00:00', region=1) select *
 insert overwrite table partition_timestamp2_1 partition(dt=timestamp '1999-01-01 00:00:00', region=2) select *
@@ -86,14 +80,12 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 238	val_238	1999-01-01 01:00:00	2
 238	val_238	2000-01-01 00:00:00	1
 238	val_238	2000-01-01 01:00:00	1
-PREHOOK: query: -- insert overwrite
-insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
+PREHOOK: query: insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
   select 'changed_key', 'changed_value' from src tablesample (2 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
-POSTHOOK: query: -- insert overwrite
-insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
+POSTHOOK: query: insert overwrite table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
   select 'changed_key', 'changed_value' from src tablesample (2 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -121,12 +113,10 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 changed_key	changed_value	2000-01-01 00:00:00	1
 changed_key	changed_value	2000-01-01 00:00:00	1
 238	val_238	2000-01-01 01:00:00	1
-PREHOOK: query: -- truncate
-truncate table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
+PREHOOK: query: truncate table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
-POSTHOOK: query: -- truncate
-truncate table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
+POSTHOOK: query: truncate table partition_timestamp2_1 partition(dt=timestamp '2000-01-01 00:00:00', region=1)
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
 PREHOOK: query: select distinct dt from partition_timestamp2_1
@@ -167,12 +157,10 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 238	val_238	1999-01-01 00:00:00	2
 238	val_238	1999-01-01 01:00:00	2
 238	val_238	2000-01-01 01:00:00	1
-PREHOOK: query: -- alter table add partition
-alter table partition_timestamp2_1 add partition (dt=timestamp '1980-01-02 00:00:00', region=3)
+PREHOOK: query: alter table partition_timestamp2_1 add partition (dt=timestamp '1980-01-02 00:00:00', region=3)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@partition_timestamp2_1
-POSTHOOK: query: -- alter table add partition
-alter table partition_timestamp2_1 add partition (dt=timestamp '1980-01-02 00:00:00', region=3)
+POSTHOOK: query: alter table partition_timestamp2_1 add partition (dt=timestamp '1980-01-02 00:00:00', region=3)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@partition_timestamp2_1
 POSTHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
@@ -218,13 +206,11 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 238	val_238	1999-01-01 00:00:00	2
 238	val_238	1999-01-01 01:00:00	2
 238	val_238	2000-01-01 01:00:00	1
-PREHOOK: query: -- alter table drop
-alter table partition_timestamp2_1 drop partition (dt=timestamp '1999-01-01 01:00:00', region=2)
+PREHOOK: query: alter table partition_timestamp2_1 drop partition (dt=timestamp '1999-01-01 01:00:00', region=2)
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@partition_timestamp2_1
 PREHOOK: Output: default@partition_timestamp2_1@dt=1999-01-01 01%3A00%3A00.0/region=2
-POSTHOOK: query: -- alter table drop
-alter table partition_timestamp2_1 drop partition (dt=timestamp '1999-01-01 01:00:00', region=2)
+POSTHOOK: query: alter table partition_timestamp2_1 drop partition (dt=timestamp '1999-01-01 01:00:00', region=2)
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@partition_timestamp2_1
 POSTHOOK: Output: default@partition_timestamp2_1@dt=1999-01-01 01%3A00%3A00.0/region=2
@@ -264,27 +250,23 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 #### A masked pattern was here ####
 238	val_238	1999-01-01 00:00:00	2
 238	val_238	2000-01-01 01:00:00	1
-PREHOOK: query: -- alter table set serde
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+PREHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
   set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 PREHOOK: type: ALTERPARTITION_SERIALIZER
 PREHOOK: Input: default@partition_timestamp2_1
 PREHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
-POSTHOOK: query: -- alter table set serde
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+POSTHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
   set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 POSTHOOK: type: ALTERPARTITION_SERIALIZER
 POSTHOOK: Input: default@partition_timestamp2_1
 POSTHOOK: Input: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
 POSTHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
-PREHOOK: query: -- alter table set fileformat
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+PREHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
   set fileformat rcfile
 PREHOOK: type: ALTERPARTITION_FILEFORMAT
 PREHOOK: Input: default@partition_timestamp2_1
 PREHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
-POSTHOOK: query: -- alter table set fileformat
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+POSTHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
   set fileformat rcfile
 POSTHOOK: type: ALTERPARTITION_FILEFORMAT
 POSTHOOK: Input: default@partition_timestamp2_1
@@ -340,15 +322,13 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 238	val_238	1999-01-01 00:00:00	2
 238	val_238	2000-01-01 01:00:00	1
 86	val_86	1980-01-02 00:00:00	3
-PREHOOK: query: -- alter table set location
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+PREHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
 #### A masked pattern was here ####
 PREHOOK: type: ALTERPARTITION_LOCATION
 PREHOOK: Input: default@partition_timestamp2_1
 PREHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
 #### A masked pattern was here ####
-POSTHOOK: query: -- alter table set location
-alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+POSTHOOK: query: alter table partition_timestamp2_1 partition(dt=timestamp '1980-01-02 00:00:00', region=3)
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERPARTITION_LOCATION
 POSTHOOK: Input: default@partition_timestamp2_1
@@ -373,13 +353,11 @@ dt                  	timestamp
 region              	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- alter table touch
-alter table partition_timestamp2_1 touch partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+PREHOOK: query: alter table partition_timestamp2_1 touch partition(dt=timestamp '1980-01-02 00:00:00', region=3)
 PREHOOK: type: ALTERTABLE_TOUCH
 PREHOOK: Input: default@partition_timestamp2_1
 PREHOOK: Output: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3
-POSTHOOK: query: -- alter table touch
-alter table partition_timestamp2_1 touch partition(dt=timestamp '1980-01-02 00:00:00', region=3)
+POSTHOOK: query: alter table partition_timestamp2_1 touch partition(dt=timestamp '1980-01-02 00:00:00', region=3)
 POSTHOOK: type: ALTERTABLE_TOUCH
 POSTHOOK: Input: default@partition_timestamp2_1
 POSTHOOK: Input: default@partition_timestamp2_1@dt=1980-01-02 00%3A00%3A00.0/region=3

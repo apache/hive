@@ -20,8 +20,20 @@ package org.apache.hadoop.hive.ql.plan;
 
 public class AbstractVectorDesc implements VectorDesc {
 
+  private static final long serialVersionUID = 1L;
+
+  private Class<?> vectorOpClass;
+
   @Override
-  public Object clone() throws CloneNotSupportedException {
-    throw new CloneNotSupportedException("clone not supported");
+  public Object clone() {
+    throw new RuntimeException("clone not supported");
+  }
+
+  public void setVectorOp(Class<?> vectorOpClass) {
+    this.vectorOpClass = vectorOpClass;
+  }
+
+  public Class<?> getVectorOpClass() {
+    return vectorOpClass;
   }
 }

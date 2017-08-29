@@ -1,17 +1,11 @@
-PREHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
--- the table location scheme
-
-CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: query: CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@rename_partition_table
-POSTHOOK: query: -- This test verifies that if the tables location changes, renaming a table will not change
--- the table location scheme
-
-CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+POSTHOOK: query: CREATE TABLE rename_partition_table (key STRING, value STRING) PARTITIONED BY (part STRING)
 STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
@@ -37,10 +31,7 @@ POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@rename_partition_table
 POSTHOOK: Output: default@rename_partition_table
 #### A masked pattern was here ####
-PREHOOK: query: -- If the metastore attempts to change the scheme of the table back to the default pfile, it will get
--- an exception related to the source and destination file systems not matching
-
-ALTER TABLE rename_partition_table RENAME TO rename_partition_table_renamed
+PREHOOK: query: ALTER TABLE rename_partition_table RENAME TO rename_partition_table_renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@rename_partition_table
 PREHOOK: Output: default@rename_partition_table

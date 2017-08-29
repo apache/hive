@@ -1,10 +1,6 @@
-PREHOOK: query: -- This test attempts to write a parquet table from an avro table that contains map null values
-
-DROP TABLE IF EXISTS avro_table
+PREHOOK: query: DROP TABLE IF EXISTS avro_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- This test attempts to write a parquet table from an avro table that contains map null values
-
-DROP TABLE IF EXISTS avro_table
+POSTHOOK: query: DROP TABLE IF EXISTS avro_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE IF EXISTS parquet_table
 PREHOOK: type: DROPTABLE

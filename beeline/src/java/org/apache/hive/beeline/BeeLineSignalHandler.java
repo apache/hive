@@ -25,7 +25,6 @@ package org.apache.hive.beeline;
 
 import java.sql.Statement;
 
-
 /**
  * BeeLineSignalHandler.
  *

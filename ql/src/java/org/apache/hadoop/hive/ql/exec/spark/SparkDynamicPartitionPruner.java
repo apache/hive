@@ -83,15 +83,20 @@ public class SparkDynamicPartitionPruner {
 
     for (String id : sourceWorkIds) {
       List<TableDesc> tables = work.getEventSourceTableDescMap().get(id);
+       // Real column name - on which the operation is being performed
       List<String> columnNames = work.getEventSourceColumnNameMap().get(id);
+      // Column type
+      List<String> columnTypes = work.getEventSourceColumnTypeMap().get(id);
       List<ExprNodeDesc> partKeyExprs = work.getEventSourcePartKeyExprMap().get(id);
 
       Iterator<String> cit = columnNames.iterator();
+      Iterator<String> typit = columnTypes.iterator();
       Iterator<ExprNodeDesc> pit = partKeyExprs.iterator();
       for (TableDesc t : tables) {
         String columnName = cit.next();
+        String columnType = typit.next();
         ExprNodeDesc partKeyExpr = pit.next();
-        SourceInfo si = new SourceInfo(t, partKeyExpr, columnName, jobConf);
+        SourceInfo si = new SourceInfo(t, partKeyExpr, columnName, columnType, jobConf);
         if (!sourceInfoMap.containsKey(id)) {
           sourceInfoMap.put(id, new ArrayList<SourceInfo>());
         }
@@ -171,7 +176,7 @@ public class SparkDynamicPartitionPruner {
 
     ObjectInspector oi =
         PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
-            .getPrimitiveTypeInfo(info.fieldInspector.getTypeName()));
+            .getPrimitiveTypeInfo(info.columnType));
 
     ObjectInspectorConverters.Converter converter =
         ObjectInspectorConverters.getConverter(
@@ -241,11 +246,13 @@ public class SparkDynamicPartitionPruner {
     final ObjectInspector fieldInspector;
     Set<Object> values = new HashSet<Object>();
     final String columnName;
+    final String columnType;
 
-    SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, JobConf jobConf)
+    SourceInfo(TableDesc table, ExprNodeDesc partKey, String columnName, String columnType, JobConf jobConf)
         throws SerDeException {
       this.partKey = partKey;
       this.columnName = columnName;
+      this.columnType = columnType;
 
       deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
       deserializer.initialize(jobConf, table.getProperties());

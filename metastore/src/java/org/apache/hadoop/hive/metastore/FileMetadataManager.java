@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+
 import org.apache.hadoop.fs.LocatedFileStatus;
 
 import org.apache.hadoop.fs.RemoteIterator;
@@ -114,8 +116,11 @@ public class FileMetadataManager {
     }
     for (Path file : files) {
       long fileId;
+      // TODO: use the other HdfsUtils here
+      if (!(fs instanceof DistributedFileSystem)) return;
       try {
-        fileId = SHIMS.getFileId(fs, Path.getPathWithoutSchemeAndAuthority(file).toString());
+        fileId = SHIMS.getFileId((DistributedFileSystem)fs,
+            Path.getPathWithoutSchemeAndAuthority(file).toString());
       } catch (UnsupportedOperationException ex) {
         LOG.error("Cannot cache file metadata for " + location + "; "
             + fs.getClass().getCanonicalName() + " does not support fileId");

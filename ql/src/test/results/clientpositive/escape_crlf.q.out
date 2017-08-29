@@ -32,25 +32,21 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/escape_crlf.txt' OVERW
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@base_tab
-PREHOOK: query: -- No crlf escaping
-SELECT * FROM base_tab
+PREHOOK: query: SELECT * FROM base_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_tab
 #### A masked pattern was here ####
-POSTHOOK: query: -- No crlf escaping
-SELECT * FROM base_tab
+POSTHOOK: query: SELECT * FROM base_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_tab
 #### A masked pattern was here ####
 This\nis\rthe first\r\nmulti-line field	field1-2
 This\nis\rthe second\r\nmulti-line field	field2-2
-PREHOOK: query: -- Crlf escaping
-ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
+PREHOOK: query: ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@base_tab
 PREHOOK: Output: default@base_tab
-POSTHOOK: query: -- Crlf escaping
-ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
+POSTHOOK: query: ALTER TABLE base_tab SET SERDEPROPERTIES ('escape.delim'='\\', 'serialization.escape.crlf'='true')
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@base_tab
 POSTHOOK: Output: default@base_tab
@@ -70,13 +66,11 @@ This
 is
 the second
 multi-line field	field2-2
-PREHOOK: query: -- Make sure intermediate serde works correctly
-SELECT * FROM base_tab
+PREHOOK: query: SELECT * FROM base_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_tab
 #### A masked pattern was here ####
-POSTHOOK: query: -- Make sure intermediate serde works correctly
-SELECT * FROM base_tab
+POSTHOOK: query: SELECT * FROM base_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_tab
 #### A masked pattern was here ####

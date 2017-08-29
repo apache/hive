@@ -28,6 +28,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
@@ -77,25 +78,31 @@ public class TestVectorizer {
 
   @Test
   public void testAggregateOnUDF() throws HiveException {
-    AggregationDesc aggDesc = new AggregationDesc();
-    aggDesc.setGenericUDAFName("sum");
-    ExprNodeGenericFuncDesc exprNodeDesc = new ExprNodeGenericFuncDesc();
-    exprNodeDesc.setTypeInfo(TypeInfoFactory.intTypeInfo);
-    ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
-    params.add(exprNodeDesc);
-    aggDesc.setParameters(params);
-    GenericUDFAbs absUdf = new GenericUDFAbs();
-    exprNodeDesc.setGenericUDF(absUdf);
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     ExprNodeColumnDesc colExprA = new ExprNodeColumnDesc(Integer.class, "col1", "T", false);
     ExprNodeColumnDesc colExprB = new ExprNodeColumnDesc(Integer.class, "col2", "T", false);
+
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     children.add(colExprA);
-    exprNodeDesc.setChildren(children);
+    ExprNodeGenericFuncDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFAbs(), children);
+
+    ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
+    params.add(exprNodeDesc);
+
+    List<ObjectInspector> paramOIs = new ArrayList<ObjectInspector>();
+    paramOIs.add(exprNodeDesc.getWritableObjectInspector());
+
+    AggregationDesc aggDesc = new AggregationDesc("sum",
+        FunctionRegistry.getGenericUDAFEvaluator("sum", paramOIs, false, false),
+        params,
+        false,
+        GenericUDAFEvaluator.Mode.PARTIAL1);
 
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");
 
     GroupByDesc desc = new GroupByDesc();
+    desc.setVectorDesc(new VectorGroupByDesc());
+
     desc.setOutputColumnNames(outputColumnNames);
     ArrayList<AggregationDesc> aggDescList = new ArrayList<AggregationDesc>();
     aggDescList.add(aggDesc);
@@ -106,13 +113,14 @@ public class TestVectorizer {
     grpByKeys.add(colExprB);
     desc.setKeys(grpByKeys);
 
-    GroupByOperator gbyOp = new GroupByOperator(new CompilationOpContext());
-    gbyOp.setConf(desc);
+    Operator<? extends OperatorDesc> gbyOp = OperatorFactory.get(new CompilationOpContext(), desc);
+
     desc.setMode(GroupByDesc.Mode.HASH);
 
     Vectorizer v = new Vectorizer();
+    v.testSetCurrentBaseWork(new MapWork());
     Assert.assertTrue(v.validateMapWorkOperator(gbyOp, null, false));
-    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext, false);
+    VectorGroupByOperator vectorOp = (VectorGroupByOperator) v.vectorizeOperator(gbyOp, vContext, false, null);
     Assert.assertEquals(VectorUDAFSumLong.class, vectorOp.getAggregators()[0].getClass());
     VectorUDAFSumLong udaf = (VectorUDAFSumLong) vectorOp.getAggregators()[0];
     Assert.assertEquals(FuncAbsLongToLong.class, udaf.getInputExpression().getClass());
@@ -147,8 +155,9 @@ public class TestVectorizer {
     andExprDesc.setChildren(children3);
 
     Vectorizer v = new Vectorizer();
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.FILTER));
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.PROJECTION));
+    v.testSetCurrentBaseWork(new MapWork());
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.FILTER, false));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.PROJECTION, false));
   }
 
   /**
@@ -196,6 +205,7 @@ public class TestVectorizer {
     map.setConf(mjdesc);
 
     Vectorizer vectorizer = new Vectorizer();
+    vectorizer.testSetCurrentBaseWork(new MapWork());
     Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 
@@ -212,6 +222,39 @@ public class TestVectorizer {
       map.setConf(mjdesc);
 
       Vectorizer vectorizer = new Vectorizer();
+      vectorizer.testSetCurrentBaseWork(new MapWork());
       Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
+  }
+
+  @Test
+  public void testExprNodeDynamicValue() {
+    ExprNodeDesc exprNode = new ExprNodeDynamicValueDesc(new DynamicValue("id1", TypeInfoFactory.stringTypeInfo));
+    Vectorizer v = new Vectorizer();
+    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.FILTER, false));
+    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.PROJECTION, false));
+  }
+
+  @Test
+  public void testExprNodeBetweenWithDynamicValue() {
+    ExprNodeDesc notBetween = new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, Boolean.FALSE);
+    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(String.class, "col1", "table", false);
+    ExprNodeDesc minExpr = new ExprNodeDynamicValueDesc(new DynamicValue("id1", TypeInfoFactory.stringTypeInfo));
+    ExprNodeDesc maxExpr = new ExprNodeDynamicValueDesc(new DynamicValue("id2", TypeInfoFactory.stringTypeInfo));
+
+    ExprNodeGenericFuncDesc betweenExpr = new ExprNodeGenericFuncDesc();
+    GenericUDF betweenUdf = new GenericUDFBetween();
+    betweenExpr.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    betweenExpr.setGenericUDF(betweenUdf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(notBetween);
+    children1.add(colExpr);
+    children1.add(minExpr);
+    children1.add(maxExpr);
+    betweenExpr.setChildren(children1);
+
+    Vectorizer v = new Vectorizer();
+    v.testSetCurrentBaseWork(new MapWork());
+    boolean valid = v.validateExprNodeDesc(betweenExpr, "Test", Mode.FILTER, false);
+    Assert.assertTrue(valid);
   }
 }

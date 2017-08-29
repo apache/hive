@@ -1,14 +1,8 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
-
-
-create table t1(key string, value string) partitioned by (ds string)
+PREHOOK: query: create table t1(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
-
-
-create table t1(key string, value string) partitioned by (ds string)
+POSTHOOK: query: create table t1(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -116,7 +110,7 @@ STAGE PLANS:
             1 _col0 (type: string)
           Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: count(1)
+            aggregations: count()
             mode: hash
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

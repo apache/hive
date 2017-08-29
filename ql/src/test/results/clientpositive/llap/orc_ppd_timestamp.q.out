@@ -18,13 +18,11 @@ POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.ts EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
-PREHOOK: query: -- timestamp data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select sum(hash(*)) from newtypesorc where cast(ts as string)='2011-01-01 01:01:01'
+PREHOOK: query: select sum(hash(*)) from newtypesorc where cast(ts as string)='2011-01-01 01:01:01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- timestamp data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select sum(hash(*)) from newtypesorc where cast(ts as string)='2011-01-01 01:01:01'
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where cast(ts as string)='2011-01-01 01:01:01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####

@@ -36,13 +36,11 @@ value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbase_ck_5
-PREHOOK: query: -- 165,238,27,311,86
-select * from hbase_ck_5
+PREHOOK: query: select * from hbase_ck_5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
-POSTHOOK: query: -- 165,238,27,311,86
-select * from hbase_ck_5
+POSTHOOK: query: select * from hbase_ck_5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
@@ -51,12 +49,10 @@ POSTHOOK: Input: default@hbase_ck_5
 {"col1":"27","col2":"1027","col3":"2027"}	val_27
 {"col1":"311","col2":"1311","col3":"2311"}	val_311
 {"col1":"86","col2":"1086","col3":"2086"}	val_86
-PREHOOK: query: -- 238
-explain
+PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 = '238' AND key.col2 = '1238'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 238
-explain
+POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 = '238' AND key.col2 = '1238'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -89,12 +85,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 {"col1":"238","col2":"1238","col3":"2238"}	val_238
-PREHOOK: query: -- 165,238
-explain
+PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 >= '165' AND key.col1 < '27'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 165,238
-explain
+POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 >= '165' AND key.col1 < '27'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -127,12 +121,10 @@ POSTHOOK: Input: default@hbase_ck_5
 #### A masked pattern was here ####
 {"col1":"165","col2":"1165","col3":"2165"}	val_165
 {"col1":"238","col2":"1238","col3":"2238"}	val_238
-PREHOOK: query: -- 238,311
-explain
+PREHOOK: query: explain
 select * from hbase_ck_5 where key.col1 > '100' AND key.col2 >= '1238'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 238,311
-explain
+POSTHOOK: query: explain
 select * from hbase_ck_5 where key.col1 > '100' AND key.col2 >= '1238'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

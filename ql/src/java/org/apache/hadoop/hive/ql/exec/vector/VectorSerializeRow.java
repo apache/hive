@@ -19,19 +19,28 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 /**
  * This class serializes columns from a row in a VectorizedRowBatch into a serialization format.
@@ -49,581 +58,76 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
   private T serializeWrite;
 
+  private TypeInfo[] typeInfos;
+
+  private ObjectInspector[] objectInspectors;
+
+  private int[] outputColumnNums;
+
+  private VectorExtractRow vectorExtractRow;
+
   public VectorSerializeRow(T serializeWrite) {
     this();
     this.serializeWrite = serializeWrite;
+    vectorExtractRow = new VectorExtractRow();
   }
 
   // Not public since we must have the serialize write object.
   private VectorSerializeRow() {
   }
 
-  private abstract class Writer<W extends SerializeWrite> {
-    protected int columnIndex;
-
-    Writer(int columnIndex) {
-      this.columnIndex = columnIndex;
-    }
-
-    abstract boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException;
-  }
-
-  private abstract class AbstractLongWriter extends Writer<T> {
-
-    AbstractLongWriter(int columnIndex) {
-      super(columnIndex);
-    }
-  }
-
-  private class BooleanWriter extends AbstractLongWriter {
-
-    BooleanWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeBoolean(colVector.vector[0] != 0);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeBoolean(colVector.vector[batchIndex] != 0);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class ByteWriter extends AbstractLongWriter {
-
-	  ByteWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeByte((byte) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeByte((byte) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class ShortWriter extends AbstractLongWriter {
-
-    ShortWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeShort((short) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeShort((short) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class IntWriter extends AbstractLongWriter {
-
-    IntWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeInt((int) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeInt((int) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class LongWriter extends AbstractLongWriter {
-
-    LongWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeLong(colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeLong(colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class DateWriter extends AbstractLongWriter {
-
-    DateWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeDate((int) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeDate((int) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class TimestampWriter extends Writer {
-
-    Timestamp scratchTimestamp;
-
-    TimestampWriter(int columnIndex) {
-      super(columnIndex);
-      scratchTimestamp =  new Timestamp(0);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      TimestampColumnVector colVector = (TimestampColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          colVector.timestampUpdate(scratchTimestamp, 0);
-          serializeWrite.writeTimestamp(scratchTimestamp);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          colVector.timestampUpdate(scratchTimestamp, batchIndex);
-          serializeWrite.writeTimestamp(scratchTimestamp);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class IntervalYearMonthWriter extends AbstractLongWriter {
-
-    IntervalYearMonthWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      LongColumnVector colVector = (LongColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeHiveIntervalYearMonth((int) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeHiveIntervalYearMonth((int) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class IntervalDayTimeWriter extends Writer {
-
-    private HiveIntervalDayTime hiveIntervalDayTime;
-
-    IntervalDayTimeWriter(int columnIndex) {
-      super(columnIndex);
-      hiveIntervalDayTime = new HiveIntervalDayTime();
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      IntervalDayTimeColumnVector colVector = (IntervalDayTimeColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(0));
-          serializeWrite.writeHiveIntervalDayTime(hiveIntervalDayTime);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          hiveIntervalDayTime.set(colVector.asScratchIntervalDayTime(batchIndex));
-          serializeWrite.writeHiveIntervalDayTime(hiveIntervalDayTime);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private abstract class AbstractDoubleWriter extends Writer<T> {
-
-    AbstractDoubleWriter(int columnIndex) {
-      super(columnIndex);
-    }
-  }
-
-  private class FloatWriter extends AbstractDoubleWriter {
-
-    FloatWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      DoubleColumnVector colVector = (DoubleColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeFloat((float) colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeFloat((float) colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class DoubleWriter extends AbstractDoubleWriter {
-
-    DoubleWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      DoubleColumnVector colVector = (DoubleColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeDouble(colVector.vector[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeDouble(colVector.vector[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class StringWriter extends Writer<T> {
-
-    StringWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      BytesColumnVector colVector = (BytesColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeString(colVector.vector[0], colVector.start[0], colVector.length[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeString(colVector.vector[batchIndex],
-                      colVector.start[batchIndex], colVector.length[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class BinaryWriter extends Writer<T> {
-
-    BinaryWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      BytesColumnVector colVector = (BytesColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeBinary(colVector.vector[0], colVector.start[0], colVector.length[0]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeBinary(colVector.vector[batchIndex],
-                      colVector.start[batchIndex], colVector.length[batchIndex]);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private class HiveDecimalWriter extends Writer<T> {
-    protected HiveDecimalWritable[] vector;
-
-    HiveDecimalWriter(int columnIndex) {
-      super(columnIndex);
-    }
-
-    @Override
-    boolean apply(VectorizedRowBatch batch, int batchIndex) throws IOException {
-      DecimalColumnVector colVector = (DecimalColumnVector) batch.cols[columnIndex];
-
-      if (colVector.isRepeating) {
-        if (colVector.noNulls || !colVector.isNull[0]) {
-          // We serialize specifying the HiveDecimalWritable but also the desired
-          // serialization scale that will be used by text serialization for adding
-          // trailing fractional zeroes.
-          serializeWrite.writeHiveDecimal(colVector.vector[0], colVector.scale);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      } else {
-        if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeHiveDecimal(colVector.vector[batchIndex], colVector.scale);
-          return true;
-        } else {
-          serializeWrite.writeNull();
-          return false;
-        }
-      }
-    }
-  }
-
-  private Writer<T>[] writers;
-
-  private Writer<T> createWriter(TypeInfo typeInfo, int columnIndex) throws HiveException {
-    Writer<T> writer;
-    Category category = typeInfo.getCategory();
-    switch (category) {
-    case PRIMITIVE:
-      {
-        PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-        PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
-        switch (primitiveCategory) {
-        // case VOID:
-        //   UNDONE:
-        // break;
-        case BOOLEAN:
-          writer = new BooleanWriter(columnIndex);
-          break;
-        case BYTE:
-          writer = new ByteWriter(columnIndex);
-          break;
-        case SHORT:
-          writer = new ShortWriter(columnIndex);
-          break;
-        case INT:
-          writer = new IntWriter(columnIndex);
-          break;
-        case LONG:
-          writer = new LongWriter(columnIndex);
-          break;
-        case DATE:
-          writer = new DateWriter(columnIndex);
-          break;
-        case TIMESTAMP:
-          writer = new TimestampWriter(columnIndex);
-          break;
-        case FLOAT:
-          writer = new FloatWriter(columnIndex);
-          break;
-        case DOUBLE:
-          writer = new DoubleWriter(columnIndex);
-          break;
-        case STRING:
-        case CHAR:
-        case VARCHAR:
-          // We store CHAR and VARCHAR without pads, so use STRING writer class.
-          writer = new StringWriter(columnIndex);
-          break;
-        case BINARY:
-          writer = new BinaryWriter(columnIndex);
-          break;
-        case DECIMAL:
-          writer = new HiveDecimalWriter(columnIndex);
-          break;
-        case INTERVAL_YEAR_MONTH:
-          writer = new IntervalYearMonthWriter(columnIndex);
-          break;
-        case INTERVAL_DAY_TIME:
-          writer = new IntervalDayTimeWriter(columnIndex);
-          break;
-        default:
-          throw new HiveException("Unexpected primitive type category " + primitiveCategory);
-        }
-      }
-      break;
-    default:
-      throw new HiveException("Unexpected type category " + category);
-    }
-    return writer;
-  }
-
   public void init(List<String> typeNames, int[] columnMap) throws HiveException {
 
-    writers = new Writer[typeNames.size()];
-    for (int i = 0; i < typeNames.size(); i++) {
-      String typeName = typeNames.get(i);
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      int columnIndex = columnMap[i];
-      Writer<T> writer = createWriter(typeInfo, columnIndex);
-      writers[i] = writer;
+    final int size = typeNames.size();
+    typeInfos = new TypeInfo[size];
+    outputColumnNums = Arrays.copyOf(columnMap, size);
+    objectInspectors = new ObjectInspector[size];
+    for (int i = 0; i < size; i++) {
+      final TypeInfo typeInfo =
+          TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
+      typeInfos[i] = typeInfo;
+      objectInspectors[i] =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     }
+
+    vectorExtractRow.init(typeInfos, outputColumnNums);
   }
 
   public void init(List<String> typeNames) throws HiveException {
 
-    writers = new Writer[typeNames.size()];
-    for (int i = 0; i < typeNames.size(); i++) {
-      String typeName = typeNames.get(i);
-      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
-      Writer<T> writer = createWriter(typeInfo, i);
-      writers[i] = writer;
+    final int size = typeNames.size();
+    typeInfos = new TypeInfo[size];
+    outputColumnNums = new int[size];
+    objectInspectors = new ObjectInspector[size];
+    for (int i = 0; i < size; i++) {
+      final TypeInfo typeInfo =
+          TypeInfoUtils.getTypeInfoFromTypeString(typeNames.get(i));
+      typeInfos[i] = typeInfo;
+      objectInspectors[i] =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
+      outputColumnNums[i] = i;
     }
+
+    vectorExtractRow.init(typeInfos);
   }
 
   public void init(TypeInfo[] typeInfos, int[] columnMap)
       throws HiveException {
 
-    writers = new Writer[typeInfos.length];
-    for (int i = 0; i < typeInfos.length; i++) {
-      int columnIndex = columnMap[i];
-      Writer<T> writer = createWriter(typeInfos[i], columnIndex);
-      writers[i] = writer;
+    final int size = typeInfos.length;
+    this.typeInfos = Arrays.copyOf(typeInfos, size);
+    outputColumnNums = Arrays.copyOf(columnMap, size);
+    objectInspectors = new ObjectInspector[size];
+    for (int i = 0; i < size; i++) {
+      objectInspectors[i] =
+          TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfos[i]);
     }
+
+    vectorExtractRow.init(this.typeInfos, outputColumnNums);
   }
 
   public int getCount() {
-    return writers.length;
+    return typeInfos.length;
   }
 
   public void setOutput(Output output) {
@@ -645,12 +149,229 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
     hasAnyNulls = false;
     isAllNulls = true;
-    for (Writer<T> writer : writers) {
-      if (!writer.apply(batch, batchIndex)) {
-        hasAnyNulls = true;
-      } else {
-        isAllNulls = false;
+    for (int i = 0; i < typeInfos.length; i++) {
+      final ColumnVector colVector = batch.cols[outputColumnNums[i]];
+      serializeWrite(colVector, typeInfos[i], objectInspectors[i], batchIndex);
+    }
+  }
+
+  private void serializeWrite(
+      ColumnVector colVector, TypeInfo typeInfo,
+      ObjectInspector objectInspector, int batchIndex) throws IOException {
+
+    int adjustedBatchIndex;
+    if (colVector.isRepeating) {
+      adjustedBatchIndex = 0;
+    } else {
+      adjustedBatchIndex = batchIndex;
+    }
+    if (!colVector.noNulls && colVector.isNull[adjustedBatchIndex]) {
+      serializeWrite.writeNull();
+      hasAnyNulls = true;
+      return;
+    }
+    isAllNulls = false;
+
+    final Category category = typeInfo.getCategory();
+    switch (category) {
+    case PRIMITIVE:
+      serializePrimitiveWrite(colVector, (PrimitiveTypeInfo) typeInfo, adjustedBatchIndex);
+      break;
+    case LIST:
+      serializeListWrite(
+          (ListColumnVector) colVector,
+          (ListTypeInfo) typeInfo,
+          (ListObjectInspector) objectInspector,
+          adjustedBatchIndex);
+      break;
+    case MAP:
+      serializeMapWrite(
+          (MapColumnVector) colVector,
+          (MapTypeInfo) typeInfo,
+          (MapObjectInspector) objectInspector,
+          adjustedBatchIndex);
+      break;
+    case STRUCT:
+      serializeStructWrite(
+          (StructColumnVector) colVector,
+          (StructTypeInfo) typeInfo,
+          (StructObjectInspector) objectInspector,
+          adjustedBatchIndex);
+      break;
+    case UNION:
+      serializeUnionWrite(
+          (UnionColumnVector) colVector,
+          (UnionTypeInfo) typeInfo,
+          (UnionObjectInspector) objectInspector,
+          adjustedBatchIndex);
+      break;
+    default:
+      throw new RuntimeException("Unexpected category " + category);
+    }
+  }
+
+  private void serializeUnionWrite(
+      UnionColumnVector colVector, UnionTypeInfo typeInfo,
+      UnionObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+
+    final byte tag = (byte) colVector.tags[adjustedBatchIndex];
+    final ColumnVector fieldColumnVector = colVector.fields[tag];
+    final TypeInfo objectTypeInfo = typeInfo.getAllUnionObjectTypeInfos().get(tag);
+
+    serializeWrite.beginUnion(tag);
+    serializeWrite(
+        fieldColumnVector,
+        objectTypeInfo,
+        objectInspector.getObjectInspectors().get(tag),
+        adjustedBatchIndex);
+    serializeWrite.finishUnion();
+  }
+
+  private void serializeStructWrite(
+      StructColumnVector colVector, StructTypeInfo typeInfo,
+      StructObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+
+    final ColumnVector[] fieldColumnVectors = colVector.fields;
+    final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+    final List<? extends StructField> structFields = objectInspector.getAllStructFieldRefs();
+    final int size = fieldTypeInfos.size();
+
+    final List list = (List) vectorExtractRow.extractRowColumn(
+        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+
+    serializeWrite.beginStruct(list);
+    for (int i = 0; i < size; i++) {
+      if (i > 0) {
+        serializeWrite.separateStruct();
       }
+      serializeWrite(
+          fieldColumnVectors[i],
+          fieldTypeInfos.get(i),
+          structFields.get(i).getFieldObjectInspector(),
+          adjustedBatchIndex);
+    }
+    serializeWrite.finishStruct();
+  }
+
+  private void serializeMapWrite(
+      MapColumnVector colVector, MapTypeInfo typeInfo,
+      MapObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+
+    final ColumnVector keyColumnVector = colVector.keys;
+    final ColumnVector valueColumnVector = colVector.values;
+    final TypeInfo keyTypeInfo = typeInfo.getMapKeyTypeInfo();
+    final TypeInfo valueTypeInfo = typeInfo.getMapValueTypeInfo();
+    final int offset = (int) colVector.offsets[adjustedBatchIndex];
+    final int size = (int) colVector.lengths[adjustedBatchIndex];
+
+    final Map map = (Map) vectorExtractRow.extractRowColumn(
+        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+
+    serializeWrite.beginMap(map);
+    for (int i = 0; i < size; i++) {
+      if (i > 0) {
+        serializeWrite.separateKeyValuePair();
+      }
+      serializeWrite(keyColumnVector, keyTypeInfo,
+          objectInspector.getMapKeyObjectInspector(), offset + i);
+      serializeWrite.separateKey();
+      serializeWrite(valueColumnVector, valueTypeInfo,
+          objectInspector.getMapValueObjectInspector(), offset + i);
+    }
+    serializeWrite.finishMap();
+  }
+
+  private void serializeListWrite(
+      ListColumnVector colVector, ListTypeInfo typeInfo,
+      ListObjectInspector objectInspector, int adjustedBatchIndex) throws IOException {
+
+    final ColumnVector childColumnVector = colVector.child;
+    final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
+    final int offset = (int) colVector.offsets[adjustedBatchIndex];
+    final int size = (int) colVector.lengths[adjustedBatchIndex];
+
+    final ObjectInspector elementObjectInspector = objectInspector.getListElementObjectInspector();
+    final List list = (List) vectorExtractRow.extractRowColumn(
+        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+
+    serializeWrite.beginList(list);
+    for (int i = 0; i < size; i++) {
+      if (i > 0) {
+        serializeWrite.separateList();
+      }
+      serializeWrite(
+          childColumnVector, elementTypeInfo, elementObjectInspector, offset + i);
+    }
+    serializeWrite.finishList();
+  }
+
+  private void serializePrimitiveWrite(
+      ColumnVector colVector, PrimitiveTypeInfo typeInfo, int adjustedBatchIndex) throws IOException {
+
+    final PrimitiveCategory primitiveCategory = typeInfo.getPrimitiveCategory();
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      serializeWrite.writeBoolean(((LongColumnVector) colVector).vector[adjustedBatchIndex] != 0);
+      break;
+    case BYTE:
+      serializeWrite.writeByte((byte) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case SHORT:
+      serializeWrite.writeShort((short) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case INT:
+      serializeWrite.writeInt((int) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case LONG:
+      serializeWrite.writeLong(((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case DATE:
+      serializeWrite.writeDate((int) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case TIMESTAMP:
+      serializeWrite.writeTimestamp(((TimestampColumnVector) colVector).asScratchTimestamp(adjustedBatchIndex));
+      break;
+    case FLOAT:
+      serializeWrite.writeFloat((float) ((DoubleColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case DOUBLE:
+      serializeWrite.writeDouble(((DoubleColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+      {
+        // We store CHAR and VARCHAR without pads, so write with STRING.
+        final BytesColumnVector bytesColVector = (BytesColumnVector) colVector;
+        serializeWrite.writeString(
+            bytesColVector.vector[adjustedBatchIndex],
+            bytesColVector.start[adjustedBatchIndex],
+            bytesColVector.length[adjustedBatchIndex]);
+      }
+      break;
+    case BINARY:
+      {
+        final BytesColumnVector bytesColVector = (BytesColumnVector) colVector;
+        serializeWrite.writeBinary(
+            bytesColVector.vector[adjustedBatchIndex],
+            bytesColVector.start[adjustedBatchIndex],
+            bytesColVector.length[adjustedBatchIndex]);
+      }
+      break;
+    case DECIMAL:
+      {
+        final DecimalColumnVector decimalColVector = (DecimalColumnVector) colVector;
+        serializeWrite.writeHiveDecimal(decimalColVector.vector[adjustedBatchIndex], decimalColVector.scale);
+      }
+      break;
+    case INTERVAL_YEAR_MONTH:
+      serializeWrite.writeHiveIntervalYearMonth((int) ((LongColumnVector) colVector).vector[adjustedBatchIndex]);
+      break;
+    case INTERVAL_DAY_TIME:
+      serializeWrite.writeHiveIntervalDayTime(((IntervalDayTimeColumnVector) colVector).asScratchIntervalDayTime(adjustedBatchIndex));
+      break;
+    default:
+      throw new RuntimeException("Unexpected primitive category " + primitiveCategory);
     }
   }
 

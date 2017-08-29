@@ -128,7 +128,7 @@ public class TestHiveMetaStoreTxns {
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeValid(5L, 10L));
 
-    validTxns = new ValidReadTxnList("10:5:4:5:6");
+    validTxns = new ValidReadTxnList("10:5:4,5,6:");
     Assert.assertEquals(ValidTxnList.RangeResponse.NONE,
         validTxns.isTxnRangeValid(4,6));
     Assert.assertEquals(ValidTxnList.RangeResponse.ALL,
@@ -223,15 +223,15 @@ public class TestHiveMetaStoreTxns {
   @Test
   public void stringifyValidTxns() throws Exception {
     // Test with just high water mark
-    ValidTxnList validTxns = new ValidReadTxnList("1:" + Long.MAX_VALUE + ":");
+    ValidTxnList validTxns = new ValidReadTxnList("1:" + Long.MAX_VALUE + "::");
     String asString = validTxns.toString();
-    Assert.assertEquals("1:" + Long.MAX_VALUE + ":", asString);
+    Assert.assertEquals("1:" + Long.MAX_VALUE + "::", asString);
     validTxns = new ValidReadTxnList(asString);
     Assert.assertEquals(1, validTxns.getHighWatermark());
     Assert.assertNotNull(validTxns.getInvalidTransactions());
     Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
     asString = validTxns.toString();
-    Assert.assertEquals("1:" + Long.MAX_VALUE + ":", asString);
+    Assert.assertEquals("1:" + Long.MAX_VALUE + "::", asString);
     validTxns = new ValidReadTxnList(asString);
     Assert.assertEquals(1, validTxns.getHighWatermark());
     Assert.assertNotNull(validTxns.getInvalidTransactions());

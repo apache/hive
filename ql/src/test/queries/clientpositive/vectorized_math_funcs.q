@@ -1,9 +1,10 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
+set hive.fetch.task.conversion=none;
 
 -- Test math functions in vectorized mode to verify they run correctly end-to-end.
 
-explain 
+explain vectorization expression
 select
    cdouble
   ,Round(cdouble, 2)
@@ -15,9 +16,9 @@ select
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+-- Use log2 as a representative function to test all input types.
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+-- Use 15601.0 to test zero handling, as there are no zeroes in the table
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -47,7 +48,7 @@ select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+-- Test nesting
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
 -- limit output to a reasonably small number of rows
@@ -60,16 +61,16 @@ select
   ,Round(cdouble, 2)
   ,Floor(cdouble)
   ,Ceil(cdouble)
-  -- Omit rand() from runtime test because it's nondeterministic.
-  -- ,Rand()
+-- Omit rand() from runtime test because it's nondeterministic.
+-- ,Rand()
   ,Rand(98007)
   ,Exp(ln(cdouble))
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+-- Use log2 as a representative function to test all input types.
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+-- Use 15601.0 to test zero handling, as there are no zeroes in the table
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -99,7 +100,7 @@ select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+-- Test nesting
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
 -- limit output to a reasonably small number of rows

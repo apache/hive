@@ -2,18 +2,17 @@ PREHOOK: query: DROP VIEW xxx4
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx4
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- views and tables share the same namespace
-CREATE VIEW xxx4 AS SELECT key FROM src
+PREHOOK: query: CREATE VIEW xxx4 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@xxx4
-POSTHOOK: query: -- views and tables share the same namespace
-CREATE VIEW xxx4 AS SELECT key FROM src
+POSTHOOK: query: CREATE VIEW xxx4 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx4
+POSTHOOK: Lineage: xxx4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE xxx4(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

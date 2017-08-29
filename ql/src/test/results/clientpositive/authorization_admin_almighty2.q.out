@@ -1,9 +1,7 @@
-PREHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
-use default
+PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- test commands such as dfs,add,delete,compile allowed only by admin user, after following statement
-use default
+POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: set role admin

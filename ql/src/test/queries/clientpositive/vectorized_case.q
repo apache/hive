@@ -2,7 +2,7 @@ set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled = true
 ;
-explain
+explain vectorization expression
 select 
   csmallint,
   case 
@@ -37,7 +37,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 ;
-explain
+explain vectorization expression
 select 
   csmallint,
   case 
@@ -55,3 +55,21 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 ;
+explain vectorization expression
+select 
+  sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
+  sum(case when cint % 2 = 1 then 1 else 0 end) as codd
+from alltypesorc;
+select 
+  sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
+  sum(case when cint % 2 = 1 then 1 else 0 end) as codd
+from alltypesorc;
+explain vectorization expression
+select 
+  sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
+  sum(case when cint % 2 = 1 then cint else 0 end) as codd
+from alltypesorc;
+select 
+  sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
+  sum(case when cint % 2 = 1 then cint else 0 end) as codd
+from alltypesorc;
