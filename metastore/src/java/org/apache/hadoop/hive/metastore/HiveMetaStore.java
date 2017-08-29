@@ -497,10 +497,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       //Start Metrics
       if (hiveConf.getBoolVar(ConfVars.METASTORE_METRICS)) {
+        LOG.info("Begin calculating metadata count metrics.");
         Metrics.initialize(hiveConf);
         databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
         tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
         partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
+        updateMetrics();
       }
 
       preListeners = MetaStoreUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
