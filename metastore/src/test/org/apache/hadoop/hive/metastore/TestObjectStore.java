@@ -538,8 +538,7 @@ public class TestObjectStore {
           });
     }
     executorService.shutdown();
-    boolean threadsExecuted = executorService.awaitTermination(15, TimeUnit.DAYS);
-    assertTrue(threadsExecuted);
+    assertTrue(executorService.awaitTermination(15, TimeUnit.SECONDS));
 
     // we have to setup this again as the underlying PMF keeps getting reinitialized with original
     // reference closed
