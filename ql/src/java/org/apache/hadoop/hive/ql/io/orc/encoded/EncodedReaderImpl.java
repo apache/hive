@@ -1211,8 +1211,11 @@ class EncodedReaderImpl implements EncodedReader {
     // as long as they are still in the same stream and are not already released.
     DiskRangeList prev = cc.prev;
     while (true) {
-      if ((prev == null) || (prev.getEnd() <= streamStartOffset)
-          || !(prev instanceof CacheChunk)) break;
+      // Do not release beyond current stream (we don't know which RGs that buffer is for).
+      if ((prev == null) || (prev.getEnd() <= streamStartOffset)) break;
+      // Only release cache chunks; do not release ProcCacheChunks - they may not yet have data.
+      if (prev.getClass() != CacheChunk.class) break;
+
       CacheChunk prevCc = (CacheChunk)prev;
       if (prevCc.buffer == null) break;
       try {
