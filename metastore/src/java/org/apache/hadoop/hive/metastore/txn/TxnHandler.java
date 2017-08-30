@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -54,6 +56,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
@@ -188,8 +191,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   // Maximum number of open transactions that's allowed
   private static volatile int maxOpenTxns = 0;
-  // Current number of open txns
-  private static volatile long numOpenTxns = 0;
   // Whether number of open transactions reaches the threshold
   private static volatile boolean tooManyOpenTxns = false;
   // The AcidHouseKeeperService for counting open transactions
@@ -211,6 +212,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private long retryInterval;
   private int retryLimit;
   private int retryNum;
+  // Current number of open txns
+  private AtomicInteger numOpenTxns;
+
   /**
    * Derby specific concurrency control
    */
@@ -275,6 +279,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
     }
+
+    numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
     timeout = HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     buildJumpTable();
@@ -460,11 +466,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
 
-    if (!tooManyOpenTxns && numOpenTxns >= maxOpenTxns) {
+    if (!tooManyOpenTxns && numOpenTxns.get() >= maxOpenTxns) {
       tooManyOpenTxns = true;
     }
     if (tooManyOpenTxns) {
-      if (numOpenTxns < maxOpenTxns * 0.9) {
+      if (numOpenTxns.get() < maxOpenTxns * 0.9) {
         tooManyOpenTxns = false;
       } else {
         LOG.warn("Maximum allowed number of open transactions (" + maxOpenTxns + ") has been " +
@@ -3159,7 +3165,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.error("Transaction database not properly configured, " +
               "can't find txn_state from TXNS.");
         } else {
-          numOpenTxns = rs.getLong(1);
+          Long numOpen = rs.getLong(1);
+          if (numOpen > Integer.MAX_VALUE) {
+            LOG.error("Open transaction count above " + Integer.MAX_VALUE +
+                ", can't count that high!");
+          } else {
+            numOpenTxns.set(numOpen.intValue());
+          }
         }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
