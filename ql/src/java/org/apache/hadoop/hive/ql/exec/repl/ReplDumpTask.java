@@ -187,13 +187,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Path dbRoot = dumpDbMetadata(dbName, dumpRoot);
       dumpFunctionMetadata(dbName, dumpRoot);
 
-      Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.ACTIVE.toString());
+      String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
       for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
       }
-      Utils.setDbBootstrapDumpState(hiveDb, dbName, Utils.ReplDumpState.IDLE.toString());
+      Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
     Long bootDumpEndReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
