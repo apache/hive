@@ -61,6 +61,8 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -71,9 +73,6 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
@@ -126,6 +125,8 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
@@ -245,6 +246,7 @@ public class ObjectStore implements RawStore, Configurable {
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private Pattern partitionValidationPattern;
+  private Counter directSqlErrors;
 
   /**
    * A Autocloseable wrapper around Query class to pass the Query object to the caller and let the caller release
@@ -323,6 +325,13 @@ public class ObjectStore implements RawStore, Configurable {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
         partitionValidationPattern = null;
+      }
+
+      // Note, if metrics have not been initialized this will return null, which means we aren't
+      // using metrics.  Thus we should always check whether this is non-null before using.
+      MetricRegistry registry = Metrics.getRegistry();
+      if (registry != null) {
+        directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
       }
 
       if (!isInitialized) {
@@ -2845,13 +2854,8 @@ public class ObjectStore implements RawStore, Configurable {
         start = doTrace ? System.nanoTime() : 0;
       }
 
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          metrics.incrementCounter(MetricsConstant.DIRECTSQL_ERRORS);
-        } catch (Exception e) {
-          LOG.warn("Error reporting Direct SQL errors to metrics system", e);
-        }
+      if (directSqlErrors != null) {
+        directSqlErrors.inc();
       }
 
       doUseDirectSql = false;
