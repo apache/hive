@@ -8317,18 +8317,26 @@ public class ObjectStore implements RawStore, Configurable {
           command.process();
           break;
         } catch (Exception e) {
-          LOG.info("retried / max : {} / {}", currentRetries, maxRetries);
+          LOG.info(
+              "Attempting to acquire the DB log notification lock: " + currentRetries + " out of "
+                  + maxRetries + " retries", e);
           if (currentRetries >= maxRetries) {
-            LOG.error("failed to execute Command :: ", e);
-            throw new MetaException(e.getMessage());
+            String message =
+                "Couldn't acquire the DB log notification lock because we reached the maximum"
+                    + " # of retries: {} retries. If this happens too often, then is recommended to "
+                    + "increase the maximum number of retries on the"
+                    + " hive.notification.sequence.lock.max.retries configuration";
+            LOG.error(message, e);
+            throw new MetaException(message + " :: " + e.getMessage());
           }
           currentRetries++;
           try {
             Thread.sleep(sleepInterval);
           } catch (InterruptedException e1) {
-            String msg = "error waiting for next retry " + currentRetries;
+            String msg = "Couldn't acquire the DB notification log lock on " + currentRetries
+                + " retry, because the following error: ";
             LOG.error(msg, e1);
-            throw new MetaException(msg);
+            throw new MetaException(msg + e1.getMessage());
           }
         }
       }
