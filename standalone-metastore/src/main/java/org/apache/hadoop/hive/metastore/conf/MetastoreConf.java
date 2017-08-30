@@ -485,6 +485,18 @@ public class MetastoreConf {
         "javax.jdo.PersistenceManagerFactoryClass",
         "org.datanucleus.api.jdo.JDOPersistenceManagerFactory",
         "class implementing the jdo persistence"),
+    // Parameters for exporting metadata on table drop (requires the use of the)
+    // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
+    METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",
+        "",
+        "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
+            "it is the location to which the metadata will be exported. The default is an empty string, which results in the \n" +
+            "metadata being exported to the current user's home directory on HDFS."),
+    MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
+        "hive.metadata.move.exported.metadata.to.trash", true,
+        "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
+            "this setting determines if the metadata that is exported will subsequently be moved to the user's trash directory \n" +
+            "alongside the dropped table data. This ensures that the metadata will be cleaned up along with the dropped table data."),
     METRICS_ENABLED("metastore.metrics.enabled", "hive.metastore.metrics.enabled", false,
         "Enable metrics on the metastore."),
     METRICS_JSON_FILE_INTERVAL("metastore.metrics.file.frequency",

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Index;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class PreAlterIndexEvent extends PreEventContext {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final Index newIndex;
+  private final Index oldIndex;
+
+  public PreAlterIndexEvent(Index oldIndex, Index newIndex, IHMSHandler handler) {
+    super(PreEventType.ALTER_INDEX, handler);
+    this.oldIndex = oldIndex;
+    this.newIndex = newIndex;
   }
 
+  public Index getOldIndex() {
+    return oldIndex;
+  }
+
+  public Index getNewIndex() {
+    return newIndex;
+  }
 }
+

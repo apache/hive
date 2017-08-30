@@ -46,7 +46,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.ThreadLocalRawStore;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -58,7 +57,7 @@ public class FileMetadataManager {
   private static final Log LOG = LogFactory.getLog(FileMetadataManager.class);
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
-  private final ThreadLocalRawStore tlms;
+  private final RawStore tlms;
   private final ExecutorService threadPool;
   private final HiveConf conf;
 
@@ -85,7 +84,7 @@ public class FileMetadataManager {
     }
   }
 
-  public FileMetadataManager(ThreadLocalRawStore tlms, HiveConf conf) {
+  public FileMetadataManager(RawStore tlms, HiveConf conf) {
     this.tlms = tlms;
     this.conf = conf;
     int numThreads = HiveConf.getIntVar(conf, ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS);
@@ -128,7 +127,7 @@ public class FileMetadataManager {
       }
       LOG.info("Caching file metadata for " + file + " (file ID " + fileId + ")");
       file = HdfsUtils.getFileIdPath(fs, file, fileId);
-      tlms.getMS().getFileMetadataHandler(type).cacheFileMetadata(fileId, fs, file);
+      tlms.getFileMetadataHandler(type).cacheFileMetadata(fileId, fs, file);
     }
   }
 }

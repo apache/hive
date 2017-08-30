@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class ConfigChangeEvent extends ListenerEvent {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final String key;
+  private final String oldValue;
+  private final String newValue;
+
+  public ConfigChangeEvent(IHMSHandler handler, String key,
+                           String oldValue, String newValue) {
+    super(true, handler);
+    this.key = key;
+    this.oldValue = oldValue;
+    this.newValue = newValue;
   }
 
+  public String getKey() {
+    return key;
+  }
+
+  public String getOldValue() {
+    return oldValue;
+  }
+
+  public String getNewValue() {
+    return newValue;
+  }
 }

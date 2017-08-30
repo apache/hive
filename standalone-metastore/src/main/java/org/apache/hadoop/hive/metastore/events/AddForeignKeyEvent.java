@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,26 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import java.util.List;
+
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceStability.Stable
+@InterfaceAudience.Public
+public class AddForeignKeyEvent extends ListenerEvent {
+  private final List<SQLForeignKey> fks;
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  public AddForeignKeyEvent(List<SQLForeignKey> fks, boolean status, IHMSHandler handler) {
+    super(status, handler);
+    this.fks = fks;
   }
 
+  public List<SQLForeignKey> getForeignKeyCols() {
+    return fks;
+  }
 }

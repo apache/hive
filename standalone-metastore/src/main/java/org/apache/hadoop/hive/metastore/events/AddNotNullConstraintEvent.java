@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import java.util.List;
+
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class AddNotNullConstraintEvent extends ListenerEvent {
+  private final List<SQLNotNullConstraint> nns;
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  public AddNotNullConstraintEvent(List<SQLNotNullConstraint> nns, boolean status,
+                                   IHMSHandler handler) {
+    super(status, handler);
+    this.nns = nns;
   }
 
+  public List<SQLNotNullConstraint> getNotNullConstraintCols() {
+    return nns;
+  }
 }

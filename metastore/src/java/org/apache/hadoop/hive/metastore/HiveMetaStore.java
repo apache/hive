@@ -219,17 +219,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  /**
-   * An ugly interface because everything about this file is ugly. RawStore is threadlocal so this
-   * thread-local disease propagates everywhere, and FileMetadataManager cannot just get a RawStore
-   * or handlers to use; it will need to have this method to make thread-local handlers and a
-   * thread-local RawStore.
-   */
-  public interface ThreadLocalRawStore {
-    RawStore getMS() throws MetaException;
-  }
-
-  public static class HMSHandler extends FacebookBase implements IHMSHandler, ThreadLocalRawStore {
+  public static class HMSHandler extends FacebookBase implements IHMSHandler {
     public static final Logger LOG = HiveMetaStore.LOG;
     private final HiveConf hiveConf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
@@ -551,7 +541,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         cleaner.schedule(new DumpDirCleanerTask(hiveConf), cleanFreq, cleanFreq);
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(hiveConf);
-      fileMetadataManager = new FileMetadataManager((ThreadLocalRawStore)this, hiveConf);
+      fileMetadataManager = new FileMetadataManager(this.getMS(), hiveConf);
     }
 
     private static String addPrefix(String s) {
@@ -594,6 +584,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return modifiedConf;
     }
 
+    @Override
     public Warehouse getWh() {
       return wh;
     }
@@ -1041,14 +1032,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return db;
     }
 
-    /**
-     * Equivalent to get_database, but does not write to audit logs, or fire pre-event listners.
-     * Meant to be used for internal hive classes that don't use the thrift interface.
-     * @param name
-     * @return
-     * @throws NoSuchObjectException
-     * @throws MetaException
-     */
+    @Override
     public Database get_database_core(final String name) throws NoSuchObjectException,
         MetaException {
       Database db = null;
@@ -2414,16 +2398,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return t;
     }
 
-    /**
-     * Equivalent of get_table, but does not log audits and fire pre-event listener.
-     * Meant to be used for calls made by other hive classes, that are not using the
-     * thrift interface.
-     * @param dbname
-     * @param name
-     * @return Table object
-     * @throws MetaException
-     * @throws NoSuchObjectException
-     */
+    @Override
     public Table get_table_core(final String dbname, final String name) throws MetaException,
         NoSuchObjectException {
       Table t = null;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,26 +16,39 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Table;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class DropTableEvent extends ListenerEvent {
 
-/**
- * HiveMetastoreAuthenticationProvider is an interface extension
- * from HiveAuthenticationProvider for authentication from the
- * metastore side. The implementation should return userNames
- * and groupNames, and take care that if the metastore is running
- * a particular command as a user, it returns that user.
- */
-public interface HiveMetastoreAuthenticationProvider extends HiveAuthenticationProvider{
+  private final Table table;
+  private final boolean deleteData;
+
+  public DropTableEvent(Table table, boolean status, boolean deleteData, IHMSHandler handler) {
+    super(status, handler);
+    this.table = table;
+    // In HiveMetaStore, the deleteData flag indicates whether DFS data should be
+    // removed on a drop.
+    this.deleteData = deleteData;
+  }
 
   /**
-   * Allows invoker of HiveMetastoreAuthenticationProvider to send in a
-   * hive metastore handler that can be used to provide data for any
-   * authentication that needs to be done.
-   * @param handler
+   * @return the table
    */
-  void setMetaStoreHandler(IHMSHandler handler);
+  public Table getTable() {
+    return table;
+  }
 
+  /**
+   * @return the deleteData flag
+   */
+  public boolean getDeleteData() {
+    return deleteData;
+  }
 }

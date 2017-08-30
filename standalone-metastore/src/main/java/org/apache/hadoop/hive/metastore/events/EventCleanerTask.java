@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
+
+import java.util.TimerTask;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.metastore.RawStore;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+public class EventCleanerTask extends TimerTask{
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  public static final Logger LOG = LoggerFactory.getLogger(EventCleanerTask.class);
+  private final IHMSHandler handler;
+
+  public EventCleanerTask(IHMSHandler handler) {
+    super();
+    this.handler = handler;
   }
 
+  @Override
+  public void run() {
+
+    try {
+      RawStore ms = handler.getMS();
+      long deleteCnt = ms.cleanupEvents();
+
+      if (deleteCnt > 0L){
+        LOG.info("Number of events deleted from event Table: "+deleteCnt);
+      }
+    } catch (Exception e) {
+      LOG.error("Exception while trying to delete events ", e);
+    }
+  }
 }

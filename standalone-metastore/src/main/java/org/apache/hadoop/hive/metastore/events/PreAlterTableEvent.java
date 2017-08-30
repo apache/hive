@@ -1,5 +1,6 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
+
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -16,16 +17,37 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Table;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class PreAlterTableEvent extends PreEventContext {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final Table newTable;
+  private final Table oldTable;
+
+  public PreAlterTableEvent (Table oldTable, Table newTable, IHMSHandler handler) {
+    super (PreEventType.ALTER_TABLE, handler);
+    this.oldTable = oldTable;
+    this.newTable = newTable;
   }
 
+  /**
+   * @return the old table
+   */
+  public Table getOldTable() {
+    return oldTable;
+  }
+
+  /**
+   * @return the new table
+   */
+  public Table getNewTable() {
+    return newTable;
+  }
 }

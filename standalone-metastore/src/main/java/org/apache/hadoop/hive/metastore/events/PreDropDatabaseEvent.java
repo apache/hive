@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Database;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class PreDropDatabaseEvent extends PreEventContext {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final Database db;
+
+  public PreDropDatabaseEvent(Database db, IHMSHandler handler) {
+    super(PreEventType.DROP_DATABASE, handler);
+    this.db = db;
   }
 
+  /**
+   * @return the db
+   */
+  public Database getDatabase() {
+    return db;
+  }
 }

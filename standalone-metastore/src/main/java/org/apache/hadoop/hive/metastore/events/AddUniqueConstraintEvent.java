@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import java.util.List;
+
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class AddUniqueConstraintEvent extends ListenerEvent {
+  private final List<SQLUniqueConstraint> uks;
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  public AddUniqueConstraintEvent(List<SQLUniqueConstraint> uks, boolean status,
+                                  IHMSHandler handler) {
+    super(status, handler);
+    this.uks = uks;
   }
 
+  public List<SQLUniqueConstraint> getUniqueConstraintCols() {
+    return uks;
+  }
 }

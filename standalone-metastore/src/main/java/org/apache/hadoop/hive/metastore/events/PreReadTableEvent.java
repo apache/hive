@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Table;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+/**
+ * Table read event
+ */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class PreReadTableEvent extends PreEventContext {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final Table table;
+
+  public PreReadTableEvent(Table table, IHMSHandler handler) {
+    super(PreEventType.READ_TABLE, handler);
+    this.table = table;
+  }
+
+  /**
+   * @return the table
+   */
+  public Table getTable() {
+    return table;
   }
 
 }

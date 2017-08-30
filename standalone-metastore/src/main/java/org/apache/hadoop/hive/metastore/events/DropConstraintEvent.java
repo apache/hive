@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,36 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class DropConstraintEvent extends ListenerEvent {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final String dbName;
+  private final String tableName;
+  private final String constraintName;
+  public DropConstraintEvent(String dbName, String tableName, String constraintName,
+      boolean status, IHMSHandler handler) {
+    super(status, handler);
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.constraintName = constraintName;
   }
 
+  public String getDbName() {
+    return dbName;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public String getConstraintName() {
+    return constraintName;
+  }
 }

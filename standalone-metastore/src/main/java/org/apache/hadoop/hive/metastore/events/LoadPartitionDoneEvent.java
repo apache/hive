@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,16 +16,42 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.security;
+package org.apache.hadoop.hive.metastore.events;
 
+import java.util.Map;
+
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Table;
 
-public class HadoopDefaultMetastoreAuthenticator extends HadoopDefaultAuthenticator
-  implements HiveMetastoreAuthenticationProvider {
+@InterfaceAudience.Public
+@InterfaceStability.Stable
+public class LoadPartitionDoneEvent extends ListenerEvent {
 
-  @Override
-  public void setMetaStoreHandler(IHMSHandler handler) {
-    setConf(handler.getConf());
+  private final Table table;
+
+  private final Map<String,String> partSpec;
+
+  public LoadPartitionDoneEvent(boolean status, Table table,
+      Map<String,String> partSpec, IHMSHandler handler) {
+    super(status, handler);
+    this.table = table;
+    this.partSpec = partSpec;
+  }
+
+  /**
+   * @return the tblName
+   */
+  public Table getTable() {
+    return table;
+  }
+
+  /**
+   * @return the partition Name
+   */
+  public Map<String,String> getPartitionName() {
+    return partSpec;
   }
 
 }
