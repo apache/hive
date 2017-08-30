@@ -64,8 +64,8 @@ public class TaskTracker {
     updateTaskCount(task, visited);
   }
 
-  private void updateTaskCount(Task<? extends Serializable> task,
-                               List <Task<? extends Serializable>> visited) {
+  public void updateTaskCount(Task<? extends Serializable> task,
+                              List <Task<? extends Serializable>> visited) {
     numberOfTasks += 1;
     visited.add(task);
     if (task.getChildTasks() != null) {

@@ -49,10 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
@@ -108,8 +105,15 @@ public class LoadPartitions {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,
                                             tableDesc.getTableName(), tableDesc.tableType());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
-    ReplLoadTask.dependency(tracker.tasks(), replLogTask);
-    tracker.addTask(replLogTask);
+
+    if (tracker.tasks().isEmpty()) {
+      tracker.addTask(replLogTask);
+    } else {
+      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+
+      List<Task<? extends Serializable>> visited = new ArrayList<>();
+      tracker.updateTaskCount(replLogTask, visited);
+    }
   }
 
   public TaskTracker tasks() throws SemanticException {

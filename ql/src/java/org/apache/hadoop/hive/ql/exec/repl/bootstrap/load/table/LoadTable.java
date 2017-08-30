@@ -46,7 +46,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
@@ -74,7 +76,15 @@ public class LoadTable {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     ReplLoadTask.dependency(tracker.tasks(), replLogTask);
-    tracker.addTask(replLogTask);
+
+    if (tracker.tasks().isEmpty()) {
+      tracker.addTask(replLogTask);
+    } else {
+      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+
+      List<Task<? extends Serializable>> visited = new ArrayList<>();
+      tracker.updateTaskCount(replLogTask, visited);
+    }
   }
 
   public TaskTracker tasks() throws SemanticException {
