@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,27 +19,21 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
-
-import java.util.concurrent.TimeUnit;
 
 /**
- * It handles the changed properties in the change event.
+ * Special type of MetaStoreEventListener which should only be called in a transactional context
+ * and only if the transaction is successful.
+ * The events are expected to have a success status.
  */
-public class SessionPropertiesListener extends MetaStoreEventListener {
+public abstract class TransactionalMetaStoreEventListener extends MetaStoreEventListener {
 
-  public SessionPropertiesListener(Configuration configuration) {
-    super(configuration);
+  /**
+   * Constructor
+   *
+   * @param config configuration object
+   */
+  public TransactionalMetaStoreEventListener(Configuration config) {
+    super(config);
   }
 
-  @Override
-  public void onConfigChange(ConfigChangeEvent changeEvent) throws MetaException {
-    if (changeEvent.getKey().equals(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname)) {
-      // TODO: this only applies to current thread, so it's not useful at all.
-      Deadline.resetTimeout(HiveConf.toTime(changeEvent.getNewValue(), TimeUnit.SECONDS,
-          TimeUnit.MILLISECONDS));
-    }
-  }
 }

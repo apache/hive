@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,24 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.events;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Database;
 
-/**
- * Special type of MetaStoreEventListener which should only be called in a transactional context
- * and only if the transaction is successful.
- * The events are expected to have a success status.
- */
-public abstract class TransactionalMetaStoreEventListener extends MetaStoreEventListener {
+public class PreAlterDatabaseEvent extends PreEventContext {
 
-  /**
-   * Constructor
-   *
-   * @param config
-   */
-  public TransactionalMetaStoreEventListener(Configuration config) {
-    super(config);
+  private final Database oldDB, newDB;
+
+  public PreAlterDatabaseEvent(Database oldDB, Database newDB, IHMSHandler handler) {
+    super (PreEventType.ALTER_DATABASE, handler);
+    this.oldDB = oldDB;
+    this.newDB = newDB;
   }
 
+  /**
+   * @return the old db
+   */
+  public Database getOldDatabase () {
+    return oldDB;
+  }
+
+  /**
+   * @return the new db
+   */
+  public Database getNewDatabase() {
+    return newDB;
+  }
 }

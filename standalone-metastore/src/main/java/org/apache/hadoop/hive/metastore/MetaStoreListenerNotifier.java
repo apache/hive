@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
+import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
@@ -53,7 +53,7 @@ import static org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 /**
  * This class is used to notify a list of listeners about specific MetaStore events.
  */
-@Private
+@InterfaceAudience.Private
 public class MetaStoreListenerNotifier {
 
   private interface EventNotifier {

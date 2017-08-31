@@ -54,37 +54,37 @@ public class HMSMetricsListener extends MetaStoreEventListener {
 
   @Override
   public void onCreateDatabase(CreateDatabaseEvent dbEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.databaseCount.incrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).incrementAndGet();
     createdDatabases.inc();
   }
 
   @Override
   public void onDropDatabase(DropDatabaseEvent dbEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.databaseCount.decrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).decrementAndGet();
     deletedDatabases.inc();
   }
 
   @Override
   public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.tableCount.incrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).incrementAndGet();
     createdTables.inc();
   }
 
   @Override
   public void onDropTable(DropTableEvent tableEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.tableCount.decrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).decrementAndGet();
     deletedTables.inc();
   }
 
   @Override
   public void onDropPartition(DropPartitionEvent partitionEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.partCount.decrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).decrementAndGet();
     deletedParts.inc();
   }
 
   @Override
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
-    HiveMetaStore.HMSHandler.partCount.incrementAndGet();
+    Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).incrementAndGet();
     createdParts.inc();
   }
 }

@@ -18,32 +18,29 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * This abstract class needs to be extended to  provide implementation of actions
- * that needs to be performed when HMSHandler is initialized
+ * It handles the changed properties in the change event.
  */
+public class SessionPropertiesListener extends MetaStoreEventListener {
 
-public abstract class MetaStoreInitListener implements Configurable {
-
-  private Configuration conf;
-
-  public MetaStoreInitListener(Configuration config){
-    this.conf = config;
-  }
-
-  public abstract void onInit(MetaStoreInitContext context) throws MetaException;
-
-  @Override
-  public Configuration getConf() {
-    return this.conf;
+  public SessionPropertiesListener(Configuration configuration) {
+    super(configuration);
   }
 
   @Override
-  public void setConf(Configuration config) {
-    this.conf = config;
+  public void onConfigChange(ConfigChangeEvent changeEvent) throws MetaException {
+    if (changeEvent.getKey().equals(MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT.varname) ||
+        changeEvent.getKey().equals(MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT.hiveName)) {
+      // TODO: this only applies to current thread, so it's not useful at all.
+      Deadline.resetTimeout(MetastoreConf.convertTimeStr(changeEvent.getNewValue(), TimeUnit.SECONDS,
+          TimeUnit.MILLISECONDS));
+    }
   }
 }

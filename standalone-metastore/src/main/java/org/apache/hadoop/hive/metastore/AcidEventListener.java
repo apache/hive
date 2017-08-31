@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
@@ -35,11 +36,11 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 public class AcidEventListener extends MetaStoreEventListener {
 
   private TxnStore txnHandler;
-  private HiveConf hiveConf;
+  private Configuration conf;
 
   public AcidEventListener(Configuration configuration) {
     super(configuration);
-    hiveConf = (HiveConf) configuration;
+    conf = configuration;
   }
 
   @Override
@@ -69,24 +70,24 @@ public class AcidEventListener extends MetaStoreEventListener {
   }
 
   private TxnStore getTxnHandler() {
-    boolean hackOn = HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) ||
-        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEZ_TEST);
+    boolean hackOn = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ||
+        MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEZ_TEST);
     String origTxnMgr = null;
     boolean origConcurrency = false;
 
     // Since TxnUtils.getTxnStore calls TxnHandler.setConf -> checkQFileTestHack -> TxnDbUtil.setConfValues,
     // which may change the values of below two entries, we need to avoid pulluting the original values
     if (hackOn) {
-      origTxnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
-      origConcurrency = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+      origTxnMgr = MetastoreConf.getVar(conf, ConfVars.HIVE_TXN_MANAGER);
+      origConcurrency = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY);
     }
 
-    txnHandler = TxnUtils.getTxnStore(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(conf);
 
     // Set them back
     if (hackOn) {
-      hiveConf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, origTxnMgr);
-      hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, origConcurrency);
+      MetastoreConf.setVar(conf, ConfVars.HIVE_TXN_MANAGER, origTxnMgr);
+      MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, origConcurrency);
     }
 
     return txnHandler;

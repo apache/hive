@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,32 +16,34 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.events;
+package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 
-public class PreAlterDatabaseEvent extends PreEventContext {
+/**
+ * This abstract class needs to be extended to  provide implementation of actions
+ * that needs to be performed when HMSHandler is initialized
+ */
 
-  private final Database oldDB, newDB;
+public abstract class MetaStoreInitListener implements Configurable {
 
-  public PreAlterDatabaseEvent(Database oldDB, Database newDB, HMSHandler handler) {
-    super (PreEventType.ALTER_DATABASE, handler);
-    this.oldDB = oldDB;
-    this.newDB = newDB;
+  private Configuration conf;
+
+  public MetaStoreInitListener(Configuration config){
+    this.conf = config;
   }
 
-  /**
-   * @return the old db
-   */
-  public Database getOldDatabase () {
-    return oldDB;
+  public abstract void onInit(MetaStoreInitContext context) throws MetaException;
+
+  @Override
+  public Configuration getConf() {
+    return this.conf;
   }
 
-  /**
-   * @return the new db
-   */
-  public Database getNewDatabase() {
-    return newDB;
+  @Override
+  public void setConf(Configuration config) {
+    this.conf = config;
   }
 }
