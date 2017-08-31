@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -241,8 +240,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     try {
       Hive db = getHive();
       HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, dbName).table(tblName);
-      Partition partition = db.getPartition(tuple.object, null, false);
-      TableSpec tableSpec = new TableSpec(tuple.object,partition);
+      TableSpec tableSpec = new TableSpec(tuple.object);
       TableExport.Paths exportPaths =
           new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf);
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);

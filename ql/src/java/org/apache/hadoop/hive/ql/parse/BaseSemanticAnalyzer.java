@@ -1111,13 +1111,18 @@ public abstract class BaseSemanticAnalyzer {
       this(db, conf, ast, true, false);
     }
 
-    public TableSpec(Table table, Partition partition) {
-      initialize(table, partition);
-    }
-
-    private void initialize(final Table table, final Partition partition) {
+    public TableSpec(Table table) {
       tableHandle = table;
       tableName = table.getDbName() + "." + table.getTableName();
+      specType = SpecType.TABLE_ONLY;
+    }
+
+    public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
+        throws HiveException {
+      Table table = db.getTable(tableName);
+      final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
+      tableHandle = table;
+      this.tableName = table.getDbName() + "." + table.getTableName();
       if (partition == null) {
         specType = SpecType.TABLE_ONLY;
       } else {
@@ -1125,12 +1130,6 @@ public abstract class BaseSemanticAnalyzer {
         partitions = Collections.singletonList(partHandle);
         specType = SpecType.STATIC_PARTITION;
       }
-    }
-
-    public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
-        throws HiveException {
-      Table table = db.getTable(tableName);
-      initialize(table, partSpec == null ? null : db.getPartition(table, partSpec, false));
     }
 
     public TableSpec(Table tableHandle, List<Partition> partitions)
