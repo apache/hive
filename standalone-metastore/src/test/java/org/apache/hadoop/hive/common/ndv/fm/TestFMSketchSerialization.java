@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import javolution.util.FastBitSet;
 
-import org.apache.hadoop.hive.common.ndv.FMSketch;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.junit.Test;
 
