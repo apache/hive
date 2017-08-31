@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,20 +21,21 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -49,10 +50,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.ipc.RemoteException;
-import org.apache.hive.common.util.HiveStringUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -93,7 +91,7 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newt, EnvironmentContext environmentContext,
-      HMSHandler handler) throws InvalidOperationException, MetaException {
+      IHMSHandler handler) throws InvalidOperationException, MetaException {
     name = name.toLowerCase();
     dbname = dbname.toLowerCase();
 
@@ -117,13 +115,13 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     Path srcPath = null;
-    FileSystem srcFs = null;
+    FileSystem srcFs;
     Path destPath = null;
     FileSystem destFs = null;
 
     boolean success = false;
     boolean dataWasMoved = false;
-    Table oldt = null;
+    Table oldt;
     List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
@@ -132,7 +130,7 @@ public class HiveAlterHandler implements AlterHandler {
     try {
       boolean rename = false;
       boolean isPartitionedTable = false;
-      List<Partition> parts = null;
+      List<Partition> parts;
 
       // check if table with the new name already exists
       if (!newTblName.equals(name) || !newDbName.equals(dbname)) {
@@ -154,9 +152,8 @@ public class HiveAlterHandler implements AlterHandler {
         isPartitionedTable = true;
       }
 
-      if (HiveConf.getBoolVar(hiveConf,
-            HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-            false)) {
+      if (MetastoreConf.getBoolVar(hiveConf,
+            MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES)) {
         // Throws InvalidOperationException if the new column types are not
         // compatible with the current column types.
         checkColTypeChangeCompatible(oldt.getSd().getCols(), newt.getSd().getCols());
@@ -239,7 +236,7 @@ public class HiveAlterHandler implements AlterHandler {
 
           // also the location field in partition
           parts = msdb.getPartitions(dbname, name, -1);
-          Map<Partition, ColumnStatistics> columnStatsNeedUpdated = new HashMap<Partition, ColumnStatistics>();
+          Map<Partition, ColumnStatistics> columnStatsNeedUpdated = new HashMap<>();
           for (Partition part : parts) {
             String oldPartLoc = part.getSd().getLocation();
             if (dataWasMoved && oldPartLoc.contains(oldTblLocPath)) {
@@ -393,10 +390,10 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
     final String name, final List<String> part_vals, final Partition new_part,
-    EnvironmentContext environmentContext, HMSHandler handler)
+    EnvironmentContext environmentContext, IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
     boolean success = false;
-    Partition oldPart = null;
+    Partition oldPart;
     List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
@@ -459,11 +456,11 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     //rename partition
-    String oldPartLoc = null;
-    String newPartLoc = null;
+    String oldPartLoc;
+    String newPartLoc;
     Path srcPath = null;
     Path destPath = null;
-    FileSystem srcFs = null;
+    FileSystem srcFs;
     FileSystem destFs = null;
     boolean dataWasMoved = false;
     try {
@@ -615,10 +612,10 @@ public class HiveAlterHandler implements AlterHandler {
   @Override
   public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
     final String name, final List<Partition> new_parts, EnvironmentContext environmentContext,
-    HMSHandler handler)
+    IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
-    List<Partition> oldParts = new ArrayList<Partition>();
-    List<List<String>> partValsList = new ArrayList<List<String>>();
+    List<Partition> oldParts = new ArrayList<>();
+    List<List<String>> partValsList = new ArrayList<>();
     List<TransactionalMetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
@@ -733,14 +730,14 @@ public class HiveAlterHandler implements AlterHandler {
   void alterTableUpdateTableColumnStats(RawStore msdb, Table oldTable, Table newTable)
       throws MetaException, InvalidObjectException {
     String dbName = oldTable.getDbName().toLowerCase();
-    String tableName = HiveStringUtils.normalizeIdentifier(oldTable.getTableName());
+    String tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier(oldTable.getTableName());
     String newDbName = newTable.getDbName().toLowerCase();
-    String newTableName = HiveStringUtils.normalizeIdentifier(newTable.getTableName());
+    String newTableName = org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier(newTable.getTableName());
 
     try {
       List<FieldSchema> oldCols = oldTable.getSd().getCols();
       List<FieldSchema> newCols = newTable.getSd().getCols();
-      List<ColumnStatisticsObj> newStatsObjs = new ArrayList<ColumnStatisticsObj>();
+      List<ColumnStatisticsObj> newStatsObjs = new ArrayList<>();
       ColumnStatistics colStats = null;
       boolean updateColumnStats = true;
 
@@ -752,7 +749,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
 
         if (updateColumnStats) {
-          List<String> oldColNames = new ArrayList<String>(oldCols.size());
+          List<String> oldColNames = new ArrayList<>(oldCols.size());
           for (FieldSchema oldCol : oldCols) {
             oldColNames.add(oldCol.getName());
           }
@@ -764,7 +761,7 @@ public class HiveAlterHandler implements AlterHandler {
           } else {
             List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
             if (statsObjs != null) {
-              List<String> deletedCols = new ArrayList<String>();
+              List<String> deletedCols = new ArrayList<>();
               for (ColumnStatisticsObj statsObj : statsObjs) {
                 boolean found = false;
                 for (FieldSchema newCol : newCols) {
@@ -815,7 +812,7 @@ public class HiveAlterHandler implements AlterHandler {
     ColumnStatistics newPartsColStats = null;
     try {
       List<FieldSchema> newCols = part.getSd() == null ?
-          new ArrayList<FieldSchema>() : part.getSd().getCols();
+          new ArrayList<>() : part.getSd().getCols();
       String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
       String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
       boolean rename = !part.getDbName().equals(dbname) || !part.getTableName().equals(tblname)
@@ -825,7 +822,7 @@ public class HiveAlterHandler implements AlterHandler {
       if (!rename && MetaStoreUtils.columnsIncludedByNameType(oldCols, newCols)) {
         return newPartsColStats;
       }
-      List<String> oldColNames = new ArrayList<String>(oldCols.size());
+      List<String> oldColNames = new ArrayList<>(oldCols.size());
       for (FieldSchema oldCol : oldCols) {
         oldColNames.add(oldCol.getName());
       }
@@ -834,9 +831,9 @@ public class HiveAlterHandler implements AlterHandler {
           oldPartNames, oldColNames);
       assert (partsColStats.size() <= 1);
       for (ColumnStatistics partColStats : partsColStats) { //actually only at most one loop
-        List<ColumnStatisticsObj> newStatsObjs = new ArrayList<ColumnStatisticsObj>();
+        List<ColumnStatisticsObj> newStatsObjs = new ArrayList<>();
         List<ColumnStatisticsObj> statsObjs = partColStats.getStatsObj();
-        List<String> deletedCols = new ArrayList<String>();
+        List<String> deletedCols = new ArrayList<>();
         for (ColumnStatisticsObj statsObj : statsObjs) {
           boolean found =false;
           for (FieldSchema newCol : newCols) {

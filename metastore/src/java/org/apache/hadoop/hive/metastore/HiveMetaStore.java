@@ -461,7 +461,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    List<TransactionalMetaStoreEventListener> getTransactionalListeners() {
+    @Override
+    public List<TransactionalMetaStoreEventListener> getTransactionalListeners() {
       return transactionalListeners;
     }
 

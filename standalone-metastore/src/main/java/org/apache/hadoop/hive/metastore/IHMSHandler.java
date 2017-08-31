@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 
+import java.util.List;
+
 /**
  * An interface wrapper for HMSHandler.  This interface contains methods that need to be
  * called by internal classes but that are not part of the thrift interface.
@@ -55,7 +57,7 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   Warehouse getWh();
 
   /**
-   * Equivalent to get_database, but does not write to audit logs, or fire pre-event listners.
+   * Equivalent to get_database, but does not write to audit logs, or fire pre-event listeners.
    * Meant to be used for internal hive classes that don't use the thrift interface.
    * @param name database name
    * @return database object
@@ -74,6 +76,12 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    * @throws NoSuchObjectException If the table does not exist.
    * @throws MetaException  If another error occurs.
    */
-  public Table get_table_core(final String dbname, final String name) throws MetaException,
+  Table get_table_core(final String dbname, final String name) throws MetaException,
       NoSuchObjectException;
+
+  /**
+   * Get a list of all transactional listeners.
+   * @return list of listeners.
+   */
+  List<TransactionalMetaStoreEventListener> getTransactionalListeners();
 }

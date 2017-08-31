@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
 /**
  * Interface for Alter Table and Alter Partition code
@@ -36,7 +35,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, Table, EnvironmentContext, HMSHandler)}
+   * String, Table, EnvironmentContext, IHMSHandler)}
    *
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
@@ -84,11 +83,11 @@ public interface AlterHandler extends Configurable {
    */
   void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newTable, EnvironmentContext envContext,
-      HMSHandler handler) throws InvalidOperationException, MetaException;
+      IHMSHandler handler) throws InvalidOperationException, MetaException;
 
   /**
    * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartition(RawStore, Warehouse, String,
-   * String, List, Partition, EnvironmentContext, HMSHandler)}
+   * String, List, Partition, EnvironmentContext, IHMSHandler)}
    *
    * handles alter partition
    *
@@ -139,12 +138,12 @@ public interface AlterHandler extends Configurable {
    */
   Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
     final String name, final List<String> part_vals, final Partition new_part, EnvironmentContext environmentContext,
-    HMSHandler handler)
+    IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, List, EnvironmentContext, HMSHandler)}
+   * String, List, EnvironmentContext, IHMSHandler)}
    *
    * handles alter partitions
    *
@@ -191,6 +190,6 @@ public interface AlterHandler extends Configurable {
    */
   List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
     final String dbname, final String name, final List<Partition> new_parts,
-    EnvironmentContext environmentContext,HMSHandler handler)
+    EnvironmentContext environmentContext,IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 }

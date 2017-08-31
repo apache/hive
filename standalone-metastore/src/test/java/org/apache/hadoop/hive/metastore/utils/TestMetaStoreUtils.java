@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,17 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.utils;
 
-import junit.framework.TestCase;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.junit.Assert;
+import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestMetaStoreUtils extends TestCase {
+import static org.junit.Assert.assertEquals;
 
+public class TestMetaStoreUtils {
+
+  @Test
   public void testTrimMapNullsXform() throws Exception {
-    Map<String,String> m = new HashMap<String,String>();
+    Map<String,String> m = new HashMap<>();
     m.put("akey","aval");
     m.put("blank","");
     m.put("null",null);
@@ -41,8 +47,9 @@ public class TestMetaStoreUtils extends TestCase {
     assertEquals("",xformed.get("null"));
   }
 
+  @Test
   public void testTrimMapNullsPrune() throws Exception {
-    Map<String,String> m = new HashMap<String,String>();
+    Map<String,String> m = new HashMap<>();
     m.put("akey","aval");
     m.put("blank","");
     m.put("null",null);
@@ -55,6 +62,21 @@ public class TestMetaStoreUtils extends TestCase {
     assertEquals("aval",pruned.get("akey"));
     assertEquals("",pruned.get("blank"));
     assert(!pruned.containsValue(null));
+  }
+
+  @Test
+  public void testcolumnsIncludedByNameType() {
+    FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
+    FieldSchema col1a = new FieldSchema("col1", "string", "col1 but with a different comment");
+    FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
+    FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertTrue(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
+    Assert.assertFalse(org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
   }
 
 
