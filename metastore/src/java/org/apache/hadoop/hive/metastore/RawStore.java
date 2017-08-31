@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
@@ -620,6 +622,13 @@ public interface RawStore extends Configurable {
    * @return
    */
   public CurrentNotificationEventId getCurrentNotificationEventId();
+
+  /**
+   * Get the number of events corresponding to given database with fromEventId.
+   * This is intended for use by the repl commands to track the progress of incremental dump.
+   * @return
+   */
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst);
 
   /*
    * Flush any catalog objects held by the metastore implementation.  Note that this does not

@@ -2356,6 +2356,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_current_notificationEventId();
   }
 
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  @Override
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
+          throws TException {
+    return client.get_notification_events_count(rqst);
+  }
+
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   @Override
   public FireEventResponse fireListenerEvent(FireEventRequest rqst) throws TException {

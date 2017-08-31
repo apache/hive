@@ -2524,6 +2524,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_current_notificationEventId failed: unknown result')
     end
 
+    def get_notification_events_count(rqst)
+      send_get_notification_events_count(rqst)
+      return recv_get_notification_events_count()
+    end
+
+    def send_get_notification_events_count(rqst)
+      send_message('get_notification_events_count', Get_notification_events_count_args, :rqst => rqst)
+    end
+
+    def recv_get_notification_events_count()
+      result = receive_message(Get_notification_events_count_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_notification_events_count failed: unknown result')
+    end
+
     def fire_listener_event(rqst)
       send_fire_listener_event(rqst)
       return recv_fire_listener_event()
@@ -4556,6 +4571,13 @@ module ThriftHiveMetastore
       result = Get_current_notificationEventId_result.new()
       result.success = @handler.get_current_notificationEventId()
       write_result(result, oprot, 'get_current_notificationEventId', seqid)
+    end
+
+    def process_get_notification_events_count(seqid, iprot, oprot)
+      args = read_args(iprot, Get_notification_events_count_args)
+      result = Get_notification_events_count_result.new()
+      result.success = @handler.get_notification_events_count(args.rqst)
+      write_result(result, oprot, 'get_notification_events_count', seqid)
     end
 
     def process_fire_listener_event(seqid, iprot, oprot)
@@ -10315,6 +10337,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CurrentNotificationEventId}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_notification_events_count_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = -1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::NotificationEventsCountRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_notification_events_count_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::NotificationEventsCountResponse}
     }
 
     def struct_fields; FIELDS; end

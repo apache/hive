@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.FunctionEvent;
@@ -35,6 +38,8 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.LoadTable;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table.TableContext;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 import java.io.Serializable;
@@ -107,7 +112,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableContext tableContext =
               new TableContext(dbTracker, work.dbNameToLoadIn, work.tableNameToLoadIn);
           TableEvent tableEvent = (TableEvent) next;
-          LoadTable loadTable = new LoadTable(tableEvent, context, tableContext, loadTaskTracker);
+          LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
+                                              tableContext, loadTaskTracker);
           tableTracker = loadTable.tasks();
           if (!scope.database) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -124,8 +130,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, loadTaskTracker, tableEvent, work.dbNameToLoadIn,
-                  tableContext);
+              new LoadPartitions(context, iterator.replLogger(), loadTaskTracker, tableEvent,
+                      work.dbNameToLoadIn, tableContext);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
@@ -142,9 +148,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           TableContext tableContext = new TableContext(dbTracker, work.dbNameToLoadIn,
               work.tableNameToLoadIn);
           LoadPartitions loadPartitions =
-              new LoadPartitions(context, tableContext, loadTaskTracker, event.asTableEvent(),
-                  work.dbNameToLoadIn,
-                  event.lastPartitionReplicated());
+              new LoadPartitions(context, iterator.replLogger(), tableContext, loadTaskTracker,
+                      event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
           /*
                the tableTracker here should be a new instance and not an existing one as this can
                only happen when we break in between loading partitions.
@@ -156,8 +161,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           break;
         }
         case Function: {
-          LoadFunction loadFunction =
-              new LoadFunction(context, (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
+          LoadFunction loadFunction = new LoadFunction(context, iterator.replLogger(),
+                                              (FunctionEvent) next, work.dbNameToLoadIn, dbTracker);
           TaskTracker functionsTracker = loadFunction.tasks();
           if (!scope.database) {
             scope.rootTasks.addAll(functionsTracker.tasks());
@@ -169,11 +174,16 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           break;
         }
         }
+
+        if (!iterator.currentDbHasNext()) {
+          createEndReplLogTask(context, scope, iterator.replLogger());
+        }
       }
       boolean addAnotherLoadTask = iterator.hasNext() || loadTaskTracker.hasReplicationState();
       createBuilderTask(scope.rootTasks, addAnotherLoadTask);
       if (!iterator.hasNext()) {
         loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, context, scope));
+        work.updateDbEventState(null);
       }
       this.childTasks = scope.rootTasks;
       LOG.info("Root Tasks / Total Tasks : {} / {} ", childTasks.size(), loadTaskTracker.numberOfTasks());
@@ -184,6 +194,19 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     LOG.info("completed load task run : {}", work.executedLoadTask());
     return 0;
+  }
+
+  private Task<? extends Serializable> createEndReplLogTask(Context context, Scope scope,
+                                                  ReplLogger replLogger) throws SemanticException {
+    Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata.getParameters());
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
+    if (null == scope.rootTasks) {
+      scope.rootTasks.add(replLogTask);
+    } else {
+      dependency(scope.rootTasks, replLogTask);
+    }
+    return replLogTask;
   }
 
   /**
@@ -243,18 +266,20 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   /**
    * add the dependency to the leaf node
    */
-  private boolean dependency(List<Task<? extends Serializable>> tasks,
-      Task<ReplLoadWork> loadTask) {
+  public static boolean dependency(List<Task<? extends Serializable>> tasks, Task<?> tailTask) {
     if (tasks == null || tasks.isEmpty()) {
       return true;
     }
     for (Task<? extends Serializable> task : tasks) {
-      boolean dependency = dependency(task.getChildTasks(), loadTask);
-      if (dependency) {
-        task.addDependentTask(loadTask);
+      if (task == tailTask) {
+        continue;
+      }
+      boolean leafNode = dependency(task.getChildTasks(), tailTask);
+      if (leafNode) {
+        task.addDependentTask(tailTask);
       }
     }
-    return true;
+    return false;
   }
 
   @Override

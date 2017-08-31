@@ -7026,6 +7026,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
+            throws TException {
+      RawStore ms = getMS();
+      return ms.getNotificationEventsCount(rqst);
+    }
+
+    @Override
     public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
       switch (rqst.getData().getSetField()) {
       case INSERT_DATA:

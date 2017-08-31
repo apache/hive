@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -34,11 +35,8 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
-import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 
 /**
  * ImportTableDesc.
@@ -56,7 +54,7 @@ public class ImportTableDesc {
     this.dbName = dbName;
     this.table = table;
 
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         this.createTblDesc = new CreateTableDesc(dbName,
                 table.getTableName(),
@@ -122,7 +120,7 @@ public class ImportTableDesc {
     }
   }
 
-  public TYPE getTableType() {
+  public TYPE getDescType() {
     if (table.isView() || table.isMaterializedView()) {
       return TYPE.VIEW;
     }
@@ -143,7 +141,7 @@ public class ImportTableDesc {
   }
 
   public void setReplicationSpec(ReplicationSpec replSpec) {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         createTblDesc.setReplicationSpec(replSpec);
         break;
@@ -154,20 +152,20 @@ public class ImportTableDesc {
   }
 
   public void setExternal(boolean isExternal) {
-    if (TYPE.TABLE.equals(getTableType())) {
+    if (TYPE.TABLE.equals(getDescType())) {
       createTblDesc.setExternal(isExternal);
     }
   }
 
   public boolean isExternal() {
-    if (TYPE.TABLE.equals(getTableType())) {
+    if (TYPE.TABLE.equals(getDescType())) {
       return createTblDesc.isExternal();
     }
     return false;
   }
 
   public void setLocation(String location) {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         createTblDesc.setLocation(location);
         break;
@@ -178,7 +176,7 @@ public class ImportTableDesc {
   }
 
   public String getLocation() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getLocation();
       case VIEW:
@@ -188,7 +186,7 @@ public class ImportTableDesc {
   }
 
   public void setTableName(String tableName) throws SemanticException {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         createTblDesc.setTableName(tableName);
         break;
@@ -201,7 +199,7 @@ public class ImportTableDesc {
   }
 
   public String getTableName() throws SemanticException {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getTableName();
       case VIEW:
@@ -213,7 +211,7 @@ public class ImportTableDesc {
   }
 
   public List<FieldSchema> getPartCols() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getPartCols();
       case VIEW:
@@ -223,7 +221,7 @@ public class ImportTableDesc {
   }
 
   public List<FieldSchema> getCols() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getCols();
       case VIEW:
@@ -233,7 +231,7 @@ public class ImportTableDesc {
   }
 
   public Map<String, String> getTblProps() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getTblProps();
       case VIEW:
@@ -243,7 +241,7 @@ public class ImportTableDesc {
   }
 
   public String getInputFormat() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getInputFormat();
       case VIEW:
@@ -253,7 +251,7 @@ public class ImportTableDesc {
   }
 
   public String getOutputFormat() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getOutputFormat();
       case VIEW:
@@ -263,7 +261,7 @@ public class ImportTableDesc {
   }
 
   public String getSerName() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getSerName();
       case VIEW:
@@ -273,7 +271,7 @@ public class ImportTableDesc {
   }
 
   public Map<String, String> getSerdeProps() {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return createTblDesc.getSerdeProps();
       case VIEW:
@@ -283,14 +281,14 @@ public class ImportTableDesc {
   }
 
   public List<String> getBucketCols() {
-    if (TYPE.TABLE.equals(getTableType())) {
+    if (TYPE.TABLE.equals(getDescType())) {
       return createTblDesc.getBucketCols();
     }
     return null;
   }
 
   public List<Order> getSortCols() {
-    if (TYPE.TABLE.equals(getTableType())) {
+    if (TYPE.TABLE.equals(getDescType())) {
       return createTblDesc.getSortCols();
     }
     return null;
@@ -300,7 +298,7 @@ public class ImportTableDesc {
    * @param replaceMode Determine if this CreateTable should behave like a replace-into alter instead
    */
   public void setReplaceMode(boolean replaceMode) {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         createTblDesc.setReplaceMode(replaceMode);
         break;
@@ -315,7 +313,7 @@ public class ImportTableDesc {
 
   public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       HiveConf conf) {
-    switch (getTableType()) {
+    switch (getDescType()) {
       case TABLE:
         return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
       case VIEW:
@@ -331,5 +329,14 @@ public class ImportTableDesc {
 
   public boolean isMaterializedView() {
     return table.isMaterializedView();
+  }
+
+  public TableType tableType() {
+    if (isView()) {
+      return TableType.VIRTUAL_VIEW;
+    } else if (isMaterializedView()) {
+      return TableType.MATERIALIZED_VIEW;
+    }
+    return TableType.MANAGED_TABLE;
   }
 }

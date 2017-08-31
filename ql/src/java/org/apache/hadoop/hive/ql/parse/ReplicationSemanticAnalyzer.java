@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import io.netty.util.internal.StringUtil;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -37,13 +39,13 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -76,7 +78,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
-  private final static Logger REPL_STATE_LOG = LoggerFactory.getLogger("ReplState");
 
   ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -329,12 +330,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork(), conf);
         Task<? extends Serializable> taskChainTail = evTaskRoot;
 
-        int evstage = 0;
-        int evIter = 0;
+        ReplLogger replLogger = new IncrementalLoadLogger(dbNameOrPattern,
+                loadPath.toString(), dirsInLoadPath.length);
 
-        REPL_STATE_LOG.info("Repl Load: Started analyzing Repl load for DB: {} from path {}, Dump Type: INCREMENTAL",
-                (null != dbNameOrPattern && !dbNameOrPattern.isEmpty()) ? dbNameOrPattern : "?",
-                loadPath.toUri().toString());
         for (FileStatus dir : dirsInLoadPath){
           LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
 
@@ -359,17 +357,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
           String locn = dir.getPath().toUri().toString();
           DumpMetaData eventDmd = new DumpMetaData(new Path(locn), conf);
-          List<Task<? extends Serializable>> evTasks = analyzeEventLoad(
-              dbNameOrPattern, tblNameOrPattern, locn, taskChainTail, eventDmd);
-          evIter++;
-          REPL_STATE_LOG.info("Repl Load: Analyzed load for event {}/{} " +
-                              "with ID: {}, Type: {}, Path: {}",
-                              evIter, dirsInLoadPath.length,
-                              dir.getPath().getName(), eventDmd.getDumpType().toString(), locn);
+          MessageHandler.Context context = new MessageHandler.Context(dbNameOrPattern,
+                                                          tblNameOrPattern, locn, taskChainTail,
+                                                          eventDmd, conf, db, ctx, LOG);
+          List<Task<? extends Serializable>> evTasks = analyzeEventLoad(context);
 
-          LOG.debug("evstage#{} got {} tasks", evstage, evTasks!=null ? evTasks.size() : 0);
           if ((evTasks != null) && (!evTasks.isEmpty())){
-            Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
+            ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
+                                                          dir.getPath().getName(),
+                                                          eventDmd.getDumpType().toString());
+            Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
             for (Task<? extends Serializable> t : evTasks){
               t.addDependentTask(barrierTask);
               LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
@@ -378,14 +375,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             LOG.debug("Updated taskChainTail from {}{} to {}{}",
                 taskChainTail.getClass(), taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
             taskChainTail = barrierTask;
-            evstage++;
           }
         }
+
+        // If any event is there and db name is known, then dump the start and end logs
+        if (!evTaskRoot.equals(taskChainTail)) {
+          Map<String, String> dbProps = new HashMap<>();
+          dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(dmd.getEventTo()));
+          ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
+          Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
+          taskChainTail.addDependentTask(barrierTask);
+          LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
+                  taskChainTail.getClass(), taskChainTail.getId(),
+                  barrierTask.getClass(), barrierTask.getId());
+
+          replLogger.startLog();
+        }
         rootTasks.add(evTaskRoot);
-        REPL_STATE_LOG.info("Repl Load: Completed analyzing Repl load for DB: {} from path {} and created import " +
-                            "(DDL/COPY/MOVE) tasks",
-                            (null != dbNameOrPattern && !dbNameOrPattern.isEmpty()) ? dbNameOrPattern : "?",
-                            loadPath.toUri().toString());
       }
 
     } catch (Exception e) {
@@ -395,26 +401,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private List<Task<? extends Serializable>> analyzeEventLoad(
-      String dbName, String tblName,
-      String location,
-      Task<? extends Serializable> precursor,
-      DumpMetaData dmd)
+          MessageHandler.Context context)
       throws SemanticException {
-    MessageHandler.Context context =
-        new MessageHandler.Context(dbName, tblName, location, precursor, dmd, conf, db, ctx, LOG);
-    MessageHandler messageHandler = dmd.getDumpType().handler();
+    MessageHandler messageHandler = context.dmd.getDumpType().handler();
     List<Task<? extends Serializable>> tasks = messageHandler.handle(context);
 
-    if (precursor != null) {
+    if (context.precursor != null) {
       for (Task<? extends Serializable> t : tasks) {
-        precursor.addDependentTask(t);
+        context.precursor.addDependentTask(t);
         LOG.debug("Added {}:{} as a precursor of {}:{}",
-            precursor.getClass(), precursor.getId(), t.getClass(), t.getId());
+                context.precursor.getClass(), context.precursor.getId(), t.getClass(), t.getId());
       }
     }
+
     inputs.addAll(messageHandler.readEntities());
     outputs.addAll(messageHandler.writeEntities());
-    return addUpdateReplStateTasks(StringUtils.isEmpty(tblName),
+    return addUpdateReplStateTasks(StringUtils.isEmpty(context.tableName),
                             messageHandler.getUpdatedMetadata(), tasks);
   }
 

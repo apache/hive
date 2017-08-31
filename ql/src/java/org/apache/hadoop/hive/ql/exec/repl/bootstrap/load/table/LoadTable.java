@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -26,6 +27,8 @@ import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
@@ -34,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -42,7 +46,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
@@ -51,16 +57,34 @@ public class LoadTable {
   private final static Logger LOG = LoggerFactory.getLogger(LoadTable.class);
   //  private final Helper helper;
   private final Context context;
+  private final ReplLogger replLogger;
   private final TableContext tableContext;
   private final TaskTracker tracker;
   private final TableEvent event;
 
-  public LoadTable(TableEvent event, Context context, TableContext tableContext, TaskTracker limiter)
+  public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
+                   TableContext tableContext, TaskTracker limiter)
       throws SemanticException, IOException {
     this.event = event;
     this.context = context;
+    this.replLogger = replLogger;
     this.tableContext = tableContext;
     this.tracker = new TaskTracker(limiter);
+  }
+
+  private void createTableReplLogTask(String tableName, TableType tableType) throws SemanticException {
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
+    ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+
+    if (tracker.tasks().isEmpty()) {
+      tracker.addTask(replLogTask);
+    } else {
+      ReplLoadTask.dependency(tracker.tasks(), replLogTask);
+
+      List<Task<? extends Serializable>> visited = new ArrayList<>();
+      tracker.updateTaskCount(replLogTask, visited);
+    }
   }
 
   public TaskTracker tasks() throws SemanticException {
@@ -123,22 +147,27 @@ public class LoadTable {
      behave like a noop or a pure MD alter.
   */
       if (table == null) {
-        return newTableTasks(tableDesc);
+        newTableTasks(tableDesc);
       } else {
-        return existingTableTasks(tableDesc, table, replicationSpec);
+        existingTableTasks(tableDesc, table, replicationSpec);
       }
+
+      if (!isPartitioned(tableDesc)) {
+        createTableReplLogTask(tableDesc.getTableName(), tableDesc.tableType());
+      }
+      return tracker;
     } catch (Exception e) {
       throw new SemanticException(e);
     }
   }
 
-  private TaskTracker existingTableTasks(ImportTableDesc tblDesc, Table table,
+  private void existingTableTasks(ImportTableDesc tblDesc, Table table,
       ReplicationSpec replicationSpec) {
     if (!table.isPartitioned()) {
 
       LOG.debug("table non-partitioned");
       if (!replicationSpec.allowReplacementInto(table.getParameters())) {
-        return tracker; // silently return, table is newer than our replacement.
+        return; // silently return, table is newer than our replacement.
       }
 
       Task<? extends Serializable> alterTableTask = alterTableTask(tblDesc, replicationSpec);
@@ -151,10 +180,9 @@ public class LoadTable {
         tracker.addTask(alterTableTask);
       }
     }
-    return tracker;
   }
 
-  private TaskTracker newTableTasks(ImportTableDesc tblDesc) throws SemanticException {
+  private void newTableTasks(ImportTableDesc tblDesc) throws SemanticException {
     Table table;
     table = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     // Either we're dropping and re-creating, or the table didn't exist, and we're creating.
@@ -162,7 +190,7 @@ public class LoadTable {
         tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf);
     if (event.replicationSpec().isMetadataOnly()) {
       tracker.addTask(createTableTask);
-      return tracker;
+      return;
     }
     if (!isPartitioned(tblDesc)) {
       LOG.debug("adding dependent CopyWork/MoveWork for table");
@@ -172,7 +200,6 @@ public class LoadTable {
       createTableTask.addDependentTask(loadTableTask);
     }
     tracker.addTask(createTableTask);
-    return tracker;
   }
 
   private String location(ImportTableDesc tblDesc, Database parentDb)

@@ -25,7 +25,8 @@ public enum StageType implements org.apache.thrift.TEnum {
   DEPENDENCY_COLLECTION(10),
   COLUMNSTATS(11),
   REPL_DUMP(12),
-  REPL_BOOTSTRAP_LOAD(13);
+  REPL_BOOTSTRAP_LOAD(13),
+  REPL_STATE_LOG(14);
 
   private final int value;
 
@@ -74,6 +75,8 @@ public enum StageType implements org.apache.thrift.TEnum {
         return REPL_DUMP;
       case 13:
         return REPL_BOOTSTRAP_LOAD;
+      case 14:
+        return REPL_STATE_LOG;
       default:
         return null;
     }
