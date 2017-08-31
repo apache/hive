@@ -16,16 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.llap.io.api;
+package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 
-public interface LlapIo<T> {
-  InputFormat<NullWritable, T> getInputFormat(
-      InputFormat<?, ?> sourceInputFormat, Deserializer serde);
-  void close();
-  String getMemoryInfo();
-  void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
+/** Marker interface for LLAP IO. */
+public interface LlapCacheOnlyInputFormatInterface {
+  void injectCaches(FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf);
 }

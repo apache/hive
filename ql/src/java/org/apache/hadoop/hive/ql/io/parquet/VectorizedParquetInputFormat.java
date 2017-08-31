@@ -15,6 +15,10 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -28,7 +32,12 @@ import org.apache.hadoop.mapred.Reporter;
  * Vectorized input format for Parquet files
  */
 public class VectorizedParquetInputFormat
-  extends FileInputFormat<NullWritable, VectorizedRowBatch> {
+  extends FileInputFormat<NullWritable, VectorizedRowBatch> 
+  implements LlapCacheOnlyInputFormatInterface {
+
+  private FileMetadataCache metadataCache = null;
+  private DataCache dataCache = null;
+  private Configuration cacheConf = null;
 
   public VectorizedParquetInputFormat() {
   }
@@ -38,6 +47,15 @@ public class VectorizedParquetInputFormat
     InputSplit inputSplit,
     JobConf jobConf,
     Reporter reporter) throws IOException {
-    return new VectorizedParquetRecordReader(inputSplit, jobConf);
+    return new VectorizedParquetRecordReader(
+        inputSplit, jobConf, metadataCache, dataCache, cacheConf);
+  }
+
+  @Override
+  public void injectCaches(
+      FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf) {
+    this.metadataCache = metadataCache;
+    this.dataCache = dataCache;
+    this.cacheConf = cacheConf;
   }
 }

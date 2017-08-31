@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.optimize.ppd=true;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 -- SORT_QUERY_RESULTS
 CREATE TABLE tbl_pred(t tinyint,

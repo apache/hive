@@ -131,14 +131,16 @@ public abstract class LlapAllocatorBuffer extends LlapCacheableBuffer implements
     long newState, oldState;
     do {
       oldState = state.get();
+      // We have to check it here since invalid decref will overflow.
+      int oldRefCount = State.getRefCount(oldState);
+      if (oldRefCount == 0) {
+        throw new AssertionError("Invalid decRef when refCount is 0: " + this);
+      }
       newState = State.decRefCount(oldState);
     } while (!state.compareAndSet(oldState, newState));
     int newRefCount = State.getRefCount(newState);
     if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
       LlapIoImpl.LOCKING_LOGGER.trace("Unlocked {}; refcount {}", this, newRefCount);
-    }
-    if (newRefCount < 0) {
-      throw new AssertionError("Unexpected refCount " + newRefCount + ": " + this);
     }
     return newRefCount;
   }

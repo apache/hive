@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+set hive.llap.cache.allow.synthetic.fileid=true;
 DROP TABLE parquet_types_staging;
 DROP TABLE parquet_types;
 

@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -1033,4 +1036,36 @@ public final class FileUtils {
     return result;
   }
 
+  /**
+   * Reads length bytes of data from the stream into the byte buffer.
+   * @param stream Stream to read from.
+   * @param length The number of bytes to read.
+   * @param bb The buffer to read into; the data is written at current position and then the
+   *           position is incremented by length.
+   * @throws EOFException the length bytes cannot be read. The buffer position is not modified.
+   */
+  public static void readFully(InputStream stream, int length, ByteBuffer bb) throws IOException {
+    byte[] b = null;
+    int offset = 0;
+    if (bb.hasArray()) {
+      b = bb.array();
+      offset = bb.arrayOffset() + bb.position();
+    } else {
+      b = new byte[bb.remaining()];
+    }
+    int fullLen = length;
+    while (length > 0) {
+      int result = stream.read(b, offset, length);
+      if (result < 0) {
+        throw new EOFException("Reading " + fullLen + " bytes");
+      }
+      offset += result;
+      length -= result;
+    }
+    if (!bb.hasArray()) {
+      bb.put(b);
+    } else {
+      bb.position(bb.position() + fullLen);
+    }
+  }
 }

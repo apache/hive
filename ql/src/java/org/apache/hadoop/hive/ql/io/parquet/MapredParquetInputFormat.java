@@ -15,7 +15,11 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.DataCache;
+import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -37,7 +41,7 @@ import org.apache.parquet.hadoop.ParquetInputFormat;
  *       are not currently supported.  Removing the interface turns off vectorization.
  */
 public class MapredParquetInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
-  implements VectorizedInputFormatInterface {
+  implements VectorizedInputFormatInterface, LlapCacheOnlyInputFormatInterface {
 
   private static final Logger LOG = LoggerFactory.getLogger(MapredParquetInputFormat.class);
 
@@ -77,5 +81,11 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
     } catch (final InterruptedException e) {
       throw new RuntimeException("Cannot create a RecordReaderWrapper", e);
     }
+  }
+
+  @Override
+  public void injectCaches(
+      FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf) {
+    vectorizedSelf.injectCaches(metadataCache, dataCache, cacheConf);
   }
 }

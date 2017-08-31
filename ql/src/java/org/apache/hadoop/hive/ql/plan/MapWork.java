@@ -258,7 +258,7 @@ public class MapWork extends BaseWork {
   }
 
   public void deriveLlap(Configuration conf, boolean isExecDriver) {
-    boolean hasLlap = false, hasNonLlap = false, hasAcid = false;
+    boolean hasLlap = false, hasNonLlap = false, hasAcid = false, hasCacheOnly = false;
     // Assume the IO is enabled on the daemon by default. We cannot reasonably check it here.
     boolean isLlapOn = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, llapMode);
     boolean canWrapAny = false, doCheckIfs = false;
@@ -272,10 +272,9 @@ public class MapWork extends BaseWork {
       }
     }
     boolean hasPathToPartInfo = (pathToPartitionInfo != null && !pathToPartitionInfo.isEmpty());
-    if (canWrapAny && hasPathToPartInfo) {
-      assert isLlapOn;
+    if (hasPathToPartInfo) {
       for (PartitionDesc part : pathToPartitionInfo.values()) {
-        boolean isUsingLlapIo = HiveInputFormat.canWrapForLlap(
+        boolean isUsingLlapIo = canWrapAny && HiveInputFormat.canWrapForLlap(
             part.getInputFileFormatClass(), doCheckIfs);
         if (isUsingLlapIo) {
           if (part.getTableDesc() != null &&
@@ -284,28 +283,31 @@ public class MapWork extends BaseWork {
           } else {
             hasLlap = true;
           }
+        } else if (isLlapOn && HiveInputFormat.canInjectCaches(part.getInputFileFormatClass())) {
+          hasCacheOnly = true;
         } else {
           hasNonLlap = true;
         }
       }
     }
 
-    // check if the column types that are read are supported by LLAP IO
-    if (hasLlap) {
-      // TODO: no need for now hasLlap = checkVectorizerSupportedTypes();
-    }
-
     llapIoDesc = deriveLlapIoDescString(
-        isLlapOn, canWrapAny, hasPathToPartInfo, hasLlap, hasNonLlap, hasAcid);
+        isLlapOn, canWrapAny, hasPathToPartInfo, hasLlap, hasNonLlap, hasAcid, hasCacheOnly);
   }
 
   private static String deriveLlapIoDescString(boolean isLlapOn, boolean canWrapAny,
-      boolean hasPathToPartInfo, boolean hasLlap, boolean hasNonLlap, boolean hasAcid) {
+      boolean hasPathToPartInfo, boolean hasLlap, boolean hasNonLlap, boolean hasAcid,
+      boolean hasCacheOnly) {
     if (!isLlapOn) return null; // LLAP IO is off, don't output.
-    if (!canWrapAny) return "no inputs"; // Cannot use with input formats.
+    if (!canWrapAny && !hasCacheOnly) return "no inputs"; // Cannot use with input formats.
     if (!hasPathToPartInfo) return "unknown"; // No information to judge.
+    int varieties = (hasAcid ? 1 : 0) + (hasLlap ? 1 : 0)
+        + (hasCacheOnly ? 1 : 0) + (hasNonLlap ? 1 : 0);
+    if (varieties > 1) return "some inputs"; // Will probably never actually happen.
     if (hasAcid) return "may be used (ACID table)";
-    return (hasLlap ? (hasNonLlap ? "some inputs" : "all inputs") : "no inputs");
+    if (hasLlap) return "all inputs";
+    if (hasCacheOnly) return "all inputs (cache only)";
+    return "no inputs";
   }
 
   public void internTable(Interner<TableDesc> interner) {

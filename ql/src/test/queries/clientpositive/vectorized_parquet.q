@@ -1,6 +1,7 @@
 set hive.explain.user=false;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 create table if not exists alltypes_parquet (
   cint int, 

@@ -214,6 +214,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     String ifName = inputFormat.getClass().getCanonicalName();
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
+    boolean isCacheOnly = inputFormat instanceof LlapCacheOnlyInputFormatInterface;
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
     if (!isVectorized) {
       // Pretend it's vectorized if the non-vector wrapped is enabled.
@@ -224,33 +225,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (isVectorized && !isSupported
         && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED)) {
       // See if we can use re-encoding to read the format thru IO elevator.
-      String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Checking " + ifName + " against " + formatList);
-      }
-      String[] formats = StringUtils.getStrings(formatList);
-      if (formats != null) {
-        for (String format : formats) {
-          // TODO: should we check isAssignableFrom?
-          if (ifName.equals(format)) {
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Using SerDe-based LLAP reader for " + ifName);
-            }
-            isSupported = isSerdeBased = true;
-            break;
-          }
-        }
-      }
+      isSupported = isSerdeBased = checkInputFormatForLlapEncode(conf, ifName);
     }
-    if (!isSupported || !isVectorized) {
+    if ((!isSupported || !isVectorized) && !isCacheOnly) {
       if (LOG.isInfoEnabled()) {
         LOG.info("Not using llap for " + ifName + ": supported = "
-          + isSupported + ", vectorized = " + isVectorized);
+          + isSupported + ", vectorized = " + isVectorized + ", cache only = " + isCacheOnly);
       }
       return inputFormat;
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Wrapping " + ifName);
+      LOG.debug("Processing " + ifName);
     }
 
     @SuppressWarnings("unchecked")
@@ -264,41 +249,83 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Deserializer serde = null;
     if (isSerdeBased) {
       if (part == null) {
-        if (LOG.isInfoEnabled()) {
+        if (isCacheOnly) {
+          LOG.info("Using cache only because there's no partition spec for SerDe-based IF");
+          injectLlapCaches(inputFormat, llapIo);
+        } else {
           LOG.info("Not using LLAP IO because there's no partition spec for SerDe-based IF");
         }
         return inputFormat;
       }
-      VectorPartitionDesc vpart =  part.getVectorPartitionDesc();
-      if (vpart != null) {
-        VectorMapOperatorReadType old = vpart.getVectorMapOperatorReadType();
-        if (old != VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
-          if (LOG.isInfoEnabled()) {
-            LOG.info("Resetting VectorMapOperatorReadType from " + old + " for partition "
-              + part.getTableName() + " " + part.getPartSpec());
-          }
-          vpart.setVectorMapOperatorReadType(
-              VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT);
-        }
-      }
-      try {
-        serde = part.getDeserializer(conf);
-      } catch (Exception e) {
-        throw new HiveException("Error creating SerDe for LLAP IO", e);
+      serde = findSerDeForLlapSerDeIf(conf, part);
+    }
+    if (isSupported && isVectorized) {
+      InputFormat<?, ?> wrappedIf = llapIo.getInputFormat(inputFormat, serde);
+      // null means we cannot wrap; the cause is logged inside.
+      if (wrappedIf != null) {
+        return castInputFormat(wrappedIf);
       }
     }
-    InputFormat<?, ?> wrappedIf = llapIo.getInputFormat(inputFormat, serde);
-    if (wrappedIf == null) {
-      return inputFormat; // We cannot wrap; the cause is logged inside.
+    if (isCacheOnly) {
+      injectLlapCaches(inputFormat, llapIo);
     }
-    return castInputFormat(wrappedIf);
+    return inputFormat;
   }
 
+  private static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
+    String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Checking " + ifName + " against " + formatList);
+    }
+    String[] formats = StringUtils.getStrings(formatList);
+    if (formats != null) {
+      for (String format : formats) {
+        // TODO: should we check isAssignableFrom?
+        if (ifName.equals(format)) {
+          if (LOG.isInfoEnabled()) {
+            LOG.info("Using SerDe-based LLAP reader for " + ifName);
+          }
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
+  private static Deserializer findSerDeForLlapSerDeIf(
+      Configuration conf, PartitionDesc part) throws HiveException {
+    VectorPartitionDesc vpart =  part.getVectorPartitionDesc();
+    if (vpart != null) {
+      VectorMapOperatorReadType old = vpart.getVectorMapOperatorReadType();
+      if (old != VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
+        if (LOG.isInfoEnabled()) {
+          LOG.info("Resetting VectorMapOperatorReadType from " + old + " for partition "
+            + part.getTableName() + " " + part.getPartSpec());
+        }
+        vpart.setVectorMapOperatorReadType(
+            VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT);
+      }
+    }
+    try {
+      return part.getDeserializer(conf);
+    } catch (Exception e) {
+      throw new HiveException("Error creating SerDe for LLAP IO", e);
+    }
+  }
+
+  public static void injectLlapCaches(InputFormat<WritableComparable, Writable> inputFormat,
+      LlapIo<VectorizedRowBatch> llapIo) {
+    LOG.info("Injecting LLAP caches into " + inputFormat.getClass().getCanonicalName());
+    llapIo.initCacheOnlyInputFormat(inputFormat);
+  }
 
   public static boolean canWrapForLlap(Class<? extends InputFormat> clazz, boolean checkVector) {
     return LlapWrappableInputFormatInterface.class.isAssignableFrom(clazz) &&
         (!checkVector || BatchToRowInputFormat.class.isAssignableFrom(clazz));
+  }
+
+  public static boolean canInjectCaches(Class<? extends InputFormat> clazz) {
+    return LlapCacheOnlyInputFormatInterface.class.isAssignableFrom(clazz);
   }
 
   @SuppressWarnings("unchecked")
