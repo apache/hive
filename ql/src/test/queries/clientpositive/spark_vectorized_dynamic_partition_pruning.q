@@ -6,7 +6,7 @@ set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
 set hive.strict.checks.cartesian.product=false;
 
-
+-- SORT_QUERY_RESULTS
 select distinct ds from srcpart;
 select distinct hr from srcpart;
 
