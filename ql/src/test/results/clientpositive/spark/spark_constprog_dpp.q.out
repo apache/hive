@@ -1,0 +1,138 @@
+PREHOOK: query: drop table if exists tb1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tb1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb1 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb1
+POSTHOOK: query: create table tb1 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb1
+PREHOOK: query: drop table if exists tb2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tb2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tb2 (id smallint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb2
+POSTHOOK: query: create table tb2 (id smallint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb2
+PREHOOK: query: explain
+select a.id from tb1 a
+left outer join
+(select id from tb2
+union all
+select 2 as id from tb2 limit 1) b
+on a.id=b.id
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select a.id from tb1 a
+left outer join
+(select id from tb2
+union all
+select 2 as id from tb2 limit 1) b
+on a.id=b.id
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Reducer 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 4 <- Map 3 (GROUP, 1), Map 5 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: id (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: tb2
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Select Operator
+                    expressions: UDFToInteger(id) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: int)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: tb2
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    expressions: 2 (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Limit
+                      Number of rows: 1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: int)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
