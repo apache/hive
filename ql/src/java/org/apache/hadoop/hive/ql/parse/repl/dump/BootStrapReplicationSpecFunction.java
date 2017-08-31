@@ -38,7 +38,6 @@ class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<Rep
           new ReplicationSpec(
               true,
               false,
-              false,
               "replv2",
               "will-be-set",
               false,

@@ -31,14 +31,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class TestExport {
+public class TestExportImport {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(TestExport.class);
-  private static WarehouseInstance hiveWarehouse;
+  protected static final Logger LOG = LoggerFactory.getLogger(TestExportImport.class);
+  private static WarehouseInstance srcHiveWarehouse;
+  private static WarehouseInstance destHiveWarehouse;
 
   @Rule
   public final TestName testName = new TestName();
   private String dbName;
+  private String replDbName;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -46,18 +48,22 @@ public class TestExport {
     conf.set("dfs.client.use.datanode.hostname", "true");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    hiveWarehouse = new WarehouseInstance(LOG, miniDFSCluster, false);
+    srcHiveWarehouse = new WarehouseInstance(LOG, miniDFSCluster, false);
+    destHiveWarehouse = new WarehouseInstance(LOG, miniDFSCluster, false);
   }
 
   @AfterClass
   public static void classLevelTearDown() throws IOException {
-    hiveWarehouse.close();
+    srcHiveWarehouse.close();
+    destHiveWarehouse.close();
   }
 
   @Before
   public void setup() throws Throwable {
     dbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
-    hiveWarehouse.run("create database " + dbName);
+    replDbName = dbName + "_dupe";
+    srcHiveWarehouse.run("create database " + dbName);
+    destHiveWarehouse.run("create database " + replDbName);
   }
 
   @Test
@@ -65,7 +71,7 @@ public class TestExport {
     String path = "hdfs:///tmp/" + dbName + "/";
     String exportPath = "'" + path + "'";
     String importDataPath = path + "/data";
-    hiveWarehouse
+    srcHiveWarehouse
         .run("use " + dbName)
         .run("create temporary table t1 (i int)")
         .run("insert into table t1 values (1),(2)")
@@ -74,5 +80,21 @@ public class TestExport {
         .run("load data inpath '" + importDataPath + "' overwrite into table t2")
         .run("select * from t2")
         .verifyResults(new String[] { "1", "2" });
+  }
+
+  @Test
+  public void dataImportAfterMetadataOnlyImport() throws Throwable {
+    String path = "hdfs:///tmp/" + dbName + "/";
+    String exportMDPath = "'" + path + "1/'";
+    String exportDataPath = "'" + path + "2/'";
+    srcHiveWarehouse.run("create table " + dbName + ".t1 (i int)")
+            .run("insert into table " + dbName + ".t1 values (1),(2)")
+            .run("export table " + dbName + ".t1 to " + exportMDPath + " for metadata replication('1')")
+            .run("export table " + dbName + ".t1 to " + exportDataPath + " for replication('2')");
+
+    destHiveWarehouse.run("import table " + replDbName + ".t1 from " + exportMDPath)
+            .run("import table " + replDbName + ".t1 from " + exportDataPath)
+            .run("select * from " + replDbName + ".t1")
+            .verifyResults(new String[] { "1", "2" });
   }
 }
