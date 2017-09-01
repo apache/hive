@@ -482,9 +482,6 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
       dataColumn = dataEncoding.getDictionaryBasedValuesReader(descriptor, VALUES, dictionary);
       this.isCurrentPageDictionaryEncoded = true;
     } else {
-      if (dataEncoding != Encoding.PLAIN) {
-        throw new UnsupportedOperationException("Unsupported encoding: " + dataEncoding);
-      }
       dataColumn = dataEncoding.getValuesReader(descriptor, VALUES);
       this.isCurrentPageDictionaryEncoded = false;
     }
