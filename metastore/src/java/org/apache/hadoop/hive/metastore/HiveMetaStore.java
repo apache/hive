@@ -132,7 +132,10 @@ import org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
+import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
+import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -7922,33 +7925,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if(!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_INITIATOR_ON)) {
       return;
     }
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidHouseKeeperService"));
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidCompactionHistoryService"));
-    startHouseKeeperService(conf, Class.forName("org.apache.hadoop.hive.ql.txn.AcidWriteSetService"));
 
     ThreadPool.initialize(conf);
-    RunnableConfigurable rc = new AcidOpenTxnsCounterService();
+    startOneHouseKeeperService(new AcidHouseKeeperService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TIMEDOUT_TXN_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidOpenTxnsCounterService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidCompactionHistoryService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+    startOneHouseKeeperService(new AcidWriteSetService(), conf,
+        MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.WRITE_SET_REAPER_INTERVAL,
+            TimeUnit.MILLISECONDS));
+  }
+
+  private static void startOneHouseKeeperService(RunnableConfigurable rc, Configuration conf,
+                                                 long interval) {
     rc.setConf(conf);
-    ThreadPool.getPool().scheduleAtFixedRate(rc, 100, MetastoreConf.getTimeVar(conf,
-        MetastoreConf.ConfVars.COUNT_OPEN_TXNS_INTERVAL, TimeUnit.MILLISECONDS),
-        TimeUnit.MILLISECONDS);
-
-  }
-  private static void startHouseKeeperService(HiveConf conf, Class<?> c) throws Exception {
-    //todo: when metastore adds orderly-shutdown logic, houseKeeper.stop()
-    //should be called form it
-    HouseKeeperService houseKeeper = (HouseKeeperService)c.newInstance();
-    try {
-      houseKeeper.start(conf);
-    }
-    catch (Exception ex) {
-      LOG.error("Failed to start {}" , houseKeeper.getClass() +
-        ".  The system will not handle {} " , houseKeeper.getServiceDescription(),
-        ".  Root Cause: ", ex);
-    }
+    ThreadPool.getPool().scheduleAtFixedRate(rc, 0, interval, TimeUnit.MILLISECONDS);
   }
 
-  public static Map<FileMetadataExprType, FileMetadataHandler> createHandlerMap() {
+  static Map<FileMetadataExprType, FileMetadataHandler> createHandlerMap() {
     Map<FileMetadataExprType, FileMetadataHandler> fmHandlers = new HashMap<>();
     for (FileMetadataExprType v : FileMetadataExprType.values()) {
       switch (v) {
