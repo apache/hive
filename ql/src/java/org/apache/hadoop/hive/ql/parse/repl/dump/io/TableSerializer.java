@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.thrift.TException;
@@ -44,7 +45,7 @@ public class TableSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    if (cannotReplicateTable(additionalPropertiesProvider)) {
+    if (!EximUtil.shouldExportTable(additionalPropertiesProvider, tableHandle)) {
       return;
     }
 
@@ -59,10 +60,6 @@ public class TableSerializer implements JsonWriter.Serializer {
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }
-  }
-
-  private boolean cannotReplicateTable(ReplicationSpec additionalPropertiesProvider) {
-    return tableHandle == null || additionalPropertiesProvider.isNoop();
   }
 
   private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider)

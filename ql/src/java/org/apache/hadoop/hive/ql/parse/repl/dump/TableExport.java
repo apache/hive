@@ -156,12 +156,7 @@ public class TableExport {
   }
 
   private boolean shouldExport() throws SemanticException {
-    if (replicationSpec.isInReplicationScope()) {
-      return !(tableSpec.tableHandle.isTemporary() || tableSpec.tableHandle.isNonNative());
-    } else if (tableSpec.tableHandle.isNonNative()) {
-      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
-    }
-    return true;
+    return EximUtil.shouldExportTable(replicationSpec, tableSpec.tableHandle);
   }
 
   /**
