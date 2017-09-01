@@ -3139,6 +3139,9 @@ public class HiveConf extends Configuration {
     LLAP_MANAGEMENT_ACL("hive.llap.management.acl", "*", "The ACL for LLAP daemon management."),
     LLAP_MANAGEMENT_ACL_DENY("hive.llap.management.acl.blocked", "",
         "The deny ACL for LLAP daemon management."),
+    LLAP_PLUGIN_ACL("hive.llap.plugin.acl", "*", "The ACL for LLAP plugin AM endpoint."),
+    LLAP_PLUGIN_ACL_DENY("hive.llap.plugin.acl.blocked", "",
+        "The deny ACL for LLAP plugin AM endpoint."),
     LLAP_REMOTE_TOKEN_REQUIRES_SIGNING("hive.llap.remote.token.requires.signing", "true",
         new StringSet("false", "except_llap_owner", "true"),
         "Whether the token returned from LLAP management API should require fragment signing.\n" +
@@ -3157,6 +3160,11 @@ public class HiveConf extends Configuration {
 
     LLAP_DAEMON_RPC_NUM_HANDLERS("hive.llap.daemon.rpc.num.handlers", 5,
       "Number of RPC handlers for LLAP daemon.", "llap.daemon.rpc.num.handlers"),
+    LLAP_PLUGIN_RPC_PORT("hive.llap.plugin.rpc.port", 15005,
+        "RPC port for AM LLAP daemon plugin endpoint."),
+
+    LLAP_PLUGIN_RPC_NUM_HANDLERS("hive.llap.plugin.rpc.num.handlers", 1,
+      "Number of RPC handlers for AM LLAP plugin endpoint."),
     LLAP_DAEMON_WORK_DIRS("hive.llap.daemon.work.dirs", "",
         "Working directories for the daemon. This should not be set if running as a YARN\n" +
         "application via Slider. It must be set when not running via Slider on YARN. If the value\n" +
