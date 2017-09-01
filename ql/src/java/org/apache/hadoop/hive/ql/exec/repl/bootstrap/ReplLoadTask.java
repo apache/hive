@@ -70,7 +70,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(conf, getHive());
+      Context context = new Context(conf, getHive(), work.sessionStateLineageState,
+          work.currentTransactionId);
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use
@@ -206,6 +207,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         work.updateDbEventState(null);
       }
       this.childTasks = scope.rootTasks;
+      /*
+      Since there can be multiple rounds of this run all of which will be tied to the same
+      query id -- generated in compile phase , adding a additional UUID to the end to print each run
+      in separate files.
+       */
       LOG.info("Root Tasks / Total Tasks : {} / {} ", childTasks.size(), loadTaskTracker.numberOfTasks());
 
       // Populate the driver context with the scratch dir info from the repl context, so that the temp dirs will be cleaned up later

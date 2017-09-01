@@ -4941,4 +4941,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     return retval;
   }
+
+  /*
+  uses the authorizer from SessionState will need some more work to get this to run in parallel,
+  however this should not be a bottle neck so might not need to parallelize this.
+   */
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

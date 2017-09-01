@@ -238,10 +238,10 @@ public class LoadPartitions {
       Path tmpPath) {
     LoadTableDesc loadTableWork = new LoadTableDesc(
         tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-        event.replicationSpec().isReplace()
-    );
+        event.replicationSpec().isReplace());
     loadTableWork.setInheritTableSpecs(false);
-    MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
+    MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false,
+        context.sessionStateLineageState);
     return TaskFactory.get(work, context.hiveConf);
   }
 

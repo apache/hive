@@ -193,4 +193,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     }
   }
 
+  @Override
+  public boolean canExecuteInParallel() {
+    return false;
+  }
 }

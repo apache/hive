@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -317,7 +318,7 @@ public class AcidUtils {
     return result;
   }
 
-  public enum Operation {
+  public enum Operation implements Serializable {
     NOT_ACID, INSERT, UPDATE, DELETE;
   }
 

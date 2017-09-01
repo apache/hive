@@ -21,9 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
@@ -58,6 +56,11 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     }
 
     return false;
+  }
+
+  @Override
+  public boolean canExecuteInParallel() {
+    return isMapRedTask();
   }
 
   @Override

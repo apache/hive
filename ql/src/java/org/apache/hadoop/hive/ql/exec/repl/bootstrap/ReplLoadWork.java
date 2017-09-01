@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.plan.Explain;
+import org.apache.hadoop.hive.ql.session.LineageState;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -37,17 +38,28 @@ public class ReplLoadWork implements Serializable {
   private int loadTaskRunCount = 0;
   private DatabaseEvent.State state = null;
 
+  /*
+  these are sessionState objects that are copied over to work to allow for parallel execution.
+  based on the current use case the methods are selectively synchronized, which might need to be
+  taken care when using other methods.
+  */
+  final LineageState sessionStateLineageState;
+  public final long currentTransactionId;
+
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      String tableNameToLoadIn) throws IOException {
+      String tableNameToLoadIn, LineageState lineageState, long currentTransactionId)
+      throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
+    sessionStateLineageState = lineageState;
+    this.currentTransactionId = currentTransactionId;
     this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
     this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;
   }
 
-  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameOrPattern)
-      throws IOException {
-    this(hiveConf, dumpDirectory, dbNameOrPattern, null);
+  public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameOrPattern,
+      LineageState lineageState, long currentTransactionId) throws IOException {
+    this(hiveConf, dumpDirectory, dbNameOrPattern, null, lineageState, currentTransactionId);
   }
 
   public BootstrapEventsIterator iterator() {

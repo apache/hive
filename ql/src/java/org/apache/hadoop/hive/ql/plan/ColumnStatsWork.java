@@ -34,15 +34,17 @@ public class ColumnStatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private FetchWork fWork;
   private ColumnStatsDesc colStats;
+  private String currentDatabaseName;
   private static final int LIMIT = -1;
 
 
   public ColumnStatsWork() {
   }
 
-  public ColumnStatsWork(FetchWork work, ColumnStatsDesc colStats) {
+  public ColumnStatsWork(FetchWork work, ColumnStatsDesc colStats, String currentDatabaseName) {
     this.fWork = work;
     this.setColStats(colStats);
+    this.currentDatabaseName = currentDatabaseName;
   }
 
   @Override
@@ -85,4 +87,11 @@ public class ColumnStatsWork implements Serializable {
     return LIMIT;
   }
 
+  public String getCurrentDatabaseName() {
+    return currentDatabaseName;
+  }
+
+  public void setCurrentDatabaseName(String currentDatabaseName) {
+    this.currentDatabaseName = currentDatabaseName;
+  }
 }

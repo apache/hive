@@ -18,20 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +30,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -54,7 +41,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
-import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDesc;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
@@ -76,9 +62,16 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
 import org.apache.hadoop.hive.serde2.thrift.ThriftJDBCBinarySerDe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * TaskCompiler is a the base class for classes that compile
@@ -107,7 +100,7 @@ public abstract class TaskCompiler {
 
     Context ctx = pCtx.getContext();
     GlobalLimitCtx globalLimitCtx = pCtx.getGlobalLimitCtx();
-    List<Task<MoveWork>> mvTask = new ArrayList<Task<MoveWork>>();
+    List<Task<MoveWork>> mvTask = new ArrayList<>();
 
     List<LoadTableDesc> loadTableWork = pCtx.getLoadTableWork();
     List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
@@ -214,7 +207,9 @@ public abstract class TaskCompiler {
       }
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
-        Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false), conf);
+        Task<MoveWork> tsk = TaskFactory
+            .get(new MoveWork(null, null, ltd, null, false, SessionState.get().getLineageState()),
+                conf);
         mvTask.add(tsk);
         // Check to see if we are stale'ing any indexes and auto-update them if we want
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
@@ -258,9 +253,7 @@ public abstract class TaskCompiler {
               }
               Warehouse wh = new Warehouse(conf);
               targetPath = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1]);
-            } catch (HiveException e) {
-              throw new SemanticException(e);
-            } catch (MetaException e) {
+            } catch (HiveException | MetaException e) {
               throw new SemanticException(e);
             }
 
@@ -272,7 +265,9 @@ public abstract class TaskCompiler {
 
           oneLoadFile = false;
         }
-        mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false), conf));
+        mvTask.add(TaskFactory
+            .get(new MoveWork(null, null, null, lfd, false, SessionState.get().getLineageState()),
+                conf));
       }
     }
 
@@ -296,7 +291,7 @@ public abstract class TaskCompiler {
      * a column stats task instead of a fetch task to persist stats to the metastore.
      */
     if (isCStats || !pCtx.getColumnStatsAutoGatherContexts().isEmpty()) {
-      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<>();
       getLeafTasks(rootTasks, leafTasks);
       if (isCStats) {
         genColumnStatsTask(pCtx.getAnalyzeRewrite(), loadFileWork, leafTasks, outerQueryLimit, 0);
@@ -384,7 +379,7 @@ public abstract class TaskCompiler {
     // find all leaf tasks and make the DDLTask as a dependent task of all of
     // them
     HashSet<Task<? extends Serializable>> leaves =
-        new LinkedHashSet<Task<? extends Serializable>>();
+        new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
     for (Task<? extends Serializable> task : leaves) {
@@ -411,19 +406,14 @@ public abstract class TaskCompiler {
    * This method generates a plan with a column stats task on top of map-red task and sets up the
    * appropriate metadata to be used during execution.
    *
-   * @param analyzeRewrite
-   * @param loadTableWork
-   * @param loadFileWork
-   * @param rootTasks
-   * @param outerQueryLimit
    */
   @SuppressWarnings("unchecked")
   protected void genColumnStatsTask(AnalyzeRewriteContext analyzeRewrite,
       List<LoadFileDesc> loadFileWork, Set<Task<? extends Serializable>> leafTasks,
       int outerQueryLimit, int numBitVector) {
-    ColumnStatsTask cStatsTask = null;
-    ColumnStatsWork cStatsWork = null;
-    FetchWork fetch = null;
+    ColumnStatsTask cStatsTask;
+    ColumnStatsWork cStatsWork;
+    FetchWork fetch;
     String tableName = analyzeRewrite.getTableName();
     List<String> colName = analyzeRewrite.getColName();
     List<String> colType = analyzeRewrite.getColType();
@@ -450,7 +440,7 @@ public abstract class TaskCompiler {
 
     ColumnStatsDesc cStatsDesc = new ColumnStatsDesc(tableName,
         colName, colType, isTblLevel, numBitVector);
-    cStatsWork = new ColumnStatsWork(fetch, cStatsDesc);
+    cStatsWork = new ColumnStatsWork(fetch, cStatsDesc, SessionState.get().getCurrentDatabase());
     cStatsTask = (ColumnStatsTask) TaskFactory.get(cStatsWork, conf);
     for (Task<? extends Serializable> tsk : leafTasks) {
       tsk.addDependentTask(cStatsTask);
@@ -461,7 +451,7 @@ public abstract class TaskCompiler {
   /**
    * Find all leaf tasks of the list of root tasks.
    */
-  protected void getLeafTasks(List<Task<? extends Serializable>> rootTasks,
+  private void getLeafTasks(List<Task<? extends Serializable>> rootTasks,
       Set<Task<? extends Serializable>> leaves) {
 
     for (Task<? extends Serializable> root : rootTasks) {

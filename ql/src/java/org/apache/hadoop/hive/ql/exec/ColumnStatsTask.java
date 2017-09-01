@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -330,7 +329,7 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
   private List<ColumnStatistics> constructColumnStatsFromPackedRows(
       Hive db) throws HiveException, MetaException, IOException {
 
-    String currentDb = SessionState.get().getCurrentDatabase();
+    String currentDb = work.getCurrentDatabaseName();
     String tableName = work.getColStats().getTableName();
     String partName = null;
     List<String> colName = work.getColStats().getColName();

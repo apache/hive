@@ -18,19 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -69,6 +56,19 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * ImportSemanticAnalyzer.
@@ -349,10 +349,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Path tmpPath = x.getCtx().getExternalTmpPath(tgtPath);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, x.getConf());
     LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
-        Utilities.getTableDesc(table), new TreeMap<String, String>(),
+        Utilities.getTableDesc(table), new TreeMap<>(),
         replace);
     Task<?> loadTableTask = TaskFactory.get(new MoveWork(x.getInputs(),
-        x.getOutputs(), loadTableWork, null, false), x.getConf());
+            x.getOutputs(), loadTableWork, null, false, SessionState.get().getLineageState()),
+        x.getConf());
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;
@@ -422,7 +423,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           partSpec.getPartSpec(), replicationSpec.isReplace());
       loadTableWork.setInheritTableSpecs(false);
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
-          x.getInputs(), x.getOutputs(), loadTableWork, null, false),
+              x.getInputs(), x.getOutputs(), loadTableWork, null, false,
+              SessionState.get().getLineageState()),
           x.getConf());
       copyTask.addDependentTask(loadPartTask);
       addPartTask.addDependentTask(loadPartTask);
