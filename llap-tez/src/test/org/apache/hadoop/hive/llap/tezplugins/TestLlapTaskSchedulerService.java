@@ -40,8 +40,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapFixedRegistryImpl;
 import org.apache.hadoop.hive.llap.testhelpers.ControlledClock;
@@ -1447,7 +1447,7 @@ public class TestLlapTaskSchedulerService {
     static final Resource resource = Resource.newInstance(1024, 1);
     Configuration conf;
     TaskSchedulerContext mockAppCallback = mock(TaskSchedulerContext.class);
-    ServiceInstanceSet mockServiceInstanceSet = mock(ServiceInstanceSet.class);
+    LlapServiceInstanceSet mockServiceInstanceSet = mock(LlapServiceInstanceSet.class);
     ControlledClock clock = new ControlledClock(new MonotonicClock());
     ApplicationAttemptId appAttemptId = ApplicationAttemptId.newInstance(ApplicationId.newInstance(1000, 1), 1);
     LlapTaskSchedulerServiceForTest ts;
@@ -1499,16 +1499,16 @@ public class TestLlapTaskSchedulerService {
       doReturn(userPayload).when(mockAppCallback).getInitialUserPayload();
 
       if (useMockRegistry) {
-        List<ServiceInstance> liveInstances = new ArrayList<>();
+        List<LlapServiceInstance> liveInstances = new ArrayList<>();
         for (String host : liveHosts) {
           if (host == null) {
-            ServiceInstance mockInactive = mock(InactiveServiceInstance.class);
+            LlapServiceInstance mockInactive = mock(InactiveServiceInstance.class);
             doReturn(host).when(mockInactive).getHost();
             doReturn("inactive-host-" + host).when(mockInactive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockInactive).build()).when(mockServiceInstanceSet).getByHost(host);
             liveInstances.add(mockInactive);
           } else {
-            ServiceInstance mockActive = mock(ServiceInstance.class);
+            LlapServiceInstance mockActive = mock(LlapServiceInstance.class);
             doReturn(host).when(mockActive).getHost();
             doReturn("host-" + host).when(mockActive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockActive).build()).when(mockServiceInstanceSet).getByHost(host);
@@ -1517,9 +1517,9 @@ public class TestLlapTaskSchedulerService {
         }
         doReturn(liveInstances).when(mockServiceInstanceSet).getAllInstancesOrdered(true);
 
-        List<ServiceInstance> allInstances = new ArrayList<>();
+        List<LlapServiceInstance> allInstances = new ArrayList<>();
         for (String host : hosts) {
-          ServiceInstance mockActive = mock(ServiceInstance.class);
+          LlapServiceInstance mockActive = mock(LlapServiceInstance.class);
           doReturn(host).when(mockActive).getHost();
           doReturn(Resource.newInstance(100, 1)).when(mockActive).getResource();
           doReturn("host-" + host).when(mockActive).getWorkerIdentity();

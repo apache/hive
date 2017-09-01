@@ -14,6 +14,8 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,9 +64,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -107,7 +108,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final Configuration conf;
 
   // interface into the registry service
-  private ServiceInstanceSet activeInstances;
+  private LlapServiceInstanceSet activeInstances;
 
   // Tracks all instances, including ones which have been disabled in the past.
   // LinkedHashMap to provide the same iteration order when selecting a random host.
@@ -330,7 +331,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         addNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);
       }
@@ -340,15 +341,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
   @VisibleForTesting
-  public void setServiceInstanceSet(ServiceInstanceSet serviceInstanceSet) {
+  public void setServiceInstanceSet(LlapServiceInstanceSet serviceInstanceSet) {
     this.activeInstances = serviceInstanceSet;
   }
 
-  private class NodeStateChangeListener implements ServiceInstanceStateChangeListener {
+  private class NodeStateChangeListener
+      implements ServiceInstanceStateChangeListener<LlapServiceInstance> {
     private final Logger LOG = LoggerFactory.getLogger(NodeStateChangeListener.class);
 
     @Override
-    public void onCreate(ServiceInstance serviceInstance) {
+    public void onCreate(LlapServiceInstance serviceInstance) {
       LOG.info("Added node with identity: {} as a result of registry callback",
           serviceInstance.getWorkerIdentity());
       addNode(new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
@@ -356,7 +358,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     @Override
-    public void onUpdate(ServiceInstance serviceInstance) {
+    public void onUpdate(LlapServiceInstance serviceInstance) {
       // TODO In what situations will this be invoked?
       LOG.warn(
           "Not expecing Updates from the registry. Received update for instance={}. Ignoring",
@@ -364,7 +366,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     @Override
-    public void onRemove(ServiceInstance serviceInstance) {
+    public void onRemove(LlapServiceInstance serviceInstance) {
       NodeReport nodeReport = constructNodeReport(serviceInstance, false);
       LOG.info("Sending out nodeReport for onRemove: {}", nodeReport);
       getContext().nodesUpdated(Collections.singletonList(nodeReport));
@@ -475,7 +477,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int numInstancesFound = 0;
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         Resource r = inst.getResource();
         memory += r.getMemory();
         vcores += r.getVirtualCores();
@@ -506,7 +508,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int numInstancesFound = 0;
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
         if (nodeInfo != null && !nodeInfo.isDisabled()) {
           Resource r = inst.getResource();
@@ -766,9 +768,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         for (String host : requestedHosts) {
           prefHostCount++;
           // Pick the first host always. Weak attempt at cache affinity.
-          Set<ServiceInstance> instances = activeInstances.getByHost(host);
+          Set<LlapServiceInstance> instances = activeInstances.getByHost(host);
           if (!instances.isEmpty()) {
-            for (ServiceInstance inst : instances) {
+            for (LlapServiceInstance inst : instances) {
               NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
               if (nodeInfo != null) {
                 if  (nodeInfo.canAcceptTask()) {
@@ -828,10 +830,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       /* fall through - miss in locality or no locality-requested */
-      Collection<ServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      Collection<LlapServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
       List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
-      for (ServiceInstance inst : instances) {
+      for (LlapServiceInstance inst : instances) {
         if (inst instanceof InactiveServiceInstance) {
           allNodes.add(null);
         } else {
@@ -918,7 +920,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return new SelectHostResult(randomNode);
   }
 
-  private void addNode(NodeInfo node, ServiceInstance serviceInstance) {
+  private void addNode(NodeInfo node, LlapServiceInstance serviceInstance) {
     // we have just added a new node. Signal timeout monitor to reset timer
     if (activeInstances.size() != 0 && timeoutFutureRef.get() != null) {
       LOG.info("New node added. Signalling scheduler timeout monitor thread to stop timer.");
@@ -1006,7 +1008,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
-  private static NodeReport constructNodeReport(ServiceInstance serviceInstance,
+  private static NodeReport constructNodeReport(LlapServiceInstance serviceInstance,
                                          boolean healthy) {
     NodeReport nodeReport = NodeReport.newInstance(NodeId
             .newInstance(serviceInstance.getHost(), serviceInstance.getRpcPort()),
@@ -1576,7 +1578,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   static class NodeInfo implements Delayed {
     private final NodeBlacklistConf blacklistConf;
-    final ServiceInstance serviceInstance;
+    final LlapServiceInstance serviceInstance;
     private final Clock clock;
 
     long expireTimeMillis = -1;
@@ -1609,7 +1611,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 *                                detect based on the serviceInstance, -1 indicates indicates
      * @param metrics
      */
-    NodeInfo(ServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
+    NodeInfo(LlapServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
         int numSchedulableTasksConf, final LlapTaskSchedulerMetrics metrics) {
       Preconditions.checkArgument(numSchedulableTasksConf >= -1, "NumSchedulableTasks must be >=-1");
       this.serviceInstance = serviceInstance;

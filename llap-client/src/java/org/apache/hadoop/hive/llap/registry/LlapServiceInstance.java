@@ -13,31 +13,12 @@
  */
 package org.apache.hadoop.hive.llap.registry;
 
-import java.util.Map;
+
+import org.apache.hadoop.hive.registry.ServiceInstance;
 
 import org.apache.hadoop.yarn.api.records.Resource;
 
-public interface ServiceInstance {
-
-  /**
-   * Worker identity is a UUID (unique across restarts), to identify a node which died &amp; was brought
-   * back on the same host/port
-   */
-  public String getWorkerIdentity();
-
-  /**
-   * Hostname of the service instance
-   * 
-   * @return
-   */
-  public String getHost();
-
-  /**
-   * RPC Endpoint for service instance
-   * 
-   * @return
-   */
-  public int getRpcPort();
+public interface LlapServiceInstance extends ServiceInstance {
 
   /**
    * Management endpoint for service instance
@@ -66,14 +47,6 @@ public interface ServiceInstance {
    */
   public int getOutputFormatPort();
 
-
-  /**
-   * Config properties of the Service Instance (llap.daemon.*)
-   * 
-   * @return
-   */
-
-  public Map<String, String> getProperties();
 
   /**
    * Memory and Executors available for the LLAP tasks

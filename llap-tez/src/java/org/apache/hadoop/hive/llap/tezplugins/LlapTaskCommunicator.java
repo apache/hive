@@ -15,7 +15,7 @@
 package org.apache.hadoop.hive.llap.tezplugins;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.io.Writable;
 
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
@@ -542,7 +542,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     if (timelineServerUri == null || containerNodeId == null) {
       return null;
     }
-    Set<ServiceInstance> instanceSet;
+    Set<LlapServiceInstance> instanceSet;
     try {
       instanceSet = serviceRegistry.getInstances().getByHost(containerNodeId.getHost());
     } catch (IOException e) {
@@ -554,8 +554,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
     // Once NodeId includes fragmentId - this becomes a lot more reliable.
     if (instanceSet != null) {
-      ServiceInstance matchedInstance = null;
-      for (ServiceInstance instance : instanceSet) {
+      LlapServiceInstance matchedInstance = null;
+      for (LlapServiceInstance instance : instanceSet) {
         if (instance.getRpcPort() == containerNodeId.getPort()) {
           matchedInstance = instance;
           break;
