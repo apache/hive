@@ -931,8 +931,8 @@ public class TezCompiler extends TaskCompiler {
           }
           // Remove the semijoin optimization branch along with ALL the mappings
           // The parent GB2 has all the branches. Collect them and remove them.
-          for (Operator<?> op : gbOp.getChildOperators()) {
-            ReduceSinkOperator rsFinal = (ReduceSinkOperator) op;
+          for (Node node : gbOp.getChildren()) {
+            ReduceSinkOperator rsFinal = (ReduceSinkOperator) node;
             TableScanOperator ts = pCtx.getRsToSemiJoinBranchInfo().
                     get(rsFinal).getTsOp();
             if (LOG.isDebugEnabled()) {
@@ -1004,6 +1004,17 @@ public class TezCompiler extends TaskCompiler {
       while (!(op instanceof ReduceSinkOperator) &&
               !(op instanceof TableScanOperator) &&
               !(op.getChildren() != null && op.getChildren().size() > 1)) {
+        if (op instanceof MapJoinOperator) {
+          // Pick the correct parent, only one of the parents is not
+          // ReduceSink, that is what we are looking for.
+          for (Operator<?> parentOp : op.getParentOperators()) {
+            if (parentOp instanceof ReduceSinkOperator) {
+              continue;
+            }
+            op = parentOp; // parent in current pipeline
+            continue;
+          }
+        }
         op = op.getParentOperators().get(0);
       }
 
@@ -1023,6 +1034,12 @@ public class TezCompiler extends TaskCompiler {
 
           // If not ReduceSink Op, skip
           if (!(child instanceof ReduceSinkOperator)) {
+            // This still could be DPP.
+            if (child instanceof AppMasterEventOperator &&
+                    ((AppMasterEventOperator) child).getConf() instanceof DynamicPruningEventDesc) {
+              // DPP indeed, Set parallel edges true
+              parallelEdges = true;
+            }
             continue;
           }
 
@@ -1053,7 +1070,7 @@ public class TezCompiler extends TaskCompiler {
   /*
    *  The algorithm looks at all the mapjoins in the operator pipeline until
    *  it hits RS Op and for each mapjoin examines if it has paralllel semijoin
-   *  edge.
+   *  edge or dynamic partition pruning.
    */
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
@@ -1076,7 +1093,7 @@ public class TezCompiler extends TaskCompiler {
       Deque<Operator<?>> deque = new LinkedList<>();
       deque.add(parent);
       while (!deque.isEmpty()) {
-        Operator<?> op = deque.poll();
+        Operator<?> op = deque.pollLast();
         if (op instanceof ReduceSinkOperator) {
           // Done with this branch
           continue;

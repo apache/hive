@@ -101,16 +101,24 @@ EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ke
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
 set hive.tez.dynamic.semijoin.reduction.for.mapjoin=true;
 -- Enable semijoin parallel to mapjoins.
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
-select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
 set hive.tez.dynamic.semijoin.reduction.for.mapjoin=false;
---set hive.tez.dynamic.semijoin.reduction=false;
+-- HIVE-17323 - with DPP, the 1st mapjoin is on a map with DPP and 2nd mapjoin is on a map which had semijoin but still removed.
+create table alltypesorc_int40 as select * from alltypesorc_int limit 40;
+set hive.tez.dynamic.semijoin.reduction=false;
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
+set hive.tez.dynamic.semijoin.reduction=true;
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
 
 -- With unions
 explain select * from alltypesorc_int join
                                       (select srcpart_date.key as key from srcpart_date
                                        union all
                                        select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key);
+
 
 
 drop table srcpart_date;
