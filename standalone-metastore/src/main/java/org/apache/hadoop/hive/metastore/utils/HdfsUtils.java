@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.client.HdfsAdmin;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -44,6 +45,10 @@ import java.util.Map;
 public class HdfsUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
+  // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
+  //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
+  //       as public utility method in HDFS to obtain the inode-based path.
+  private static final String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
 
   /**
    * Check the permissions on a file.
@@ -197,4 +202,20 @@ public class HdfsUtils {
     return params;
   }
 
+  public static Path getFileIdPath(
+      FileSystem fileSystem, Path path, long fileId) {
+    return (fileSystem instanceof DistributedFileSystem)
+        ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
+  }
+
+  public static long getFileId(FileSystem fs, String path) throws IOException {
+    return ensureDfs(fs).getClient().getFileInfo(path).getFileId();
+  }
+
+  private static DistributedFileSystem ensureDfs(FileSystem fs) {
+    if (!(fs instanceof DistributedFileSystem)) {
+      throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());
+    }
+    return (DistributedFileSystem)fs;
+  }
 }

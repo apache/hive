@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,18 +18,14 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
 import org.apache.hadoop.fs.LocatedFileStatus;
 
 import org.apache.hadoop.fs.RemoteIterator;
 
-import java.util.LinkedList;
-
-import java.util.Queue;
-
 import java.util.ArrayList;
-
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -43,23 +39,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
 
 public class FileMetadataManager {
   private static final Log LOG = LogFactory.getLog(FileMetadataManager.class);
-  private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
   private final RawStore tlms;
   private final ExecutorService threadPool;
-  private final HiveConf conf;
+  private final Configuration conf;
 
   private final class CacheUpdateRequest implements Callable<Void> {
     FileMetadataExprType type;
@@ -84,10 +76,10 @@ public class FileMetadataManager {
     }
   }
 
-  public FileMetadataManager(RawStore tlms, HiveConf conf) {
+  public FileMetadataManager(RawStore tlms, Configuration conf) {
     this.tlms = tlms;
     this.conf = conf;
-    int numThreads = HiveConf.getIntVar(conf, ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS);
+    int numThreads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.FILE_METADATA_THREADS);
     this.threadPool = Executors.newFixedThreadPool(numThreads,
         new ThreadFactoryBuilder().setNameFormat("File-Metadata-%d").setDaemon(true).build());
   }
@@ -118,8 +110,7 @@ public class FileMetadataManager {
       // TODO: use the other HdfsUtils here
       if (!(fs instanceof DistributedFileSystem)) return;
       try {
-        fileId = SHIMS.getFileId((DistributedFileSystem)fs,
-            Path.getPathWithoutSchemeAndAuthority(file).toString());
+        fileId = HdfsUtils.getFileId(fs, Path.getPathWithoutSchemeAndAuthority(file).toString());
       } catch (UnsupportedOperationException ex) {
         LOG.error("Cannot cache file metadata for " + location + "; "
             + fs.getClass().getCanonicalName() + " does not support fileId");
