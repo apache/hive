@@ -113,6 +113,16 @@ set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring);
 
+-- HIVE-17399
+create table srcpart_small10 as select * from srcpart_small limit 10;
+analyze table srcpart_small10 compute statistics for columns;
+set hive.tez.dynamic.semijoin.reduction=false;
+EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+set hive.tez.dynamic.semijoin.reduction=true;
+EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds;
+
 -- With unions
 explain select * from alltypesorc_int join
                                       (select srcpart_date.key as key from srcpart_date

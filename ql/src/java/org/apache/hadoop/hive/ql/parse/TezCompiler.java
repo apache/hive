@@ -165,8 +165,14 @@ public class TezCompiler extends TaskCompiler {
     runRemoveDynamicPruningOptimization(procCtx, inputs, outputs);
     perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run remove dynamic pruning by size");
 
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    markSemiJoinForDPP(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Mark certain semijoin edges important based ");
+
     // Removing semijoin optimization when it may not be beneficial
+    perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     removeSemijoinOptimizationByBenefit(procCtx);
+    perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove Semijoins based on cost benefits");
 
     perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // Remove any parallel edge between semijoin and mapjoin.
@@ -955,12 +961,14 @@ public class TezCompiler extends TaskCompiler {
       if (ts.getStatistics() != null) {
         long numRows = ts.getStatistics().getNumRows();
         if (numRows < pCtx.getConf().getLongVar(ConfVars.TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Insufficient rows (" + numRows + ") to justify semijoin optimization. Removing semijoin "
-                    + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+          if (sjInfo.getShouldRemove()) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Insufficient rows (" + numRows + ") to justify semijoin optimization. Removing semijoin "
+                      + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+            }
+            GenTezUtils.removeBranch(rs);
+            GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
           }
-          GenTezUtils.removeBranch(rs);
-          GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
         }
       }
       return null;
@@ -1055,7 +1063,7 @@ public class TezCompiler extends TaskCompiler {
 
           parallelEdges = true;
 
-          if (sjInfo.getIsHint()) {
+          if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
             // Created by hint, skip it
             continue;
           }
@@ -1295,8 +1303,8 @@ public class TezCompiler extends TaskCompiler {
         HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD);
     for (ReduceSinkOperator rs : map.keySet()) {
       SemiJoinBranchInfo sjInfo = map.get(rs);
-      if (sjInfo.getIsHint()) {
-        // Semijoin created using hint, skip it
+      if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
+        // Semijoin created using hint or marked useful, skip it
         continue;
       }
       // rs is semijoin optimization branch, which should look like <Parent>-SEL-GB1-RS1-GB2-RS2
@@ -1340,6 +1348,87 @@ public class TezCompiler extends TaskCompiler {
       }
       GenTezUtils.removeBranch(rs);
       GenTezUtils.removeSemiJoinOperator(procCtx.parseContext, rs, ts);
+    }
+  }
+
+  private void markSemiJoinForDPP(OptimizeTezProcContext procCtx)
+          throws SemanticException {
+    if(!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
+      // Not needed without semi-join reduction
+      return;
+    }
+
+    // Stores the Tablescan operators processed to avoid redoing them.
+    Map<TableScanOperator, TableScanOperator> tsOps = new HashMap<>();
+    Map<ReduceSinkOperator, SemiJoinBranchInfo> map = procCtx.parseContext.getRsToSemiJoinBranchInfo();
+
+    for (ReduceSinkOperator rs : map.keySet()) {
+      SemiJoinBranchInfo sjInfo = map.get(rs);
+      TableScanOperator ts = sjInfo.getTsOp();
+      TableScanOperator tsInMap = tsOps.putIfAbsent(ts, ts);
+      if (tsInMap != null) {
+        // Already processed, skip
+        continue;
+      }
+
+      if (sjInfo.getIsHint() || !sjInfo.getShouldRemove()) {
+        continue;
+      }
+
+      // A TS can have multiple branches due to DPP Or Semijoin Opt.
+      // Use DFS to traverse all the branches until RS or DPP is hit.
+      Deque<Operator<?>> deque = new LinkedList<>();
+      deque.add(ts);
+      while (!deque.isEmpty()) {
+        Operator<?> op = deque.pollLast();
+        if (op instanceof AppMasterEventOperator &&
+                ((AppMasterEventOperator) op).getConf() instanceof DynamicPruningEventDesc) {
+          // DPP. Now look up nDVs on both sides to see the selectivity.
+          // <Parent Ops>-SEL-GB1-RS1-GB2-RS2
+          SelectOperator selOp = null;
+          try {
+            selOp = (SelectOperator)
+                    (rs.getParentOperators().get(0)
+                            .getParentOperators().get(0)
+                            .getParentOperators().get(0)
+                            .getParentOperators().get(0));
+          } catch (NullPointerException e) {
+            LOG.warn("markSemiJoinForDPP : Null pointer exception caught while accessing semijoin operators");
+            assert false;
+            return;
+          }
+          try {
+            // If stats are not available, just assume its a useful edge
+            Statistics stats = selOp.getStatistics();
+            ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(
+                    selOp.getConf().getColList().get(0));
+            long nDVs = stats.getColumnStatisticsFromColName(
+                    colExpr.getColumn()).getCountDistint();
+            if (nDVs > 0) {
+              // Lookup nDVs on TS side.
+              RuntimeValuesInfo rti = procCtx.parseContext
+                      .getRsToRuntimeValuesInfoMap().get(rs);
+              ExprNodeDesc tsExpr = rti.getTsColExpr();
+              FilterOperator fil = (FilterOperator) (ts.getChildOperators().get(0));
+              Statistics filStats = fil.getStatistics();
+              ExprNodeColumnDesc tsColExpr = ExprNodeDescUtils.getColumnExpr(tsExpr);
+              long nDVsOfTS = filStats.getColumnStatisticsFromColName(
+                      tsColExpr.getColumn()).getCountDistint();
+              if (nDVsOfTS >= nDVs) {
+                sjInfo.setShouldRemove(false);
+              }
+            }
+          } catch (NullPointerException e) {
+            sjInfo.setShouldRemove(false);
+          }
+          break;
+        }
+        if (op instanceof ReduceSinkOperator) {
+          // Done with this branch
+          continue;
+        }
+        deque.addAll(op.getChildOperators());
+      }
     }
   }
 }

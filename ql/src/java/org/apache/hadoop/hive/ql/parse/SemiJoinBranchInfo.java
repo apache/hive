@@ -24,15 +24,21 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 public class SemiJoinBranchInfo {
   private TableScanOperator ts;
   private boolean isHint;
+  // Default value is true, however, if an optimization deems this edge
+  // important, it should set this to false. This does not guarantee that
+  // the edge will stay, however, it increases the chances.
+  private boolean shouldRemove;
 
   public SemiJoinBranchInfo(TableScanOperator ts) {
     this.ts = ts;
     isHint = false;
+    shouldRemove = true;
   }
 
   public SemiJoinBranchInfo(TableScanOperator ts, boolean isHint) {
     this.ts = ts;
     this.isHint = isHint;
+    shouldRemove = !isHint;  // If hint is true, shouldRemove is redundant anyway
   }
 
   public TableScanOperator getTsOp() {
@@ -41,5 +47,17 @@ public class SemiJoinBranchInfo {
 
   public boolean getIsHint() {
     return isHint;
+  }
+
+  public boolean getShouldRemove() {
+    return shouldRemove;
+  }
+
+  public void setShouldRemove(boolean shouldRemove) {
+    // The state only changes from true->false
+    // Once set to false, it may not change back to true
+    if (this.shouldRemove) {
+      this.shouldRemove = shouldRemove;
+    }
   }
 }
