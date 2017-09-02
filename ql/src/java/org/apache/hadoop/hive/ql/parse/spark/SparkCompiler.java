@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
+import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
 import org.apache.hadoop.hive.ql.optimizer.SparkRemoveDynamicPruning;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
@@ -129,6 +130,12 @@ public class SparkCompiler extends TaskCompiler {
 
     // Remove cyclic dependencies for DPP
     runCycleAnalysisForPartitionPruning(procCtx);
+
+    // Re-run constant propagation so we fold any new constants introduced by the operator optimizers
+    // Specifically necessary for DPP because we might have created lots of "and true and true" conditions
+    if (procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      new ConstantPropagate(ConstantPropagateProcCtx.ConstantPropagateOption.SHORTCUT).transform(pCtx);
+    }
 
     PERF_LOGGER.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_OPTIMIZE_OPERATOR_TREE);
   }
@@ -284,12 +291,6 @@ public class SparkCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(parseContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
-
-    // need a new run of the constant folding because we might have created lots
-    // of "and true and true" conditions.
-    if(procCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
-      new ConstantPropagate().transform(parseContext);
-    }
   }
 
   private void runSetReducerParallelism(OptimizeSparkProcContext procCtx) throws SemanticException {

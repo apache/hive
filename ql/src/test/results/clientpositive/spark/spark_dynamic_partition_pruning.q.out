@@ -2560,9 +2560,9 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '2008-04-08' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '2008-04-08' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
@@ -2599,7 +2599,7 @@ STAGE PLANS:
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
-                keys: '2008-04-08' (type: string)
+                keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -5414,16 +5414,16 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '2008-04-08' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '2008-04-08' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
               Group By Operator
-                keys: '2008-04-08' (type: string)
+                keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
