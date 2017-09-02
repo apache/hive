@@ -125,6 +125,8 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     if (hmsDelegationTokenStr != null) {
       try {
         Hive.get(getHiveConf()).cancelDelegationToken(hmsDelegationTokenStr);
+        hmsDelegationTokenStr = null;
+        getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, "");
       } catch (HiveException e) {
         throw new HiveSQLException("Couldn't cancel delegation token", e);
       }
