@@ -44,8 +44,13 @@ public class UDFAsin extends UDFMath {
    */
   @Override
   protected DoubleWritable doEvaluate(DoubleWritable a) {
-    result.set(Math.asin(a.get()));
-    return result;
+    double d = a.get();
+    if (d < -1 || d > 1) {
+      return null;
+    } else {
+      result.set(Math.asin(d));
+      return result;
+    }
   }
 
 }
