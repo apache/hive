@@ -74,22 +74,22 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s
-                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Statistics Aggregation Key Prefix: default.s/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: key, value
-                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
                         auto parallelism: false
@@ -154,13 +154,13 @@ STAGE PLANS:
                 aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 1248 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -329,13 +329,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 2 Data size: 1076 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 2 Data size: 1812 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
                     outputColumnNames: key, value, ds, hr
-                    Statistics: Num rows: 2 Data size: 1076 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 2 Data size: 1812 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), hr (type: string)
@@ -734,13 +734,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: spart
-                  Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 722 Basic stats: COMPLETE Column stats: PARTIAL
                   Statistics Aggregation Key Prefix: default.spart/
                   GatherStats: true
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string)
                     outputColumnNames: key, value, ds
-                    Statistics: Num rows: 1 Data size: 354 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 1 Data size: 722 Basic stats: COMPLETE Column stats: PARTIAL
                     Group By Operator
                       aggregations: compute_stats(key, 'hll'), compute_stats(value, 'hll')
                       keys: ds (type: string), '11' (type: string)

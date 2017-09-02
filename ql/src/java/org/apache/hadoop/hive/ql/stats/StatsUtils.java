@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -177,6 +178,105 @@ public class StatsUtils {
     return ds;
   }
 
+  /**
+   * Returns number of rows if it exists. Otherwise it estimates number of rows
+   * based on estimated data size for both partition and non-partitioned table
+   * RelOptHiveTable's getRowCount uses this.
+   *
+   * @param conf
+   * @param schema
+   * @param table
+   * @return
+   */
+  public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table,
+                                PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
+    //for non-partitioned table
+    List<String> neededColumns = new ArrayList<>();
+    for(ColumnInfo ci:schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+
+    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+
+    if(!table.isPartitioned()) {
+      //get actual number of rows from metastore
+      long nr = getNumRows(table);
+
+      // log warning if row count is missing
+      if(nr <= 0) {
+        noColsMissingStats.getAndIncrement();
+      }
+
+      // if row count exists or stats aren't to be estimated return
+      // whatever we have
+      if(nr > 0 || !shouldEstimateStats) {
+        return nr;
+      }
+      // go ahead with the estimation
+      long ds = getDataSize(conf, table);
+      return getNumRows(conf, schema, neededColumns, table, ds);
+    }
+    else { // partitioned table
+      long nr = 0;
+      List<Long> rowCounts = Lists.newArrayList();
+      rowCounts = getBasicStatForPartitions(
+          table, partitionList.getNotDeniedPartns(), StatsSetupConst.ROW_COUNT);
+      nr = getSumIgnoreNegatives(rowCounts);
+
+      // log warning if row count is missing
+      if(nr <= 0) {
+        noColsMissingStats.getAndIncrement();
+      }
+
+      // if row count exists or stats aren't to be estimated return
+      // whatever we have
+      if(nr > 0 || !shouldEstimateStats) {
+        return nr;
+      }
+
+      // estimate row count
+      long ds = 0;
+      List<Long> dataSizes = Lists.newArrayList();
+
+      dataSizes =  getBasicStatForPartitions(
+          table, partitionList.getNotDeniedPartns(), StatsSetupConst.RAW_DATA_SIZE);
+
+      ds = getSumIgnoreNegatives(dataSizes);
+
+      if (ds <= 0) {
+        dataSizes = getBasicStatForPartitions(
+            table, partitionList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        ds = getSumIgnoreNegatives(dataSizes);
+      }
+
+      // if data size still could not be determined, then fall back to filesytem to get file
+      // sizes
+      if (ds <= 0 && shouldEstimateStats) {
+        dataSizes = getFileSizeForPartitions(conf, partitionList.getNotDeniedPartns());
+      }
+      ds = getSumIgnoreNegatives(dataSizes);
+      float deserFactor =
+          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+      ds = (long) (ds * deserFactor);
+
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      if (avgRowSize > 0) {
+        setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
+        nr = getSumIgnoreNegatives(rowCounts);
+        ds = getSumIgnoreNegatives(dataSizes);
+
+        // number of rows -1 means that statistics from metastore is not reliable
+        if (nr <= 0) {
+          nr = ds / avgRowSize;
+        }
+      }
+      if (nr == 0) {
+        nr = 1;
+      }
+      return nr;
+    }
+  }
+
   private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns, Table table, long ds) {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
@@ -210,15 +310,21 @@ public class StatsUtils {
 
     float deserFactor =
         HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+    boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
 
     if (!table.isPartitioned()) {
 
-      long ds = getDataSize(conf, table);
+      //getDataSize tries to estimate stats if it doesn't exist using file size
+      // we would like to avoid file system calls  if it too expensive
+      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
       long nr = getNumRows(conf, schema, neededColumns, table, ds);
       stats.setNumRows(nr);
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
+        if(colStats == null || colStats.size() < 1) {
+          colStats = estimateStats(table,schema,neededColumns, conf, nr);
+        }
         long betterDS = getDataSizeFromColumnStats(nr, colStats);
         ds = (betterDS < 1 || colStats.isEmpty()) ? ds : betterDS;
       }
@@ -254,7 +360,7 @@ public class StatsUtils {
 
       // if data size still could not be determined, then fall back to filesytem to get file
       // sizes
-      if (ds <= 0) {
+      if (ds <= 0 && shouldEstimateStats) {
         dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
       }
       ds = getSumIgnoreNegatives(dataSizes);
@@ -354,10 +460,19 @@ public class StatsUtils {
           // There are some partitions with no state (or we didn't fetch any state).
           // Update the stats with empty list to reflect that in the
           // state/initialize structures.
+
+          if(columnStats.isEmpty()) {
+            // estimate stats
+            columnStats = estimateStats(table, schema, neededColumns, conf, nr);
+          }
+
+          // add partition column stats
           addPartitionColumnStats(conf, partitionColsToRetrieve, schema, table, partList, columnStats);
-          stats.addToColumnStats(columnStats);
+
           stats.addToDataSize(getDataSizeFromColumnStats(nr, columnStats));
           stats.updateColumnStatsState(deriveStatType(columnStats, referencedColumns));
+
+          stats.addToColumnStats(columnStats);
         } else {
           if (statsRetrieved) {
             columnStats.addAll(convertColStats(aggrStats.getColStats(), table.getTableName()));
@@ -765,7 +880,8 @@ public class StatsUtils {
         hasNull = (colStats == null) || (colStats.size() < neededColumns.size());
     if (colStats != null) {
       for (ColStatistics cs : colStats) {
-        boolean isNull = cs == null;
+        // either colstats is null or is estimated
+        boolean isNull = (cs == null) ? true: (cs.isEstimated());
         hasStats |= !isNull;
         hasNull |= isNull;
         if (hasNull && hasStats) break;
@@ -869,6 +985,78 @@ public class StatsUtils {
     return cs;
   }
 
+  private static ColStatistics estimateColStats(long numRows, String colName, HiveConf conf,
+      List<ColumnInfo> schema) {
+    ColumnInfo cinfo = getColumnInfoForColumn(colName, schema);
+    ColStatistics cs = new ColStatistics(colName, cinfo.getTypeName());
+    cs.setIsEstimated(true);
+
+    String colTypeLowerCase = cinfo.getTypeName().toLowerCase();
+
+    float ndvPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NDV_ESTIMATE_PERC));
+    float nullPercent = Math.min(100L, HiveConf.getFloatVar(conf, ConfVars.HIVE_STATS_NUM_NULLS_ESTIMATE_PERC));
+
+    cs.setCountDistint(Math.max(1, (long)(numRows * ndvPercent/100.00)));
+    cs.setNumNulls(Math.min(numRows, (long)(numRows * nullPercent/100.00)));
+
+    if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)){
+      cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(-128,127);
+    }
+    else if(colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)){
+      cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(-32768, 32767);
+    } else if(colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(Long.MIN_VALUE, Long.MAX_VALUE);
+    } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().primitive2());
+      cs.setRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().primitive1());
+      cs.setRange(Float.MIN_VALUE, Float.MAX_VALUE);
+    } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().primitive2());
+      cs.setRange(Double.MIN_VALUE, Double.MAX_VALUE);
+    } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.BINARY_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
+        || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+      cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
+    } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
+        cs.setCountDistint(2);
+        cs.setNumTrues(Math.max(1, (long)numRows/2));
+        cs.setNumFalses(Math.max(1, (long)numRows/2));
+        cs.setAvgColLen(JavaDataModel.get().primitive1());
+    } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
+        colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
+    } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
+      cs.setRange(Float.MIN_VALUE, Float.MAX_VALUE);
+    } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
+      cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
+      // epoch, days since epoch
+      cs.setRange(0, 25201);
+    } else {
+      // Columns statistics for complex datatypes are not supported yet
+      return null;
+    }
+    return cs;
+  }
+
+  private static List<ColStatistics> estimateStats(Table table, List<ColumnInfo> schema,
+      List<String> neededColumns, HiveConf conf, long nr) {
+
+    List<ColStatistics> stats = new ArrayList<ColStatistics>(neededColumns.size());
+
+    for (int i = 0; i < neededColumns.size(); i++) {
+      ColStatistics cs = estimateColStats(nr, neededColumns.get(i), conf, schema);
+      stats.add(cs);
+    }
+    return stats;
+  }
+
   /**
    * Get table level column statistics from metastore for needed columns
    * @param table
@@ -912,10 +1100,10 @@ public class StatsUtils {
     }
     // Merge stats from cache with metastore cache
     if (colStatsCache != null) {
-      for (int i = 0; i < neededColumns.size(); i++) {
-        ColStatistics cs = colStatsCache.getColStats().get(neededColumns.get(i));
+      for(String col:neededColumns) {
+        ColStatistics cs = colStatsCache.getColStats().get(col);
         if (cs != null) {
-          stats.add(i, cs);
+          stats.add(cs);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Stats for column " + cs.getColumnName() +
                 " in table " + table.getCompleteName() + " retrieved from cache");
@@ -1153,7 +1341,9 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)) {
       return JavaDataModel.JAVA32_META;
     } else {
-      throw new IllegalArgumentException("Size requested for unknown type: " + colType);
+      //TODO: support complex types
+      // for complex type we simply return 0
+      return 0;
     }
   }
 

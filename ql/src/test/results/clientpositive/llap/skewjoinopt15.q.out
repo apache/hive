@@ -88,19 +88,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), val (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -108,19 +108,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int), val (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -134,10 +134,10 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1240 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1240 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -189,16 +189,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), val (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -206,16 +206,16 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), val (type: string)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 6 Data size: 1128 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
@@ -229,10 +229,10 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6 Data size: 1240 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6 Data size: 26 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6 Data size: 1240 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

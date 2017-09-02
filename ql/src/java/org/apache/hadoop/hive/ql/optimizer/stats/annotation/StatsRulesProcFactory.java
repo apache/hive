@@ -1258,7 +1258,6 @@ public class StatsRulesProcFactory {
           // be full aggregation query like count(*) in which case number of
           // rows will be 1
           if (colExprMap.isEmpty()) {
-            stats.setNumRows(1);
             updateStats(stats, 1, true, gop);
           }
         }
@@ -1433,6 +1432,17 @@ public class StatsRulesProcFactory {
         if (!satisfyPrecondition(op.getStatistics())) {
           allSatisfyPreCondition = false;
           break;
+        }
+      }
+      // there could be case where join operators input are not RS e.g.
+      // map join with Spark. Since following estimation of statistics relies on join operators having it inputs as
+      // reduced sink it will not work for such cases. So we should not try to estimate stats
+      if(allSatisfyPreCondition) {
+        for (int pos = 0; pos < parents.size(); pos++) {
+          if (!(jop.getParentOperators().get(pos) instanceof ReduceSinkOperator)) {
+            allSatisfyPreCondition = false;
+            break;
+          }
         }
       }
 

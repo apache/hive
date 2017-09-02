@@ -629,19 +629,19 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_10]
-        Merge Join Operator [MERGEJOIN_15] (rows=266/480 width=18)
+        Merge Join Operator [MERGEJOIN_15] (rows=253/480 width=190)
           Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-        <-Select Operator [SEL_5] (rows=242/242 width=18)
+        <-Select Operator [SEL_5] (rows=230/242 width=14)
             Output:["_col0"]
-            Filter Operator [FIL_14] (rows=242/242 width=18)
+            Filter Operator [FIL_14] (rows=230/242 width=14)
               predicate:key is not null
-              TableScan [TS_3] (rows=242/242 width=18)
+              TableScan [TS_3] (rows=242/242 width=14)
                 default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-        <-Select Operator [SEL_2] (rows=242/242 width=18)
+        <-Select Operator [SEL_2] (rows=230/242 width=190)
             Output:["_col0","_col1"]
-            Filter Operator [FIL_13] (rows=242/242 width=18)
+            Filter Operator [FIL_13] (rows=230/242 width=190)
               predicate:key is not null
-              TableScan [TS_0] (rows=242/242 width=18)
+              TableScan [TS_0] (rows=242/242 width=190)
                 default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
@@ -671,34 +671,36 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_16]
-        Merge Join Operator [MERGEJOIN_27] (rows=292/1166 width=18)
-          Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0","_col1"]
-        <-Map 1 [SIMPLE_EDGE]
-          SHUFFLE [RS_12]
-            PartitionCols:_col1
-            Merge Join Operator [MERGEJOIN_25] (rows=266/480 width=18)
-              Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-            <-Select Operator [SEL_5] (rows=242/242 width=18)
-                Output:["_col0"]
-                Filter Operator [FIL_23] (rows=242/242 width=18)
-                  predicate:key is not null
-                  TableScan [TS_3] (rows=242/242 width=18)
-                    default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-            <-Select Operator [SEL_2] (rows=242/242 width=18)
-                Output:["_col0","_col1"]
-                Filter Operator [FIL_22] (rows=242/242 width=18)
-                  predicate:(key is not null and value is not null)
-                  TableScan [TS_0] (rows=242/242 width=18)
-                    default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-        <-Map 4 [SIMPLE_EDGE]
-          SHUFFLE [RS_13]
-            PartitionCols:_col1
-            Select Operator [SEL_8] (rows=242/242 width=18)
-              Output:["_col1"]
-              Filter Operator [FIL_24] (rows=242/242 width=18)
-                predicate:value is not null
-                TableScan [TS_6] (rows=242/242 width=18)
-                  default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
+        Select Operator [SEL_15] (rows=278/1166 width=3)
+          Output:["_col0","_col1"]
+          Merge Join Operator [MERGEJOIN_27] (rows=278/1166 width=3)
+            Conds:RS_12._col2=RS_13._col1(Inner),Output:["_col1","_col2"]
+          <-Map 1 [SIMPLE_EDGE]
+            SHUFFLE [RS_12]
+              PartitionCols:_col2
+              Merge Join Operator [MERGEJOIN_25] (rows=253/480 width=3)
+                Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col1","_col2"]
+              <-Select Operator [SEL_5] (rows=218/242 width=179)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_23] (rows=218/242 width=179)
+                    predicate:(key is not null and value is not null)
+                    TableScan [TS_3] (rows=242/242 width=179)
+                      default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              <-Select Operator [SEL_2] (rows=230/242 width=3)
+                  Output:["_col0"]
+                  Filter Operator [FIL_22] (rows=230/242 width=3)
+                    predicate:key is not null
+                    TableScan [TS_0] (rows=242/242 width=3)
+                      default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+          <-Map 4 [SIMPLE_EDGE]
+            SHUFFLE [RS_13]
+              PartitionCols:_col1
+              Select Operator [SEL_8] (rows=230/242 width=175)
+                Output:["_col1"]
+                Filter Operator [FIL_24] (rows=230/242 width=175)
+                  predicate:value is not null
+                  TableScan [TS_6] (rows=242/242 width=175)
+                    default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
@@ -728,19 +730,19 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_10]
-        Merge Join Operator [MERGEJOIN_15] (rows=266/480 width=18)
+        Merge Join Operator [MERGEJOIN_15] (rows=253/480 width=190)
           Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-        <-Select Operator [SEL_5] (rows=242/242 width=18)
+        <-Select Operator [SEL_5] (rows=230/242 width=14)
             Output:["_col0"]
-            Filter Operator [FIL_14] (rows=242/242 width=18)
+            Filter Operator [FIL_14] (rows=230/242 width=14)
               predicate:key is not null
-              TableScan [TS_3] (rows=242/242 width=18)
+              TableScan [TS_3] (rows=242/242 width=14)
                 default@tab2,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-        <-Select Operator [SEL_2] (rows=242/242 width=18)
+        <-Select Operator [SEL_2] (rows=230/242 width=190)
             Output:["_col0","_col1"]
-            Filter Operator [FIL_13] (rows=242/242 width=18)
+            Filter Operator [FIL_13] (rows=230/242 width=190)
               predicate:key is not null
-              TableScan [TS_0] (rows=242/242 width=18)
+              TableScan [TS_0] (rows=242/242 width=190)
                 default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key join tab2 s2 on s1.value=s2.value
@@ -774,33 +776,33 @@ Stage-0
     Stage-1
       Reducer 2
       File Output Operator [FS_16]
-        Merge Join Operator [MERGEJOIN_27] (rows=292/1166 width=18)
+        Merge Join Operator [MERGEJOIN_27] (rows=278/1166 width=3)
           Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE]
           SHUFFLE [RS_12]
             PartitionCols:_col1
-            Merge Join Operator [MERGEJOIN_25] (rows=266/480 width=18)
+            Merge Join Operator [MERGEJOIN_25] (rows=253/480 width=3)
               Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-            <-Select Operator [SEL_5] (rows=242/242 width=18)
+            <-Select Operator [SEL_5] (rows=230/242 width=3)
                 Output:["_col0"]
-                Filter Operator [FIL_23] (rows=242/242 width=18)
+                Filter Operator [FIL_23] (rows=230/242 width=3)
                   predicate:key is not null
-                  TableScan [TS_3] (rows=242/242 width=18)
+                  TableScan [TS_3] (rows=242/242 width=3)
                     default@tab2,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-            <-Select Operator [SEL_2] (rows=242/242 width=18)
+            <-Select Operator [SEL_2] (rows=218/242 width=179)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_22] (rows=242/242 width=18)
+                Filter Operator [FIL_22] (rows=218/242 width=179)
                   predicate:(key is not null and value is not null)
-                  TableScan [TS_0] (rows=242/242 width=18)
+                  TableScan [TS_0] (rows=242/242 width=179)
                     default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
         <-Map 4 [SIMPLE_EDGE]
           SHUFFLE [RS_13]
             PartitionCols:_col1
-            Select Operator [SEL_8] (rows=242/242 width=18)
+            Select Operator [SEL_8] (rows=230/242 width=175)
               Output:["_col1"]
-              Filter Operator [FIL_24] (rows=242/242 width=18)
+              Filter Operator [FIL_24] (rows=230/242 width=175)
                 predicate:value is not null
-                TableScan [TS_6] (rows=242/242 width=18)
+                TableScan [TS_6] (rows=242/242 width=175)
                   default@tab2,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
@@ -853,43 +855,43 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_22]
-            Merge Join Operator [MERGEJOIN_38] (rows=558/1646 width=18)
+            Merge Join Operator [MERGEJOIN_38] (rows=531/1646 width=3)
               Conds:Union 2._col0=RS_19._col0(Inner)
             <-Map 7 [SIMPLE_EDGE]
               SHUFFLE [RS_19]
                 PartitionCols:_col0
-                Select Operator [SEL_17] (rows=500/500 width=18)
+                Select Operator [SEL_17] (rows=475/500 width=3)
                   Output:["_col0"]
-                  Filter Operator [FIL_35] (rows=500/500 width=18)
+                  Filter Operator [FIL_35] (rows=475/500 width=3)
                     predicate:key is not null
-                    TableScan [TS_15] (rows=500/500 width=18)
+                    TableScan [TS_15] (rows=500/500 width=3)
                       default@tab_part,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
             <-Union 2 [SIMPLE_EDGE]
               <-Map 1 [CONTAINS]
                 Reduce Output Operator [RS_18]
                   PartitionCols:_col0
-                  Merge Join Operator [MERGEJOIN_36] (rows=266/480 width=18)
+                  Merge Join Operator [MERGEJOIN_36] (rows=253/480 width=3)
                     Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0"]
-                  <-Select Operator [SEL_5] (rows=242/242 width=18)
+                  <-Select Operator [SEL_5] (rows=230/242 width=3)
                       Output:["_col0"]
-                      Filter Operator [FIL_33] (rows=242/242 width=18)
+                      Filter Operator [FIL_33] (rows=230/242 width=3)
                         predicate:key is not null
-                        TableScan [TS_3] (rows=242/242 width=18)
+                        TableScan [TS_3] (rows=242/242 width=3)
                           default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-                  <-Select Operator [SEL_2] (rows=242/242 width=18)
+                  <-Select Operator [SEL_2] (rows=230/242 width=3)
                       Output:["_col0"]
-                      Filter Operator [FIL_32] (rows=242/242 width=18)
+                      Filter Operator [FIL_32] (rows=230/242 width=3)
                         predicate:key is not null
-                        TableScan [TS_0] (rows=242/242 width=18)
+                        TableScan [TS_0] (rows=242/242 width=3)
                           Output:["key"]
               <-Map 6 [CONTAINS]
                 Reduce Output Operator [RS_18]
                   PartitionCols:_col0
-                  Select Operator [SEL_12] (rows=242/242 width=18)
+                  Select Operator [SEL_12] (rows=230/242 width=3)
                     Output:["_col0"]
-                    Filter Operator [FIL_34] (rows=242/242 width=18)
+                    Filter Operator [FIL_34] (rows=230/242 width=3)
                       predicate:key is not null
-                      TableScan [TS_10] (rows=242/242 width=18)
+                      TableScan [TS_10] (rows=242/242 width=3)
                         Output:["key"]
 
 PREHOOK: query: select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
@@ -942,58 +944,60 @@ Stage-0
           Output:["_col0"],aggregations:["count()"]
         <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
           PARTITION_ONLY_SHUFFLE [RS_28]
-            Merge Join Operator [MERGEJOIN_50] (rows=587/3768 width=18)
+            Merge Join Operator [MERGEJOIN_50] (rows=558/3768 width=3)
               Conds:Union 3._col0=RS_25._col0(Inner)
             <-Map 9 [SIMPLE_EDGE]
               SHUFFLE [RS_25]
                 PartitionCols:_col0
-                Select Operator [SEL_23] (rows=500/500 width=18)
+                Select Operator [SEL_23] (rows=475/500 width=3)
                   Output:["_col0"]
-                  Filter Operator [FIL_46] (rows=500/500 width=18)
+                  Filter Operator [FIL_46] (rows=475/500 width=3)
                     predicate:key is not null
-                    TableScan [TS_21] (rows=500/500 width=18)
+                    TableScan [TS_21] (rows=500/500 width=3)
                       default@tab_part,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
             <-Union 3 [SIMPLE_EDGE]
               <-Map 8 [CONTAINS]
                 Reduce Output Operator [RS_24]
                   PartitionCols:_col0
-                  Select Operator [SEL_18] (rows=242/242 width=18)
+                  Select Operator [SEL_18] (rows=230/242 width=3)
                     Output:["_col0"]
-                    Filter Operator [FIL_45] (rows=242/242 width=18)
+                    Filter Operator [FIL_45] (rows=230/242 width=3)
                       predicate:key is not null
-                      TableScan [TS_16] (rows=242/242 width=18)
+                      TableScan [TS_16] (rows=242/242 width=3)
                         Output:["key"]
               <-Reducer 2 [CONTAINS]
                 Reduce Output Operator [RS_24]
                   PartitionCols:_col0
-                  Merge Join Operator [MERGEJOIN_49] (rows=292/1166 width=18)
-                    Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0"]
-                  <-Map 1 [SIMPLE_EDGE]
-                    SHUFFLE [RS_12]
-                      PartitionCols:_col1
-                      Merge Join Operator [MERGEJOIN_47] (rows=266/480 width=18)
-                        Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
-                      <-Select Operator [SEL_5] (rows=242/242 width=18)
-                          Output:["_col0"]
-                          Filter Operator [FIL_43] (rows=242/242 width=18)
-                            predicate:key is not null
-                            TableScan [TS_3] (rows=242/242 width=18)
-                              default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
-                      <-Select Operator [SEL_2] (rows=242/242 width=18)
-                          Output:["_col0","_col1"]
-                          Filter Operator [FIL_42] (rows=242/242 width=18)
-                            predicate:(key is not null and value is not null)
-                            TableScan [TS_0] (rows=242/242 width=18)
-                              default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                  <-Map 7 [SIMPLE_EDGE]
-                    SHUFFLE [RS_13]
-                      PartitionCols:_col1
-                      Select Operator [SEL_8] (rows=242/242 width=18)
-                        Output:["_col1"]
-                        Filter Operator [FIL_44] (rows=242/242 width=18)
-                          predicate:value is not null
-                          TableScan [TS_6] (rows=242/242 width=18)
-                            default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
+                  Select Operator [SEL_15] (rows=278/1166 width=3)
+                    Output:["_col0"]
+                    Merge Join Operator [MERGEJOIN_49] (rows=278/1166 width=3)
+                      Conds:RS_12._col2=RS_13._col1(Inner),Output:["_col1"]
+                    <-Map 1 [SIMPLE_EDGE]
+                      SHUFFLE [RS_12]
+                        PartitionCols:_col2
+                        Merge Join Operator [MERGEJOIN_47] (rows=253/480 width=3)
+                          Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col1","_col2"]
+                        <-Select Operator [SEL_5] (rows=218/242 width=179)
+                            Output:["_col0","_col1"]
+                            Filter Operator [FIL_43] (rows=218/242 width=179)
+                              predicate:(key is not null and value is not null)
+                              TableScan [TS_3] (rows=242/242 width=179)
+                                default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                        <-Select Operator [SEL_2] (rows=230/242 width=3)
+                            Output:["_col0"]
+                            Filter Operator [FIL_42] (rows=230/242 width=3)
+                              predicate:key is not null
+                              TableScan [TS_0] (rows=242/242 width=3)
+                                default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    <-Map 7 [SIMPLE_EDGE]
+                      SHUFFLE [RS_13]
+                        PartitionCols:_col1
+                        Select Operator [SEL_8] (rows=230/242 width=175)
+                          Output:["_col1"]
+                          Filter Operator [FIL_44] (rows=230/242 width=175)
+                            predicate:value is not null
+                            TableScan [TS_6] (rows=242/242 width=175)
+                              default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: CREATE TABLE a(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

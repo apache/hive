@@ -124,12 +124,12 @@ Stage-5
       Map 2 llap
       File Output Operator [FS_8]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_7] (rows=1 width=0)
+        Select Operator [SEL_7] (rows=1 width=184)
           Output:["_col0"]
-          Filter Operator [FIL_9] (rows=1 width=0)
+          Filter Operator [FIL_9] (rows=1 width=184)
             predicate:(key = '5')
-            TableScan [TS_5] (rows=1 width=0)
-              default@q2,q2,Tbl:PARTIAL,Col:NONE,Output:["key"]
+            TableScan [TS_5] (rows=1 width=184)
+              default@q2,q2,Tbl:COMPLETE,Col:NONE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1

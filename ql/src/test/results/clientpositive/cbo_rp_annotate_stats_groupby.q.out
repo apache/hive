@@ -66,11 +66,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc
-          Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 8 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: int)
             outputColumnNames: state, locid, zip, year
-            Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 8 Data size: 1600 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: analyze table loc_orc compute statistics for columns state
