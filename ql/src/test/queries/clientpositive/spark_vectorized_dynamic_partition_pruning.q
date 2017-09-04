@@ -155,8 +155,7 @@ select count(*) from srcpart where ds = '2008-04-08' and hr = 11;
 
 -- empty set
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST';
--- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST';
+select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST';
 
 -- expressions
 EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11;
@@ -184,9 +183,8 @@ select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds)
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11;
 EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13;
--- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
--- where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13;
+select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13;
 
 -- union + subquery
 EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart);

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.GenMRSkewJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.physical.GenSparkSkewJoinProcessor;
 import org.apache.hadoop.hive.ql.optimizer.physical.SkewJoinProcFactory;
-import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.GenSparkUtils;
@@ -105,7 +105,7 @@ public class SparkSkewJoinProcFactory {
       ParseContext parseContext) throws SemanticException {
     SparkWork currentWork = currentTask.getWork();
     Set<Operator<?>> reduceSinkSet =
-        SparkMapJoinResolver.getOp(reduceWork, ReduceSinkOperator.class);
+        OperatorUtils.getOp(reduceWork, ReduceSinkOperator.class);
     if (currentWork.getChildren(reduceWork).size() == 1 && canSplit(currentWork)
       && reduceSinkSet.size() == 1) {
       ReduceSinkOperator reduceSink = (ReduceSinkOperator) reduceSinkSet.iterator().next();
@@ -231,7 +231,7 @@ public class SparkSkewJoinProcFactory {
       List<Task<? extends Serializable>> children = currTask.getChildTasks();
       return !joinOp.getConf().isFixedAsSorted() && sparkWork.contains(reduceWork) &&
           (children == null || children.size() <= 1) &&
-          SparkMapJoinResolver.getOp(reduceWork, CommonJoinOperator.class).size() == 1;
+          OperatorUtils.getOp(reduceWork, CommonJoinOperator.class).size() == 1;
     }
     return false;
   }

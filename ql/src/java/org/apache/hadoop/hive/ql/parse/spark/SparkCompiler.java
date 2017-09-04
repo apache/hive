@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkCrossProductCheck;
+import org.apache.hadoop.hive.ql.optimizer.physical.SparkDynamicPartitionPruningResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.SparkMapJoinResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
@@ -562,6 +563,10 @@ public class SparkCompiler extends TaskCompiler {
     }
 
     physicalCtx = new SparkMapJoinResolver().resolve(physicalCtx);
+
+    if (conf.isSparkDPPAny()) {
+      physicalCtx = new SparkDynamicPartitionPruningResolver().resolve(physicalCtx);
+    }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);

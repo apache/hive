@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 @Explain(displayName = "Spark Partition Pruning Sink Operator")
@@ -43,7 +44,7 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
 
   private Path path;
 
-  private String targetWork;
+  private MapWork targetMapWork;
 
   @Explain(displayName = "tmp Path", explainLevels = { Explain.Level.EXTENDED })
   public Path getPath() {
@@ -56,11 +57,15 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "target work")
   public String getTargetWork() {
-    return this.targetWork;
+    return this.targetMapWork.getName();
   }
 
-  public void setTargetWork(String targetWork) {
-    this.targetWork = targetWork;
+  public MapWork getTargetMapWork() {
+    return this.targetMapWork;
+  }
+
+  public void setTargetMapWork(MapWork targetMapWork) {
+    this.targetMapWork = targetMapWork;
   }
 
   public TableScanOperator getTableScan() {
