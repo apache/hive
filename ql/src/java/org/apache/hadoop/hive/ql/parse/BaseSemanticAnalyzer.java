@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1110,17 +1111,24 @@ public abstract class BaseSemanticAnalyzer {
       this(db, conf, ast, true, false);
     }
 
-    public TableSpec(Hive db, HiveConf conf, String tableName, Map<String, String> partSpec)
+    public TableSpec(Table table) {
+      tableHandle = table;
+      tableName = table.getDbName() + "." + table.getTableName();
+      specType = SpecType.TABLE_ONLY;
+    }
+
+    public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
         throws HiveException {
-      this.tableName = tableName;
-      this.partSpec = partSpec;
-      this.tableHandle = db.getTable(tableName);
-      if (partSpec != null) {
-        this.specType = SpecType.STATIC_PARTITION;
-        this.partHandle = db.getPartition(tableHandle, partSpec, false);
-        this.partitions = Arrays.asList(partHandle);
+      Table table = db.getTable(tableName);
+      final Partition partition = partSpec == null ? null : db.getPartition(table, partSpec, false);
+      tableHandle = table;
+      this.tableName = table.getDbName() + "." + table.getTableName();
+      if (partition == null) {
+        specType = SpecType.TABLE_ONLY;
       } else {
-        this.specType = SpecType.TABLE_ONLY;
+        partHandle = partition;
+        partitions = Collections.singletonList(partHandle);
+        specType = SpecType.STATIC_PARTITION;
       }
     }
 
