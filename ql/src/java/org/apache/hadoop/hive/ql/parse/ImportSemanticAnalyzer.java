@@ -376,12 +376,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       URI fromURI, FileSystem fs, ImportTableDesc tblDesc,
       Table table, Warehouse wh, AddPartitionDesc addPartitionDesc,
       ReplicationSpec replicationSpec, org.apache.hadoop.hive.ql.metadata.Partition ptn,
-      EximUtil.SemanticAnalyzerWrapperContext x) {
+      EximUtil.SemanticAnalyzerWrapperContext x) throws MetaException, IOException, HiveException {
     addPartitionDesc.setReplaceMode(true);
     if ((replicationSpec != null) && (replicationSpec.isInReplicationScope())){
       addPartitionDesc.setReplicationSpec(replicationSpec);
     }
-    addPartitionDesc.getPartition(0).setLocation(ptn.getLocation()); // use existing location
+    AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
+    if (ptn == null) {
+      fixLocationInPartSpec(fs, tblDesc, table, wh, replicationSpec, partSpec, x);
+    } else {
+      partSpec.setLocation(ptn.getLocation()); // use existing location
+    }
     return TaskFactory.get(new DDLWork(
         x.getInputs(),
         x.getOutputs(),
@@ -893,6 +898,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
                   fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x));
+              if (updatedMetadata != null) {
+                updatedMetadata.addPartition(addPartitionDesc.getPartition(0).getPartSpec());
+              }
+            } else {
+              x.getTasks().add(alterSinglePartition(
+                      fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, null, x));
               if (updatedMetadata != null) {
                 updatedMetadata.addPartition(addPartitionDesc.getPartition(0).getPartSpec());
               }
