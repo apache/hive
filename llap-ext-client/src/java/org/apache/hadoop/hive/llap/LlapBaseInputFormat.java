@@ -31,8 +31,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.collections4.ListUtils;
@@ -70,6 +73,7 @@ import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.records.TezTaskAttemptID;
@@ -92,6 +96,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
 
   private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+  private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<String, Connection>();
+
   private String url;  // "jdbc:hive2://localhost:10000/default"
   private String user; // "hive",
   private String pwd;  // ""
@@ -102,6 +108,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String QUERY_KEY = "llap.if.query";
   public static final String USER_KEY = "llap.if.user";
   public static final String PWD_KEY = "llap.if.pwd";
+  public static final String HANDLE_ID = "llap.if.handleid";
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
@@ -191,6 +198,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     return recordReader;
   }
 
+  /**
+   * Calling getSplits() will open a HiveServer2 connection which should be closed by the calling application
+   * using LlapBaseInputFormat.close() when the application is done with the splits.
+   */
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     List<InputSplit> ins = new ArrayList<InputSplit>();
@@ -204,30 +215,103 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       throw new IllegalStateException();
     }
 
+    String handleId = job.get(HANDLE_ID);
+    if (handleId == null) {
+      handleId = UUID.randomUUID().toString();
+      LOG.info("Handle ID not specified - generated handle ID {}", handleId);
+    }
+    // Check if the handle has already been used in the registry
+    if (connectionMap.containsKey(handleId)) {
+      throw new IllegalStateException("Handle ID " + handleId + " has already been used. This must be unique.");
+    }
+
     try {
       Class.forName(driverName);
     } catch (ClassNotFoundException e) {
       throw new IOException(e);
     }
 
+    LOG.info("Handle ID {}: query={}", handleId, query);
     String escapedQuery = StringUtils.escapeString(query, ESCAPE_CHAR, escapedChars);
     String sql = String.format(SPLIT_QUERY, escapedQuery, numSplits);
-    try (
-      Connection con = DriverManager.getConnection(url,user,pwd);
-      Statement stmt = con.createStatement();
-      ResultSet res = stmt.executeQuery(sql);
-    ) {
-      while (res.next()) {
-        // deserialize split
-        DataInput in = new DataInputStream(res.getBinaryStream(1));
-        InputSplitWithLocationInfo is = new LlapInputSplit();
-        is.readFields(in);
-        ins.add(is);
+    try {
+      Connection conn = DriverManager.getConnection(url,user,pwd);
+      try (
+        Statement stmt = conn.createStatement();
+      ) {
+        ResultSet res = stmt.executeQuery(sql);
+        while (res.next()) {
+          // deserialize split
+          DataInput in = new DataInputStream(res.getBinaryStream(1));
+          InputSplitWithLocationInfo is = new LlapInputSplit();
+          is.readFields(in);
+          ins.add(is);
+        }
+        res.close();
+      } catch (Exception e) {
+        LOG.error("Closing connection due to error", e);
+        conn.close();
+        throw e;
+      }
+
+      // Keep connection open to hang on to associated resources (temp tables, locks).
+      // Save to connectionMap so it can be closed at user's convenience.
+      Connection putResult = connectionMap.putIfAbsent(handleId, conn);
+      // Hopefully no one has used the same handle ID during the time that we executed the statement.
+      if (putResult != null) {
+        String msg = "Handle ID " + handleId + " has already been used. This must be unique.";
+        LOG.error(msg);
+        conn.close();
+        throw new IllegalStateException(msg);
       }
     } catch (Exception e) {
       throw new IOException(e);
     }
     return ins.toArray(new InputSplit[ins.size()]);
+  }
+
+  /**
+   * Close the connection associated with the handle ID, if getSplits() was configured with a handle ID.
+   * Call when the application is done using the splits generated by getSplits().
+   * @param handleId Handle ID used in configuration for getSplits()
+   * @throws IOException
+   */
+  public static void close(String handleId) throws IOException {
+    Connection conn = connectionMap.remove(handleId);
+    if (conn != null) {
+      try {
+        LOG.debug("Closing connection for handle ID {}", handleId);
+        conn.close();
+      } catch (Exception err) {
+        throw new IOException(err);
+      }
+    } else {
+      LOG.info("No connection found for handle ID {}", handleId);
+    }
+  }
+
+  /**
+   * Close all outstanding connections created by getSplits() calls
+   */
+  public static void closeAll() {
+    LOG.debug("Closing all handles");
+    for (String handleId : connectionMap.keySet()) {
+      try {
+        close(handleId);
+      } catch (Exception err) {
+        LOG.error("Error closing handle ID " + handleId, err);
+      }
+    }
+  }
+
+  static {
+    // Shutdown hook to clean up resources at process end.
+    ShutdownHookManager.addShutdownHook(new Runnable() {
+      @Override
+      public void run() {
+        closeAll();
+      }
+    });
   }
 
   private LlapServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {

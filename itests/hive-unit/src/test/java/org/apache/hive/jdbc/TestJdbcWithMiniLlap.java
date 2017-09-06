@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -143,6 +144,7 @@ public class TestJdbcWithMiniLlap {
 
   @After
   public void tearDown() throws Exception {
+    LlapBaseInputFormat.closeAll();
     hs2Conn.close();
   }
 
@@ -475,6 +477,7 @@ public class TestJdbcWithMiniLlap {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
+    String handleId = UUID.randomUUID().toString();
 
     LlapRowInputFormat inputFormat = new LlapRowInputFormat();
 
@@ -484,6 +487,7 @@ public class TestJdbcWithMiniLlap {
     job.set(LlapBaseInputFormat.USER_KEY, user);
     job.set(LlapBaseInputFormat.PWD_KEY, pwd);
     job.set(LlapBaseInputFormat.QUERY_KEY, query);
+    job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
     assertTrue(splits.length > 0);
@@ -503,6 +507,7 @@ public class TestJdbcWithMiniLlap {
       }
       reader.close();
     }
+    LlapBaseInputFormat.close(handleId);
 
     return rowCount;
   }
