@@ -196,7 +196,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         }
         }
 
-        if (!iterator.currentDbHasNext()) {
+        if (!loadingConstraint && !iterator.currentDbHasNext()) {
           createEndReplLogTask(context, scope, iterator.replLogger());
         }
       }

@@ -197,7 +197,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
         dumpTable(dbName, tblName, dbRoot);
-        dumpConstraintMetadata(dbName, tblName, dumpRoot);
+        dumpConstraintMetadata(dbName, tblName, dbRoot);
       }
       replLogger.endLog(bootDumpBeginReplId.toString());
     }
@@ -304,27 +304,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void dumpConstraintMetadata(String dbName, String tblName, Path dumpRoot) throws Exception {
-    try {
-      Path constraintsRoot = new Path(new Path(dumpRoot, dbName), CONSTRAINTS_ROOT_DIR_NAME);
-      Path constraintsFile = new Path(constraintsRoot, tblName);
-      Hive db = getHive();
-      List<SQLPrimaryKey> pks = db.getPrimaryKeyList(dbName, tblName);
-      List<SQLForeignKey> fks = db.getForeignKeyList(dbName, tblName);
-      List<SQLUniqueConstraint> uks = db.getUniqueConstraintList(dbName, tblName);
-      List<SQLNotNullConstraint> nns = db.getNotNullConstraintList(dbName, tblName);
-      if ((pks != null && !pks.isEmpty()) || (fks != null && !fks.isEmpty()) || (uks != null && !uks.isEmpty())
-          || (nns != null && !nns.isEmpty())) {
-        try (JsonWriter jsonWriter =
-            new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
-          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
-          serializer.writeTo(jsonWriter, null);
-        }
+  private void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot) throws Exception {
+    Path constraintsRoot = new Path(dbRoot, CONSTRAINTS_ROOT_DIR_NAME);
+    Path constraintsFile = new Path(constraintsRoot, tblName);
+    Hive db = getHive();
+    List<SQLPrimaryKey> pks = db.getPrimaryKeyList(dbName, tblName);
+    List<SQLForeignKey> fks = db.getForeignKeyList(dbName, tblName);
+    List<SQLUniqueConstraint> uks = db.getUniqueConstraintList(dbName, tblName);
+    List<SQLNotNullConstraint> nns = db.getNotNullConstraintList(dbName, tblName);
+    if ((pks != null && !pks.isEmpty()) || (fks != null && !fks.isEmpty()) || (uks != null && !uks.isEmpty())
+        || (nns != null && !nns.isEmpty())) {
+      try (JsonWriter jsonWriter =
+          new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
+        ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
+        serializer.writeTo(jsonWriter, null);
       }
-    } catch (NoSuchObjectException e) {
-      // Bootstrap constraint dump shouldn't fail if the table is dropped/renamed while dumping it.
-      // Just log a debug message and skip it.
-      LOG.debug(e.getMessage());
     }
   }
 

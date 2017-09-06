@@ -44,7 +44,7 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
 
   private FileStatus[] listConstraintFilesInDBDir(FileSystem fs, Path dbDir) {
     try {
-      return fs.listStatus(new Path(dbDirs[0].getPath(), ReplicationSemanticAnalyzer.CONSTRAINTS_ROOT_DIR_NAME));
+      return fs.listStatus(new Path(dbDir, ReplicationSemanticAnalyzer.CONSTRAINTS_ROOT_DIR_NAME));
     } catch (FileNotFoundException e) {
       return new FileStatus[]{};
     } catch (IOException e) {
