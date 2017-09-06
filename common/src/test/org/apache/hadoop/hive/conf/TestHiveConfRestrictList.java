@@ -51,7 +51,7 @@ public class TestHiveConfRestrictList extends TestCase {
   @Test
   public void testMultipleRestrictions() throws Exception {
     verifyRestriction(ConfVars.HIVETESTMODEPREFIX.varname, "foo");
-    verifyRestriction(ConfVars.HIVETESTMODE.varname, "false");
+    verifyRestriction(ConfVars.HIVE_IN_TEST.varname, "true");
   }
 
   /**

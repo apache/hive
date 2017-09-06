@@ -80,8 +80,8 @@ public class QFileBeeLineClient implements AutoCloseable {
           "DROP DATABASE IF EXISTS `" + qFile.getDatabaseName() + "` CASCADE;",
           "CREATE DATABASE `" + qFile.getDatabaseName() + "`;",
           "USE `" + qFile.getDatabaseName() + "`;",
-          "set hive.in.test.short.logs=true;",
-          "set hive.in.test.remove.logs=false;",
+          "set hive.testing.short.logs=true;",
+          "set hive.testing.remove.logs=false;",
         },
         qFile.getBeforeExecuteLogFile(),
         Converter.NONE);
@@ -92,7 +92,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     beeLine.setIsTestMode(false);
     execute(
         new String[] {
-          "set hive.in.test.short.logs=false;",
+          "set hive.testing.short.logs=false;",
           "!set verbose true",
           "!set silent false",
           "!set showheader true",
