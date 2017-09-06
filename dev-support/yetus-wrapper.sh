@@ -63,7 +63,7 @@ WANTED="$1"
 shift
 ARGV=("$@")
 
-HIVE_YETUS_VERSION=${HIVE_YETUS_VERSION:-0.4.0}
+HIVE_YETUS_VERSION=${HIVE_YETUS_VERSION:-0.5.0}
 BIN=$(yetus_abs "${BASH_SOURCE-$0}")
 BINDIR=$(dirname "${BIN}")
 
@@ -72,9 +72,6 @@ BINDIR=$(dirname "${BIN}")
 ###
 if [[ -n "${YETUS_HOME}"
    && -x "${YETUS_HOME}/bin/${WANTED}" ]]; then
-  cp ${BINDIR}/findbugs_YETUS-471.sh ${YETUS_HOME}/lib/precommit/test-patch.d/findbugs.sh
-  cp ${BINDIR}/checkstyle_YETUS-484.sh ${YETUS_HOME}/lib/precommit/test-patch.d/checkstyle.sh
-  cp ${BINDIR}/maven_YETUS-506.sh ${YETUS_HOME}/lib/precommit/test-patch.d/maven.sh
   exec "${YETUS_HOME}/bin/${WANTED}" "${ARGV[@]}"
 fi
 
@@ -98,9 +95,6 @@ HIVE_PATCHPROCESS=${mytmpdir}
 ## if we've already DL'd it, then short cut
 ##
 if [[ -x "${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/bin/${WANTED}" ]]; then
-  cp ${BINDIR}/findbugs_YETUS-471.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/findbugs.sh
-  cp ${BINDIR}/checkstyle_YETUS-484.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/checkstyle.sh
-  cp ${BINDIR}/maven_YETUS-506.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/maven.sh
   exec "${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/bin/${WANTED}" "${ARGV[@]}"
 fi
 
@@ -172,9 +166,6 @@ fi
 
 if [[ -x "${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/bin/${WANTED}" ]]; then
   popd >/dev/null
-  cp ${BINDIR}/findbugs_YETUS-471.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/findbugs.sh
-  cp ${BINDIR}/checkstyle_YETUS-484.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/checkstyle.sh
-  cp ${BINDIR}/maven_YETUS-506.sh ${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/lib/precommit/test-patch.d/maven.sh
   exec "${HIVE_PATCHPROCESS}/yetus-${HIVE_YETUS_VERSION}/bin/${WANTED}" "${ARGV[@]}"
 fi
 
