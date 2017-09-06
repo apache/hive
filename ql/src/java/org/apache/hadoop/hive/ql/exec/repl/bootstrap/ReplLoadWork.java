@@ -40,7 +40,7 @@ public class ReplLoadWork implements Serializable {
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
       String tableNameToLoadIn) throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
-    this.iterator = new BootstrapEventsIterator(dumpDirectory, hiveConf);
+    this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
     this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;
   }

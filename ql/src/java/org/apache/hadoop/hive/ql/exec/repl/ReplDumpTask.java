@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -304,18 +305,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private void dumpConstraintMetadata(String dbName, String tblName, Path dumpRoot) throws Exception {
-    Path constraintsRoot = new Path(new Path(dumpRoot, dbName), CONSTRAINTS_ROOT_DIR_NAME);
-    Path constraintsFile = new Path(constraintsRoot, tblName);
-    List<SQLPrimaryKey> pks = getHive().getPrimaryKeyList(dbName, tblName);
-    List<SQLForeignKey> fks = getHive().getForeignKeyList(dbName, tblName);
-    List<SQLUniqueConstraint> uks = getHive().getUniqueConstraintList(dbName, tblName);
-    List<SQLNotNullConstraint> nns = getHive().getNotNullConstraintList(dbName, tblName);
-    if (!pks.isEmpty() || !fks.isEmpty() || !uks.isEmpty() || !nns.isEmpty()) {
-      try (JsonWriter jsonWriter =
-          new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
-        ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
-        serializer.writeTo(jsonWriter, null);
+    try {
+      Path constraintsRoot = new Path(new Path(dumpRoot, dbName), CONSTRAINTS_ROOT_DIR_NAME);
+      Path constraintsFile = new Path(constraintsRoot, tblName);
+      Hive db = getHive();
+      List<SQLPrimaryKey> pks = db.getPrimaryKeyList(dbName, tblName);
+      List<SQLForeignKey> fks = db.getForeignKeyList(dbName, tblName);
+      List<SQLUniqueConstraint> uks = db.getUniqueConstraintList(dbName, tblName);
+      List<SQLNotNullConstraint> nns = db.getNotNullConstraintList(dbName, tblName);
+      if ((pks != null && !pks.isEmpty()) || (fks != null && !fks.isEmpty()) || (uks != null && !uks.isEmpty())
+          || (nns != null && !nns.isEmpty())) {
+        try (JsonWriter jsonWriter =
+            new JsonWriter(constraintsFile.getFileSystem(conf), constraintsFile)) {
+          ConstraintsSerializer serializer = new ConstraintsSerializer(pks, fks, uks, nns, conf);
+          serializer.writeTo(jsonWriter, null);
+        }
       }
+    } catch (NoSuchObjectException e) {
+      // Bootstrap constraint dump shouldn't fail if the table is dropped/renamed while dumping it.
+      // Just log a debug message and skip it.
+      LOG.debug(e.getMessage());
     }
   }
 

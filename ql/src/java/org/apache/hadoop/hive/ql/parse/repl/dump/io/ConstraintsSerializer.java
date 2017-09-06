@@ -60,7 +60,7 @@ public class ConstraintsSerializer implements JsonWriter.Serializer {
     if (uks != null) {
       uksString = MessageFactory.getInstance().buildAddUniqueConstraintMessage(uks).toString();
     }
-    if (uks != null) {
+    if (nns != null) {
       nnsString = MessageFactory.getInstance().buildAddNotNullConstraintMessage(nns).toString();
     }
     writer.jsonGenerator.writeStringField("pks", pksString);

@@ -35,16 +35,11 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
   private FileStatus[] constraintFiles = null;
   private int currentConstraintIndex;
   private FileSystem fs;
+  private Path path;
 
   public ConstraintEventsIterator(String dumpDirectory, HiveConf hiveConf) throws IOException {
-    Path path = new Path(dumpDirectory);
+    path = new Path(dumpDirectory);
     fs = path.getFileSystem(hiveConf);
-    dbDirs = fs.listStatus(new Path(dumpDirectory), EximUtil.getDirectoryFilter(fs));
-    currentDbIndex = 0;
-    if (dbDirs.length != 0) {
-      currentConstraintIndex = 0;
-      constraintFiles = listConstraintFilesInDBDir(fs, dbDirs[0].getPath());
-    }
   }
 
   private FileStatus[] listConstraintFilesInDBDir(FileSystem fs, Path dbDir) {
@@ -59,14 +54,26 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
 
   @Override
   public boolean hasNext() {
-    if (constraintFiles != null && currentConstraintIndex < constraintFiles.length) {
+    if (dbDirs == null) {
+      try {
+        dbDirs = fs.listStatus(path, EximUtil.getDirectoryFilter(fs));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      currentDbIndex = 0;
+      if (dbDirs.length != 0) {
+        currentConstraintIndex = 0;
+        constraintFiles = listConstraintFilesInDBDir(fs, dbDirs[0].getPath());
+      }
+    }
+    if (currentDbIndex < dbDirs.length && currentConstraintIndex < constraintFiles.length) {
       return true;
     }
-    while (constraintFiles != null && currentConstraintIndex == constraintFiles.length) {
+    while (currentDbIndex < dbDirs.length && currentConstraintIndex == constraintFiles.length) {
       currentDbIndex ++;
       if (currentDbIndex < dbDirs.length) {
         currentConstraintIndex = 0;
-        constraintFiles = listConstraintFilesInDBDir(fs, dbDirs[0].getPath());
+        constraintFiles = listConstraintFilesInDBDir(fs, dbDirs[currentDbIndex].getPath());
       } else {
         constraintFiles = null;
       }
