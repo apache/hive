@@ -1096,7 +1096,7 @@ public class StatsUtils {
       stats = convertColStats(colStat, tabName);
     } catch (HiveException e) {
       LOG.error("Failed to retrieve table statistics: ", e);
-      stats = null;
+      stats = new ArrayList<ColStatistics>();
     }
     // Merge stats from cache with metastore cache
     if (colStatsCache != null) {
