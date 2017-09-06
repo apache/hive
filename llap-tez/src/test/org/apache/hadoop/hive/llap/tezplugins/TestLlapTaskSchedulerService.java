@@ -40,11 +40,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapFixedRegistryImpl;
 import org.apache.hadoop.hive.llap.testhelpers.ControlledClock;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.TaskInfo;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.TaskInfo.State;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.util.Time;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
@@ -56,6 +58,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
 import org.apache.tez.serviceplugins.api.TaskSchedulerContext;
 import org.junit.Test;
@@ -94,6 +97,449 @@ public class TestLlapTaskSchedulerService {
       verify(tsWrapper.mockAppCallback).taskAllocated(eq(task1), eq(clientCookie1), any(Container.class));
       assertEquals(1, tsWrapper.ts.dagStats.numLocalAllocations);
       assertEquals(1, tsWrapper.ts.dagStats.numAllocationsPerHost.get(HOST1).get());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testGuaranteedScheduling() throws IOException, InterruptedException {
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // Schedule a task - it should get the only duck; the 2nd one at the same pri doesn't get one.
+    // When the first one finishes, the duck goes to the 2nd, and then becomes unused.
+    try {
+      Priority priority = Priority.newInstance(1);
+      Object task1 = new Object(), task2 = new Object();
+      Object clientCookie1 = new Object(), clientCookie2 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, priority, clientCookie1);
+      tsWrapper.awaitTotalTaskAllocations(1);
+      TaskInfo ti = tsWrapper.ts.getTaskInfo(task1);
+      assertTrue(ti.isGuaranteed());
+      assertEquals(State.ASSIGNED, ti.getState());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.allocateTask(task2, null, priority, clientCookie2);
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti2 = tsWrapper.ts.getTaskInfo(task2);
+      assertFalse(ti2.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertTrue(ti2.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+
+  @Test(timeout = 10000)
+  public void testGuaranteedTransfer() throws IOException, InterruptedException {
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // Schedule low pri first. When high pri is scheduled, it takes away the duck from the
+    // low pri task. When the high pri finishes, low pri gets the duck back.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(1);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1);
+      assertTrue(ti1.isGuaranteed());
+      assertEquals(State.ASSIGNED, ti1.getState());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.allocateTask(task2, null, highPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti2 = tsWrapper.ts.getTaskInfo(task2);
+      assertTrue(ti2.isGuaranteed());
+      assertFalse(ti1.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertTrue(ti1.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testChangeGuaranteedTotal() throws IOException, InterruptedException {
+    TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // Schedule 3 tasks. Give out two ducks - two higher pri tasks get them. Give out 2 more
+    // - the last task gets it and one duck is unused. Give out 2 more - goes to unused.
+    // Then revoke similarly in steps (1, 4, 1), with the opposite effect.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object(), task3 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.allocateTask(task2, null, lowPri, new Object());
+      tsWrapper.allocateTask(task3, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(3);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2),
+          ti3 = tsWrapper.ts.getTaskInfo(task3);
+      assertFalse(ti1.isGuaranteed() || ti2.isGuaranteed() || ti3.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(2);
+      assertTrue(ti1.isGuaranteed());
+      // This particular test doesn't care which of the lower pri tasks gets the duck.
+      TaskInfo ti23High = ti2.isGuaranteed() ? ti2 : ti3, ti23Low = (ti2 == ti23High) ? ti3 : ti2;
+      assertTrue(ti23High.isGuaranteed());
+      assertFalse(ti23Low.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(4);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti23High.isGuaranteed());
+      assertTrue(ti23Low.isGuaranteed());
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(6);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti23High.isGuaranteed());
+      assertTrue(ti23Low.isGuaranteed());
+      assertEquals(3, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(5);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti23High.isGuaranteed());
+      assertTrue(ti23Low.isGuaranteed());
+      assertEquals(2, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti23High.isGuaranteed());
+      assertFalse(ti23Low.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.ts.updateGuaranteedCount(0);
+      assertFalse(ti1.isGuaranteed());
+      assertFalse(ti23High.isGuaranteed());
+      assertFalse(ti23Low.isGuaranteed());
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.deallocateTask(task3, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+
+  @Test(timeout = 20000)
+  public void testConcurrentUpdates() throws IOException, InterruptedException {
+    final TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // Test 4 variations of callbacks. 2 increases/2 revokes - do not update the same task again;
+    // Then, increase + decrease and decrease + increase, the 2nd call coming after the message is sent;
+    // the message callback should undo the change.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.allocateTask(task2, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2);
+      assertFalse(ti1.isGuaranteed() || ti2.isGuaranteed());
+
+      // Boring scenario #1 - two concurrent increases.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());  // Not updated yet.
+      assertFalse(ti2.isGuaranteed());
+      // We are now "sending" a message... update again, "return" both callbacks.
+      tsWrapper.ts.updateGuaranteedCount(2);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti2.isGuaranteed());
+
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.handleUpdateResult(ti2, true);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti2.isGuaranteed());
+      assertTrue(ti1.getLastSetGuaranteed());
+      assertTrue(ti2.getLastSetGuaranteed());
+
+      // Boring scenario #2 - two concurrent revokes. Same as above.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti2.isGuaranteed());
+      assertTrue(ti2.getLastSetGuaranteed()); // Not updated yet.
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertFalse(ti1.isGuaranteed());
+      assertFalse(ti2.isGuaranteed());
+
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.handleUpdateResult(ti2, true);
+      assertFalse(ti1.isGuaranteed());
+      assertFalse(ti2.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());
+      assertFalse(ti2.getLastSetGuaranteed());
+
+      // Concurrent increase and revocation, then another increase - after the message is sent.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed()); // Not updated yet.
+      assertTrue(ti1.isUpdateInProgress());
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.ts.assertNoMessagesSent(); // We are revoking from an updating task.
+      assertFalse(ti1.isGuaranteed());
+
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.waitForMessagesSent(1); // We should send a message to undo what we just did.
+      assertFalse(ti1.isGuaranteed());
+      assertTrue(ti1.getLastSetGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.assertNoMessagesSent();
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti1.getLastSetGuaranteed());
+
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.assertNoMessagesSent();
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti1.getLastSetGuaranteed());
+      assertFalse(ti1.isUpdateInProgress());
+
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+
+  @Test(timeout = 10000)
+  public void testUpdateOnFinishingTask() throws IOException, InterruptedException {
+    final TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // The update fails because the task has terminated on the node.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.allocateTask(task2, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2);
+
+      // Concurrent increase and termination, increase fails.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed()); // Not updated yet.
+      assertTrue(ti1.isUpdateInProgress());
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.ts.handleUpdateResult(ti1, false);
+
+      // We must have the duck still; it should just go to the other task.
+      assertTrue(ti2.isGuaranteed());
+      assertTrue(ti2.isUpdateInProgress());
+      tsWrapper.ts.handleUpdateResult(ti2, false);
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+
+      // Same; with the termination after the failed update, we should maintain the correct count.
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testConcurrentUpdateWithError() throws IOException, InterruptedException {
+    final TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // The update has failed but the state has changed since then - no retry needed.
+    try {
+      Priority highPri = Priority.newInstance(1);
+      Object task1 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(1);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1);
+      assertFalse(ti1.isGuaranteed());
+
+      // Concurrent increase and revocation, increase fails - no revocation is needed.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed()); // Not updated yet.
+      assertTrue(ti1.isUpdateInProgress());
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.ts.assertNoMessagesSent(); // We are revoking from an updating task.
+      assertFalse(ti1.isGuaranteed());
+
+      tsWrapper.ts.handleUpdateResult(ti1, false);
+      assertFalse(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());
+      assertFalse(ti1.isUpdateInProgress());
+      tsWrapper.ts.assertNoMessagesSent();
+
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testUpdateWithError() throws IOException, InterruptedException {
+    final TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // The update has failed; we'd try with another candidate first, but only at the same priority.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object(), task3 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.allocateTask(task2, null, highPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2);
+      assertFalse(ti1.isGuaranteed() || ti2.isGuaranteed());
+
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      TaskInfo tiHigher = ti1.isGuaranteed() ? ti1 : ti2, tiLower = (tiHigher == ti1) ? ti2 : ti1;
+      assertTrue(tiHigher.isGuaranteed());
+      assertFalse(tiHigher.getLastSetGuaranteed()); // Not updated yet.
+      assertTrue(tiHigher.isUpdateInProgress());
+
+      tsWrapper.ts.handleUpdateResult(tiHigher, false); // Update has failed. We should try task2.
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertFalse(tiHigher.isGuaranteed());
+      assertFalse(tiHigher.getLastSetGuaranteed());
+      assertFalse(tiHigher.isUpdateInProgress());
+      assertTrue(tiLower.isGuaranteed());
+      assertFalse(tiLower.getLastSetGuaranteed());
+      assertTrue(tiLower.isUpdateInProgress());
+
+      // Fail the 2nd update too to get rid of the duck for the next test.
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.ts.handleUpdateResult(tiLower, false);
+      tsWrapper.ts.assertNoMessagesSent();
+
+      // Now run a lower priority task.
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.allocateTask(task3, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(3);
+      TaskInfo ti3 = tsWrapper.ts.getTaskInfo(task3);
+
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.waitForMessagesSent(1);
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+
+      tsWrapper.ts.handleUpdateResult(ti1, false); // Update has failed. We won't try a low pri task.
+      assertTrue(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+      assertFalse(ti3.isGuaranteed());
+      assertFalse(ti3.isUpdateInProgress());
+
+      assertEquals(0, tsWrapper.ts.getUnusedGuaranteedCount());
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+  @Test(timeout = 10000)
+  public void testConcurrentUpdatesBeforeMessage() throws IOException, InterruptedException {
+    final TestTaskSchedulerServiceWrapper tsWrapper = new TestTaskSchedulerServiceWrapper();
+    // 2 more variations of callbacks; increase + decrease and decrease + increase, the 2nd call coming
+    // before the message is sent; no message should ever be sent.
+    try {
+      Priority highPri = Priority.newInstance(1), lowPri = Priority.newInstance(2);
+      Object task1 = new Object(), task2 = new Object();
+      tsWrapper.ts.updateGuaranteedCount(0);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, null, highPri, new Object());
+      tsWrapper.allocateTask(task2, null, lowPri, new Object());
+      tsWrapper.awaitTotalTaskAllocations(2);
+      TaskInfo ti1 = tsWrapper.ts.getTaskInfo(task1), ti2 = tsWrapper.ts.getTaskInfo(task2);
+      assertFalse(ti1.isGuaranteed() || ti2.isGuaranteed());
+
+      // Concurrent increase and revocation - before the message is sent.
+      tsWrapper.ts.clearTestCounts();
+      tsWrapper.ts.setDelayCheckAndSend(true);
+      Thread updateThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          tsWrapper.ts.updateGuaranteedCount(1);
+        }
+      }, "test-update-thread");
+      updateThread.start(); // This should eventually hang in the delay code.
+      tsWrapper.ts.waitForCheckAndSendCall(1); // From the background thread.
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+      assertFalse(ti1.getLastSetGuaranteed());
+      tsWrapper.ts.updateGuaranteedCount(0); // This won't go into checkAndSend.
+      tsWrapper.ts.assertNoMessagesSent();
+      // Release the background thread.
+      tsWrapper.ts.setDelayCheckAndSend(false);
+      updateThread.join();
+      tsWrapper.ts.assertNoMessagesSent(); // No message is needed.
+      assertFalse(ti1.isGuaranteed());
+      assertFalse(ti1.getLastSetGuaranteed());
+      assertFalse(ti1.isUpdateInProgress());
+
+      // Concurrent revocation and increase - before the message is sent.
+      // First, actually give it a duck.
+      tsWrapper.ts.updateGuaranteedCount(1);
+      tsWrapper.ts.handleUpdateResult(ti1, true);
+      tsWrapper.ts.clearTestCounts();
+      assertTrue(ti1.isGuaranteed() && ti1.getLastSetGuaranteed());
+
+      tsWrapper.ts.setDelayCheckAndSend(true);
+      updateThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          tsWrapper.ts.updateGuaranteedCount(0);
+        }
+      }, "test-update-thread");
+      updateThread.start(); // This should eventually hang in the delay code.
+      tsWrapper.ts.waitForCheckAndSendCall(1);
+      assertFalse(ti1.isGuaranteed());
+      assertTrue(ti1.isUpdateInProgress());
+      assertTrue(ti1.getLastSetGuaranteed());
+      tsWrapper.ts.updateGuaranteedCount(1); // This won't go into checkAndSend.
+      tsWrapper.ts.assertNoMessagesSent();
+      // Release the background thread.
+      tsWrapper.ts.setDelayCheckAndSend(false);
+      updateThread.join();
+      tsWrapper.ts.assertNoMessagesSent(); // No message is needed.
+      assertTrue(ti1.isGuaranteed());
+      assertTrue(ti1.getLastSetGuaranteed());
+      assertFalse(ti1.isUpdateInProgress());
+
+      tsWrapper.deallocateTask(task1, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      tsWrapper.deallocateTask(task2, true, TaskAttemptEndReason.CONTAINER_EXITED);
+      assertEquals(1, tsWrapper.ts.getUnusedGuaranteedCount());
     } finally {
       tsWrapper.shutdown();
     }
@@ -1269,7 +1715,7 @@ public class TestLlapTaskSchedulerService {
     // With a timeout of 3000.
     LlapTaskSchedulerService.TaskInfo taskInfo =
         new LlapTaskSchedulerService.TaskInfo(localityDelayConf1, clock, new Object(), new Object(),
-            mock(Priority.class), mock(Resource.class), null, null, clock.getTime());
+            mock(Priority.class), mock(Resource.class), null, null, clock.getTime(), null);
 
     assertFalse(taskInfo.shouldForceLocality());
 
@@ -1290,7 +1736,7 @@ public class TestLlapTaskSchedulerService {
         new LlapTaskSchedulerService.LocalityDelayConf(0);
     taskInfo =
         new LlapTaskSchedulerService.TaskInfo(localityDelayConf2, clock, new Object(), new Object(),
-            mock(Priority.class), mock(Resource.class), null, null, clock.getTime());
+            mock(Priority.class), mock(Resource.class), null, null, clock.getTime(), null);
     assertFalse(taskInfo.shouldDelayForLocality(clock.getTime()));
     assertFalse(taskInfo.shouldForceLocality());
     assertTrue(taskInfo.getDelay(TimeUnit.MILLISECONDS) < 0);
@@ -1300,7 +1746,7 @@ public class TestLlapTaskSchedulerService {
         new LlapTaskSchedulerService.LocalityDelayConf(-1);
     taskInfo =
         new LlapTaskSchedulerService.TaskInfo(localityDelayConf3, clock, new Object(), new Object(),
-            mock(Priority.class), mock(Resource.class), null, null, clock.getTime());
+            mock(Priority.class), mock(Resource.class), null, null, clock.getTime(), null);
     assertTrue(taskInfo.shouldDelayForLocality(clock.getTime()));
     assertTrue(taskInfo.shouldForceLocality());
     assertFalse(taskInfo.getDelay(TimeUnit.MILLISECONDS) < 0);
@@ -1319,12 +1765,12 @@ public class TestLlapTaskSchedulerService {
 
     LlapTaskSchedulerService.TaskInfo taskInfo1 =
         new LlapTaskSchedulerService.TaskInfo(localityDelayConf, clock, new Object(), new Object(),
-            mock(Priority.class), mock(Resource.class), null, null, clock.getTime());
+            mock(Priority.class), mock(Resource.class), null, null, clock.getTime(), null);
 
     clock.setTime(clock.getTime() + 1000);
     LlapTaskSchedulerService.TaskInfo taskInfo2 =
         new LlapTaskSchedulerService.TaskInfo(localityDelayConf, clock, new Object(), new Object(),
-            mock(Priority.class), mock(Resource.class), null, null, clock.getTime());
+            mock(Priority.class), mock(Resource.class), null, null, clock.getTime(), null);
 
     delayedQueue.add(taskInfo1);
     delayedQueue.add(taskInfo2);
@@ -1447,7 +1893,7 @@ public class TestLlapTaskSchedulerService {
     static final Resource resource = Resource.newInstance(1024, 1);
     Configuration conf;
     TaskSchedulerContext mockAppCallback = mock(TaskSchedulerContext.class);
-    ServiceInstanceSet mockServiceInstanceSet = mock(ServiceInstanceSet.class);
+    LlapServiceInstanceSet mockServiceInstanceSet = mock(LlapServiceInstanceSet.class);
     ControlledClock clock = new ControlledClock(new MonotonicClock());
     ApplicationAttemptId appAttemptId = ApplicationAttemptId.newInstance(ApplicationId.newInstance(1000, 1), 1);
     LlapTaskSchedulerServiceForTest ts;
@@ -1499,16 +1945,16 @@ public class TestLlapTaskSchedulerService {
       doReturn(userPayload).when(mockAppCallback).getInitialUserPayload();
 
       if (useMockRegistry) {
-        List<ServiceInstance> liveInstances = new ArrayList<>();
+        List<LlapServiceInstance> liveInstances = new ArrayList<>();
         for (String host : liveHosts) {
           if (host == null) {
-            ServiceInstance mockInactive = mock(InactiveServiceInstance.class);
+            LlapServiceInstance mockInactive = mock(InactiveServiceInstance.class);
             doReturn(host).when(mockInactive).getHost();
             doReturn("inactive-host-" + host).when(mockInactive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockInactive).build()).when(mockServiceInstanceSet).getByHost(host);
             liveInstances.add(mockInactive);
           } else {
-            ServiceInstance mockActive = mock(ServiceInstance.class);
+            LlapServiceInstance mockActive = mock(LlapServiceInstance.class);
             doReturn(host).when(mockActive).getHost();
             doReturn("host-" + host).when(mockActive).getWorkerIdentity();
             doReturn(ImmutableSet.builder().add(mockActive).build()).when(mockServiceInstanceSet).getByHost(host);
@@ -1517,9 +1963,9 @@ public class TestLlapTaskSchedulerService {
         }
         doReturn(liveInstances).when(mockServiceInstanceSet).getAllInstancesOrdered(true);
 
-        List<ServiceInstance> allInstances = new ArrayList<>();
+        List<LlapServiceInstance> allInstances = new ArrayList<>();
         for (String host : hosts) {
-          ServiceInstance mockActive = mock(ServiceInstance.class);
+          LlapServiceInstance mockActive = mock(LlapServiceInstance.class);
           doReturn(host).when(mockActive).getHost();
           doReturn(Resource.newInstance(100, 1)).when(mockActive).getResource();
           doReturn("host-" + host).when(mockActive).getWorkerIdentity();
@@ -1656,7 +2102,10 @@ public class TestLlapTaskSchedulerService {
     private final Condition triggerSchedulingCondition = testLock.newCondition();
     private boolean schedulingTriggered = false;
     private final AtomicInteger numSchedulerRuns = new AtomicInteger(0);
-
+    private final Object messageLock = new Object();
+    private int sentCount = 0, checkAndSendCount = 0;
+    private final Object checkDelay = new Object();
+    private boolean doDelayCheckAndSend = false;
 
     public LlapTaskSchedulerServiceForTest(
         TaskSchedulerContext appClient, Clock clock) {
@@ -1664,7 +2113,95 @@ public class TestLlapTaskSchedulerService {
     }
 
     @Override
-    protected void schedulePendingTasks() {
+    protected void checkAndSendGuaranteedStateUpdate(TaskInfo ti) {
+      // A test-specific delay just before the check happens.
+      synchronized (checkDelay) {
+        boolean isFirst = true;
+        while (doDelayCheckAndSend) {
+          if (isFirst) {
+            synchronized (messageLock) {
+              ++checkAndSendCount;
+              messageLock.notifyAll();
+            }
+            isFirst = false;
+          }
+          try {
+            checkDelay.wait(100);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+      super.checkAndSendGuaranteedStateUpdate(ti);
+    }
+
+    public void setDelayCheckAndSend(boolean value) {
+      synchronized (checkDelay) {
+        doDelayCheckAndSend = value;
+        if (!value) {
+          checkDelay.notifyAll();
+        }
+      }
+    }
+
+    @Override
+    public void handleUpdateResult(TaskInfo ti, boolean isOk) {
+      super.handleUpdateResult(ti, isOk);
+    }
+
+    public void clearTestCounts() {
+      synchronized (messageLock) {
+        sentCount = checkAndSendCount = 0;
+      }
+    }
+
+    public void waitForMessagesSent(int count) throws InterruptedException {
+      while (true) {
+        synchronized (messageLock) {
+          assert sentCount <= count;
+          if (sentCount == count) {
+            sentCount = 0;
+            return;
+          }
+          messageLock.wait(200);
+        }
+      }
+    }
+
+    /** Note: this only works for testing the lack of invocations from the main thread. */
+    public void assertNoMessagesSent() {
+      synchronized (messageLock) {
+        assert sentCount == 0;
+      }
+    }
+
+    public void waitForCheckAndSendCall(int count) throws InterruptedException {
+      while (true) {
+        synchronized (messageLock) {
+          assert checkAndSendCount <= count;
+          if (checkAndSendCount == count) {
+            checkAndSendCount = 0;
+            return;
+          }
+          messageLock.wait(200);
+        }
+      }
+    }
+    @Override
+    protected void sendUpdateMessageAsync(TaskInfo ti, boolean newState) {
+      synchronized (messageLock) {
+        ++sentCount;
+        messageLock.notifyAll();
+      }
+    }
+
+    @Override
+    protected TezTaskAttemptID getTaskAttemptId(Object task) {
+      return null;
+    }
+
+    @Override
+    protected void schedulePendingTasks() throws InterruptedException {
       LOG.info("Attempted schedulPendingTasks");
       testLock.lock();
       try {

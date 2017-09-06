@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.messaging;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.thrift.TException;
 
@@ -34,6 +35,7 @@ public class EventUtils {
   public interface NotificationFetcher {
     int getBatchSize() throws IOException;
     long getCurrentNotificationEventId() throws IOException;
+    long getDbNotificationEventsCount(long fromEventId, String dbName) throws IOException;
     List<NotificationEvent> getNextNotificationEvents(
         long pos, IMetaStoreClient.NotificationFilter filter) throws IOException;
   }
@@ -69,6 +71,17 @@ public class EventUtils {
     public long getCurrentNotificationEventId() throws IOException {
       try {
         return msc.getCurrentNotificationEventId().getEventId();
+      } catch (TException e) {
+        throw new IOException(e);
+      }
+    }
+
+    @Override
+    public long getDbNotificationEventsCount(long fromEventId, String dbName) throws IOException {
+      try {
+        NotificationEventsCountRequest rqst
+                = new NotificationEventsCountRequest(fromEventId, dbName);
+        return msc.getNotificationEventsCount(rqst).getEventsCount();
       } catch (TException e) {
         throw new IOException(e);
       }

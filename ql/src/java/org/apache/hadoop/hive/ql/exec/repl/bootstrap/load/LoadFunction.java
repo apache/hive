@@ -20,10 +20,14 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.FunctionEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CreateFunctionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
 import org.slf4j.Logger;
@@ -39,16 +43,25 @@ import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.stripQuotes;
 public class LoadFunction {
   private static final Logger LOG = LoggerFactory.getLogger(LoadFunction.class);
   private Context context;
+  private ReplLogger replLogger;
   private final FunctionEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
 
-  public LoadFunction(Context context, FunctionEvent event, String dbNameToLoadIn,
-      TaskTracker existingTracker) {
+  public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
+                      String dbNameToLoadIn, TaskTracker existingTracker) {
     this.context = context;
+    this.replLogger = replLogger;
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
+  }
+
+  private void createFunctionReplLogTask(List<Task<? extends Serializable>> functionTasks,
+                                         String functionName) {
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
+    ReplLoadTask.dependency(functionTasks, replLogTask);
   }
 
   public TaskTracker tasks() throws IOException, SemanticException {
@@ -63,6 +76,7 @@ public class LoadFunction {
               dbNameToLoadIn, null, fromPath.toString(), null, null, context.hiveConf,
               context.hiveDb, null, LOG)
       );
+      createFunctionReplLogTask(tasks, handler.getFunctionName());
       tasks.forEach(tracker::addTask);
       return tracker;
     } catch (Exception e) {

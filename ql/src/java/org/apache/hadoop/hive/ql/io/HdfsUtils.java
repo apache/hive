@@ -49,7 +49,8 @@ public class HdfsUtils {
     if (fileSystem instanceof DistributedFileSystem) {
       DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
       if ((!checkDefaultFs) || isDefaultFs(dfs)) {
-        return SHIMS.getFileId(dfs, path.toUri().getPath());
+        Object result = SHIMS.getFileId(dfs, path.toUri().getPath());
+        if (result != null) return result;
       }
     }
     if (!allowSynthetic) {

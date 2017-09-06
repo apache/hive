@@ -191,7 +191,7 @@ public class SparkUtilities {
   }
 
   /**
-   * Recursively find all operators under root, that are of class clazz, and
+   * Recursively find all operators under root, that are of class clazz or are the sub-class of clazz, and
    * put them in result.
    * @param result all operators under root that are of class clazz
    * @param root the root operator under which all operators will be examined
@@ -202,7 +202,7 @@ public class SparkUtilities {
     if (root == null) {
       return;
     }
-    if (clazz.equals(root.getClass())) {
+    if (clazz.isAssignableFrom(root.getClass())) {
       result.add(root);
     }
     for (Operator<?> child : root.getChildOperators()) {

@@ -47,20 +47,6 @@ public class MetricsConstant {
   public static final String SQL_OPERATION_PREFIX = "hs2_sql_operation_";
   public static final String COMPLETED_SQL_OPERATION_PREFIX = "hs2_completed_sql_operation_";
 
-  public static final String INIT_TOTAL_DATABASES = "init_total_count_dbs";
-  public static final String INIT_TOTAL_TABLES = "init_total_count_tables";
-  public static final String INIT_TOTAL_PARTITIONS = "init_total_count_partitions";
-
-  public static final String CREATE_TOTAL_DATABASES = "create_total_count_dbs";
-  public static final String CREATE_TOTAL_TABLES = "create_total_count_tables";
-  public static final String CREATE_TOTAL_PARTITIONS = "create_total_count_partitions";
-
-  public static final String DELETE_TOTAL_DATABASES = "delete_total_count_dbs";
-  public static final String DELETE_TOTAL_TABLES = "delete_total_count_tables";
-  public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
-
-  public static final String DIRECTSQL_ERRORS = "directsql_errors";
-
   // The number of Hive operations that are waiting to enter the compile block
   public static final String WAITING_COMPILE_OPS = "waiting_compile_ops";
 

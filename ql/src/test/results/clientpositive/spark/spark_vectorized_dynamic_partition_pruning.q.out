@@ -48,7 +48,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -70,6 +70,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -191,11 +192,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_double_hour
 POSTHOOK: Lineage: srcpart_double_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_double_hour.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-PREHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -230,16 +229,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -258,6 +257,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -348,7 +348,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -367,6 +367,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -454,12 +455,555 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: day(_col0) (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
+                            partition key expr: day(ds)
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                            target work: Map 1
+            Execution mode: vectorized
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: day(_col0) (type: int)
+                      sort order: +
+                      Map-reduce partition columns: day(_col0) (type: int)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: day(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: day(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 day(_col0) (type: int)
+                  1 day(_col0) (type: int)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: day(_col0) (type: int)
+                      sort order: +
+                      Map-reduce partition columns: day(_col0) (type: int)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: day(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: day(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 day(_col0) (type: int)
+                  1 day(_col0) (type: int)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: bigint)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
+                            partition key expr: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10))
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                            target work: Map 1
+            Execution mode: vectorized
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                        Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and abs(((- UDFToLong(concat(UDFToString(day(ds)), '0'))) + 10)) is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                        sort order: +
+                        Map-reduce partition columns: abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                  1 abs(((- UDFToLong(concat(UDFToString(day(_col0)), '0'))) + 10)) (type: bigint)
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on abs(negative(cast(concat(cast(day(srcpart.ds) as string), "0") as bigint)) + 10) = abs(negative(cast(concat(cast(day(srcpart_date.ds) as string), "0") as bigint)) + 10) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: CAST( day(_col0) AS decimal(10,0)) (type: decimal(10,0))
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: decimal(10,0))
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
+                            partition key expr: CAST( UDFToShort(day(ds)) AS decimal(10,0))
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                            target work: Map 1
+            Execution mode: vectorized
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: CAST( UDFToShort(day(_col0)) AS decimal(10,0)) (type: decimal(10,0))
+                      sort order: +
+                      Map-reduce partition columns: CAST( UDFToShort(day(_col0)) AS decimal(10,0)) (type: decimal(10,0))
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: CAST( day(_col0) AS decimal(10,0)) (type: decimal(10,0))
+                        sort order: +
+                        Map-reduce partition columns: CAST( day(_col0) AS decimal(10,0)) (type: decimal(10,0))
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 CAST( UDFToShort(day(_col0)) AS decimal(10,0)) (type: decimal(10,0))
+                  1 CAST( day(_col0) AS decimal(10,0)) (type: decimal(10,0))
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on cast(day(srcpart.ds) as smallint) = cast(day(srcpart_date.ds) as decimal) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -495,9 +1039,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
         Map 8 
@@ -523,17 +1067,17 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: hr
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 5 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
         Reducer 4 <- Reducer 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -552,6 +1096,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -682,8 +1227,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 5 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
         Reducer 4 <- Reducer 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -703,6 +1248,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -828,11 +1374,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- multiple columns single source
-EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple columns single source
-EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -867,24 +1411,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
-            Execution mode: vectorized
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col2 (type: string)
                         outputColumnNames: _col0
@@ -895,16 +1425,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -922,6 +1452,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1012,7 +1543,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1031,6 +1562,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1118,11 +1650,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- empty set
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- empty set
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1157,16 +1687,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1185,6 +1715,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1275,7 +1806,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1294,6 +1825,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1381,11 +1913,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- expressions
-EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- expressions
-EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1420,16 +1950,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1448,6 +1978,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1563,16 +2094,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1591,6 +2122,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1681,7 +2213,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1700,6 +2232,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1790,7 +2323,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1809,6 +2342,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1933,16 +2467,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: UDFToString((UDFToDouble(hr) * 2.0))
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -1961,6 +2495,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2049,11 +2584,9 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: -- parent is reduce tasks
-EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- parent is reduce tasks
-EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2065,7 +2598,7 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Reducer 5 (PARTITION-LEVEL SORT, 1)
         Reducer 3 <- Reducer 2 (GROUP, 1)
-        Reducer 5 <- Map 4 (GROUP, 2)
+        Reducer 5 <- Map 4 (GROUP, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2079,6 +2612,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2093,10 +2627,11 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '2008-04-08' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '2008-04-08' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -2134,7 +2669,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                keys: '2008-04-08' (type: string)
+                keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -2174,11 +2709,9 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
 Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: -- non-equi join
-EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+PREHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non-equi join
-EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2205,6 +2738,7 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: string), _col1 (type: string)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2289,11 +2823,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_hour
 #### A masked pattern was here ####
 1500
-PREHOOK: query: -- old style join syntax
-EXPLAIN select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+PREHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
 PREHOOK: type: QUERY
-POSTHOOK: query: -- old style join syntax
-EXPLAIN select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+POSTHOOK: query: EXPLAIN select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -2328,24 +2860,10 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
-            Execution mode: vectorized
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col2 (type: string)
                         outputColumnNames: _col0
@@ -2356,16 +2874,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -2383,6 +2901,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2461,11 +2980,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_hour
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- left join
-EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- left join
-EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -2500,16 +3017,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -2528,6 +3045,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2624,16 +3142,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 4
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -2670,11 +3188,12 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Outer Join0 to 1
+                     Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -2710,11 +3229,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- full outer
-EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- full outer
-EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -2749,16 +3266,16 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -2776,6 +3293,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2799,7 +3317,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Right Outer Join0 to 1
+                     Right Outer Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -2835,12 +3353,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2876,17 +3392,45 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
+                            target work: Map 1
+            Execution mode: vectorized
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_hour
+                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: hr (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
+                            partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                             target work: Map 1
             Execution mode: vectorized
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 5 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
         Reducer 4 <- Reducer 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
@@ -2905,6 +3449,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -3031,51 +3576,12 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 5 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 5 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Map 6 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
         Reducer 4 <- Reducer 3 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                  Filter Operator
-                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        value expressions: _col1 (type: string)
-            Execution mode: vectorized
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date
-                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized
-        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
@@ -3094,6 +3600,45 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Filter Operator
+                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string), hr (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -3101,14 +3646,14 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
-                  1 _col0 (type: string)
+                  1 _col1 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -3117,7 +3662,7 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: string)
                   1 _col0 (type: string)
-                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash
@@ -3164,11 +3709,9 @@ POSTHOOK: Input: default@srcpart_date
 POSTHOOK: Input: default@srcpart_hour
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- union + subquery
-EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
+PREHOOK: query: EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union + subquery
-EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -3179,12 +3722,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP, 1)
-        Reducer 11 <- Reducer 10 (GROUP, 2), Reducer 13 (GROUP, 2)
-        Reducer 13 <- Map 12 (GROUP, 1)
+        Reducer 11 <- Map 10 (GROUP, 1)
+        Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 12 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3202,7 +3744,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 9 
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3220,47 +3763,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 10 
             Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: max(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
         Reducer 11 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Spark Partition Pruning Sink Operator
-                      partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      target column name: ds
-                      target work: Map 1
-        Reducer 13 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3268,31 +3772,73 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
+        Reducer 9 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Reducer 5 (PARTITION-LEVEL SORT, 4), Reducer 7 (PARTITION-LEVEL SORT, 4)
         Reducer 3 <- Reducer 2 (GROUP, 1)
         Reducer 5 <- Map 4 (GROUP, 1)
-        Reducer 6 <- Reducer 5 (GROUP, 2), Reducer 8 (GROUP, 2)
-        Reducer 8 <- Map 7 (GROUP, 1)
+        Reducer 7 <- Map 6 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -3303,6 +3849,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3321,7 +3868,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 7 
+            Execution mode: vectorized
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3339,11 +3887,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3380,30 +3929,20 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 6 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+        Reducer 7 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3411,16 +3950,19 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -3458,12 +4000,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP, 1)
-        Reducer 11 <- Reducer 10 (GROUP, 2), Reducer 13 (GROUP, 2)
-        Reducer 13 <- Map 12 (GROUP, 1)
+        Reducer 11 <- Map 10 (GROUP, 1)
+        Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 12 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3481,7 +4022,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 9 
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3499,47 +4041,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 10 
             Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: max(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
         Reducer 11 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Spark Partition Pruning Sink Operator
-                      partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      target column name: ds
-                      target work: Map 1
-        Reducer 13 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3547,31 +4050,73 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
+        Reducer 9 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Reducer 6 (PARTITION-LEVEL SORT, 2)
-        Reducer 3 <- Reducer 2 (GROUP, 2)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Reducer 5 (PARTITION-LEVEL SORT, 4), Reducer 7 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 4)
         Reducer 5 <- Map 4 (GROUP, 1)
-        Reducer 6 <- Reducer 5 (GROUP, 2), Reducer 8 (GROUP, 2)
-        Reducer 8 <- Map 7 (GROUP, 1)
+        Reducer 7 <- Map 6 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ds (type: string)
@@ -3582,6 +4127,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3600,7 +4146,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 7 
+            Execution mode: vectorized
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3618,11 +4165,12 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3661,30 +4209,20 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 6 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+        Reducer 7 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3692,16 +4230,19 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -3740,15 +4281,11 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 12 <- Map 11 (GROUP, 1)
-        Reducer 13 <- Reducer 12 (GROUP, 2), Reducer 15 (GROUP, 2)
-        Reducer 15 <- Map 14 (GROUP, 1)
-        Reducer 17 <- Map 11 (GROUP, 1)
-        Reducer 18 <- Reducer 17 (GROUP, 2), Reducer 20 (GROUP, 2)
-        Reducer 20 <- Map 14 (GROUP, 1)
+        Reducer 11 <- Map 10 (GROUP, 1)
+        Reducer 13 <- Map 12 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 11 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3766,7 +4303,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 14 
+            Execution mode: vectorized
+        Map 12 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3784,7 +4322,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 12 
+            Execution mode: vectorized
+        Reducer 11 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3792,130 +4331,73 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
         Reducer 13 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: string)
+                aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: _col0 (type: string)
                     mode: hash
                     outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Spark Partition Pruning Sink Operator
-                      partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      target column name: ds
-                      target work: Map 1
-        Reducer 15 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 17 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: max(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 18 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Spark Partition Pruning Sink Operator
-                      partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      target column name: ds
-                      target work: Map 4
-        Reducer 20 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
 
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 10 <- Map 9 (GROUP, 1)
-        Reducer 2 <- Map 1 (GROUP, 2)
-        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 2), Reducer 5 (PARTITION-LEVEL SORT, 2), Reducer 8 (PARTITION-LEVEL SORT, 2)
-        Reducer 5 <- Map 1 (GROUP, 2)
+        Reducer 2 <- Map 1 (GROUP, 4)
+        Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4), Reducer 7 (PARTITION-LEVEL SORT, 4), Reducer 9 (PARTITION-LEVEL SORT, 4)
         Reducer 7 <- Map 6 (GROUP, 1)
-        Reducer 8 <- Reducer 10 (GROUP, 2), Reducer 7 (GROUP, 2)
+        Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     keys: ds (type: string)
@@ -3927,6 +4409,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -3945,7 +4428,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 9 
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3963,24 +4447,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 10 
             Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -3998,7 +4465,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -4011,19 +4478,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
         Reducer 7 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -4032,29 +4486,40 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
                     Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+        Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
-                keys: KEY._col0 (type: string)
+                aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -4082,11 +4547,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2008-04-08
 2008-04-09
 2008-04-09
-PREHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -4125,9 +4588,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4167,6 +4630,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4219,12 +4683,137 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date
+                  filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((date = '2008-04-08') and ds is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ds (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 day(_col0) (type: int)
+                          1 day(_col0) (type: int)
+                      Select Operator
+                        expressions: day(_col0) (type: int)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
+                            partition key expr: day(ds)
+                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                            target work: Map 1
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 day(_col0) (type: int)
+                        1 day(_col0) (type: int)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+            Local Work:
+              Map Reduce Local Work
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (day(srcpart.ds) = day(srcpart_date.ds)) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+1000
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -4264,9 +4853,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4298,9 +4887,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: hr
                             Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4349,6 +4938,7 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4405,11 +4995,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- multiple columns single source
-EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple columns single source
-EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -4448,9 +5036,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
                       Select Operator
                         expressions: _col2 (type: string)
@@ -4462,9 +5050,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: hr
                             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4503,6 +5091,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4555,11 +5144,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- empty set
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- empty set
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -4598,9 +5185,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4640,6 +5227,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4664,17 +5252,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST';
-
--- expressions
-EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST';
-
--- expressions
-EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -4713,9 +5312,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4755,6 +5354,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4839,9 +5439,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
                             partition key expr: (UDFToDouble(hr) * 2.0)
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -4881,6 +5481,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -4934,11 +5535,9 @@ POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
 Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- parent is reduce tasks
-EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- parent is reduce tasks
-EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -4949,7 +5548,7 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 2)
+        Reducer 4 <- Map 3 (GROUP, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 3 
@@ -4966,17 +5565,18 @@ STAGE PLANS:
                       outputColumnNames: _col0
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: '2008-04-08' (type: string)
+                        key expressions: _col0 (type: string)
                         sort order: +
-                        Map-reduce partition columns: '2008-04-08' (type: string)
+                        Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 4 
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
               Group By Operator
-                keys: '2008-04-08' (type: string)
+                keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -5019,6 +5619,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5066,11 +5667,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- left join
-EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- left join
-EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -5109,9 +5708,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -5151,6 +5750,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5181,45 +5781,11 @@ POSTHOOK: query: EXPLAIN select count(*) from srcpart_date left join srcpart on 
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date
-                  filterExpr: (date = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
-                            target work: Map 3
-            Execution mode: vectorized
-
-  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -5236,6 +5802,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -5260,7 +5827,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Left Outer Join0 to 1
+                             Left Outer Join 0 to 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
@@ -5301,53 +5868,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- full outer
-EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- full outer
-EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date
-                  filterExpr: (date = '2008-04-08') (type: boolean)
-                  Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (date = '2008-04-08') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: ds
-                            Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
-                            target work: Map 1
-            Execution mode: vectorized
-
-  Stage: Stage-3
     Spark
 #### A masked pattern was here ####
       Vertices:
@@ -5364,6 +5895,7 @@ STAGE PLANS:
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -5388,7 +5920,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
-                             Right Outer Join0 to 1
+                             Right Outer Join 0 to 1
                         keys:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
@@ -5429,12 +5961,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
 where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -5474,9 +6004,9 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
+                            Target column: ds (string)
                             partition key expr: ds
                             Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
                             target work: Map 1
             Execution mode: vectorized
             Local Work:
@@ -5498,6 +6028,20 @@ STAGE PLANS:
                         keys:
                           0 _col1 (type: string)
                           1 _col0 (type: string)
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            Target column: hr (string)
+                            partition key expr: hr
+                            Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
+                            target work: Map 1
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -5545,6 +6089,7 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
@@ -5595,17 +6140,16 @@ POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date on (srcp
 where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-3
+  Stage-2 is a root stage
   Stage-1 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-3
+  Stage: Stage-2
     Spark
 #### A masked pattern was here ####
       Vertices:
-        Map 1 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -5621,16 +6165,11 @@ STAGE PLANS:
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: string)
-                          1 _col0 (type: string)
+                          1 _col1 (type: string)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 2 
+        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date
@@ -5643,20 +6182,10 @@ STAGE PLANS:
                       expressions: ds (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
+                      Spark HashTable Sink Operator
                         keys:
-                          0 _col0 (type: string)
+                          0 _col1 (type: string)
                           1 _col0 (type: string)
-                        outputColumnNames: _col1
-                        input vertices:
-                          0 Map 1
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        Spark HashTable Sink Operator
-                          keys:
-                            0 _col1 (type: string)
-                            1 _col0 (type: string)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
@@ -5664,10 +6193,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
+        Reducer 2 <- Map 1 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 1 
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
@@ -5684,24 +6213,34 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: string)
-                          1 _col0 (type: string)
+                          0 _col0 (type: string)
+                          1 _col1 (type: string)
+                        outputColumnNames: _col1
                         input vertices:
-                          0 Map 2
-                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col1 (type: string)
+                            1 _col0 (type: string)
+                          input vertices:
+                            1 Map 4
+                          Statistics: Num rows: 1 Data size: 207 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col0 (type: bigint)
             Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
-        Reducer 4 
+        Reducer 2 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -5723,19 +6262,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
--- where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13;
-
--- union + subquery
-EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
+PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disabled until TEZ-1486 is fixed
--- select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
--- where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13;
-
--- union + subquery
-EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_hour
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
+where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_hour
+#### A masked pattern was here ####
+0
+PREHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -5746,12 +6290,30 @@ STAGE PLANS:
   Stage: Stage-2
     Spark
       Edges:
-        Reducer 4 <- Map 3 (GROUP, 1)
-        Reducer 5 <- Reducer 4 (GROUP, 2), Reducer 7 (GROUP, 2)
-        Reducer 7 <- Map 6 (GROUP, 1)
+        Reducer 11 <- Map 10 (GROUP, 1)
+        Reducer 9 <- Map 8 (GROUP, 1)
 #### A masked pattern was here ####
       Vertices:
-        Map 3 
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: ds
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: min(ds)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -5769,6 +6331,112 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
+            Execution mode: vectorized
+        Reducer 11 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
+        Reducer 9 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        Spark Partition Pruning Sink Operator
+                          Target column: ds (string)
+                          partition key expr: ds
+                          Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                          target work: Map 1
+
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Reducer 5 (PARTITION-LEVEL SORT, 4), Reducer 7 (PARTITION-LEVEL SORT, 4)
+        Reducer 3 <- Reducer 2 (GROUP, 4)
+        Reducer 5 <- Map 4 (GROUP, 1)
+        Reducer 7 <- Map 6 (GROUP, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: ds
+                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(ds)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -5787,109 +6455,28 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 4 
             Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: max(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-        Reducer 5 
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Spark HashTable Sink Operator
-                  keys:
-                    0 _col0 (type: string)
-                    1 _col0 (type: string)
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Spark Partition Pruning Sink Operator
-                      partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      target column name: ds
-                      target work: Map 1
-        Reducer 7 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: _col0 (type: string)
-                    sort order: +
-                    Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 2)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Reducer 5
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-            Local Work:
-              Map Reduce Local Work
         Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -5904,6 +6491,48 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator
@@ -5929,197 +6558,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-08
 2008-04-09
-PREHOOK: query: -- different file format
-create table srcpart_orc (key int, value string) partitioned by (ds string, hr int) stored as orc
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: -- different file format
-create table srcpart_orc (key int, value string) partitioned by (ds string, hr int) stored as orc
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_orc
-PREHOOK: query: insert into table srcpart_orc partition (ds, hr) select key, value, ds, hr from srcpart
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: insert into table srcpart_orc partition (ds, hr) select key, value, ds, hr from srcpart
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-09/hr=11
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
-PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
-#### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_date_hour
-                  filterExpr: (((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
-                    Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                      Spark HashTable Sink Operator
-                        keys:
-                          0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                          1 _col0 (type: string), UDFToDouble(_col2) (type: double)
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: ds
-                            Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                            target column name: ds
-                            target work: Map 1
-                      Select Operator
-                        expressions: UDFToDouble(_col2) (type: double)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          keys: _col0 (type: double)
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                          Spark Partition Pruning Sink Operator
-                            partition key expr: UDFToDouble(hr)
-                            Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
-                            target column name: hr
-                            target work: Map 1
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart_orc
-                  Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ds (type: string), hr (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2000 Data size: 188000 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      keys:
-                        0 _col0 (type: string), UDFToDouble(_col1) (type: double)
-                        1 _col0 (type: string), UDFToDouble(_col2) (type: double)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 2200 Data size: 206800 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date_hour
-PREHOOK: Input: default@srcpart_orc
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date_hour
-POSTHOOK: Input: default@srcpart_orc
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=12
-#### A masked pattern was here ####
-1000
-PREHOOK: query: select count(*) from srcpart where (ds = '2008-04-08' or ds = '2008-04-09') and hr = 11
-PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart where (ds = '2008-04-08' or ds = '2008-04-09') and hr = 11
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart
-#### A masked pattern was here ####
-1000
-PREHOOK: query: drop table srcpart_orc
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_orc
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: drop table srcpart_orc
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_orc
-POSTHOOK: Output: default@srcpart_orc
 PREHOOK: query: drop table srcpart_date
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date

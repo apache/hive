@@ -26,6 +26,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -34,7 +35,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.datanucleus.exceptions.NucleusException;
 
 @InterfaceAudience.Private
@@ -101,7 +101,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     int retryCount = -1;
     int threadId = HiveMetaStore.HMSHandler.get();
     boolean error = true;
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(origConf, false);
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.PerfLogBegin(CLASS_NAME, method.getName());
     try {
       Result result = invokeInternal(proxy, method, args);

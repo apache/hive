@@ -68,7 +68,6 @@ public class ReplLoadWork implements Serializable {
 
   DatabaseEvent databaseEvent(HiveConf hiveConf) {
     DatabaseEvent databaseEvent = state.toEvent(hiveConf);
-    state = null;
     return databaseEvent;
   }
 

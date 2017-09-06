@@ -36,7 +36,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -46,7 +46,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnInList(col 3, values [-67, -171]) -> boolean
                     predicate: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -54,7 +54,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [3]
-                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -62,7 +62,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -90,13 +90,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -132,7 +132,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -142,13 +142,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 4)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 4:boolean) -> boolean
                     predicate: (not (cdate) IN (1969-10-26, 1969-07-14, 1970-01-21)) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12273 Data size: 653001 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: []
-                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12273 Data size: 653001 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -161,14 +161,14 @@ STAGE PLANS:
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -202,13 +202,13 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -244,7 +244,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -254,7 +254,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> boolean
                     predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
@@ -262,7 +262,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [1]
-                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
                         sort order: +
@@ -270,7 +270,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -298,13 +298,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 15 Data size: 1596 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -340,7 +340,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -350,13 +350,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 4)(children: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean) -> boolean
                     predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12273 Data size: 1306003 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: []
-                      Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12273 Data size: 1306003 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -369,14 +369,14 @@ STAGE PLANS:
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -410,13 +410,13 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -452,7 +452,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -462,7 +462,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnBetween(col 3, left -2, right 1) -> boolean
                     predicate: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 72626 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -470,7 +470,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [3]
-                      Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 72626 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -478,7 +478,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 72626 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -506,13 +506,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1365 Data size: 72626 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1365 Data size: 72626 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -548,7 +548,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -558,7 +558,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnNotBetween(col 3, left -610, right 608) -> boolean
                     predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
-                    Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10923 Data size: 581173 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -566,7 +566,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [3]
-                      Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10923 Data size: 581173 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -574,7 +574,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10923 Data size: 581173 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -602,13 +602,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10923 Data size: 581173 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10923 Data size: 581173 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -644,7 +644,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -654,7 +654,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnBetween(col 1, left -20, right 45.9918918919) -> boolean
                     predicate: cdecimal1 BETWEEN -20 AND 45.9918918919 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 145253 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
@@ -662,7 +662,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: [1]
-                      Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 145253 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
                         sort order: +
@@ -670,7 +670,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 145253 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -698,13 +698,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0]
-                Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1365 Data size: 145253 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1365 Data size: 274112 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1365 Data size: 145253 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -740,7 +740,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -750,13 +750,13 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnNotBetween(col 1, left -2000, right 4390.1351351351) -> boolean
                     predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
-                    Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10923 Data size: 1162346 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumns: []
-                      Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 10923 Data size: 1162346 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -769,14 +769,14 @@ STAGE PLANS:
                             projectedOutputColumns: [0]
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           sort order: 
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -810,13 +810,13 @@ STAGE PLANS:
                     projectedOutputColumns: [0]
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1098,7 +1098,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -1110,7 +1110,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [4]
                         selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 4:boolean
-                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -1125,7 +1125,7 @@ STAGE PLANS:
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
                         sort order: +
@@ -1134,7 +1134,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1170,7 +1170,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean)
                   sort order: +
@@ -1178,7 +1178,7 @@ STAGE PLANS:
                       className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1197,13 +1197,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1240,7 +1240,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -1252,7 +1252,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [4]
                         selectExpressions: DecimalColumnInList(col 1, values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 4:boolean
-                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -1267,7 +1267,7 @@ STAGE PLANS:
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
                         sort order: +
@@ -1276,7 +1276,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1312,7 +1312,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean)
                   sort order: +
@@ -1320,7 +1320,7 @@ STAGE PLANS:
                       className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1339,13 +1339,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1382,7 +1382,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -1394,7 +1394,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [4]
                         selectExpressions: VectorUDFAdaptor(cdate BETWEEN 1969-12-30 AND 1970-01-02) -> 4:boolean
-                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -1409,7 +1409,7 @@ STAGE PLANS:
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
                         sort order: +
@@ -1418,7 +1418,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12288 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1454,7 +1454,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean)
                   sort order: +
@@ -1462,7 +1462,7 @@ STAGE PLANS:
                       className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1481,13 +1481,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 326900 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1524,7 +1524,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
@@ -1536,7 +1536,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [4]
                         selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 4:boolean
-                    Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -1551,7 +1551,7 @@ STAGE PLANS:
                       keys: _col0 (type: boolean)
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)
                         sort order: +
@@ -1560,7 +1560,7 @@ STAGE PLANS:
                             className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12288 Data size: 1307600 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1596,7 +1596,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: boolean)
                   sort order: +
@@ -1604,7 +1604,7 @@ STAGE PLANS:
                       className: VectorReduceSinkObjectHashOperator
                       native: true
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1623,13 +1623,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 653800 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

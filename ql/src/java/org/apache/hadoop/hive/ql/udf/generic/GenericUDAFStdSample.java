@@ -31,7 +31,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  *
  */
 @Description(name = "stddev_samp",
-    value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers")
+    value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers.\n"
+          + "If applied to an empty set: NULL is returned.\n"
+          + "If applied to a set with a single element: NULL is returned.\n"
+          + "Otherwise it computes: sqrt(var_samp(x))")
 public class GenericUDAFStdSample extends GenericUDAFVariance {
 
   @Override
@@ -78,14 +81,10 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
     public Object terminate(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
 
-      if (myagg.count == 0) { // SQL standard - return null for zero elements
+      if (myagg.count <= 1) { // SQL standard - return null for zero or one elements
         return null;
       } else {
-        if (myagg.count > 1) {
-          getResult().set(Math.sqrt(myagg.variance / (myagg.count - 1)));
-        } else { // for one element the variance is always 0
-          getResult().set(0);
-        }
+        getResult().set(Math.sqrt(myagg.variance / (myagg.count - 1)));
         return getResult();
       }
     }

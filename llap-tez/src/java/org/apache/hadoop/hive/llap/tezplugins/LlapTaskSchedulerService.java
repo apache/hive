@@ -14,6 +14,8 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,8 +55,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Futures;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
@@ -62,15 +63,18 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
-import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.plugin.rpc.LlapPluginProtocolProtos.UpdateQueryRequestProto;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
-import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
+import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator.OperationCallback;
+import org.apache.hadoop.hive.llap.tezplugins.endpoint.LlapPluginServerImpl;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
+import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerState;
@@ -81,15 +85,13 @@ import org.apache.hadoop.yarn.api.records.NodeState;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.Clock;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.TezUtils;
+import org.apache.tez.common.security.JobTokenIdentifier;
+import org.apache.tez.common.security.JobTokenSecretManager;
 import org.apache.tez.dag.api.TezUncheckedException;
+import org.apache.tez.dag.app.dag.TaskAttempt;
+import org.apache.tez.dag.records.TezTaskAttemptID;
 import org.apache.tez.serviceplugins.api.DagInfo;
 import org.apache.tez.serviceplugins.api.ServicePluginErrorDefaults;
 import org.apache.tez.serviceplugins.api.TaskAttemptEndReason;
@@ -98,16 +100,48 @@ import org.apache.tez.serviceplugins.api.TaskSchedulerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 public class LlapTaskSchedulerService extends TaskScheduler {
-
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskSchedulerService.class);
-
   private static final TaskStartComparator TASK_INFO_COMPARATOR = new TaskStartComparator();
+  private final static Comparator<Priority> PRIORITY_COMPARATOR = new Comparator<Priority>() {
+    @Override
+    public int compare(Priority o1, Priority o2) {
+      return o1.getPriority() - o2.getPriority();
+    }
+  };
+
+  private final UpdateOperationCallback UPDATE_CALLBACK = new UpdateOperationCallback();
+  private final class UpdateOperationCallback implements OperationCallback<Boolean, TaskInfo> {
+    @Override
+    public void setDone(TaskInfo ctx, Boolean result) {
+      handleUpdateResult(ctx, result);
+    }
+
+    @Override
+    public void setError(TaskInfo ctx, Throwable t) {
+      // The exception has been logged by the lower layer.
+      handleUpdateResult(ctx, false);
+    }
+  }
+
+  // TODO: this is an ugly hack; see the same in LlapTaskCommunicator for discussion.
+  //       This only lives for the duration of the service init.
+  static final ThreadLocal<LlapTaskSchedulerService> instance = new ThreadLocal<>();
 
   private final Configuration conf;
 
   // interface into the registry service
-  private ServiceInstanceSet activeInstances;
+  private LlapServiceInstanceSet activeInstances;
 
   // Tracks all instances, including ones which have been disabled in the past.
   // LinkedHashMap to provide the same iteration order when selecting a random host.
@@ -116,22 +150,18 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   // TODO Ideally, remove elements from this once it's known that no tasks are linked to the instance (all deallocated)
 
   // Tracks tasks which could not be allocated immediately.
-  @VisibleForTesting
   // Tasks are tracked in the order requests come in, at different priority levels.
   // TODO HIVE-13538 For tasks at the same priority level, it may be worth attempting to schedule tasks with
   // locality information before those without locality information
-  final TreeMap<Priority, List<TaskInfo>> pendingTasks = new TreeMap<>(new Comparator<Priority>() {
-    @Override
-    public int compare(Priority o1, Priority o2) {
-      return o1.getPriority() - o2.getPriority();
-    }
-  });
+  private final TreeMap<Priority, List<TaskInfo>> pendingTasks = new TreeMap<>(PRIORITY_COMPARATOR);
 
-  // Tracks running and queued tasks. Cleared after a task completes.
+  // Tracks running and queued (allocated) tasks. Cleared after a task completes.
   private final ConcurrentMap<Object, TaskInfo> knownTasks = new ConcurrentHashMap<>();
   // Tracks tasks which are running. Useful for selecting a task to preempt based on when it started.
-  private final TreeMap<Integer, TreeSet<TaskInfo>> runningTasks = new TreeMap<>();
+  private final TreeMap<Integer, TreeSet<TaskInfo>> guaranteedTasks = new TreeMap<>(),
+      speculativeTasks = new TreeMap<>();
 
+  private final LlapPluginServerImpl pluginEndpoint;
 
   // Queue for disabled nodes. Nodes make it out of this queue when their expiration timeout is hit.
   @VisibleForTesting
@@ -203,9 +233,23 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final JvmPauseMonitor pauseMonitor;
   private final Random random = new Random();
 
+  private int totalGuaranteed = 0, unusedGuaranteed = 0;
+
+  private LlapTaskCommunicator communicator;
+
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
     this(taskSchedulerContext, new MonotonicClock(), true);
   }
+
+
+  // The fields that HS2 uses to give AM information about plugin endpoint.
+  /** Whether to enable the endpoint. */
+  public static final String LLAP_PLUGIN_ENDPOINT_ENABLED = "llap.plugin.endpoint.enabled";
+  /** The fake job ID generated by HS2 to use for the job token. */
+  public static final String LLAP_PLUGIN_ENDPOINT_JOBID = "llap.plugin.endpoint.jobid";
+  /** The job token generated by HS2 for the endpoint. See the comment at the place where
+   * this is used - the token will be generated by AM after we have AM registry. */
+  public static final String LLAP_PLUGIN_ENDPOINT_TOKEN = "llap.plugin.endpoint.token";
 
   @VisibleForTesting
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext, Clock clock,
@@ -219,6 +263,34 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       throw new TezUncheckedException(
           "Failed to parse user payload for " + LlapTaskSchedulerService.class.getSimpleName(), e);
     }
+
+    if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
+      JobTokenSecretManager sm = null;
+      if (UserGroupInformation.isSecurityEnabled()) {
+        sm = new JobTokenSecretManager();
+        // Note: for HA/AMRegistry, this token will have to be published in a secure location (ZK).
+        //       Otherwise, when HS2 dies, noone will be able to talk to this AM.
+        //       We could generate it in AM in the first place, but then even the original HS2
+        //       won't be able to talk to us before we register. Which might be ok.
+        // For now, there's no mechanism to coordinate this, so we email the token from HS2.
+        byte[] tokenBytes = Base64.decodeBase64(conf.get(LLAP_PLUGIN_ENDPOINT_TOKEN));
+        Token<JobTokenIdentifier> token = new Token<>();
+        try {
+          token.readFields(ByteStreams.newDataInput(tokenBytes));
+        } catch (IOException e) {
+          // This shouldn't really happen on a byte array.
+          throw new RuntimeException(e);
+        }
+        sm.addTokenForJob(conf.get(LLAP_PLUGIN_ENDPOINT_JOBID), token);
+      }
+      pluginEndpoint = new LlapPluginServerImpl(sm,
+          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_NUM_HANDLERS),
+          HiveConf.getIntVar(conf, ConfVars.LLAP_PLUGIN_RPC_PORT), this);
+    } else {
+      pluginEndpoint = null;
+    }
+    // This is called once per AM, so we don't get the starting duck count here.
+
     this.containerFactory = new ContainerFactory(taskSchedulerContext.getApplicationAttemptId(),
         taskSchedulerContext.getCustomClusterIdentifier());
     // TODO HIVE-13483 Get all of these properties from the registry. This will need to take care of different instances
@@ -290,6 +362,159 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         "Running with configuration: hosts={}, numSchedulableTasksPerNode={}, nodeBlacklistConf={}, localityConf={}",
         hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf);
 
+    LlapTaskCommunicator peer = LlapTaskCommunicator.instance.get();
+    if (peer != null) {
+      // We are the last to initialize.
+      this.setTaskCommunicator(peer);
+      LlapTaskCommunicator.instance.set(null);
+    } else {
+      instance.set(this);
+    }
+  }
+
+  @VisibleForTesting
+  void updateGuaranteedCount(int newTotalGuaranteed) {
+    List<TaskInfo> toUpdate = null;
+    writeLock.lock();
+    try {
+      // We will determine what to do under lock and then do stuff outside of the lock.
+      // The approach is state-based. We consider the task to have a duck when we have decided to
+      // give it one; the sends below merely fix the discrepancy with the actual state. We may add the
+      // ability to wait for LLAPs to positively ack the revokes in future.
+      // The "procedural" approach requires that we track the ducks traveling on network,
+      // concurrent terminations, etc. So, while more precise it's much more complex.
+      int delta = newTotalGuaranteed - totalGuaranteed;
+      if (delta == 0) return;
+      totalGuaranteed = newTotalGuaranteed;
+      if (delta > 0) {
+        if (unusedGuaranteed == 0) {
+          // There may be speculative tasks waiting.
+          toUpdate = new ArrayList<>();
+          int totalUpdated = distributeGuaranteed(delta, null, toUpdate);
+          delta -= totalUpdated;
+        }
+        unusedGuaranteed += delta;
+      } else {
+        delta = -delta;
+        if (delta <= unusedGuaranteed) {
+          // Somebody took away our unwanted ducks.
+          unusedGuaranteed -= delta;
+          return;
+        } else {
+          delta -= unusedGuaranteed;
+          toUpdate = new ArrayList<>();
+          int totalUpdated = revokeGuaranteed(delta, null, toUpdate);
+          // We must be able to take away the requisite number; if we can't, where'd the ducks go?
+          if (delta != totalUpdated) {
+            throw new AssertionError("Failed to revoke " + delta + " guaranteed tasks locally");
+          }
+          unusedGuaranteed = 0;
+        }
+      }
+    } finally {
+      writeLock.unlock();
+    }
+    if (toUpdate == null) return;
+    for (TaskInfo ti : toUpdate) {
+      checkAndSendGuaranteedStateUpdate(ti);
+    }
+  }
+
+  @VisibleForTesting
+  protected void checkAndSendGuaranteedStateUpdate(TaskInfo ti) {
+    boolean newState = false;
+    synchronized (ti) {
+      assert ti.isPendingUpdate;
+      if (ti.lastSetGuaranteed == ti.isGuaranteed) {
+        ti.isPendingUpdate = false;
+        return; // Nothing to do - e.g. two messages have canceled each other before we could react.
+      }
+      newState = ti.isGuaranteed;
+    }
+    // From this point on, the update is in motion - if someone changes the state again, that
+    // would only apply after the callback for the current message.
+    sendUpdateMessageAsync(ti, newState);
+  }
+
+  @VisibleForTesting
+  protected void handleUpdateResult(TaskInfo ti, boolean isOk) {
+    // The update options for outside the lock - see below the synchronized block.
+    Boolean newStateSameTask = null, newStateAnyTask = null;
+    synchronized (ti) {
+      assert ti.isPendingUpdate;
+      if (ti.isGuaranteed == null) {
+        // The task has been terminated and the duck accounted for based on local state.
+        // Whatever we were doing is irrelevant.
+        ti.isPendingUpdate = false;
+        return;
+      }
+      boolean requestedValue = !ti.lastSetGuaranteed; // Otherwise we wouldn't have sent.
+      if (isOk) {
+        // We have propagated the value to the task.
+        ti.lastSetGuaranteed = requestedValue;
+        if (requestedValue == ti.isGuaranteed) {
+          // Looks like we've succeeded at bringing the task state up to date with the local state.
+          ti.isPendingUpdate = false;
+          return;
+        }
+        // The state has changed during the update. Let's undo what we just did.
+        newStateSameTask = ti.isGuaranteed;
+      } else {
+        // An error, or couldn't find the task - lastSetGuaranteed does not change. The logic here
+        // does not account for one special case - we have updated the task, but the response was
+        // lost and we have received a network error. The state could be inconsistent, making
+        // a deadlock possible in extreme cases if not handled. This will be detected by heartbeat.
+        if (requestedValue != ti.isGuaranteed) {
+          // We failed to do something that was rendered irrelevant while we were failing.
+          ti.isPendingUpdate = false;
+          return;
+        }
+        // We failed to update this task. Instead of retrying for this task, find another.
+        newStateAnyTask = requestedValue;
+      }
+    }
+    if (newStateSameTask != null) {
+      // We need to send the state update again (the state has changed since the last one).
+      sendUpdateMessageAsync(ti, newStateSameTask);
+    }
+    if (newStateAnyTask == null) return;
+
+    // The update is failed and could be retried.
+    // Instead of retrying with this task, we will try to pick a different suitable task.
+    List<TaskInfo> toUpdate = new ArrayList<>(1);
+    writeLock.lock();
+    try {
+      synchronized (ti) {
+        ti.isPendingUpdate = false;
+        if (newStateAnyTask != ti.isGuaranteed) {
+          // The state changed between this and previous check within this method.
+          return;
+        }
+        // First, "give up" on this task and put it back in the original list.
+        boolean isRemoved = removeFromRunningTaskMap(
+            newStateAnyTask ? guaranteedTasks : speculativeTasks, ti.task, ti);
+        if (!isRemoved) {
+          String error = "Couldn't find the task in the correct map after an update " + ti.task;
+          LOG.error(error);
+          throw new AssertionError(error);
+        }
+        ti.isGuaranteed = !newStateAnyTask;
+        // Put into the map that this task was in before we decided to update it.
+        addToRunningTasksMap(newStateAnyTask ? speculativeTasks : guaranteedTasks, ti);
+      }
+
+      // Now try to pick another task to update - or potentially the same task.
+      int count = 0;
+      if (newStateAnyTask) {
+        count = distributeGuaranteed(1, ti, toUpdate);
+      } else {
+        count = revokeGuaranteed(1, ti, toUpdate);
+      }
+      assert count == 1 && toUpdate.size() == 1; // Must at least be able to return ti back.
+    } finally {
+      writeLock.unlock();
+    }
+    checkAndSendGuaranteedStateUpdate(toUpdate.get(0));
   }
 
   @Override
@@ -299,6 +524,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @Override
   public void start() throws IOException {
+    if (pluginEndpoint != null) {
+      pluginEndpoint.start();
+    }
     writeLock.lock();
     try {
       scheduledLoggingExecutor.schedule(new Callable<Void>() {
@@ -330,7 +558,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       registry.start();
       registry.registerStateChangeListener(new NodeStateChangeListener());
       activeInstances = registry.getInstances();
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         addNode(new NodeInfo(inst, nodeBlacklistConf, clock,
             numSchedulableTasksPerNode, metrics), inst);
       }
@@ -340,15 +568,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
   @VisibleForTesting
-  public void setServiceInstanceSet(ServiceInstanceSet serviceInstanceSet) {
+  protected void setServiceInstanceSet(LlapServiceInstanceSet serviceInstanceSet) {
     this.activeInstances = serviceInstanceSet;
   }
 
-  private class NodeStateChangeListener implements ServiceInstanceStateChangeListener {
+  private class NodeStateChangeListener
+      implements ServiceInstanceStateChangeListener<LlapServiceInstance> {
     private final Logger LOG = LoggerFactory.getLogger(NodeStateChangeListener.class);
 
     @Override
-    public void onCreate(ServiceInstance serviceInstance) {
+    public void onCreate(LlapServiceInstance serviceInstance) {
       LOG.info("Added node with identity: {} as a result of registry callback",
           serviceInstance.getWorkerIdentity());
       addNode(new NodeInfo(serviceInstance, nodeBlacklistConf, clock,
@@ -356,7 +585,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     @Override
-    public void onUpdate(ServiceInstance serviceInstance) {
+    public void onUpdate(LlapServiceInstance serviceInstance) {
       // TODO In what situations will this be invoked?
       LOG.warn(
           "Not expecing Updates from the registry. Received update for instance={}. Ignoring",
@@ -364,7 +593,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     @Override
-    public void onRemove(ServiceInstance serviceInstance) {
+    public void onRemove(LlapServiceInstance serviceInstance) {
       NodeReport nodeReport = constructNodeReport(serviceInstance, false);
       LOG.info("Sending out nodeReport for onRemove: {}", nodeReport);
       getContext().nodesUpdated(Collections.singletonList(nodeReport));
@@ -454,6 +683,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           registry.stop();
         }
 
+        if (pluginEndpoint != null) {
+          pluginEndpoint.stop();
+        }
+
         if (pauseMonitor != null) {
           pauseMonitor.stop();
         }
@@ -475,7 +708,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int numInstancesFound = 0;
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         Resource r = inst.getResource();
         memory += r.getMemory();
         vcores += r.getVirtualCores();
@@ -506,7 +739,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     readLock.lock();
     try {
       int numInstancesFound = 0;
-      for (ServiceInstance inst : activeInstances.getAll()) {
+      for (LlapServiceInstance inst : activeInstances.getAll()) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
         if (nodeInfo != null && !nodeInfo.isDisabled()) {
           Resource r = inst.getResource();
@@ -554,7 +787,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
       }
       int runningCount = 0;
-      for (Entry<Integer, TreeSet<TaskInfo>> entry : runningTasks.entrySet()) {
+      for (Entry<Integer, TreeSet<TaskInfo>> entry : guaranteedTasks.entrySet()) {
+        if (entry.getValue() != null) {
+          runningCount += entry.getValue().size();
+        }
+      }
+      for (Entry<Integer, TreeSet<TaskInfo>> entry : speculativeTasks.entrySet()) {
         if (entry.getValue() != null) {
           runningCount += entry.getValue().size();
         }
@@ -587,8 +825,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @Override
   public void allocateTask(Object task, Resource capability, String[] hosts, String[] racks,
       Priority priority, Object containerSignature, Object clientCookie) {
-    TaskInfo taskInfo =
-        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, hosts, racks, clock.getTime());
+    TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
+        capability, hosts, racks, clock.getTime(), getTaskAttemptId(task));
     LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hosts={}", task,
         priority, capability, Arrays.toString(hosts));
     writeLock.lock();
@@ -608,7 +846,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     // Container affinity can be implemented as Host affinity for LLAP. Not required until
     // 1:1 edges are used in Hive.
     TaskInfo taskInfo =
-        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, null, null, clock.getTime());
+        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, null,
+            null, clock.getTime(), getTaskAttemptId(task));
     LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}", task,
         priority, capability, containerId);
     writeLock.lock();
@@ -623,16 +862,26 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   }
 
 
+  protected TezTaskAttemptID getTaskAttemptId(Object task) {
+    // TODO: why does Tez API use "Object" for this?
+    if (task instanceof TaskAttempt) {
+      return ((TaskAttempt)task).getID();
+    }
+    throw new AssertionError("LLAP plugin can only schedule task attempts");
+  }
+
   // This may be invoked before a container is ever assigned to a task. allocateTask... app decides
   // the task is no longer required, and asks for a de-allocation.
   @Override
-  public boolean deallocateTask(Object task, boolean taskSucceeded, TaskAttemptEndReason endReason, String diagnostics) {
+  public boolean deallocateTask(
+      Object task, boolean taskSucceeded, TaskAttemptEndReason endReason, String diagnostics) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Processing deallocateTask for task={}, taskSucceeded={}, endReason={}", task,
           taskSucceeded, endReason);
     }
+    boolean isEarlyExit = false;
+    TaskInfo toUpdate = null, taskInfo;
     writeLock.lock(); // Updating several local structures
-    TaskInfo taskInfo;
     try {
       taskInfo = unregisterTask(task);
       if (taskInfo == null) {
@@ -642,6 +891,20 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             + " The query may hang since this \"unknown\" container is now taking up a slot permanently");
         return false;
       }
+      boolean isGuaranteedFreed = false;
+      synchronized (taskInfo) {
+        if (taskInfo.isGuaranteed == null) {
+          LOG.error("Task appears to have been deallocated twice: " + task
+              + " There may be inconsistencies in guaranteed task counts.");
+        } else {
+          isGuaranteedFreed = taskInfo.isGuaranteed;
+          // This tells the pending update (if any) that whatever it is doing is irrelevant,
+          // and also makes sure we don't take the duck back twice if this is called twice.
+          taskInfo.isGuaranteed = null;
+        }
+      }
+      // Do not put the unused duck back; we'd run the tasks below, then assign it by priority.
+      // NOTE: this method MUST call distributeGuaranteedOnTaskCompletion before exiting.
       if (taskInfo.containerId == null) {
         if (taskInfo.getState() == TaskInfo.State.ASSIGNED) {
           LOG.error("Task: "
@@ -652,6 +915,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           LOG.info("Ignoring deallocate request for task " + task
               + " which hasn't been assigned to a container");
           removePendingTask(taskInfo);
+        }
+        if (isGuaranteedFreed) {
+          toUpdate = distributeGuaranteedOnTaskCompletion();
+          isEarlyExit = true;
         }
         return false;
       }
@@ -712,13 +979,36 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           disableNode(nodeInfo, commFailure);
         }
       }
+      if (isGuaranteedFreed) {
+        toUpdate = distributeGuaranteedOnTaskCompletion();
+      }
     } finally {
       writeLock.unlock();
+      if (isEarlyExit) {
+        // Most of the method got skipped but we still need to handle the duck.
+        checkAndSendGuaranteedStateUpdate(toUpdate);
+      }
     }
+    if (toUpdate != null) {
+      assert !isEarlyExit;
+      checkAndSendGuaranteedStateUpdate(toUpdate);
+    }
+
     getContext().containerBeingReleased(taskInfo.containerId);
     getContext().containerCompleted(taskInfo.task, ContainerStatus.newInstance(taskInfo.containerId,
         ContainerState.COMPLETE, "", 0));
     return true;
+  }
+
+  // Must be called under the epic lock.
+  private TaskInfo distributeGuaranteedOnTaskCompletion() {
+    List<TaskInfo> toUpdate = new ArrayList<>(1);
+    int updatedCount = distributeGuaranteed(1, null, toUpdate);
+    assert updatedCount <= 1;
+    unusedGuaranteed += (1 - updatedCount);
+    if (toUpdate.isEmpty()) return null;
+    assert toUpdate.size() == 1;
+    return toUpdate.get(0);
   }
 
   @Override
@@ -766,9 +1056,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         for (String host : requestedHosts) {
           prefHostCount++;
           // Pick the first host always. Weak attempt at cache affinity.
-          Set<ServiceInstance> instances = activeInstances.getByHost(host);
+          Set<LlapServiceInstance> instances = activeInstances.getByHost(host);
           if (!instances.isEmpty()) {
-            for (ServiceInstance inst : instances) {
+            for (LlapServiceInstance inst : instances) {
               NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
               if (nodeInfo != null) {
                 if  (nodeInfo.canAcceptTask()) {
@@ -828,10 +1118,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       /* fall through - miss in locality or no locality-requested */
-      Collection<ServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      Collection<LlapServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
       List<NodeInfo> allNodes = new ArrayList<>(instances.size());
       List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
-      for (ServiceInstance inst : instances) {
+      for (LlapServiceInstance inst : instances) {
         if (inst instanceof InactiveServiceInstance) {
           allNodes.add(null);
         } else {
@@ -918,7 +1208,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return new SelectHostResult(randomNode);
   }
 
-  private void addNode(NodeInfo node, ServiceInstance serviceInstance) {
+  private void addNode(NodeInfo node, LlapServiceInstance serviceInstance) {
     // we have just added a new node. Signal timeout monitor to reset timer
     if (activeInstances.size() != 0 && timeoutFutureRef.get() != null) {
       LOG.info("New node added. Signalling scheduler timeout monitor thread to stop timer.");
@@ -1006,7 +1296,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
-  private static NodeReport constructNodeReport(ServiceInstance serviceInstance,
+  private static NodeReport constructNodeReport(LlapServiceInstance serviceInstance,
                                          boolean healthy) {
     NodeReport nodeReport = NodeReport.newInstance(NodeId
             .newInstance(serviceInstance.getHost(), serviceInstance.getRpcPort()),
@@ -1055,21 +1345,25 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   /* Register a running task into the runningTasks structure */
   private void registerRunningTask(TaskInfo taskInfo) {
+    // This is called during scheduling under the epic lock; no parallel changes expected.
+    assert !taskInfo.isPendingUpdate;
+    taskInfo.lastSetGuaranteed = taskInfo.isGuaranteed;
+    TreeMap<Integer, TreeSet<TaskInfo>> runningTasks =
+        taskInfo.isGuaranteed ? guaranteedTasks : speculativeTasks;
     writeLock.lock();
     try {
-      int priority = taskInfo.priority.getPriority();
-      TreeSet<TaskInfo> tasksAtpriority = runningTasks.get(priority);
-      if (tasksAtpriority == null) {
-        tasksAtpriority = new TreeSet<>(TASK_INFO_COMPARATOR);
-        runningTasks.put(priority, tasksAtpriority);
-      }
-      tasksAtpriority.add(taskInfo);
+      addToRunningTasksMap(runningTasks, taskInfo);
       if (metrics != null) {
         metrics.decrPendingTasksCount();
       }
     } finally {
       writeLock.unlock();
     }
+  }
+
+  @VisibleForTesting
+  protected TaskInfo getTaskInfo(Object task) {
+    return knownTasks.get(task);
   }
 
   /* Unregister a task from the known and running structures */
@@ -1080,13 +1374,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (taskInfo != null) {
         if (taskInfo.getState() == TaskInfo.State.ASSIGNED) {
           // Remove from the running list.
-          int priority = taskInfo.priority.getPriority();
-          Set<TaskInfo> tasksAtPriority = runningTasks.get(priority);
-          Preconditions.checkState(tasksAtPriority != null,
-              "runningTasks should contain an entry if the task was in running state. Caused by task: {}", task);
-          tasksAtPriority.remove(taskInfo);
-          if (tasksAtPriority.isEmpty()) {
-            runningTasks.remove(priority);
+          if (!removeFromRunningTaskMap(speculativeTasks, task, taskInfo)
+              && !removeFromRunningTaskMap(guaranteedTasks, task, taskInfo)) {
+            Preconditions.checkState(false, "runningTasks should contain an entry if the task" +
+              " was in running state. Caused by task: {}", task);
           }
         }
       } else {
@@ -1096,6 +1387,29 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  private static void addToRunningTasksMap(
+      TreeMap<Integer, TreeSet<TaskInfo>> runningTasks, TaskInfo taskInfo) {
+    int priority = taskInfo.priority.getPriority();
+    TreeSet<TaskInfo> tasksAtpriority = runningTasks.get(priority);
+    if (tasksAtpriority == null) {
+      tasksAtpriority = new TreeSet<>(TASK_INFO_COMPARATOR);
+      runningTasks.put(priority, tasksAtpriority);
+    }
+    tasksAtpriority.add(taskInfo);
+  }
+
+  private static boolean removeFromRunningTaskMap(TreeMap<Integer, TreeSet<TaskInfo>> runningTasks,
+      Object task, TaskInfo taskInfo) {
+    int priority = taskInfo.priority.getPriority();
+    Set<TaskInfo> tasksAtPriority = runningTasks.get(priority);
+    if (tasksAtPriority == null) return false;
+    boolean result = tasksAtPriority.remove(taskInfo);
+    if (tasksAtPriority.isEmpty()) {
+      runningTasks.remove(priority);
+    }
+    return result;
   }
 
   private enum ScheduleResult {
@@ -1114,7 +1428,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
 
   @VisibleForTesting
-  protected void schedulePendingTasks() {
+  protected void schedulePendingTasks() throws InterruptedException {
+    Ref<TaskInfo> downgradedTask = null;
     writeLock.lock();
     try {
       if (LOG.isDebugEnabled()) {
@@ -1131,12 +1446,32 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         while (taskIter.hasNext()) {
           // TODO Optimization: Add a check to see if there's any capacity available. No point in
           // walking through all active nodes, if they don't have potential capacity.
-
           TaskInfo taskInfo = taskIter.next();
           if (taskInfo.getNumPreviousAssignAttempts() == 1) {
             dagStats.registerDelayedAllocation();
           }
           taskInfo.triedAssigningTask();
+          if (unusedGuaranteed > 0) {
+            synchronized (taskInfo) {
+              assert !taskInfo.isPendingUpdate; // No updates before it's running.
+              taskInfo.isGuaranteed = true;
+            }
+            --unusedGuaranteed;
+          } else {
+            // We could be scheduling a guaranteed task when a higher priority task cannot be
+            // scheduled. Try to take a duck away from a lower priority task here.
+            downgradedTask = new Ref<>(null);
+            if (findGuaranteedToReallocate(taskInfo, downgradedTask)) {
+              // We are revoking another duck; don't wait. We could also give the duck
+              // to this task in the callback instead.
+              synchronized (taskInfo) {
+                assert !taskInfo.isPendingUpdate; // No updates before it's running.
+                taskInfo.isGuaranteed = true;
+              }
+              // Note: after this, the method MUST send the downgrade message to downgradedTask
+              //       (outside of the writeLock, preferably), before exiting.
+            }
+          }
           ScheduleResult scheduleResult = scheduleTask(taskInfo, totalResource);
           if (LOG.isDebugEnabled()) {
             LOG.debug("ScheduleResult for Task: {} = {}", taskInfo,
@@ -1250,6 +1585,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+    if (downgradedTask != null && downgradedTask.value != null) {
+      checkAndSendGuaranteedStateUpdate(downgradedTask.value);
+    }
   }
 
   private String constructPendingTaskCountsLogMessage() {
@@ -1284,6 +1622,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               nodeInfo.getRpcPort(),
               nodeInfo.getServiceAddress());
       writeLock.lock(); // While updating local structures
+      // Note: this is actually called under the epic writeLock in schedulePendingTasks
       try {
         // The canAccept part of this log message does not account for this allocation.
         assignedTaskCounter.incrementAndGet();
@@ -1311,45 +1650,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     List<TaskInfo> preemptedTaskList = null;
     try {
-      NavigableMap<Integer, TreeSet<TaskInfo>> orderedMap = runningTasks.descendingMap();
-      Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator = orderedMap.entrySet().iterator();
-      int preemptedCount = 0;
-      while (iterator.hasNext() && preemptedCount < numTasksToPreempt) {
-        Entry<Integer, TreeSet<TaskInfo>> entryAtPriority = iterator.next();
-        if (entryAtPriority.getKey() > forPriority) {
-          if (potentialHosts != null && preemptHosts == null) {
-            preemptHosts = Sets.newHashSet(potentialHosts);
-          }
-          Iterator<TaskInfo> taskInfoIterator = entryAtPriority.getValue().iterator();
-          while (taskInfoIterator.hasNext() && preemptedCount < numTasksToPreempt) {
-            TaskInfo taskInfo = taskInfoIterator.next();
-            if (preemptHosts == null || preemptHosts.contains(taskInfo.assignedNode.getHost())) {
-              // Candidate for preemption.
-              preemptedCount++;
-              LOG.info("preempting {} for task at priority {} with potentialHosts={}", taskInfo,
-                  forPriority, potentialHosts == null ? "" : Arrays.toString(potentialHosts));
-              taskInfo.setPreemptedInfo(clock.getTime());
-              if (preemptedTaskList == null) {
-                preemptedTaskList = new LinkedList<>();
-              }
-              dagStats.registerTaskPreempted(taskInfo.assignedNode.getHost());
-              preemptedTaskList.add(taskInfo);
-              registerPendingPreemption(taskInfo.assignedNode.getHost());
-              // Remove from the runningTaskList
-              taskInfoIterator.remove();
-            }
-          }
-
-          // Remove entire priority level if it's been emptied.
-          if (entryAtPriority.getValue().isEmpty()) {
-            iterator.remove();
-          }
-        } else {
-          // No tasks qualify as preemptable
-          LOG.debug("No tasks qualify as killable to schedule tasks at priority {}. Current priority={}",
-              forPriority, entryAtPriority.getKey());
-          break;
-        }
+      preemptedTaskList = preemptTasksFromMap(speculativeTasks, forPriority, numTasksToPreempt,
+          potentialHosts, preemptHosts, preemptedTaskList);
+      if (preemptedTaskList != null) {
+        numTasksToPreempt -= preemptedTaskList.size();
+      }
+      if (numTasksToPreempt > 0) {
+        preemptedTaskList = preemptTasksFromMap(guaranteedTasks, forPriority, numTasksToPreempt,
+            potentialHosts, preemptHosts, preemptedTaskList);
       }
     } finally {
       writeLock.unlock();
@@ -1365,6 +1673,163 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
     // The schedule loop will be triggered again when the deallocateTask request comes in for the
     // preempted task.
+  }
+
+  private List<TaskInfo> preemptTasksFromMap(TreeMap<Integer, TreeSet<TaskInfo>> runningTasks,
+      int forPriority, int numTasksToPreempt, String[] potentialHosts, Set<String> preemptHosts,
+      List<TaskInfo> preemptedTaskList) {
+    NavigableMap<Integer, TreeSet<TaskInfo>> orderedMap = runningTasks.descendingMap();
+    Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator = orderedMap.entrySet().iterator();
+    int preemptedCount = 0;
+    while (iterator.hasNext() && preemptedCount < numTasksToPreempt) {
+      Entry<Integer, TreeSet<TaskInfo>> entryAtPriority = iterator.next();
+      if (entryAtPriority.getKey() > forPriority) {
+        if (potentialHosts != null && preemptHosts == null) {
+          preemptHosts = Sets.newHashSet(potentialHosts);
+        }
+        Iterator<TaskInfo> taskInfoIterator = entryAtPriority.getValue().iterator();
+        while (taskInfoIterator.hasNext() && preemptedCount < numTasksToPreempt) {
+          TaskInfo taskInfo = taskInfoIterator.next();
+          if (preemptHosts == null || preemptHosts.contains(taskInfo.assignedNode.getHost())) {
+            // Candidate for preemption.
+            preemptedCount++;
+            LOG.info("preempting {} for task at priority {} with potentialHosts={}", taskInfo,
+                forPriority, potentialHosts == null ? "" : Arrays.toString(potentialHosts));
+            taskInfo.setPreemptedInfo(clock.getTime());
+            if (preemptedTaskList == null) {
+              preemptedTaskList = new LinkedList<>();
+            }
+            dagStats.registerTaskPreempted(taskInfo.assignedNode.getHost());
+            preemptedTaskList.add(taskInfo);
+            registerPendingPreemption(taskInfo.assignedNode.getHost());
+            // Remove from the runningTaskList
+            taskInfoIterator.remove();
+          }
+        }
+
+        // Remove entire priority level if it's been emptied.
+        if (entryAtPriority.getValue().isEmpty()) {
+          iterator.remove();
+        }
+      } else {
+        // No tasks qualify as preemptable
+        LOG.debug("No tasks qualify as killable to schedule tasks at priority {}. Current priority={}",
+            forPriority, entryAtPriority.getKey());
+        break;
+      }
+    }
+    return preemptedTaskList;
+  }
+
+  // Note: this is called under the epic lock.
+  private int distributeGuaranteed(int count, TaskInfo failedUpdate, List<TaskInfo> toUpdate) {
+    Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator = speculativeTasks.entrySet().iterator();
+    int remainingCount = count;
+    // When done, handleUpdate.. may break the iterator, so the order of these checks is important.
+    while (remainingCount > 0 && iterator.hasNext()) {
+      remainingCount = handleUpdateForSinglePriorityLevel(
+          remainingCount, iterator, failedUpdate, toUpdate, true);
+    }
+    return count - remainingCount;
+  }
+
+  // Note: this is called under the epic lock.
+  private int revokeGuaranteed(int count, TaskInfo failedUpdate, List<TaskInfo> toUpdate) {
+    int remainingCount = count;
+    Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator =
+        guaranteedTasks.descendingMap().entrySet().iterator();
+    // When done, handleUpdate.. may break the iterator, so the order of these checks is important.
+    while (remainingCount > 0 && iterator.hasNext()) {
+      remainingCount = handleUpdateForSinglePriorityLevel(
+          remainingCount, iterator, failedUpdate, toUpdate, false);
+    }
+    return count - remainingCount;
+  }
+
+  private boolean findGuaranteedToReallocate(TaskInfo candidate, Ref<TaskInfo> toUpdate) {
+    Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator =
+        guaranteedTasks.descendingMap().entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<Integer, TreeSet<TaskInfo>> entry = iterator.next();
+      int priority = entry.getKey();
+      TreeSet<TaskInfo> atPriority = entry.getValue();
+      if (priority <= candidate.priority.getPriority()) {
+        return false; // The tasks from now on are more important than the candidate.
+      }
+      TaskInfo taskInfo = atPriority.pollLast();
+      if (taskInfo != null) {
+        synchronized (taskInfo) {
+          assert taskInfo.isGuaranteed;
+          taskInfo.isGuaranteed = false;
+          // See the comment in handleUpdateForSinglePriorityLevel.
+          if (!taskInfo.isPendingUpdate) {
+            taskInfo.isPendingUpdate = true;
+            toUpdate.value = taskInfo;
+          }
+        }
+        addToRunningTasksMap(speculativeTasks, taskInfo);
+      }
+      // Remove entire priority level if it's been emptied.
+      if (atPriority.isEmpty()) {
+        iterator.remove();
+      }
+      if (taskInfo != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private int handleUpdateForSinglePriorityLevel(int remainingCount,
+      Iterator<Entry<Integer, TreeSet<TaskInfo>>> iterator, TaskInfo failedUpdate,
+      List<TaskInfo> toUpdate, boolean newValue) {
+    Entry<Integer, TreeSet<TaskInfo>> entry = iterator.next();
+    TreeSet<TaskInfo> atPriority = entry.getValue();
+    Iterator<TaskInfo> atPriorityIter = newValue ? atPriority.iterator() : atPriority.descendingIterator();
+    TreeMap<Integer, TreeSet<TaskInfo>> toMap = newValue ? guaranteedTasks : speculativeTasks,
+        fromMap = newValue ? speculativeTasks : guaranteedTasks;
+    while (atPriorityIter.hasNext() && remainingCount > 0) {
+      TaskInfo taskInfo = atPriorityIter.next();
+      if (taskInfo == failedUpdate) continue;
+      atPriorityIter.remove();
+      synchronized (taskInfo) {
+        assert taskInfo.isGuaranteed != newValue;
+        taskInfo.isGuaranteed = newValue;
+        // When we introduce a discrepancy to the state we give the task to an updater unless it
+        // was already given to one.  If the updater is already doing stuff, it would handle the
+        // changed state when it's done with whatever it's doing. The updater is not going to
+        // give up until the discrepancies are eliminated.
+        if (!taskInfo.isPendingUpdate) {
+          taskInfo.isPendingUpdate = true;
+          toUpdate.add(taskInfo);
+        }
+      }
+      addToRunningTasksMap(toMap, taskInfo);
+      --remainingCount;
+    }
+    // Remove entire priority level if it's been emptied.
+    // We do this before checking failedUpdate because that might break the iterator.
+    if (atPriority.isEmpty()) {
+      iterator.remove();
+    }
+    // We include failedUpdate only after looking at all the tasks at the same priority.
+    if (failedUpdate != null && entry.getKey() == failedUpdate.priority.getPriority()
+        && remainingCount > 0) {
+      // This will break the iterator. However, this is the last task we can add the way this currently
+      // runs (only one duck is distributed when failedUpdate is present), so that should be ok.
+      removeFromRunningTaskMap(fromMap, failedUpdate.task, failedUpdate);
+      synchronized (failedUpdate) {
+        assert failedUpdate.isGuaranteed != newValue;
+        failedUpdate.isGuaranteed = newValue;
+        failedUpdate.isPendingUpdate = true;
+      }
+      // Do not check the state - this is coming from the updater under epic lock.
+      toUpdate.add(failedUpdate);
+      addToRunningTasksMap(toMap, failedUpdate);
+      --remainingCount;
+    }
+
+    return remainingCount;
   }
 
   private void registerPendingPreemption(String host) {
@@ -1533,7 +1998,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     private AtomicBoolean isShutdown = new AtomicBoolean(false);
 
     @Override
-    public Void call() {
+    public Void call() throws Exception {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         scheduleLock.lock();
         try {
@@ -1560,7 +2025,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         // which triggered it may not be processed for all tasks in the run.
         pendingScheduleInvocations.set(false);
         // Schedule outside of the scheduleLock - which should only be used to wait on the condition.
-        schedulePendingTasks();
+        try {
+          schedulePendingTasks();
+        } catch (InterruptedException ie) {
+          if (isShutdown.get()) {
+            return null; // We are good.
+          }
+          LOG.error("Scheduler thread was interrupte without shutdown and will now exit", ie);
+          throw ie;
+        } catch (Throwable t) {
+          // TODO: we might as well kill the AM at this point. How do we do that from here?
+          LOG.error("Fatal error: scheduler thread has failed and will now exit", t);
+          throw (t instanceof Exception) ? (Exception)t : new Exception(t);
+        }
       }
       return null;
     }
@@ -1576,7 +2053,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   static class NodeInfo implements Delayed {
     private final NodeBlacklistConf blacklistConf;
-    final ServiceInstance serviceInstance;
+    final LlapServiceInstance serviceInstance;
     private final Clock clock;
 
     long expireTimeMillis = -1;
@@ -1609,7 +2086,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 *                                detect based on the serviceInstance, -1 indicates indicates
      * @param metrics
      */
-    NodeInfo(ServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
+    NodeInfo(LlapServiceInstance serviceInstance, NodeBlacklistConf blacklistConf, Clock clock,
         int numSchedulableTasksConf, final LlapTaskSchedulerMetrics metrics) {
       Preconditions.checkArgument(numSchedulableTasksConf >= -1, "NumSchedulableTasks must be >=-1");
       this.serviceInstance = serviceInstance;
@@ -1927,7 +2404,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @VisibleForTesting
   static class TaskInfo implements Delayed {
-
     enum State {
       PENDING, ASSIGNED, PREEMPTED
     }
@@ -1952,13 +2428,22 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     NodeInfo assignedNode;
     private State state = State.PENDING;
     boolean inDelayedQueue = false;
+    private final TezTaskAttemptID attemptId;
+
+    // The state for guaranteed task tracking. Synchronized on 'this'
+    /** Local state in the AM; true/false are what they say, null means terminated and irrelevant. */
+    private Boolean isGuaranteed = false;
+    /** The last state positively propagated to the task. Set by the updater. */
+    private boolean lastSetGuaranteed = false;
+    /** Whether there's an update in progress for this TaskInfo. */
+    private boolean isPendingUpdate = false;
 
     private int numAssignAttempts = 0;
 
     // TaskInfo instances for two different tasks will not be the same. Only a single instance should
     // ever be created for a taskAttempt
     public TaskInfo(LocalityDelayConf localityDelayConf, Clock clock, Object task, Object clientCookie, Priority priority, Resource capability,
-        String[] hosts, String[] racks, long requestTime) {
+        String[] hosts, String[] racks, long requestTime, TezTaskAttemptID id) {
       this.localityDelayConf = localityDelayConf;
       this.clock = clock;
       this.task = task;
@@ -1976,8 +2461,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         localityDelayTimeout = requestTime + localityDelayConf.getNodeLocalityDelay();
       }
       this.uniqueId = ID_GEN.getAndIncrement();
+      this.attemptId = id;
     }
 
+    // TODO: these appear to always be called under write lock. Do they need sync?
     synchronized void setAssignmentInfo(NodeInfo nodeInfo, ContainerId containerId, long startTime) {
       this.assignedNode = nodeInfo;
       this.containerId = containerId;
@@ -2077,6 +2564,21 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         return 0;
       }
     }
+
+    @VisibleForTesting
+    boolean isGuaranteed() {
+      return isGuaranteed;
+    }
+
+    @VisibleForTesting
+    boolean getLastSetGuaranteed() {
+      return lastSetGuaranteed;
+    }
+
+    @VisibleForTesting
+    boolean isUpdateInProgress() {
+      return isPendingUpdate;
+    }
   }
 
   // Newer tasks first.
@@ -2165,4 +2667,22 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
   }
 
+  public void updateQuery(UpdateQueryRequestProto request) {
+    if (request.hasGuaranteedTaskCount()) {
+      updateGuaranteedCount(request.getGuaranteedTaskCount());
+    }
+  }
+
+  void setTaskCommunicator(LlapTaskCommunicator communicator) {
+    this.communicator = communicator;
+  }
+
+  protected void sendUpdateMessageAsync(TaskInfo ti, boolean newState) {
+    communicator.startUpdateGuaranteed(ti.attemptId, newState, UPDATE_CALLBACK, ti);
+  }
+
+
+  int getUnusedGuaranteedCount() {
+    return unusedGuaranteed;
+  }
 }

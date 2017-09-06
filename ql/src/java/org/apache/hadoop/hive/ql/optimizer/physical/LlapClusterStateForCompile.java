@@ -28,8 +28,8 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.slf4j.Logger;
@@ -100,7 +100,7 @@ public class LlapClusterStateForCompile {
         return; // Don't fail; this is best-effort.
       }
     }
-    ServiceInstanceSet instances;
+    LlapServiceInstanceSet instances;
     try {
       instances = svc.getInstances(10);
     } catch (IOException e) {
@@ -108,7 +108,7 @@ public class LlapClusterStateForCompile {
       return; // Don't wait for the cluster if not started; this is best-effort.
     }
     int executorsLocal = 0, noConfigNodesLocal = 0;
-    for (ServiceInstance si : instances.getAll()) {
+    for (LlapServiceInstance si : instances.getAll()) {
       if (si instanceof InactiveServiceInstance) continue; // Shouldn't happen in getAll.
       Map<String, String> props = si.getProperties();
       if (props == null) {

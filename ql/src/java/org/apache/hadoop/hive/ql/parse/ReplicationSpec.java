@@ -38,12 +38,12 @@ public class ReplicationSpec {
 
   private boolean isInReplicationScope = false; // default is that it's not in a repl scope
   private boolean isMetadataOnly = false; // default is full export/import, not metadata-only
-  private boolean isIncrementalDump = false; // default is replv2 bootstrap dump or replv1 export or import/load.
   private String eventId = null;
   private String currStateId = null;
   private boolean isNoop = false;
   private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
   private boolean isReplace = true; // default is that the import mode is insert overwrite
+  private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
 
   // Key definitions related to replication
   public enum KEY {
@@ -66,9 +66,9 @@ public class ReplicationSpec {
     }
   }
 
-  public enum SCOPE { NO_REPL, MD_ONLY, REPL };
+  public enum SCOPE { NO_REPL, MD_ONLY, REPL }
 
-  static private Collator collator = Collator.getInstance();
+  public enum Type { DEFAULT, INCREMENTAL_DUMP, IMPORT }
 
   /**
    * Constructor to construct spec based on either the ASTNode that
@@ -106,28 +106,27 @@ public class ReplicationSpec {
   }
 
   public ReplicationSpec(String fromId, String toId) {
-    this(true, false, false, fromId, toId, false, true, false);
+    this(true, false, fromId, toId, false, true, false);
   }
 
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
-                         boolean isIncrementalDump,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isLazy, boolean isReplace) {
     this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
-    this.isIncrementalDump = isIncrementalDump;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
     this.isNoop = isNoop;
     this.isLazy = isLazy;
     this.isReplace = isReplace;
+    this.specType = Type.DEFAULT;
   }
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
     this.isInReplicationScope = false;
     this.isMetadataOnly = false;
-    this.isIncrementalDump = false;
+    this.specType = Type.DEFAULT;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
@@ -155,7 +154,7 @@ public class ReplicationSpec {
    * @param replacementReplState Replacement-candidate state
    * @return whether or not a provided replacement candidate is newer(or equal) to the existing object state or not
    */
-  public static boolean allowReplacement(String currReplState, String replacementReplState){
+  public boolean allowReplacement(String currReplState, String replacementReplState){
     if ((currReplState == null) || (currReplState.isEmpty())) {
       // if we have no replication state on record for the obj, allow replacement.
       return true;
@@ -171,7 +170,16 @@ public class ReplicationSpec {
     long currReplStateLong = Long.parseLong(currReplState.replaceAll("\\D",""));
     long replacementReplStateLong = Long.parseLong(replacementReplState.replaceAll("\\D",""));
 
-    return ((currReplStateLong - replacementReplStateLong) < 0);
+    // Failure handling of IMPORT command and REPL LOAD commands are different.
+    // IMPORT will set the last repl ID before copying data files and hence need to allow
+    // replacement if loaded from same dump twice after failing to copy in previous attempt.
+    // But, REPL LOAD will set the last repl ID only after the successful copy of data files and
+    // hence need not allow if same event is applied twice.
+    if (specType == Type.IMPORT) {
+      return (currReplStateLong <= replacementReplStateLong);
+    } else {
+      return (currReplStateLong < replacementReplStateLong);
+    }
   }
 
  /**
@@ -207,22 +215,41 @@ public class ReplicationSpec {
     };
   }
 
-  private static String getLastReplicatedStateFromParameters(Map<String, String> m) {
+  private void init(ASTNode node){
+    // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
+    isInReplicationScope = true;
+    eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
+    if ((node.getChildCount() > 1)
+            && node.getChild(1).getText().toLowerCase().equals("metadata")) {
+      isMetadataOnly= true;
+      try {
+        if (Long.parseLong(eventId) >= 0) {
+          // If metadata-only dump, then the state of the dump shouldn't be the latest event id as
+          // the data is not yet dumped and shall be dumped in future export.
+          currStateId = eventId;
+        }
+      } catch (Exception ex) {
+        // Ignore the exception and fall through the default currentStateId
+      }
+    }
+  }
+
+  public static String getLastReplicatedStateFromParameters(Map<String, String> m) {
     if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
       return m.get(KEY.CURR_STATE_ID.toString());
     }
     return null;
   }
 
-  private void init(ASTNode node){
-    // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
-    isInReplicationScope = true;
-    eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
-    if (node.getChildCount() > 1){
-      if (node.getChild(1).getText().toLowerCase().equals("metadata")) {
-        isMetadataOnly= true;
-      }
-    }
+  /**
+   * @return true if this statement refers to incremental dump operation.
+   */
+  public Type getReplSpecType(){
+    return this.specType;
+  }
+
+  public void setReplSpecType(Type specType){
+    this.specType = specType;
   }
 
   /**
@@ -230,17 +257,6 @@ public class ReplicationSpec {
    */
   public boolean isInReplicationScope(){
     return isInReplicationScope;
-  }
-
-  /**
-   * @return true if this statement refers to incremental dump operation.
-   */
-  public boolean isIncrementalDump(){
-    return isIncrementalDump;
-  }
-
-  public void setIsIncrementalDump(boolean isIncrementalDump){
-    this.isIncrementalDump = isIncrementalDump;
   }
 
   /**

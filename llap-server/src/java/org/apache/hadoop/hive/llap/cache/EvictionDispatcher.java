@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcFileEstimateErrors;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl;
+import org.apache.hadoop.hive.llap.io.metadata.ParquetMetadataCacheImpl.LlapFileMetadataBuffer;
 
 /**
  * Eviction dispatcher - uses double dispatch to route eviction notifications to correct caches.
@@ -31,11 +33,15 @@ public final class EvictionDispatcher implements EvictionListener, LlapOomDebugD
   private final SerDeLowLevelCacheImpl serdeCache;
   private final OrcMetadataCache metadataCache;
   private final EvictionAwareAllocator allocator;
+  // TODO# temporary, will be merged with OrcMetadataCache after HIVE-15665.
+  private final ParquetMetadataCacheImpl parquetMetadataCache;
 
   public EvictionDispatcher(LowLevelCache dataCache, SerDeLowLevelCacheImpl serdeCache,
-      OrcMetadataCache metadataCache, EvictionAwareAllocator allocator) {
+      OrcMetadataCache metadataCache, EvictionAwareAllocator allocator,
+      ParquetMetadataCacheImpl parquetMetadataCache) {
     this.dataCache = dataCache;
     this.metadataCache = metadataCache;
+    this.parquetMetadataCache = parquetMetadataCache;
     this.serdeCache = serdeCache;
     this.allocator = allocator;
   }
@@ -45,10 +51,13 @@ public final class EvictionDispatcher implements EvictionListener, LlapOomDebugD
     buffer.notifyEvicted(this); // This will call one of the specific notifyEvicted overloads.
   }
 
+  public void notifyEvicted(LlapFileMetadataBuffer buffer) {
+    this.parquetMetadataCache.notifyEvicted(buffer);
+  }
+
   public void notifyEvicted(LlapSerDeDataBuffer buffer) {
     serdeCache.notifyEvicted(buffer);
     allocator.deallocateEvicted(buffer);
-   
   }
 
   public void notifyEvicted(LlapDataBuffer buffer) {

@@ -859,6 +859,15 @@ struct CurrentNotificationEventId {
     1: required i64 eventId,
 }
 
+struct NotificationEventsCountRequest {
+    1: required i64 fromEventId,
+    2: required string dbName,
+}
+
+struct NotificationEventsCountResponse {
+    1: required i64 eventsCount,
+}
+
 struct InsertEventRequestData {
     1: optional bool replace,
     2: required list<string> filesAdded,
@@ -1546,6 +1555,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
   CurrentNotificationEventId get_current_notificationEventId()
+  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
 

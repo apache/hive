@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers;
 import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
 import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.LlapInstance;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
@@ -563,7 +563,7 @@ public class LlapStatusServiceDriver {
       }
     }
 
-    Collection<ServiceInstance> serviceInstances;
+    Collection<LlapServiceInstance> serviceInstances;
     try {
       serviceInstances = llapRegistry.getInstances(watchTimeoutMs).getAll();
     } catch (Exception e) {
@@ -583,7 +583,7 @@ public class LlapStatusServiceDriver {
       List<LlapInstance> validatedInstances = new LinkedList<>();
       List<String> llapExtraInstances = new LinkedList<>();
 
-      for (ServiceInstance serviceInstance : serviceInstances) {
+      for (LlapServiceInstance serviceInstance : serviceInstances) {
         String containerIdString = serviceInstance.getProperties().get(
           HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
 

@@ -3646,7 +3646,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (allPartitions == null) {
         db.alterTable(alterTbl.getOldName(), tbl, alterTbl.getIsCascade(), alterTbl.getEnvironmentContext());
       } else {
-        db.alterPartitions(alterTbl.getOldName(), allPartitions, alterTbl.getEnvironmentContext());
+        db.alterPartitions(Warehouse.getQualifiedName(tbl.getTTable()), allPartitions, alterTbl.getEnvironmentContext());
       }
       // Add constraints if necessary
       addConstraints(db, alterTbl);

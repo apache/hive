@@ -182,7 +182,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_0:orderpayment, $hdt$_1:dim_pay_date]
+        /orderpayment_small [$hdt$_1:orderpayment, $hdt$_2:dim_pay_date]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -318,7 +318,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_2:deal]
+        /orderpayment_small [$hdt$_3:deal]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -455,7 +455,7 @@ STAGE PLANS:
               name: default.orderpayment_small
             name: default.orderpayment_small
       Truncated Path -> Alias:
-        /orderpayment_small [$hdt$_3:order_city]
+        /orderpayment_small [$hdt$_4:order_city]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -592,7 +592,7 @@ STAGE PLANS:
               name: default.user_small
             name: default.user_small
       Truncated Path -> Alias:
-        /user_small [$hdt$_4:user]
+        /user_small [$hdt$_0:user]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:

@@ -14,7 +14,6 @@
 
 package org.apache.hadoop.hive.llap.tez;
 
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +32,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
@@ -68,6 +69,13 @@ public class LlapProtocolClientProxy
                                 final ExecuteRequestCallback<QueryCompleteResponseProto> callback) {
     LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
     queueRequest(new SendQueryCompleteCallable(nodeId, request, callback));
+  }
+
+
+  public void sendUpdateFragment(final UpdateFragmentRequestProto request, final String host,
+      final int port, final ExecuteRequestCallback<UpdateFragmentResponseProto> callback) {
+    LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
+    queueRequest(new SendUpdateFragmentCallable(nodeId, request, callback));
   }
 
   public void sendTerminateFragment(final TerminateFragmentRequestProto request, final String host,
@@ -133,6 +141,21 @@ public class LlapProtocolClientProxy
     @Override
     public TerminateFragmentResponseProto call() throws Exception {
       return getProxy(nodeId).terminateFragment(null, request);
+    }
+  }
+
+  private class SendUpdateFragmentCallable
+      extends CallableRequest<UpdateFragmentRequestProto, UpdateFragmentResponseProto> {
+
+    protected SendUpdateFragmentCallable(LlapNodeId nodeId,
+        UpdateFragmentRequestProto terminateFragmentRequestProto,
+        ExecuteRequestCallback<UpdateFragmentResponseProto> callback) {
+      super(nodeId, terminateFragmentRequestProto, callback);
+    }
+
+    @Override
+    public UpdateFragmentResponseProto call() throws Exception {
+      return getProxy(nodeId).updateFragment(null, request);
     }
   }
 

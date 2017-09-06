@@ -45,8 +45,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
-import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
@@ -104,7 +104,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String PWD_KEY = "llap.if.pwd";
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
-  public static final ServiceInstance[] serviceInstanceArray = new ServiceInstance[0];
+  public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
     this.url = url;
@@ -126,7 +126,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     HiveConf.setVar(job, HiveConf.ConfVars.LLAP_ZK_REGISTRY_USER, llapSplit.getLlapUser());
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
-    ServiceInstance serviceInstance = getServiceInstance(job, llapSplit);
+    LlapServiceInstance serviceInstance = getServiceInstance(job, llapSplit);
     String host = serviceInstance.getHost();
     int llapSubmitPort = serviceInstance.getRpcPort();
 
@@ -230,11 +230,11 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     return ins.toArray(new InputSplit[ins.size()]);
   }
 
-  private ServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
+  private LlapServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
     LlapRegistryService registryService = LlapRegistryService.getClient(job);
     String host = llapSplit.getLocations()[0];
 
-    ServiceInstance serviceInstance = getServiceInstanceForHost(registryService, host);
+    LlapServiceInstance serviceInstance = getServiceInstanceForHost(registryService, host);
     if (serviceInstance == null) {
       LOG.info("No service instances found for " + host + " in registry.");
       serviceInstance = getServiceInstanceRandom(registryService);
@@ -246,10 +246,10 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     return serviceInstance;
   }
 
-  private ServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
+  private LlapServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
     InetAddress address = InetAddress.getByName(host);
-    ServiceInstanceSet instanceSet = registryService.getInstances();
-    ServiceInstance serviceInstance = null;
+    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    LlapServiceInstance serviceInstance = null;
 
     // The name used in the service registry may not match the host name we're using.
     // Try hostname/canonical hostname/host address
@@ -279,12 +279,12 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   }
 
 
-  private ServiceInstance getServiceInstanceRandom(LlapRegistryService registryService) throws IOException {
-    ServiceInstanceSet instanceSet = registryService.getInstances();
-    ServiceInstance serviceInstance = null;
+  private LlapServiceInstance getServiceInstanceRandom(LlapRegistryService registryService) throws IOException {
+    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    LlapServiceInstance serviceInstance = null;
 
     LOG.info("Finding random live service instance");
-    Collection<ServiceInstance> allInstances = instanceSet.getAll();
+    Collection<LlapServiceInstance> allInstances = instanceSet.getAll();
     if (allInstances.size() > 0) {
       int randIdx = rand.nextInt() % allInstances.size();
       serviceInstance = allInstances.toArray(serviceInstanceArray)[randIdx];
@@ -292,13 +292,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     return serviceInstance;
   }
 
-  private ServiceInstance selectServiceInstance(Set<ServiceInstance> serviceInstances) {
+  private LlapServiceInstance selectServiceInstance(Set<LlapServiceInstance> serviceInstances) {
     if (serviceInstances == null || serviceInstances.isEmpty()) {
       return null;
     }
 
     // Get the first live service instance
-    for (ServiceInstance serviceInstance : serviceInstances) {
+    for (LlapServiceInstance serviceInstance : serviceInstances) {
       return serviceInstance;
     }
 

@@ -23,7 +23,9 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 
 public interface LlapIo<T> {
-  InputFormat<NullWritable, T> getInputFormat(InputFormat sourceInputFormat, Deserializer serde);
+  InputFormat<NullWritable, T> getInputFormat(
+      InputFormat<?, ?> sourceInputFormat, Deserializer serde);
   void close();
   String getMemoryInfo();
+  void initCacheOnlyInputFormat(InputFormat<?, ?> inputFormat);
 }

@@ -59,14 +59,21 @@ public class TaskTracker {
    */
   public void addTask(Task<? extends Serializable> task) {
     tasks.add(task);
-    updateTaskCount(task);
+
+    List <Task<? extends Serializable>> visited = new ArrayList<>();
+    updateTaskCount(task, visited);
   }
 
-  private void updateTaskCount(Task<? extends Serializable> task) {
+  public void updateTaskCount(Task<? extends Serializable> task,
+                              List <Task<? extends Serializable>> visited) {
     numberOfTasks += 1;
+    visited.add(task);
     if (task.getChildTasks() != null) {
       for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-        updateTaskCount(childTask);
+        if (visited.contains(childTask)) {
+          continue;
+        }
+        updateTaskCount(childTask, visited);
       }
     }
   }

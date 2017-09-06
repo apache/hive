@@ -14,7 +14,7 @@
 package org.apache.hadoop.hive.llap.registry;
 
 import java.io.IOException;
-
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 
 /**
@@ -49,14 +49,14 @@ public interface ServiceRegistry {
    * @param clusterReadyTimeoutMs The time to wait for the cluster to be ready, if it's not
    *                              started yet. 0 means do not wait.
    */
-  ServiceInstanceSet getInstances(String component, long clusterReadyTimeoutMs) throws IOException;
+  LlapServiceInstanceSet getInstances(String component, long clusterReadyTimeoutMs) throws IOException;
 
   /**
    * Adds state change listeners for service instances.
    * @param listener - state change listener
    */
-  void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
-      throws IOException;
+  void registerStateChangeListener(
+      ServiceInstanceStateChangeListener<LlapServiceInstance> listener) throws IOException;
 
   /**
    * @return The application ID of the LLAP cluster.

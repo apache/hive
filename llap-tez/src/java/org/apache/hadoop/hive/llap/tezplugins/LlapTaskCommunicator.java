@@ -15,7 +15,7 @@
 package org.apache.hadoop.hive.llap.tezplugins;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.llap.registry.ServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.io.Writable;
 
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
@@ -37,6 +37,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Message;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
@@ -54,6 +55,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWor
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.TerminateFragmentResponseProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentRequestProto;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -131,6 +134,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private volatile QueryIdentifierProto currentQueryIdentifierProto;
   private volatile String currentHiveQueryId;
 
+  // TODO: this is an ugly hack because Tez plugin isolation does not make sense for LLAP plugins.
+  //       We are going to register a thread-local here for now, so that the scheduler, initializing
+  //       in the same thread after the communicator, will pick up. Or the other way around.
+  //       This only lives for the duration of the service init.
+  static final ThreadLocal<LlapTaskCommunicator> instance = new ThreadLocal<>();
+
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
     super(taskCommunicatorContext);
@@ -158,13 +167,25 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
+    LlapTaskSchedulerService peer = LlapTaskSchedulerService.instance.get();
+    if (peer != null) {
+      // We are the last to initialize.
+      peer.setTaskCommunicator(this);
+      LlapTaskSchedulerService.instance.set(null);
+    } else {
+      instance.set(this);
+    }
   }
 
   private static final String LLAP_TOKEN_NAME = LlapTokenIdentifier.KIND_NAME.toString();
-  private void processSendError(Throwable t) {
+
+  /**
+   * @return true iff the error is fatal and we should give up on everything.
+   */
+  private boolean processSendError(Throwable t) {
     Throwable cause = t;
     while (cause != null) {
-      if (cause instanceof RetriableException) return;
+      if (cause instanceof RetriableException) return false;
       if (((cause instanceof InvalidToken && cause.getMessage() != null)
           || (cause instanceof RemoteException && cause.getCause() == null
               && cause.getMessage() != null && cause.getMessage().contains("InvalidToken")))
@@ -173,9 +194,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       }
       cause = cause.getCause();
     }
-    if (cause == null) return;
+    if (cause == null) return false;
     LOG.error("Reporting fatal error - LLAP token appears to be invalid.", t);
     getContext().reportError(ServicePluginErrorDefaults.OTHER_FATAL, cause.getMessage(), null);
+    return true;
   }
 
   @Override
@@ -266,6 +288,39 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     entityTracker.unregisterContainer(containerId);
   }
 
+  public interface OperationCallback<ResultType, CtxType> {
+    void setDone(CtxType ctx, ResultType result);
+    void setError(CtxType ctx, Throwable t);
+  }
+
+  public <T> void startUpdateGuaranteed(final TezTaskAttemptID attemptId, boolean newState,
+      final OperationCallback<Boolean, T> callback, final T ctx) {
+    LlapNodeId nodeId = entityTracker.getNodeIdForTaskAttempt(attemptId);
+    if (nodeId == null) {
+      callback.setDone(ctx, false);
+      return;
+    }
+    UpdateFragmentRequestProto request = UpdateFragmentRequestProto.newBuilder()
+        .setIsGuaranteed(newState).setFragmentIdentifierString(attemptId.toString())
+        .setQueryIdentifier(constructQueryIdentifierProto(
+            attemptId.getTaskID().getVertexID().getDAGId().getId())).build();
+
+    communicator.sendUpdateFragment(request, nodeId.getHostname(), nodeId.getPort(),
+        new LlapProtocolClientProxy.ExecuteRequestCallback<UpdateFragmentResponseProto>() {
+          @Override
+          public void setResponse(UpdateFragmentResponseProto response) {
+            callback.setDone(ctx, response.getResult());
+          }
+
+          @Override
+          public void indicateError(Throwable t) {
+            LOG.warn("Failed to send update fragment request for {}", attemptId.toString());
+            if (!processSendError(t)) {
+              callback.setError(ctx, t);
+            }
+          }
+        });
+  }
 
   @Override
   public void registerRunningTaskAttempt(final ContainerId containerId, final TaskSpec taskSpec,
@@ -542,7 +597,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     if (timelineServerUri == null || containerNodeId == null) {
       return null;
     }
-    Set<ServiceInstance> instanceSet;
+    Set<LlapServiceInstance> instanceSet;
     try {
       instanceSet = serviceRegistry.getInstances().getByHost(containerNodeId.getHost());
     } catch (IOException e) {
@@ -554,8 +609,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
     // Once NodeId includes fragmentId - this becomes a lot more reliable.
     if (instanceSet != null) {
-      ServiceInstance matchedInstance = null;
-      for (ServiceInstance instance : instanceSet) {
+      LlapServiceInstance matchedInstance = null;
+      for (LlapServiceInstance instance : instanceSet) {
         if (instance.getRpcPort() == containerNodeId.getPort()) {
           matchedInstance = instance;
           break;

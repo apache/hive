@@ -2233,153 +2233,164 @@ public final class Utilities {
 
       // Process the case when name node call is needed
       final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
-      ArrayList<Future<?>> results = new ArrayList<Future<?>>();
       final ExecutorService executor;
 
       int numExecutors = getMaxExecutorsForInputListing(ctx.getConf(), pathNeedProcess.size());
       if (numExecutors > 1) {
         LOG.info("Using " + numExecutors + " threads for getContentSummary");
         executor = Executors.newFixedThreadPool(numExecutors,
-            new ThreadFactoryBuilder().setDaemon(true)
-                .setNameFormat("Get-Input-Summary-%d").build());
+                new ThreadFactoryBuilder().setDaemon(true)
+                        .setNameFormat("Get-Input-Summary-%d").build());
       } else {
         executor = null;
       }
+      ContentSummary cs = getInputSummaryWithPool(ctx, pathNeedProcess, work, summary, executor);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
+      return cs;
+    }
+  }
 
-      HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
-        @Override
-        public void interrupt() {
-          for (Path path : pathNeedProcess) {
-            try {
-              path.getFileSystem(ctx.getConf()).close();
-            } catch (IOException ignore) {
-                LOG.debug("Failed to close filesystem", ignore);
-            }
-          }
-          if (executor != null) {
-            executor.shutdownNow();
-          }
-        }
-      });
-      try {
-        Configuration conf = ctx.getConf();
-        JobConf jobConf = new JobConf(conf);
+  @VisibleForTesting
+  static ContentSummary getInputSummaryWithPool(final Context ctx, Set<Path> pathNeedProcess, MapWork work,
+                                                long[] summary, ExecutorService executor) throws IOException {
+    List<Future<?>> results = new ArrayList<Future<?>>();
+    final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
+
+    HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
+      @Override
+      public void interrupt() {
         for (Path path : pathNeedProcess) {
-          final Path p = path;
-          final String pathStr = path.toString();
-          // All threads share the same Configuration and JobConf based on the
-          // assumption that they are thread safe if only read operations are
-          // executed. It is not stated in Hadoop's javadoc, the sourcce codes
-          // clearly showed that they made efforts for it and we believe it is
-          // thread safe. Will revisit this piece of codes if we find the assumption
-          // is not correct.
-          final Configuration myConf = conf;
-          final JobConf myJobConf = jobConf;
-          final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
-          final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
-          final PartitionDesc partDesc = work.getPathToPartitionInfo().get(p);
-          Runnable r = new Runnable() {
-            @Override
-            public void run() {
-              try {
-                Class<? extends InputFormat> inputFormatCls = partDesc
-                    .getInputFileFormatClass();
-                InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
-                    inputFormatCls, myJobConf);
-                if (inputFormatObj instanceof ContentSummaryInputFormat) {
-                  ContentSummaryInputFormat cs = (ContentSummaryInputFormat) inputFormatObj;
-                  resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
-                  return;
-                }
-
-                String metaTableStorage = null;
-                if (partDesc.getTableDesc() != null &&
-                    partDesc.getTableDesc().getProperties() != null) {
-                  metaTableStorage = partDesc.getTableDesc().getProperties()
-                      .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, null);
-                }
-                if (partDesc.getProperties() != null) {
-                  metaTableStorage = partDesc.getProperties()
-                      .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, metaTableStorage);
-                }
-
-                HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf, metaTableStorage);
-                if (handler instanceof InputEstimator) {
-                  long total = 0;
-                  TableDesc tableDesc = partDesc.getTableDesc();
-                  InputEstimator estimator = (InputEstimator) handler;
-                  for (String alias : HiveFileFormatUtils.doGetAliasesFromPath(pathToAlias, p)) {
-                    JobConf jobConf = new JobConf(myJobConf);
-                    TableScanOperator scanOp = (TableScanOperator) aliasToWork.get(alias);
-                    Utilities.setColumnNameList(jobConf, scanOp, true);
-                    Utilities.setColumnTypeList(jobConf, scanOp, true);
-                    PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
-                    Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
-                    total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
-                  }
-                  resultMap.put(pathStr, new ContentSummary(total, -1, -1));
-                } else {
-                  // todo: should nullify summary for non-native tables,
-                  // not to be selected as a mapjoin target
-                  FileSystem fs = p.getFileSystem(myConf);
-                  resultMap.put(pathStr, fs.getContentSummary(p));
-                }
-              } catch (Exception e) {
-                // We safely ignore this exception for summary data.
-                // We don't update the cache to protect it from polluting other
-                // usages. The worst case is that IOException will always be
-                // retried for another getInputSummary(), which is fine as
-                // IOException is not considered as a common case.
-                LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
-              }
-            }
-          };
-
-          if (executor == null) {
-            r.run();
-          } else {
-            Future<?> result = executor.submit(r);
-            results.add(result);
+          try {
+            path.getFileSystem(ctx.getConf()).close();
+          } catch (IOException ignore) {
+            LOG.debug("Failed to close filesystem", ignore);
           }
         }
-
         if (executor != null) {
-          for (Future<?> result : results) {
-            boolean executorDone = false;
-            do {
-              try {
-                result.get();
-                executorDone = true;
-              } catch (InterruptedException e) {
-                LOG.info("Interrupted when waiting threads: ", e);
-                Thread.currentThread().interrupt();
-                break;
-              } catch (ExecutionException e) {
-                throw new IOException(e);
-              }
-            } while (!executorDone);
-          }
-          executor.shutdown();
+          executor.shutdownNow();
         }
-        HiveInterruptUtils.checkInterrupted();
-        for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
-          ContentSummary cs = entry.getValue();
-
-          summary[0] += cs.getLength();
-          summary[1] += cs.getFileCount();
-          summary[2] += cs.getDirectoryCount();
-
-          ctx.addCS(entry.getKey(), cs);
-          LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
-              + " file count: "
-              + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
-        }
-
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
-        return new ContentSummary(summary[0], summary[1], summary[2]);
-      } finally {
-        HiveInterruptUtils.remove(interrup);
       }
+    });
+    try {
+      Configuration conf = ctx.getConf();
+      JobConf jobConf = new JobConf(conf);
+      for (Path path : pathNeedProcess) {
+        final Path p = path;
+        final String pathStr = path.toString();
+        // All threads share the same Configuration and JobConf based on the
+        // assumption that they are thread safe if only read operations are
+        // executed. It is not stated in Hadoop's javadoc, the sourcce codes
+        // clearly showed that they made efforts for it and we believe it is
+        // thread safe. Will revisit this piece of codes if we find the assumption
+        // is not correct.
+        final Configuration myConf = conf;
+        final JobConf myJobConf = jobConf;
+        final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
+        final Map<Path, ArrayList<String>> pathToAlias = work.getPathToAliases();
+        final PartitionDesc partDesc = work.getPathToPartitionInfo().get(p);
+        Runnable r = new Runnable() {
+          @Override
+          public void run() {
+            try {
+              Class<? extends InputFormat> inputFormatCls = partDesc
+                      .getInputFileFormatClass();
+              InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
+                      inputFormatCls, myJobConf);
+              if (inputFormatObj instanceof ContentSummaryInputFormat) {
+                ContentSummaryInputFormat cs = (ContentSummaryInputFormat) inputFormatObj;
+                resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
+                return;
+              }
+
+              String metaTableStorage = null;
+              if (partDesc.getTableDesc() != null &&
+                      partDesc.getTableDesc().getProperties() != null) {
+                metaTableStorage = partDesc.getTableDesc().getProperties()
+                        .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, null);
+              }
+              if (partDesc.getProperties() != null) {
+                metaTableStorage = partDesc.getProperties()
+                        .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, metaTableStorage);
+              }
+
+              HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf, metaTableStorage);
+              if (handler instanceof InputEstimator) {
+                long total = 0;
+                TableDesc tableDesc = partDesc.getTableDesc();
+                InputEstimator estimator = (InputEstimator) handler;
+                for (String alias : HiveFileFormatUtils.doGetAliasesFromPath(pathToAlias, p)) {
+                  JobConf jobConf = new JobConf(myJobConf);
+                  TableScanOperator scanOp = (TableScanOperator) aliasToWork.get(alias);
+                  Utilities.setColumnNameList(jobConf, scanOp, true);
+                  Utilities.setColumnTypeList(jobConf, scanOp, true);
+                  PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
+                  Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
+                  total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
+                }
+                resultMap.put(pathStr, new ContentSummary(total, -1, -1));
+              } else {
+                // todo: should nullify summary for non-native tables,
+                // not to be selected as a mapjoin target
+                FileSystem fs = p.getFileSystem(myConf);
+                resultMap.put(pathStr, fs.getContentSummary(p));
+              }
+            } catch (Exception e) {
+              // We safely ignore this exception for summary data.
+              // We don't update the cache to protect it from polluting other
+              // usages. The worst case is that IOException will always be
+              // retried for another getInputSummary(), which is fine as
+              // IOException is not considered as a common case.
+              LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
+            }
+          }
+        };
+
+        if (executor == null) {
+          r.run();
+        } else {
+          Future<?> result = executor.submit(r);
+          results.add(result);
+        }
+      }
+
+      if (executor != null) {
+        for (Future<?> result : results) {
+          boolean executorDone = false;
+          do {
+            try {
+              result.get();
+              executorDone = true;
+            } catch (InterruptedException e) {
+              LOG.info("Interrupted when waiting threads: ", e);
+              Thread.currentThread().interrupt();
+              break;
+            } catch (ExecutionException e) {
+              throw new IOException(e);
+            }
+          } while (!executorDone);
+        }
+        executor.shutdown();
+      }
+      HiveInterruptUtils.checkInterrupted();
+      for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
+        ContentSummary cs = entry.getValue();
+
+        summary[0] += cs.getLength();
+        summary[1] += cs.getFileCount();
+        summary[2] += cs.getDirectoryCount();
+
+        ctx.addCS(entry.getKey(), cs);
+        LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
+                + " file count: "
+                + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
+      }
+
+      return new ContentSummary(summary[0], summary[1], summary[2]);
+    } finally {
+      if (executor != null) {
+        executor.shutdownNow();
+      }
+      HiveInterruptUtils.remove(interrup);
     }
   }
 
@@ -3144,7 +3155,7 @@ public final class Utilities {
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
         if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
-          throw new IOException("Operation is Canceled. ");
+          throw new IOException("Operation is Canceled.");
 
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
@@ -3188,41 +3199,57 @@ public final class Utilities {
       }
     }
 
-    ExecutorService pool = null;
+    List<Path> finalPathsToAdd = new LinkedList<>();
+
     int numExecutors = getMaxExecutorsForInputListing(job, pathsToAdd.size());
     if (numExecutors > 1) {
-      pool = Executors.newFixedThreadPool(numExecutors,
-          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Input-Paths-%d").build());
-    }
+      ExecutorService pool = Executors.newFixedThreadPool(numExecutors,
+              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Input-Paths-%d").build());
 
-    List<Path> finalPathsToAdd = new LinkedList<>();
-    Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
-    for (final Path path : pathsToAdd) {
-      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
-        throw new IOException("Operation is Canceled. ");
-      }
-      if (pool == null) {
+      finalPathsToAdd.addAll(getInputPathsWithPool(job, work, hiveScratchDir, ctx, skipDummy, pathsToAdd, pool));
+    } else {
+      for (final Path path : pathsToAdd) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
+          throw new IOException("Operation is Canceled.");
+        }
         Path newPath = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call();
         updatePathForMapWork(newPath, work, path);
         finalPathsToAdd.add(newPath);
-      } else {
-        GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
-        getPathsCallableToFuture.put(callable, pool.submit(callable));
       }
     }
 
-    if (pool != null) {
+    return finalPathsToAdd;
+  }
+
+  @VisibleForTesting
+  static List<Path> getInputPathsWithPool(JobConf job, MapWork work, Path hiveScratchDir,
+                                           Context ctx, boolean skipDummy, List<Path> pathsToAdd,
+                                           ExecutorService pool) throws IOException, ExecutionException, InterruptedException {
+    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
+    List<Path> finalPathsToAdd = new ArrayList<>();
+    try {
+      Map<GetInputPathsCallable, Future<Path>> getPathsCallableToFuture = new LinkedHashMap<>();
+      for (final Path path : pathsToAdd) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
+          throw new IOException("Operation is Canceled.");
+        }
+        GetInputPathsCallable callable = new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy);
+        getPathsCallableToFuture.put(callable, pool.submit(callable));
+      }
+      pool.shutdown();
+
       for (Map.Entry<GetInputPathsCallable, Future<Path>> future : getPathsCallableToFuture.entrySet()) {
         if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT) {
-          throw new IOException("Operation is Canceled. ");
+          throw new IOException("Operation is Canceled.");
         }
 
         Path newPath = future.getValue().get();
         updatePathForMapWork(newPath, work, future.getKey().path);
         finalPathsToAdd.add(newPath);
       }
+    } finally {
+      pool.shutdownNow();
     }
-
     return finalPathsToAdd;
   }
 

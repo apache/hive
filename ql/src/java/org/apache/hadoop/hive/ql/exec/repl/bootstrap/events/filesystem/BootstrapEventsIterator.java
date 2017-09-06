@@ -17,13 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.BootstrapEvent;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.BootstrapLoadLogger;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,8 +71,13 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       warehouse.
    */
   private Iterator<DatabaseEventsIterator> dbEventsIterator;
+  private final String dumpDirectory;
+  private final String dbNameToLoadIn;
+  private final HiveConf hiveConf;
+  private ReplLogger replLogger;
 
-  public BootstrapEventsIterator(String dumpDirectory, HiveConf hiveConf) throws IOException {
+  public BootstrapEventsIterator(String dumpDirectory, String dbNameToLoadIn, HiveConf hiveConf)
+          throws IOException {
     Path path = new Path(dumpDirectory);
     FileSystem fileSystem = path.getFileSystem(hiveConf);
     FileStatus[] fileStatuses =
@@ -93,6 +100,9 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       }
     }).collect(Collectors.toList()).iterator();
 
+    this.dumpDirectory = dumpDirectory;
+    this.dbNameToLoadIn = dbNameToLoadIn;
+    this.hiveConf = hiveConf;
   }
 
   @Override
@@ -101,6 +111,7 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       if (currentDatabaseIterator == null) {
         if (dbEventsIterator.hasNext()) {
           currentDatabaseIterator = dbEventsIterator.next();
+          initReplLogger();
         } else {
           return false;
         }
@@ -127,7 +138,44 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     throw new UnsupportedOperationException("This operation is not supported");
   }
 
+  public boolean currentDbHasNext() {
+    return ((currentDatabaseIterator != null) && (currentDatabaseIterator.hasNext()));
+  }
+
   public void setReplicationState(ReplicationState replicationState) {
     this.currentDatabaseIterator.replicationState = replicationState;
+  }
+
+  public ReplLogger replLogger() {
+    return replLogger;
+  }
+
+  private void initReplLogger() {
+    try {
+      Path dbDumpPath = currentDatabaseIterator.dbLevelPath();
+      FileSystem fs = dbDumpPath.getFileSystem(hiveConf);
+
+      long numTables = getSubDirs(fs, dbDumpPath).length;
+      long numFunctions = 0;
+      Path funcPath = new Path(dbDumpPath, ReplicationSemanticAnalyzer.FUNCTIONS_ROOT_DIR_NAME);
+      if (fs.exists(funcPath)) {
+        numFunctions = getSubDirs(fs, funcPath).length;
+      }
+      String dbName = StringUtils.isBlank(dbNameToLoadIn) ? dbDumpPath.getName() : dbNameToLoadIn;
+      replLogger = new BootstrapLoadLogger(dbName, dumpDirectory, numTables, numFunctions);
+      replLogger.startLog();
+    } catch (IOException e) {
+      // Ignore the exception
+    }
+  }
+
+  FileStatus[] getSubDirs(FileSystem fs, Path dirPath) throws IOException {
+    return fs.listStatus(dirPath, new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        String name = p.getName();
+        return !name.startsWith("_") && !name.startsWith(".");
+      }
+    });
   }
 }

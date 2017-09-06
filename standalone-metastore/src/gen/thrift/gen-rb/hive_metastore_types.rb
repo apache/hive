@@ -2670,6 +2670,43 @@ class CurrentNotificationEventId
   ::Thrift::Struct.generate_accessors self
 end
 
+class NotificationEventsCountRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FROMEVENTID = 1
+  DBNAME = 2
+
+  FIELDS = {
+    FROMEVENTID => {:type => ::Thrift::Types::I64, :name => 'fromEventId'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fromEventId is unset!') unless @fromEventId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class NotificationEventsCountResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EVENTSCOUNT = 1
+
+  FIELDS = {
+    EVENTSCOUNT => {:type => ::Thrift::Types::I64, :name => 'eventsCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field eventsCount is unset!') unless @eventsCount
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class InsertEventRequestData
   include ::Thrift::Struct, ::Thrift::Struct_Union
   REPLACE = 1

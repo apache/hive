@@ -496,7 +496,7 @@ Keys:val
 13.0	1
 17.0	1
 46.0	1
-Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 4' is a cross product
+Warning: Shuffle Join JOIN[20][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: SELECT *
 FROM
 (
@@ -519,10 +519,10 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-Operator:JOIN_8
-Table:default@t1
-Keys:key
+Operator:JOIN_11
 Table:default@t2
+Keys:key
+Table:default@t1
 Keys:key
 
 PREHOOK: query: SELECT *

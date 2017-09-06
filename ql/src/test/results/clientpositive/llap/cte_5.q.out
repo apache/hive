@@ -85,16 +85,16 @@ Stage-0
     Stage-1
       Reducer 2 llap
       File Output Operator [FS_10]
-        Select Operator [SEL_9] (rows=2 width=89)
+        Select Operator [SEL_9] (rows=2 width=90)
           Output:["_col0"]
-          Merge Join Operator [MERGEJOIN_13] (rows=2 width=89)
+          Merge Join Operator [MERGEJOIN_13] (rows=2 width=90)
             Conds:(Inner)
           <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
             PARTITION_ONLY_SHUFFLE [RS_6]
-              Select Operator [SEL_2] (rows=1 width=3)
-                Filter Operator [FIL_11] (rows=1 width=3)
+              Select Operator [SEL_2] (rows=1 width=4)
+                Filter Operator [FIL_11] (rows=1 width=4)
                   predicate:(UDFToDouble(colnum) = 5.0)
-                  TableScan [TS_0] (rows=1 width=3)
+                  TableScan [TS_0] (rows=1 width=4)
                     mydb@q1,a,Tbl:COMPLETE,Col:NONE,Output:["colnum"]
           <-Map 3 [CUSTOM_SIMPLE_EDGE] llap
             PARTITION_ONLY_SHUFFLE [RS_7]

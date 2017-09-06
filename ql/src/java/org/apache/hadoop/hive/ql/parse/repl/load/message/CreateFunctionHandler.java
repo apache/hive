@@ -49,12 +49,20 @@ import java.util.List;
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.toReadEntity;
 
 public class CreateFunctionHandler extends AbstractMessageHandler {
+  private String functionName;
+
+  public String getFunctionName() {
+    return functionName;
+  }
+
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
     try {
       FunctionDescBuilder builder = new FunctionDescBuilder(context);
       CreateFunctionDesc descToLoad = builder.build();
+      this.functionName = builder.metadata.function.getFunctionName();
+
       context.log.debug("Loading function desc : {}", descToLoad.toString());
       Task<FunctionWork> createTask = TaskFactory.get(
           new FunctionWork(descToLoad), context.hiveConf

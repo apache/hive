@@ -93,8 +93,6 @@ public class TableExport {
 
   private PartitionIterable partitions() throws SemanticException {
     try {
-      long currentEventId = db.getMSC().getCurrentNotificationEventId().getEventId();
-      replicationSpec.setCurrentReplicationState(String.valueOf(currentEventId));
       if (tableSpec.tableHandle.isPartitioned()) {
         if (tableSpec.specType == TableSpec.SpecType.TABLE_ONLY) {
           // TABLE-ONLY, fetch partitions if regular export, don't if metadata-only
@@ -158,12 +156,7 @@ public class TableExport {
   }
 
   private boolean shouldExport() throws SemanticException {
-    if (replicationSpec.isInReplicationScope()) {
-      return !(tableSpec.tableHandle.isTemporary() || tableSpec.tableHandle.isNonNative());
-    } else if (tableSpec.tableHandle.isNonNative()) {
-      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
-    }
-    return true;
+    return EximUtil.shouldExportTable(replicationSpec, tableSpec.tableHandle);
   }
 
   /**

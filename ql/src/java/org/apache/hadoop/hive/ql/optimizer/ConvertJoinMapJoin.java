@@ -579,12 +579,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
    * for Dynamic Hash Join conversion consideration
    * @param skipJoinTypeChecks whether to skip join type checking
    * @param maxSize size threshold for Map Join conversion
-   * @param checkHashTableEntries whether to check threshold for distinct keys in hash table for Map Join
+   * @param checkMapJoinThresholds whether to check thresholds to convert to Map Join
    * @return returns big table position or -1 if it cannot be determined
    * @throws SemanticException
    */
   public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
-      int buckets, boolean skipJoinTypeChecks, long maxSize, boolean checkHashTableEntries)
+      int buckets, boolean skipJoinTypeChecks, long maxSize, boolean checkMapJoinThresholds)
               throws SemanticException {
     if (!skipJoinTypeChecks) {
       /*
@@ -633,6 +633,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // total size of the inputs
     long totalSize = 0;
+
+    // convert to DPHJ
+    boolean convertDPHJ = false;
 
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
@@ -693,19 +696,19 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
         totalSize += bigInputStat.getDataSize();
-        // Check if number of distinct keys is larger than given max
-        // number of entries for HashMap. If it is, we do not convert.
-        if (checkHashTableEntries && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
-          return -1;
+        // Check if number of distinct keys is greater than given max number of entries
+        // for HashMap
+        if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
+          convertDPHJ = true;
         }
       } else if (!selectedBigTable) {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
         totalSize += inputSize;
-        // Check if number of distinct keys is larger than given max
-        // number of entries for HashMap. If it is, we do not convert.
-        if (checkHashTableEntries && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
-          return -1;
+        // Check if number of distinct keys is greater than given max number of entries
+        // for HashMap
+        if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
+          convertDPHJ = true;
         }
       }
 
@@ -721,6 +724,13 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         bigInputStat = currInputStat;
       }
 
+    }
+
+    // Check if size of data to shuffle (larger table) is less than given max size
+    if (checkMapJoinThresholds && convertDPHJ
+            && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
+      LOG.debug("Conditions to convert to MapJoin are not met");
+      return -1;
     }
 
     // We store the total memory that this MapJoin is going to use,
@@ -1087,10 +1097,33 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     if (estimation > max) {
       // Estimation larger than max
       LOG.debug("Number of different entries for HashTable is greater than the max; "
-          + "we do not converting to MapJoin");
+          + "we do not convert to MapJoin");
       return false;
     }
     // We can proceed with the conversion
+    return true;
+  }
+
+  /* Returns true if it passes the test, false otherwise. */
+  private boolean checkShuffleSizeForLargeTable(JoinOperator joinOp, int position,
+          OptimizeTezProcContext context) {
+    long max = HiveConf.getLongVar(context.parseContext.getConf(),
+            HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
+    if (max < 1) {
+      // Max is disabled, we can safely return true
+      return true;
+    }
+    // Evaluate
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
+    Statistics inputStats = rsOp.getStatistics();
+    long inputSize = inputStats.getDataSize();
+    LOG.debug("Estimated size for input {}: {}; Max size for DPHJ conversion: {}",
+        position, inputSize, max);
+    if (inputSize > max) {
+      LOG.debug("Size of input is greater than the max; "
+          + "we do not convert to DPHJ");
+      return false;
+    }
     return true;
   }
 

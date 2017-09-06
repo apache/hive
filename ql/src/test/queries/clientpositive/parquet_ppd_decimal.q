@@ -1,6 +1,7 @@
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 create table newtypestbl(c char(10), v varchar(10), d decimal(5,3), da date) stored as parquet;
 

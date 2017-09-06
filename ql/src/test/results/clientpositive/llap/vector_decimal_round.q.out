@@ -54,7 +54,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_tbl_txt
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -66,7 +66,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [0, 1]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0, decimalPlaces -1) -> 1:decimal(11,0)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: decimal(10,0))
                       sort order: +
@@ -74,7 +74,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: decimal(11,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -103,13 +103,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -156,7 +156,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_tbl_txt
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -168,7 +168,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [0, 1]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0, decimalPlaces -1) -> 1:decimal(11,0)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: decimal(11,0))
                       sort order: +
@@ -176,7 +176,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -205,13 +205,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [1, 0]
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -284,7 +284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_tbl_rc
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -296,7 +296,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [0, 1]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0, decimalPlaces -1) -> 1:decimal(11,0)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: decimal(10,0))
                       sort order: +
@@ -304,7 +304,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: decimal(11,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -333,13 +333,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [0, 1]
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -386,7 +386,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_tbl_rc
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0]
@@ -398,7 +398,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [0, 1]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0, decimalPlaces -1) -> 1:decimal(11,0)
-                    Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: decimal(11,0))
                       sort order: +
@@ -406,7 +406,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -435,13 +435,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [1, 0]
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

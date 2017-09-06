@@ -146,7 +146,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vectortab2korc
-                  Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -158,13 +158,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumns: [13, 14, 15, 16, 17, 18, 19]
                         selectExpressions: CastLongToVarChar(col 0, maxLength 10) -> 13:VarChar, CastLongToVarChar(col 1, maxLength 10) -> 14:VarChar, CastLongToVarChar(col 2, maxLength 20) -> 15:VarChar, CastLongToVarChar(col 3, maxLength 30) -> 16:VarChar, VectorUDFAdaptor(CAST( f AS varchar(20))) -> 17:varchar(20), VectorUDFAdaptor(CAST( d AS varchar(20))) -> 18:varchar(20), CastStringGroupToVarChar(col 8, maxLength 50) -> 19:VarChar
-                    Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat

@@ -139,7 +139,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // parsing statement is now done, on to logic.
-      tableExists = prepareImport(
+      tableExists = prepareImport(true,
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
@@ -175,7 +175,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  public static boolean prepareImport(
+  public static boolean prepareImport(boolean isImportCmd,
       boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnPrecursor,
       String parsedLocation, String parsedTableName, String parsedDbName,
       LinkedHashMap<String, String> parsedPartSpec,
@@ -197,12 +197,21 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
 
+    if (rv.getTable() == null) {
+      // nothing to do here, silently return.
+      return false;
+    }
+
     ReplicationSpec replicationSpec = rv.getReplicationSpec();
     if (replicationSpec.isNoop()){
       // nothing to do here, silently return.
       x.getLOG().debug("Current update with ID:{} is noop",
                                   replicationSpec.getCurrentReplicationState());
       return false;
+    }
+
+    if (isImportCmd) {
+      replicationSpec.setReplSpecType(ReplicationSpec.Type.IMPORT);
     }
 
     String dbname = SessionState.get().getCurrentDatabase();

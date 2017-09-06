@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.SparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -77,7 +78,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
   // Check whether the specified BaseWork's operator tree contains a operator
   // of the specified operator class
   private boolean containsOp(BaseWork work, Class<?> clazz) {
-    Set<Operator<?>> matchingOps = getOp(work, clazz);
+    Set<Operator<?>> matchingOps = OperatorUtils.getOp(work, clazz);
     return matchingOps != null && !matchingOps.isEmpty();
   }
 
@@ -88,34 +89,6 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
       }
     }
     return false;
-  }
-
-  public static Set<Operator<?>> getOp(BaseWork work, Class<?> clazz) {
-    Set<Operator<?>> ops = new HashSet<Operator<?>>();
-    if (work instanceof MapWork) {
-      Collection<Operator<?>> opSet = ((MapWork) work).getAliasToWork().values();
-      Stack<Operator<?>> opStack = new Stack<Operator<?>>();
-      opStack.addAll(opSet);
-
-      while (!opStack.empty()) {
-        Operator<?> op = opStack.pop();
-        ops.add(op);
-        if (op.getChildOperators() != null) {
-          opStack.addAll(op.getChildOperators());
-        }
-      }
-    } else {
-      ops.addAll(work.getAllOperators());
-    }
-
-    Set<Operator<? extends OperatorDesc>> matchingOps =
-      new HashSet<Operator<? extends OperatorDesc>>();
-    for (Operator<? extends OperatorDesc> op : ops) {
-      if (clazz.isInstance(op)) {
-        matchingOps.add(op);
-      }
-    }
-    return matchingOps;
   }
 
   @SuppressWarnings("unchecked")
@@ -193,7 +166,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
               containsOp(work, MapJoinOperator.class)) {
             work.setMapRedLocalWork(new MapredLocalWork());
           }
-          Set<Operator<?>> ops = getOp(work, MapJoinOperator.class);
+          Set<Operator<?>> ops = OperatorUtils.getOp(work, MapJoinOperator.class);
           if (ops == null || ops.isEmpty()) {
             continue;
           }
@@ -223,7 +196,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
 
           for (BaseWork parentWork : originalWork.getParents(work)) {
             Set<Operator<?>> hashTableSinkOps =
-                getOp(parentWork, SparkHashTableSinkOperator.class);
+                OperatorUtils.getOp(parentWork, SparkHashTableSinkOperator.class);
             if (hashTableSinkOps == null || hashTableSinkOps.isEmpty()) {
               continue;
             }
