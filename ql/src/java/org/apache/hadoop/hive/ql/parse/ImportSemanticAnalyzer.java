@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -231,6 +232,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
+      tblDesc.getTblProps().remove(StatsSetupConst.COLUMN_STATS_ACCURATE);
     }
 
     if (isExternalSet){
@@ -254,6 +256,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Partition partition : partitions) {
       // TODO: this should ideally not create AddPartitionDesc per partition
       AddPartitionDesc partsDesc = getBaseAddPartitionDescFromPartition(fromPath, dbname, tblDesc, partition);
+      if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
+        partsDesc.getPartition(0).getPartParams().remove(StatsSetupConst.COLUMN_STATS_ACCURATE);
+      }
       partitionDescs.add(partsDesc);
     }
 
