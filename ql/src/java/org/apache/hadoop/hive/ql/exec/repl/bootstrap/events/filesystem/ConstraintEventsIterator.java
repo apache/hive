@@ -78,11 +78,7 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
         constraintFiles = null;
       }
     }
-    if (constraintFiles != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return constraintFiles != null;
   }
 
   @Override

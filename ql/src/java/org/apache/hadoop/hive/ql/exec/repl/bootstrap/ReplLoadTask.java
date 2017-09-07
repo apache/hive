@@ -93,7 +93,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (!iterator.hasNext() && constraintIterator.hasNext()) {
         loadingConstraint = true;
       }
-      while ((iterator.hasNext() || loadingConstraint && constraintIterator.hasNext()) && loadTaskTracker.canAddMoreTasks()) {
+      while ((iterator.hasNext() || (loadingConstraint && constraintIterator.hasNext())) && loadTaskTracker.canAddMoreTasks()) {
         BootstrapEvent next;
         if (!loadingConstraint) {
           next = iterator.next();
