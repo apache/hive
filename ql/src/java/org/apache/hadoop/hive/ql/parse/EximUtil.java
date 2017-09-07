@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
@@ -50,6 +51,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -237,8 +239,20 @@ public class EximUtil {
     // If we later make this work for non-repl cases, analysis of this logic might become necessary. Also, this is using
     // Replv2 semantics, i.e. with listFiles laziness (no copy at export time)
 
+    // Remove all the entries from the parameters which are added for bootstrap dump progress
+    Map<String, String> parameters = dbObj.getParameters();
+    Map<String, String> tmpParameters = new HashMap<>();
+    if (parameters != null) {
+      tmpParameters.putAll(parameters);
+      tmpParameters.entrySet()
+                .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX));
+      dbObj.setParameters(tmpParameters);
+    }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
       new DBSerializer(dbObj).writeTo(jsonWriter, replicationSpec);
+    }
+    if (parameters != null) {
+      dbObj.setParameters(parameters);
     }
   }
 
