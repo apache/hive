@@ -156,7 +156,16 @@ public class TestJdbcWithMiniLlap {
   }
 
   private void createTestTable(String tableName) throws Exception {
+    createTestTable(null, tableName);
+  }
+
+  private void createTestTable(String database, String tableName) throws Exception {
     Statement stmt = hs2Conn.createStatement();
+
+    if (database != null) {
+      stmt.execute("CREATE DATABASE IF NOT EXISTS " + database);
+      stmt.execute("USE " + database);
+    }
 
     // create table
     stmt.execute("DROP TABLE IF EXISTS " + tableName);
@@ -225,12 +234,12 @@ public class TestJdbcWithMiniLlap {
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {
-    createTestTable("testtab1");
+    createTestTable("nonascii", "testtab_nonascii");
 
     RowCollector rowCollector = new RowCollector();
     String nonAscii = "À côté du garçon";
-    String query = "select value, '" + nonAscii + "' from testtab1 where under_col=0";
-    int rowCount = processQuery(query, 1, rowCollector);
+    String query = "select value, '" + nonAscii + "' from testtab_nonascii where under_col=0";
+    int rowCount = processQuery("nonascii", query, 1, rowCollector);
     assertEquals(3, rowCount);
 
     assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(0));
@@ -474,6 +483,10 @@ public class TestJdbcWithMiniLlap {
   }
 
   private int processQuery(String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+    return processQuery(null, query, numSplits, rowProcessor);
+  }
+
+  private int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
     String url = miniHS2.getJdbcURL();
     String user = System.getProperty("user.name");
     String pwd = user;
@@ -488,6 +501,9 @@ public class TestJdbcWithMiniLlap {
     job.set(LlapBaseInputFormat.PWD_KEY, pwd);
     job.set(LlapBaseInputFormat.QUERY_KEY, query);
     job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
+    if (currentDatabase != null) {
+      job.set(LlapBaseInputFormat.DB_KEY, currentDatabase);
+    }
 
     InputSplit[] splits = inputFormat.getSplits(job, numSplits);
     assertTrue(splits.length > 0);

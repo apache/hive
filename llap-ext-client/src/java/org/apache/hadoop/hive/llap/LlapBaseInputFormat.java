@@ -109,6 +109,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final String USER_KEY = "llap.if.user";
   public static final String PWD_KEY = "llap.if.pwd";
   public static final String HANDLE_ID = "llap.if.handleid";
+  public static final String DB_KEY = "llap.if.database";
 
   public final String SPLIT_QUERY = "select get_splits(\"%s\",%d)";
   public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
@@ -210,6 +211,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     if (query == null) query = job.get(QUERY_KEY);
     if (user == null) user = job.get(USER_KEY);
     if (pwd == null) pwd = job.get(PWD_KEY);
+    String database = job.get(DB_KEY);
 
     if (url == null || query == null) {
       throw new IllegalStateException();
@@ -239,6 +241,9 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       try (
         Statement stmt = conn.createStatement();
       ) {
+        if (database != null && !database.isEmpty()) {
+          stmt.execute("USE " + database);
+        }
         ResultSet res = stmt.executeQuery(sql);
         while (res.next()) {
           // deserialize split
