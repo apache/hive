@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -84,7 +84,7 @@ public class ThriftHttpServlet extends TServlet {
   // Class members for cookie based authentication.
   private CookieSigner signer;
   public static final String AUTH_COOKIE = "hive.server2.auth";
-  private static final Random RAN = new Random();
+  private static final SecureRandom RAN = new SecureRandom();
   private boolean isCookieAuthEnabled;
   private String cookieDomain;
   private String cookiePath;
