@@ -76,7 +76,7 @@ class HiveClientCache {
 
   // Since HiveMetaStoreClient is not threadsafe, hive clients are not  shared across threads.
   // Thread local variable containing each thread's unique ID, is used as one of the keys for the cache
-  // causing each thread to get a different client even if the hiveConf is same.
+  // causing each thread to get a different client even if the conf is same.
   private static final ThreadLocal<Integer> threadId =
     new ThreadLocal<Integer>() {
       @Override

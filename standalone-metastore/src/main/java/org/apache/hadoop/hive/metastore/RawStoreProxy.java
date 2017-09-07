@@ -84,7 +84,7 @@ public class RawStoreProxy implements InvocationHandler {
   private void init() throws MetaException {
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
-    // it has already been initialized using hiveConf.
+    // it has already been initialized using conf.
     MetaStoreInit.updateConnectionURL(hiveConf, getConf(), null, metaStoreInitData);
   }
 

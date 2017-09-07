@@ -1184,10 +1184,10 @@ public class DagUtils {
   /**
    * Creates and initializes a JobConf object that can be used to execute
    * the DAG. The configuration object will contain configurations from mapred-site
-   * overlaid with key/value pairs from the hiveConf object. Finally it will also
+   * overlaid with key/value pairs from the conf object. Finally it will also
    * contain some hive specific configurations that do not change from DAG to DAG.
    *
-   * @param hiveConf Current hiveConf for the execution
+   * @param hiveConf Current conf for the execution
    * @return JobConf base configuration for job execution
    * @throws IOException
    */

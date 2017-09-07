@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -6813,6 +6812,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       checkImmutableTable(qb, dest_tab, dest_path, false);
 
+      // check for partition
+      List<FieldSchema> parts = dest_tab.getPartitionKeys();
+      if (parts != null && parts.size() > 0) { // table is partitioned
+        if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
+          throw new SemanticException(generateErrorMessage(
+              qb.getParseInfo().getDestForClause(dest),
+              ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
+        }
+        dpCtx = qbm.getDPCtx(dest);
+        if (dpCtx == null) {
+          dest_tab.validatePartColumnNames(partSpec, false);
+          dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
+              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+          qbm.setDPCtx(dest, dpCtx);
+        }
+      }
+
       // Check for dynamic partitions.
       dpCtx = checkDynPart(qb, qbm, dest_tab, partSpec, dest);
       if (dpCtx != null && dpCtx.getSPPath() != null) {
@@ -7396,7 +7413,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     try {
       FileSystem fs = dest_path.getFileSystem(conf);
-      if (! MetaStoreUtils.isDirEmpty(fs,dest_path)){
+      if (! org.apache.hadoop.hive.metastore.utils.FileUtils.isDirEmpty(fs,dest_path)){
         LOG.warn("Attempted write into an immutable table : "
             + dest_tab.getTableName() + " : " + dest_path);
         throw new SemanticException(

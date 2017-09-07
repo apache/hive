@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -1270,7 +1271,7 @@ public abstract class TestHiveMetaStore extends TestCase {
           new FieldSchema("name", serdeConstants.STRING_TYPE_NAME, ""));
       fam.getFields().add(
           new FieldSchema("members",
-              MetaStoreUtils.getListType(typ1.getName()), ""));
+              ColumnType.getListType(typ1.getName()), ""));
 
       ret = client.createType(fam);
       assertTrue("Unable to create type " + fam.getName(), ret);

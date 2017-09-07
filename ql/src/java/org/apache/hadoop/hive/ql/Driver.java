@@ -50,7 +50,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -297,7 +298,7 @@ public class Driver implements CommandProcessor {
         String tableName = "result";
         List<FieldSchema> lst = null;
         try {
-          lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(conf));
+          lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(conf));
         } catch (Exception e) {
           LOG.warn("Error getting schema: "
               + org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -326,7 +327,7 @@ public class Driver implements CommandProcessor {
         // Go over the schema and convert type to thrift type
         if (lst != null) {
           for (FieldSchema f : lst) {
-            f.setType(MetaStoreUtils.typeToThriftType(f.getType()));
+            f.setType(ColumnType.typeToThriftType(f.getType()));
           }
         }
       }

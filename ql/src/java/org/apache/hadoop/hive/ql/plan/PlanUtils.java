@@ -34,9 +34,10 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -591,7 +592,7 @@ public final class PlanUtils {
     // last one for union column.
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(length + 1);
     for (int i = 0; i < length; i++) {
-      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(
+      schemas.add(HiveMetaStoreUtils.getFieldSchemaFromTypeInfo(
           fieldPrefix + outputColumnNames.get(i), cols.get(i).getTypeInfo()));
     }
 
@@ -608,7 +609,7 @@ public final class PlanUtils {
       unionTypes.add(TypeInfoFactory.getStructTypeInfo(names, types));
     }
     if (outputColumnNames.size() - length > 0) {
-      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(
+      schemas.add(HiveMetaStoreUtils.getFieldSchemaFromTypeInfo(
           fieldPrefix + outputColumnNames.get(length),
           TypeInfoFactory.getUnionTypeInfo(unionTypes)));
     }
@@ -624,7 +625,7 @@ public final class PlanUtils {
       String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i = 0; i < cols.size(); i++) {
-      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix
+      schemas.add(HiveMetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix
           + outputColumnNames.get(i + start), cols.get(i).getTypeInfo()));
     }
     return schemas;
@@ -637,7 +638,7 @@ public final class PlanUtils {
       List<ExprNodeDesc> cols, String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i = 0; i < cols.size(); i++) {
-      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix + i,
+      schemas.add(HiveMetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix + i,
           cols.get(i).getTypeInfo()));
     }
     return schemas;
@@ -667,7 +668,7 @@ public final class PlanUtils {
       if (name.equals(String.valueOf(i))) {
         name = fieldPrefix + name;
       }
-      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(name, cols.get(i)
+      schemas.add(HiveMetaStoreUtils.getFieldSchemaFromTypeInfo(name, cols.get(i)
           .getType()));
     }
     return schemas;

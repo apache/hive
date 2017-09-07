@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 public class TestMarkPartitionRemote extends TestMarkPartition {
 
