@@ -243,7 +243,7 @@ STAGE PLANS:
                         alias: row_number_window_0
                         name: row_number
                         window function: GenericUDAFRowNumberEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Select Operator

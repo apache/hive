@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -27,6 +29,8 @@ import org.apache.hadoop.security.UserGroupInformation;
  * The post execute hook interface. A list of such hooks can be configured to be
  * called after compilation and before execution.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface PostExecute extends Hook {
 
   /**

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,15 +40,19 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -65,6 +70,18 @@ public class AcidUtils {
   };
   public static final String DELTA_PREFIX = "delta_";
   public static final String DELETE_DELTA_PREFIX = "delete_delta_";
+  /**
+   * Acid Streaming Ingest writes multiple transactions to the same file.  It also maintains a
+   * {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} side file which stores the length of
+   * the primary file as of the last commit ({@link OrcRecordUpdater#flush()}).  That is the 'logical length'.
+   * Once the primary is closed, the side file is deleted (logical length = actual length) but if
+   * the writer dies or the primary file is being read while its still being written to, anything
+   * past the logical length should be ignored.
+   *
+   * @see org.apache.orc.impl.OrcAcidUtils#DELTA_SIDE_FILE_SUFFIX
+   * @see org.apache.orc.impl.OrcAcidUtils#getLastFlushLength(FileSystem, Path)
+   * @see #getLogicalLength(FileSystem, FileStatus)
+   */
   public static final String DELTA_SIDE_FILE_SUFFIX = "_flush_length";
   public static final PathFilter deltaFileFilter = new PathFilter() {
     @Override
@@ -100,6 +117,10 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern BUCKET_DIGIT_PATTERN = Pattern.compile("[0-9]{5}$");
   public static final Pattern   LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
+  /**
+   * This does not need to use ORIGINAL_PATTERN_COPY because it's used to read
+   * a "delta" dir written by a real Acid write - cannot have any copies
+   */
   public static final PathFilter originalBucketFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -114,6 +135,11 @@ public class AcidUtils {
 
   private static final Pattern ORIGINAL_PATTERN =
       Pattern.compile("[0-9]+_[0-9]+");
+  /**
+   * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
+   */
+  private static final Pattern ORIGINAL_PATTERN_COPY =
+    Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "[0-9]+");
 
   public static final PathFilter hiddenFileFilter = new PathFilter(){
     @Override
@@ -156,7 +182,7 @@ public class AcidUtils {
    * This is format of delete delta dir name prior to Hive 2.2.x
    */
   @VisibleForTesting
-  static String deleteDeltaSubdir(long min, long max) {
+  public static String deleteDeltaSubdir(long min, long max) {
     return DELETE_DELTA_PREFIX + String.format(DELTA_DIGITS, min) + "_" +
         String.format(DELTA_DIGITS, max);
   }
@@ -167,7 +193,7 @@ public class AcidUtils {
    * @since 2.2.x
    */
   @VisibleForTesting
-  static String deleteDeltaSubdir(long min, long max, int statementId) {
+  public static String deleteDeltaSubdir(long min, long max, int statementId) {
     return deleteDeltaSubdir(min, max) + "_" + String.format(STATEMENT_DIGITS, statementId);
   }
 
@@ -185,7 +211,7 @@ public class AcidUtils {
     String subdir;
     if (options.getOldStyle()) {
       return new Path(directory, String.format(LEGACY_FILE_BUCKET_DIGITS,
-          options.getBucket()) + "_0");
+          options.getBucketId()) + "_0");
     } else if (options.isWritingBase()) {
       subdir = BASE_PREFIX + String.format(DELTA_DIGITS,
           options.getMaximumTransactionId());
@@ -206,7 +232,7 @@ public class AcidUtils {
                         options.getMaximumTransactionId(),
                         options.getStatementId());
     }
-    return createBucketFile(new Path(directory, subdir), options.getBucket());
+    return createBucketFile(new Path(directory, subdir), options.getBucketId());
   }
 
   /**
@@ -244,7 +270,21 @@ public class AcidUtils {
           .maximumTransactionId(0)
           .bucket(bucket)
           .writingBase(true);
-    } else if (filename.startsWith(BUCKET_PREFIX)) {
+    }
+    else if(ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
+      //todo: define groups in regex and use parseInt(Matcher.group(2))....
+      int bucket =
+        Integer.parseInt(filename.substring(0, filename.indexOf('_')));
+      int copyNumber = Integer.parseInt(filename.substring(filename.lastIndexOf('_') + 1));
+      result
+        .setOldStyle(true)
+        .minimumTransactionId(0)
+        .maximumTransactionId(0)
+        .bucket(bucket)
+        .copyNumber(copyNumber)
+        .writingBase(true);
+    }
+    else if (filename.startsWith(BUCKET_PREFIX)) {
       int bucket =
           Integer.parseInt(filename.substring(filename.indexOf('_') + 1));
       if (bucketFile.getParent().getName().startsWith(BASE_PREFIX)) {
@@ -348,22 +388,11 @@ public class AcidUtils {
     public static final int INSERT_ONLY_BIT = 0x04;
     public static final String INSERT_ONLY_STRING = "insert_only";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
-    public static final String LEGACY_VALUE_STRING = TransactionalValidationListener.LEGACY_TRANSACTIONAL_PROPERTY;
     public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
     private AcidOperationalProperties() {
     }
 
-    /**
-     * Returns an acidOperationalProperties object that represents ACID behavior for legacy tables
-     * that were created before ACID type system using operational properties was put in place.
-     * @return the acidOperationalProperties object
-     */
-    public static AcidOperationalProperties getLegacy() {
-      AcidOperationalProperties obj = new AcidOperationalProperties();
-      // In legacy mode, none of these properties are turned on.
-      return obj;
-    }
 
     /**
      * Returns an acidOperationalProperties object that represents default ACID behavior for tables
@@ -396,13 +425,10 @@ public class AcidUtils {
      */
     public static AcidOperationalProperties parseString(String propertiesStr) {
       if (propertiesStr == null) {
-        return AcidOperationalProperties.getLegacy();
+        return AcidOperationalProperties.getDefault();
       }
       if (propertiesStr.equalsIgnoreCase(DEFAULT_VALUE_STRING)) {
         return AcidOperationalProperties.getDefault();
-      }
-      if (propertiesStr.equalsIgnoreCase(LEGACY_VALUE_STRING)) {
-        return AcidOperationalProperties.getLegacy();
       }
       if (propertiesStr.equalsIgnoreCase(INSERTONLY_VALUE_STRING)) {
         return AcidOperationalProperties.getInsertOnly();
@@ -519,7 +545,7 @@ public class AcidUtils {
     Path getBaseDirectory();
 
     /**
-     * Get the list of original files.  Not {@code null}.
+     * Get the list of original files.  Not {@code null}.  Must be sorted.
      * @return the list of original files (eg. 000000_0)
      */
     List<HdfsFileStatusWithId> getOriginalFiles();
@@ -869,7 +895,7 @@ public class AcidUtils {
       // Okay, we're going to need these originals.  Recurse through them and figure out what we
       // really need.
       for (FileStatus origDir : originalDirectories) {
-        findOriginals(fs, origDir, original, useFileIds);
+        findOriginals(fs, origDir, original, useFileIds, ignoreEmptyFiles);
       }
     }
 
@@ -937,7 +963,17 @@ public class AcidUtils {
     final Path base = bestBase.status == null ? null : bestBase.status.getPath();
     LOG.debug("in directory " + directory.toUri().toString() + " base = " + base + " deltas = " +
         deltas.size());
-
+    /**
+     * If this sort order is changed and there are tables that have been converted to transactional
+     * and have had any update/delete/merge operations performed but not yet MAJOR compacted, it
+     * may result in data loss since it may change how
+     * {@link org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger.OriginalReaderPair} assigns 
+     * {@link RecordIdentifier#rowId} for read (that have happened) and compaction (yet to happen).
+     */
+    Collections.sort(original, (HdfsFileStatusWithId o1, HdfsFileStatusWithId o2) -> {
+      //this does "Path.uri.compareTo(that.uri)"
+      return o1.getFileStatus().compareTo(o2.getFileStatus());
+    });
     return new Directory(){
 
       @Override
@@ -1064,7 +1100,7 @@ public class AcidUtils {
    * @throws IOException
    */
   private static void findOriginals(FileSystem fs, FileStatus stat,
-      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds) throws IOException {
+      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
     assert stat.isDir();
     List<HdfsFileStatusWithId> childrenWithId = null;
     Boolean val = useFileIds.value;
@@ -1084,18 +1120,22 @@ public class AcidUtils {
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         if (child.getFileStatus().isDir()) {
-          findOriginals(fs, child.getFileStatus(), original, useFileIds);
+          findOriginals(fs, child.getFileStatus(), original, useFileIds, ignoreEmptyFiles);
         } else {
-          original.add(child);
+          if(!ignoreEmptyFiles || child.getFileStatus().getLen() > 0) {
+            original.add(child);
+          }
         }
       }
     } else {
       List<FileStatus> children = HdfsUtils.listLocatedStatus(fs, stat.getPath(), hiddenFileFilter);
       for (FileStatus child : children) {
         if (child.isDir()) {
-          findOriginals(fs, child, original, useFileIds);
+          findOriginals(fs, child, original, useFileIds, ignoreEmptyFiles);
         } else {
-          original.add(createOriginalObj(null, child));
+          if(!ignoreEmptyFiles || child.getLen() > 0) {
+            original.add(createOriginalObj(null, child));
+          }
         }
       }
     }
@@ -1132,7 +1172,12 @@ public class AcidUtils {
   public static void setTransactionalTableScan(Configuration conf, boolean isAcidTable) {
     HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isAcidTable);
   }
-
+  /**
+   * @param p - not null
+   */
+  public static boolean isDeleteDelta(Path p) {
+    return p.getName().startsWith(DELETE_DELTA_PREFIX);
+  }
   /** Checks if a table is a valid ACID table.
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
@@ -1188,8 +1233,8 @@ public class AcidUtils {
     String transactionalProperties = table.getProperty(
             hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (transactionalProperties == null) {
-      // If the table does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the table does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(transactionalProperties);
   }
@@ -1201,7 +1246,7 @@ public class AcidUtils {
    */
   public static AcidOperationalProperties getAcidOperationalProperties(Configuration conf) {
     // If the conf does not define any transactional properties, the parseInt() should receive
-    // a value of zero, which will set AcidOperationalProperties to a legacy type and return that.
+    // a value of 1, which will set AcidOperationalProperties to a default type and return that.
     return AcidOperationalProperties.parseInt(
             HiveConf.getIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES));
   }
@@ -1214,8 +1259,8 @@ public class AcidUtils {
   public static AcidOperationalProperties getAcidOperationalProperties(Properties props) {
     String resultStr = props.getProperty(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (resultStr == null) {
-      // If the properties does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the properties does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(resultStr);
   }
@@ -1229,9 +1274,44 @@ public class AcidUtils {
           Map<String, String> parameters) {
     String resultStr = parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     if (resultStr == null) {
-      // If the parameters does not define any transactional properties, we return a legacy type.
-      return AcidOperationalProperties.getLegacy();
+      // If the parameters does not define any transactional properties, we return a default type.
+      return AcidOperationalProperties.getDefault();
     }
     return AcidOperationalProperties.parseString(resultStr);
+  }
+  /**
+   * See comments at {@link AcidUtils#DELTA_SIDE_FILE_SUFFIX}.
+   *
+   * Returns the logical end of file for an acid data file.
+   *
+   * This relies on the fact that if delta_x_y has no committed transactions it wil be filtered out
+   * by {@link #getAcidState(Path, Configuration, ValidTxnList)} and so won't be read at all.
+   * @param file - data file to read/compute splits on
+   */
+  public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
+    Path lengths = OrcAcidUtils.getSideFile(file.getPath());
+    if(!fs.exists(lengths)) {
+      /**
+       * if here for delta_x_y that means txn y is resolved and all files in this delta are closed so
+       * they should all have a valid ORC footer and info from NameNode about length is good
+       */
+      return file.getLen();
+    }
+    long len = OrcAcidUtils.getLastFlushLength(fs, file.getPath());
+    if(len >= 0) {
+      /**
+       * if here something is still writing to delta_x_y so  read only as far as the last commit,
+       * i.e. where last footer was written.  The file may contain more data after 'len' position
+       * belonging to an open txn.
+       */
+      return len;
+    }
+    /**
+     * if here, side file is there but we couldn't read it.  We want to avoid a read where
+     * (file.getLen() < 'value from side file' which may happen if file is not closed) because this
+     * means some committed data from 'file' would be skipped.
+     * This should be very unusual.
+     */
+    throw new IOException(lengths + " found but is not readable.  Consider waiting or orcfiledump --recover");
   }
 }

@@ -40,8 +40,7 @@ public class InsertHandler extends AbstractMessageHandler {
     List<Task<? extends Serializable>> tasks = tableHandler.handle(currentContext);
     readEntitySet.addAll(tableHandler.readEntities());
     writeEntitySet.addAll(tableHandler.writeEntities());
-    databasesUpdated.putAll(tableHandler.databasesUpdated);
-    tablesUpdated.putAll(tableHandler.tablesUpdated);
+    getUpdatedMetadata().copyUpdatedMetadata(tableHandler.getUpdatedMetadata());
     return tasks;
   }
 }

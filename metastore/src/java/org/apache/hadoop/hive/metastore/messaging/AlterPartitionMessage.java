@@ -31,6 +31,8 @@ public abstract class AlterPartitionMessage extends EventMessage {
 
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract boolean getIsTruncateOp();
 
   public abstract Map<String,String> getKeyValues();

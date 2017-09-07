@@ -35,13 +35,17 @@ public class ChunkedInputStream extends InputStream {
   private int unreadBytes = 0;  // Bytes remaining in the current chunk of data
   private byte[] singleByte = new byte[1];
   private boolean endOfData = false;
+  private String id;
 
-  public ChunkedInputStream(InputStream in) {
+  public ChunkedInputStream(InputStream in, String id) {
     din = new DataInputStream(in);
+    this.id = id;
+    LOG.debug("Creating chunked input for {}", id);
   }
 
   @Override
   public void close() throws IOException {
+    LOG.debug("{}: Closing chunked input.", id);
     din.close();
   }
 
@@ -56,7 +60,7 @@ public class ChunkedInputStream extends InputStream {
     int bytesRead = 0;
 
     if (len < 0) {
-      throw new IllegalArgumentException("Negative read length");
+      throw new IllegalArgumentException(id + ": Negative read length");
     } else if (len == 0) {
       return 0;
     }
@@ -67,15 +71,15 @@ public class ChunkedInputStream extends InputStream {
         // Find the next chunk size
         unreadBytes = din.readInt();
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Chunk size " + unreadBytes);
+          LOG.debug("{}: Chunk size {}", id, unreadBytes);
         }
         if (unreadBytes == 0) {
-          LOG.debug("Hit end of data");
+          LOG.debug("{}: Hit end of data", id);
           endOfData = true;
           return -1;
         }
       } catch (IOException err) {
-        throw new IOException("Error while attempting to read chunk length", err);
+        throw new IOException(id + ": Error while attempting to read chunk length", err);
       }
     }
 
@@ -83,7 +87,7 @@ public class ChunkedInputStream extends InputStream {
     try {
       din.readFully(b, off, bytesToRead);
     } catch (IOException err) {
-      throw new IOException("Error while attempting to read " + bytesToRead + " bytes from current chunk", err);
+      throw new IOException(id + ": Error while attempting to read " + bytesToRead + " bytes from current chunk", err);
     }
     unreadBytes -= bytesToRead;
     bytesRead += bytesToRead;

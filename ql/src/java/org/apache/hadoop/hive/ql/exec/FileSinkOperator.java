@@ -41,15 +41,18 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
@@ -91,7 +94,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -165,7 +167,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     Path[] finalPaths;
     RecordWriter[] outWriters;
     RecordUpdater[] updaters;
-    private Stat stat;
+    Stat stat;
     int acidLastBucket = -1;
     int acidFileOffset = -1;
     private boolean isMmTable;
@@ -288,6 +290,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     public void abortWriters(FileSystem fs, boolean abort, boolean delete) throws HiveException {
+      //should this close updaters[]?
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
@@ -406,6 +409,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient int numFiles;
   protected transient boolean multiFileSpray;
   protected transient final Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
+  private transient boolean isBucketed = false;
 
   private transient ObjectInspector[] partitionObjectInspectors;
   protected transient HivePartitioner<HiveKey, Object> prtner;
@@ -477,6 +481,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       isNativeTable = !conf.getTableInfo().isNonNative();
       isTemporary = conf.isTemporary();
       multiFileSpray = conf.isMultiFileSpray();
+      this.isBucketed = hconf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
       totalFiles = conf.getTotalFiles();
       numFiles = conf.getNumFiles();
       dpCtx = conf.getDynPartCtx();
@@ -875,16 +880,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         LOG.info(toString() + ": records written - " + numRows);
       }
 
-      // This should always be 0 for the final result file
-      int writerOffset = findWriterOffset(row);
+      int writerOffset;
       // This if/else chain looks ugly in the inner loop, but given that it will be 100% the same
       // for a given operator branch prediction should work quite nicely on it.
       // RecordUpdateer expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable()) {
-        rowOutWriters[writerOffset].write(recordValue);
+        rowOutWriters[findWriterOffset(row)].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
-        fpaths.updaters[writerOffset].insert(conf.getTransactionId(), row);
+        fpaths.updaters[findWriterOffset(row)].insert(conf.getTransactionId(), row);
       } else {
         // TODO I suspect we could skip much of the stuff above this in the function in the case
         // of update and delete.  But I don't understand all of the side effects of the above
@@ -893,24 +897,57 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // Find the bucket id, and switch buckets if need to
         ObjectInspector rowInspector = bDynParts ? subSetOI : outputObjInspector;
         Object recId = ((StructObjectInspector)rowInspector).getStructFieldData(row, recIdField);
-        int bucketNum =
+        int bucketProperty =
             bucketInspector.get(recIdInspector.getStructFieldData(recId, bucketField));
-        if (fpaths.acidLastBucket != bucketNum) {
-          fpaths.acidLastBucket = bucketNum;
-          // Switch files
-          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 : ++fpaths.acidFileOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
-              jc, conf.getTableInfo(), bucketNum, conf, fpaths.outPaths[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset],
-              rowInspector, reporter, 0);
+        int bucketNum = 
+          BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        writerOffset = 0;
+        if (multiFileSpray) {
+          //bucket_num_reducers_acid.q, TestTxnCommands.testMoreBucketsThanReducers()
+          if (!bucketMap.containsKey(bucketNum)) {
+            String extraMsg = "  (no path info/)" + recId;
+            if (fpaths != null && fpaths.finalPaths != null && fpaths.finalPaths.length > 0) {
+              extraMsg = "  (finalPaths[0]=" + fpaths.finalPaths[0] + ")/" + recId;
+            }
+            throw new IllegalStateException("Found bucketNum=" + bucketNum +
+              " from data but no mapping in 'bucketMap'." + extraMsg);
+          }
+          writerOffset = bucketMap.get(bucketNum);
+        }
+        if (fpaths.updaters[writerOffset] == null) {
+          /*data for delete commands always have ROW__ID which implies that the bucket ID
+          * for each row is known.  RecordUpdater creates bucket_N file based on 'bucketNum' thus
+          * delete events always land in the proper bucket_N file.  This could even handle
+          * cases where multiple writers are writing bucket_N file for the same N in which case
+          * Hive.copyFiles() will make one of them bucket_N_copy_M in the final location.  The
+          * reset of acid (read path) doesn't know how to handle copy_N files except for 'original'
+          * files (HIVE-16177)*/
+          int writerId = -1;
+          if(!isBucketed) {
+            assert !multiFileSpray;
+            assert writerOffset == 0;
+            /**For un-bucketed tables, Deletes with ROW__IDs with different 'bucketNum' values can
+            * be written to the same bucketN file.
+            * N in this case is writerId and there is no relationship
+            * between the file name and any property of the data in it.  Inserts will be written
+            * to bucketN file such that all {@link RecordIdentifier#getBucketProperty()} indeed
+            * contain writerId=N.
+            * Since taskId is unique (at least per statementId and thus
+            * per [delete_]delta_x_y_stmtId/) there will not be any copy_N files.*/
+            writerId = Integer.parseInt(Utilities.getTaskIdFromFilename(taskId));
+          }
+          fpaths.updaters[writerOffset] = HiveFileFormatUtils.getAcidRecordUpdater(
+            jc, conf.getTableInfo(), writerId >= 0 ? writerId : bucketNum, conf,
+            fpaths.outPaths[writerOffset], rowInspector, reporter, 0);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Created updater for bucket number " + bucketNum + " using file " +
-                fpaths.outPaths[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset]);
+              fpaths.outPaths[writerOffset]);
           }
         }
-
         if (conf.getWriteType() == AcidUtils.Operation.UPDATE) {
-          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset].update(conf.getTransactionId(), row);
+            fpaths.updaters[writerOffset].update(conf.getTransactionId(), row);
         } else if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
-          fpaths.updaters[conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED) ? 0 :fpaths.acidFileOffset].delete(conf.getTransactionId(), row);
+            fpaths.updaters[writerOffset].delete(conf.getTransactionId(), row);
         } else {
           throw new HiveException("Unknown write type " + conf.getWriteType().toString());
         }
@@ -940,6 +977,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (!multiFileSpray) {
       return 0;
     } else {
+      assert getConf().getWriteType() != AcidUtils.Operation.DELETE &&
+        getConf().getWriteType() != AcidUtils.Operation.UPDATE :
+        "Unexpected operation type: " + getConf().getWriteType();
+      //this is not used for DELETE commands (partitionEval is not set up correctly
+      // (or needed) for that
       Object[] bucketFieldValues = new Object[partitionEval.length];
       for(int i = 0; i < partitionEval.length; i++) {
         bucketFieldValues[i] = partitionEval[i].evaluate(row);
@@ -949,7 +991,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       int bucketNum = prtner.getBucket(key, null, totalFiles);
       return bucketMap.get(bucketNum);
     }
-
   }
 
   /**

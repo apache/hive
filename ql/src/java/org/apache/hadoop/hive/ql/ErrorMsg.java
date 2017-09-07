@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.FileNotFoundException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,9 +26,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hdfs.protocol.DSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.NSQuotaExceededException;
+import org.apache.hadoop.hdfs.protocol.UnresolvedPathException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ASTNodeOrigin;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.security.AccessControlException;
 
 /**
  * List of all error messages.
@@ -382,7 +387,7 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
-
+  LOAD_DATA_ON_ACID_TABLE(10266, "LOAD DATA... statement is not supported on transactional table {0}.", true),
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -411,12 +416,10 @@ public enum ErrorMsg {
   INSERT_CANNOT_CREATE_TEMP_FILE(10293, "Unable to create temp file for insert values "),
   ACID_OP_ON_NONACID_TXNMGR(10294, "Attempt to do update or delete using transaction manager that" +
       " does not support these operations."),
-  NO_INSERT_OVERWRITE_WITH_ACID(10295, "INSERT OVERWRITE not allowed on table {0} with OutputFormat " +
-      "that implements AcidOutputFormat while transaction manager that supports ACID is in use", true),
   VALUES_TABLE_CONSTRUCTOR_NOT_SUPPORTED(10296,
       "Values clause with table constructor not yet supported"),
-  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that does not use " +
-      "an AcidOutputFormat or is not bucketed", true),
+  ACID_OP_ON_NONACID_TABLE(10297, "Attempt to do update or delete on table {0} that is " +
+    "not transactional", true),
   ACID_NO_SORTED_BUCKETS(10298, "ACID insert, update, delete not supported on tables that are " +
       "sorted, table {0}", true),
   ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED(10299,
@@ -468,9 +471,11 @@ public enum ErrorMsg {
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
   MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
-  INVALID_JOIN_CONDITION(10407, "Error parsing condition in outer join"),
+  INVALID_JOIN_CONDITION(10407, "Error parsing condition in join"),
   INVALID_TARGET_COLUMN_IN_SET_CLAUSE(10408, "Target column \"{0}\" of set clause is not found in table \"{1}\".", true),
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
+  ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED(10410,
+      "Alter table with non-partitioned table does not support cascade"),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
@@ -495,6 +500,15 @@ public enum ErrorMsg {
    */
   OP_NOT_ALLOWED_IN_TXN(20007, "Operation {0} is not allowed in a transaction ({1},queryId={2}).", true),
   OP_NOT_ALLOWED_WITHOUT_TXN(20008, "Operation {0} is not allowed without an active transaction", true),
+  ACCESS_DENIED(20009, "Access denied: {0}", "42000", true),
+  QUOTA_EXCEEDED(20010, "Quota exceeded: {0}", "64000", true),
+  UNRESOLVED_PATH(20011, "Unresolved path: {0}", "64000", true),
+  FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
+  WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
+
+  // An exception from runtime that will show the full stack to client
+  UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
+
   //========================== 30000 range starts here ========================//
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
@@ -577,6 +591,20 @@ public enum ErrorMsg {
         }
       }
     }
+  }
+
+  /**
+   * Given a remote runtime exception, returns the ErrorMsg object associated with it.
+   * @param e An exception
+   * @return ErrorMsg
+   */
+  public static ErrorMsg getErrorMsg(Exception e) {
+    if (e instanceof AccessControlException) return ACCESS_DENIED;
+    if (e instanceof NSQuotaExceededException) return QUOTA_EXCEEDED;
+    if (e instanceof DSQuotaExceededException) return QUOTA_EXCEEDED;
+    if (e instanceof UnresolvedPathException) return UNRESOLVED_PATH;
+    if (e instanceof FileNotFoundException) return FILE_NOT_FOUND;
+    return UNRESOLVED_RT_EXCEPTION;
   }
 
   /**

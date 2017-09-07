@@ -361,13 +361,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     // Create post-filtering evaluators if needed
     if (conf.getResidualFilterExprs() != null) {
-      // Currently residual filter expressions are only used with outer joins, thus
-      // we add this safeguard.
-      // TODO: Remove this guard when support for residual expressions can be present
-      // for inner joins too. This would be added to improve efficiency in the evaluation
-      // of certain joins, since we will not be emitting rows which are thrown away by
-      // filter straight away.
-      assert !noOuterJoin;
       residualJoinFilters = new ArrayList<>(conf.getResidualFilterExprs().size());
       residualJoinFiltersOIs = new ArrayList<>(conf.getResidualFilterExprs().size());
       for (int i = 0; i < conf.getResidualFilterExprs().size(); i++) {
@@ -377,10 +370,12 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
                 residualJoinFilters.get(i).initialize(outputObjInspector));
       }
       needsPostEvaluation = true;
-      // We need to disable join emit interval, since for outer joins with post conditions
-      // we need to have the full view on the right matching rows to know whether we need
-      // to produce a row with NULL values or not
-      joinEmitInterval = -1;
+      if (!noOuterJoin) {
+        // We need to disable join emit interval, since for outer joins with post conditions
+        // we need to have the full view on the right matching rows to know whether we need
+        // to produce a row with NULL values or not
+        joinEmitInterval = -1;
+      }
     }
 
     if (LOG.isInfoEnabled()) {

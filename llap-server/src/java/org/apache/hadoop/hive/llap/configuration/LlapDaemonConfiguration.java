@@ -17,7 +17,6 @@ package org.apache.hadoop.hive.llap.configuration;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Configuration for LLAP daemon processes only. This should not be used by any clients.
@@ -33,18 +32,12 @@ public class LlapDaemonConfiguration extends Configuration {
       "hdfs-site.xml", "yarn-site.xml", "tez-site.xml", "hive-site.xml" };
 
   @InterfaceAudience.Private
-  public static final String[] SSL_DAEMON_CONFIGS = { "ssl-server.xml" };
+  public static final String[] SSL_DAEMON_CONFIGS = { "ssl-client.xml" };
 
   public LlapDaemonConfiguration() {
     super(true); // Load the defaults.
     for (String conf : DAEMON_CONFIGS) {
       addResource(conf);
-    }
-    /* load ssl secret configs */
-    if (HiveConf.getBoolVar(this, HiveConf.ConfVars.LLAP_DAEMON_WEB_SSL)) {
-      for (String conf : SSL_DAEMON_CONFIGS) {
-        addResource(conf);
-      }
     }
     addResource(LLAP_DAEMON_SITE);
   }

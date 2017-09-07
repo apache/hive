@@ -37,8 +37,7 @@ public class DropTableHandler extends AbstractMessageHandler {
     String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
     DropTableDesc dropTableDesc = new DropTableDesc(
         actualDbName + "." + actualTblName,
-        null, true, true,
-        eventOnlyReplicationSpec(context)
+        null, true, true, context.eventOnlyReplicationSpec()
     );
     Task<DDLWork> dropTableTask = TaskFactory.get(
         new DDLWork(readEntitySet, writeEntitySet, dropTableDesc),
@@ -47,7 +46,7 @@ public class DropTableHandler extends AbstractMessageHandler {
     context.log.debug(
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()
     );
-    databasesUpdated.put(actualDbName, context.dmd.getEventTo());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
     return Collections.singletonList(dropTableTask);
   }
 }

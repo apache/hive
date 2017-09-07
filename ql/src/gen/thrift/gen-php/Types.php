@@ -114,6 +114,9 @@ final class StageType {
   const STATS = 9;
   const DEPENDENCY_COLLECTION = 10;
   const COLUMNSTATS = 11;
+  const REPL_DUMP = 12;
+  const REPL_BOOTSTRAP_LOAD = 13;
+  const REPL_STATE_LOG = 14;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -127,6 +130,9 @@ final class StageType {
     9 => 'STATS',
     10 => 'DEPENDENCY_COLLECTION',
     11 => 'COLUMNSTATS',
+    12 => 'REPL_DUMP',
+    13 => 'REPL_BOOTSTRAP_LOAD',
+    14 => 'REPL_STATE_LOG',
   );
 }
 

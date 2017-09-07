@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDoubleToTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastLongToTimestamp;
@@ -47,7 +48,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 @Description(name = "timestamp",
 value = "cast(date as timestamp) - Returns timestamp")
-@VectorizedExpressions({CastLongToTimestamp.class,
+@VectorizedExpressions({CastLongToTimestamp.class, CastDateToTimestamp.class,
   CastDoubleToTimestamp.class, CastDecimalToTimestamp.class})
 public class GenericUDFTimestamp extends GenericUDF {
 

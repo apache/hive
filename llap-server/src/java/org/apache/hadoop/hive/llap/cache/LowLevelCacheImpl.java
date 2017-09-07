@@ -236,33 +236,41 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   private DiskRangeList addCachedBufferToIter(
       DiskRangeList currentNotCached, DiskRangeList currentCached, BooleanRef gotAllData) {
     if (currentNotCached.getOffset() >= currentCached.getOffset()) {
-      if (currentNotCached.getEnd() <= currentCached.getEnd()) {  // we assume it's always "==" now
+      // Cached buffer has the same (or lower) offset as the requested buffer.
+      if (currentNotCached.getEnd() <= currentCached.getEnd()) {
         // Replace the entire current DiskRange with new cached range.
+        // In case of an inexact match in either of the below it may throw. We do not currently
+        // support the case where the caller requests a single cache buffer via multiple smaller
+        // sub-ranges; if that happens, this may throw. Noone does it now, though.
+        // TODO: should we actively assert here for cache buffers larger than range?
         currentNotCached.replaceSelfWith(currentCached);
         return null;
       } else {
-        // Insert the new cache range before the disk range.
+        // This cache range is a prefix of the requested one; the above also applies.
+        // The cache may still contain the rest of the requested range, so don't set gotAllData.
         currentNotCached.insertPartBefore(currentCached);
         return currentNotCached;
       }
-    } else {
-      // There's some part of current buffer that is not cached.
-      if (gotAllData != null) {
-        gotAllData.value = false;
-      }
-      assert currentNotCached.getOffset() < currentCached.getOffset()
-        || currentNotCached.prev == null
-        || currentNotCached.prev.getEnd() <= currentCached.getOffset();
-      long endOffset = currentNotCached.getEnd();
+    }
+
+    // Some part of the requested range is not cached - the cached offset is past the requested.
+    if (gotAllData != null) {
+      gotAllData.value = false;
+    }
+    if (currentNotCached.getEnd() <= currentCached.getEnd()) {
+      // The cache buffer comprises the tail of the requested range (and possibly overshoots it).
+      // The same as above applies - may throw if cache buffer is larger than the requested range,
+      // and there's another range after this that starts in the middle of this cache buffer.
+      // Currently, we cache at exact offsets, so the latter should never happen.
       currentNotCached.insertPartAfter(currentCached);
-      if (endOffset <= currentCached.getEnd()) { // we assume it's always "==" now
-        return null;  // No more matches expected...
-      } else {
-        // Insert the new disk range after the cache range. TODO: not strictly necessary yet?
-        currentNotCached = new DiskRangeList(currentCached.getEnd(), endOffset);
-        currentCached.insertAfter(currentNotCached);
-        return currentNotCached;
-      }
+      return null;  // No more matches expected.
+    } else {
+      // The cached buffer is in the middle of the requested range.
+      // The remaining tail of the latter may still be available further.
+      DiskRangeList tail = new DiskRangeList(currentCached.getEnd(), currentNotCached.getEnd());
+      currentNotCached.insertPartAfter(currentCached);
+      currentCached.insertAfter(tail);
+      return tail;
     }
   }
 
@@ -382,7 +390,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   private static final ByteBuffer fakeBuf = ByteBuffer.wrap(new byte[1]);
   public static LlapDataBuffer allocateFake() {
     LlapDataBuffer fake = new LlapDataBuffer();
-    fake.initialize(-1, fakeBuf, 0, 1);
+    fake.initialize(fakeBuf, 0, 1);
     return fake;
   }
 
@@ -412,7 +420,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         throws InterruptedException {
       // Iterate thru the file cache. This is best-effort.
       Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.getCache().entrySet().iterator();
-      boolean isEmpty = true;
       while (subIter.hasNext()) {
         long time = -1;
         isPastEndTime.value = isPastEndTime.value || ((time = System.nanoTime()) >= endTime);
@@ -420,8 +427,6 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             ? 1 : (endTime - time) / (1000000L * leftToCheck));
         if (subIter.next().getValue().isInvalid()) {
           subIter.remove();
-        } else {
-          isEmpty = false;
         }
         --leftToCheck;
       }
@@ -470,17 +475,21 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @Override
   public void debugDumpShort(StringBuilder sb) {
     sb.append("\nORC cache state ");
-    int allLocked = 0, allUnlocked = 0, allEvicted = 0;
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0, allMoving = 0;
     for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
       cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
-        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0;
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0, fileMoving = 0;
         if (e.getValue().getCache().isEmpty()) continue;
         for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
-          int newRc = e2.getValue().incRef();
+          int newRc = e2.getValue().tryIncRef();
           if (newRc < 0) {
-            ++fileEvicted;
+            if (newRc == LlapAllocatorBuffer.INCREF_EVICTED) {
+              ++fileEvicted;
+            } else if (newRc == LlapAllocatorBuffer.INCREF_FAILED) {
+              ++fileMoving;
+            }
             continue;
           }
           try {
@@ -496,13 +505,14 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         allLocked += fileLocked;
         allUnlocked += fileUnlocked;
         allEvicted += fileEvicted;
-        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, "
-            + fileUnlocked + " unlocked, " + fileEvicted + " evicted");
+        allMoving += fileMoving;
+        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, " + fileUnlocked
+            + " unlocked, " + fileEvicted + " evicted, " + fileMoving + " being moved");
       } finally {
         e.getValue().decRef();
       }
     }
-    sb.append("\nORC cache summary: " + allLocked + " locked, "
-        + allUnlocked + " unlocked, " + allEvicted + " evicted");
+    sb.append("\nORC cache summary: " + allLocked + " locked, " + allUnlocked + " unlocked, "
+        + allEvicted + " evicted, " + allMoving + " being moved");
   }
 }

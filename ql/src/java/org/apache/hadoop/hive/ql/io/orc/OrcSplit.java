@@ -50,6 +50,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private boolean hasFooter;
   private boolean isOriginal;
   private boolean hasBase;
+  //partition root
+  private Path rootDir;
   private final List<AcidInputFormat.DeltaMetaData> deltas = new ArrayList<>();
   private long projColsUncompressedSize;
   private transient Object fileKey;
@@ -70,7 +72,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
 
   public OrcSplit(Path path, Object fileId, long offset, long length, String[] hosts,
       OrcTail orcTail, boolean isOriginal, boolean hasBase,
-      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen) {
+      List<AcidInputFormat.DeltaMetaData> deltas, long projectedDataSize, long fileLen, Path rootDir) {
     super(path, offset, length, hosts);
     // For HDFS, we could avoid serializing file ID and just replace the path with inode-based
     // path. However, that breaks bunch of stuff because Hive later looks up things by split path.
@@ -79,6 +81,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     hasFooter = this.orcTail != null;
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
+    this.rootDir = rootDir;
     this.deltas.addAll(deltas);
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
@@ -129,6 +132,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       ((Writable)fileKey).write(out);
     }
     out.writeLong(fileLen);
+    out.writeUTF(rootDir.toString());
   }
 
   @Override
@@ -168,6 +172,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
       this.fileKey = fileId;
     }
     fileLen = in.readLong();
+    rootDir = new Path(in.readUTF());
   }
 
   public OrcTail getOrcTail() {
@@ -186,6 +191,9 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     return hasBase;
   }
 
+  public Path getRootDir() {
+    return rootDir;
+  }
   public List<AcidInputFormat.DeltaMetaData> getDeltas() {
     return deltas;
   }

@@ -129,7 +129,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       shouldUber = HiveConf.getBoolVar(conf, ConfVars.LLAP_AUTO_ALLOW_UBER) && (mode != all);
       minReducersPerExec = HiveConf.getFloatVar(
           conf, ConfVars.TEZ_LLAP_MIN_REDUCER_PER_EXECUTOR);
-      executorsPerNode = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS); // TODO# hmm
+      executorsPerNode = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
       mapJoinOpList = new ArrayList<MapJoinOperator>();
       rules = getRules();
     }

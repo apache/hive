@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -57,21 +58,13 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
       }
     }
 
+    transient private LongWritable result;
 
-    @Override
-    public VectorExpression inputExpression() {
-      // None.
-      return null;
+    public VectorUDAFCountStar(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    transient private final LongWritable result;
-
-    public VectorUDAFCountStar(VectorExpression inputExpression) {
-      this();
-    }
-
-    public VectorUDAFCountStar() {
-      super();
+    private void init() {
       result = new LongWritable(0);
     }
 
@@ -153,7 +146,6 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
 
     @Override
     public void init(AggregationDesc desc) throws HiveException {
-      // No-op
+      init();
     }
 }
-

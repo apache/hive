@@ -120,7 +120,7 @@ public class VectorFilterOperator extends FilterOperator {
         // All are selected, do nothing
     }
     if (vrg.size > 0) {
-      forward(vrg, null);
+      forward(vrg, null, true);
     }
 
     // Restore the original selected vector

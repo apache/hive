@@ -23,7 +23,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -52,7 +52,7 @@ public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
     System.out.println("Starting MetaStore Server on port " + port);
     System.setProperty(ConfVars.METASTORE_EVENT_LISTENERS.varname,
         IpAddressListener.class.getName());
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     isServerStarted = true;
 
     // This is default case with setugi off for both client and server

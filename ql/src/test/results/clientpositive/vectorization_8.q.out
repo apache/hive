@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -23,7 +23,7 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -101,6 +101,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: double, double, double, double, double, double, double, double, double, double, double
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

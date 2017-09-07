@@ -58,6 +58,7 @@
     <module>storage-api</module>
     <module>testutils</module>
     <module>packaging</module>
+    <module>standalone-metastore</module>
   </modules>
 
   <properties>
@@ -109,16 +110,16 @@
     <maven.build-helper.plugin.version>1.8</maven.build-helper.plugin.version>
 
     <!-- Library Dependency Versions -->
-    <accumulo.version>1.6.0</accumulo.version>
+    <accumulo.version>1.7.3</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
-    <avatica.version>1.9.0</avatica.version>
+    <avatica.version>1.10.0</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
-    <calcite.version>1.12.0</calcite.version>
+    <calcite.version>1.13.0</calcite.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
     <datanucleus-core.version>4.1.17</datanucleus-core.version>
     <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
@@ -131,15 +132,15 @@
     <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.1</commons-lang3.version>
+    <commons-lang3.version>3.2</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.10.0</druid.version>
+    <druid.version>0.10.1</druid.version>
     <guava.version>14.0.1</guava.version>
-    <groovy.version>2.4.4</groovy.version>
+    <groovy.version>2.4.11</groovy.version>
     <h2database.version>1.3.166</h2database.version>
     <hadoop.version>2.8.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
@@ -160,8 +161,10 @@
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
+    <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
     <jdo-api.version>3.0.1</jdo-api.version>
+    <jettison.version>1.1</jettison.version>
     <jetty.version>9.3.8.v20160314</jetty.version>
     <jersey.version>1.14</jersey.version>
     <!-- Glassfish jersey is included for Spark client test only -->
@@ -170,7 +173,7 @@
     <jms.version>1.1</jms.version>
     <joda.version>2.8.1</joda.version>
     <jodd.version>3.5.2</jodd.version>
-    <json.version>20090211</json.version>
+    <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
     <kryo.version>3.0.3</kryo.version>
     <libfb303.version>0.9.3</libfb303.version>
@@ -181,14 +184,15 @@
     <mockito-all.version>1.10.19</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.29.Final</netty.version>
-    <parquet.version>1.8.1</parquet.version>
+    <parquet.version>1.9.0</parquet.version>
     <pig.version>0.16.0</pig.version>
+    <plexus.version>1.5.6</plexus.version>
     <protobuf.version>2.5.0</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>3.0.0-SNAPSHOT</storage-api.version>
-    <tez.version>0.8.4</tez.version>
+    <tez.version>0.9.0</tez.version>
     <slider.version>0.92.0-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.0.0</spark.version>
@@ -610,6 +614,17 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>${jettison.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>stax</groupId>
+            <artifactId>stax-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-rewrite</artifactId>
         <version>${jetty.version}</version>
@@ -655,7 +670,7 @@
         <version>${datanucleus-jdo.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.json</groupId>
+        <groupId>com.tdunning</groupId>
         <artifactId>json</artifactId>
         <version>${json.version}</version>
       </dependency>
@@ -1248,7 +1263,7 @@
                     <mkdir dir="${thrift.gen.dir}"/>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift" />
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift" />
                       </path>
                       <sequential>
                         <echo message="Generating Thrift code for @{thrift.file}"/>
@@ -1316,6 +1331,9 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <failOnError>false</failOnError>
+            </configuration>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
@@ -1331,6 +1349,21 @@
 
     <profile>
     <id>findbugs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
       <reporting>
         <plugins>
           <plugin>

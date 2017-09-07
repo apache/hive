@@ -126,7 +126,7 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   }
 
   private void flushOutput() throws HiveException {
-    forward(outputBatch, null);
+    forward(outputBatch, null, true);
     outputBatch.reset();
   }
 
@@ -185,4 +185,5 @@ public class VectorMapJoinBaseOperator extends MapJoinOperator implements Vector
   public VectorizationContext getOuputVectorizationContext() {
     return vOutContext;
   }
+
 }

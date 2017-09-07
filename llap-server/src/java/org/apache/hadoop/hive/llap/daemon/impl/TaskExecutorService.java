@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -43,6 +46,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
+import org.apache.hadoop.hive.llap.daemon.impl.comparator.LlapQueueComparatorBase;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
@@ -55,6 +59,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -116,7 +121,13 @@ public class TaskExecutorService extends AbstractService
 
 
   @VisibleForTesting
-  // Tracks known tasks.
+  /**
+   * Accessed under the epic lock unless it's used for reporting.
+   * Added when calling schedule.
+   * Removed if evicted, killed, or finished with success or failure.
+   * In the former two cases, killTask is called on TaskRunnerCallable. In most cases, some
+   * cleanup is performed under the epic lock.
+   */
   final ConcurrentMap<String, TaskWrapper> knownTasks = new ConcurrentHashMap<>();
 
   private final Object lock = new Object();
@@ -132,7 +143,7 @@ public class TaskExecutorService extends AbstractService
         + ", waitQueueComparatorClassName=" + waitQueueComparatorClassName
         + ", enablePreemption=" + enablePreemption);
 
-    final Comparator<TaskWrapper> waitQueueComparator = createComparator(
+    final LlapQueueComparatorBase waitQueueComparator = createComparator(
         waitQueueComparatorClassName);
     this.maxParallelExecutors = numExecutors;
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
@@ -165,13 +176,14 @@ public class TaskExecutorService extends AbstractService
     Futures.addCallback(future, new WaitQueueWorkerCallback());
   }
 
-  private Comparator<TaskWrapper> createComparator(
+  private LlapQueueComparatorBase createComparator(
       String waitQueueComparatorClassName) {
-    final Comparator<TaskWrapper> waitQueueComparator;
+    final LlapQueueComparatorBase waitQueueComparator;
     try {
-      Class<? extends Comparator> waitQueueComparatorClazz =
-          (Class<? extends Comparator>) Class.forName(waitQueueComparatorClassName);
-      Constructor<? extends Comparator> ctor = waitQueueComparatorClazz.getConstructor(null);
+      Class<? extends LlapQueueComparatorBase> waitQueueComparatorClazz =
+          (Class<? extends LlapQueueComparatorBase>) Class.forName(waitQueueComparatorClassName);
+      Constructor<? extends LlapQueueComparatorBase> ctor =
+          waitQueueComparatorClazz.getConstructor(null);
       waitQueueComparator = ctor.newInstance(null);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(
@@ -199,7 +211,7 @@ public class TaskExecutorService extends AbstractService
   };
 
   @Override
-  public int getNumActive() {
+  public int getNumActiveForReporting() {
     int result = 0;
     for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
       TaskWrapper task = e.getValue();
@@ -213,46 +225,37 @@ public class TaskExecutorService extends AbstractService
   }
 
   @Override
-  public Set<String> getExecutorsStatus() {
+  public Set<String> getExecutorsStatusForReporting() {
     // TODO Change this method to make the output easier to parse (parse programmatically)
     Set<String> result = new LinkedHashSet<>();
     Set<String> running = new LinkedHashSet<>();
     Set<String> waiting = new LinkedHashSet<>();
     StringBuilder value = new StringBuilder();
+
+    final List<TaskWrapper> queueState = new ArrayList<>();
+    // Note: we don't take the scheduling lock here, although the call to queue is still
+    //       synchronized. Best-effort to display the queue in order.
+    waitQueue.apply(new Function<TaskWrapper, Boolean>() {
+      public Boolean apply(TaskWrapper input) {
+        queueState.add(input);
+        return true;
+      }});
+
+    HashSet<TaskWrapper> queueHs = new HashSet<>();
+    for (TaskWrapper task : queueState) {
+      describeTask(value, task.getRequestId(), task, true);
+      waiting.add(value.toString());
+      queueHs.add(task);
+    }
+
     for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
-      boolean isWaiting;
-      value.setLength(0);
-      value.append(e.getKey());
+      String attemptId = e.getKey();
       TaskWrapper task = e.getValue();
-      boolean isFirst = true;
-      TaskRunnerCallable c = task.getTaskRunnerCallable();
-      if (c != null && c.getVertexSpec() != null) {
-        SignableVertexSpec fs = c.getVertexSpec();
-        value.append(isFirst ? " (" : ", ").append(c.getQueryId())
-          .append("/").append(fs.getVertexName());
-        isFirst = false;
+      if (queueHs.contains(task)) {
+        // Even if the state has changed, don't log it twice.
+        continue;
       }
-      value.append(isFirst ? " (" : ", ");
-      if (task.isInWaitQueue()) {
-        isWaiting = true;
-        value.append("in queue");
-      } else if (c != null) {
-        long startTime = c.getStartTime();
-        if (startTime != 0) {
-          isWaiting = false;
-          value.append("started at ").append(sdf.get().format(new Date(startTime)));
-        } else {
-          isWaiting = false;
-          value.append("not started");
-        }
-      } else {
-        isWaiting = true;
-        value.append("has no callable");
-      }
-      if (task.isInPreemptionQueue()) {
-        value.append(", ").append("preemptable");
-      }
-      value.append(")");
+      boolean isWaiting = describeTask(value, attemptId, task, false);
       if (isWaiting) {
         waiting.add(value.toString());
       } else {
@@ -264,50 +267,102 @@ public class TaskExecutorService extends AbstractService
     return result;
   }
 
+  private boolean describeTask(
+      StringBuilder value, String attemptId, TaskWrapper task, boolean fromQueue) {
+    value.setLength(0);
+    boolean isFirst = true;
+    TaskRunnerCallable c = task.getTaskRunnerCallable();
+    value.append(attemptId);
+    if (c != null && c.getVertexSpec() != null) {
+      SignableVertexSpec fs = c.getVertexSpec();
+      value.append(isFirst ? " (" : ", ").append(c.getQueryId())
+        .append("/").append(fs.getVertexName());
+      isFirst = false;
+    }
+    value.append(isFirst ? " (" : ", ");
+    if (fromQueue) {
+      value.append("in queue (in order)");
+    }
+    boolean isWaiting;
+    if (task.isInWaitQueue()) {
+      isWaiting = true;
+      if (!fromQueue) {
+        value.append("in queue (not in order)");
+      }
+    } else if (c != null) {
+      long startTime = c.getStartTime();
+      isWaiting = false;
+      if (startTime != 0) {
+        value.append("started at ").append(sdf.get().format(new Date(startTime)));
+      } else {
+        value.append("not started");
+      }
+    } else {
+      isWaiting = true;
+      value.append("has no callable");
+    }
+    if (task.isInPreemptionQueue()) {
+      value.append(", ").append("in preemption queue");
+    }
+    boolean canFinish = c.canFinish();
+    value.append(", ").append(canFinish ? "can" : "cannot").append(" finish");
+    if (canFinish != c.canFinishForPriority()) {
+      value.append(" (not updated in queue)");
+    }
+    value.append(")");
+    return isWaiting;
+  }
+
   /**
    * Worker that takes tasks from wait queue and schedule it for execution.
    */
   private final class WaitQueueWorker implements Runnable {
+    private static final long SANITY_CHECK_TIMEOUT_MS = 1000;
     private TaskWrapper task;
+    private Long nextSanityCheck = null;
 
     @Override
     public void run() {
       try {
         Long lastKillTimeMs = null;
+        SanityChecker sc = null;
         while (!isShutdown.get()) {
           RejectedExecutionException rejectedException = null;
+          if (nextSanityCheck != null && ((nextSanityCheck - System.nanoTime()) <= 0)) {
+            sc = sanityCheckQueue(sc);
+            nextSanityCheck = null;
+          }
           synchronized (lock) {
             // Since schedule() can be called from multiple threads, we peek the wait queue, try
             // scheduling the task and then remove the task if scheduling is successful. This
             // will make sure the task's place in the wait queue is held until it gets scheduled.
             task = waitQueue.peek();
             if (task == null) {
-              if (!isShutdown.get()) {
-                lock.wait();
-              }
+              waitOnLock();
               continue;
             }
             // If the task cannot finish and if no slots are available then don't schedule it.
             // Also don't wait if we have a task and we just killed something to schedule it.
             // (numSlotsAvailable can go negative, if the callback after the thread completes is delayed)
             boolean shouldWait = numSlotsAvailable.get() <= 0 && lastKillTimeMs == null;
-            if (task.getTaskRunnerCallable().canFinish()) {
+            boolean canKill = false;
+            if (task.canFinishForPriority() || task.isGuaranteed()) {
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Attempting to schedule task {}, canFinish={}. Current state: "
                     + "preemptionQueueSize={}, numSlotsAvailable={}, waitQueueSize={}",
                     task.getRequestId(), task.getTaskRunnerCallable().canFinish(),
                     preemptionQueue.size(), numSlotsAvailable.get(), waitQueue.size());
               }
-              shouldWait = shouldWait && (enablePreemption == false || preemptionQueue.isEmpty());
+              canKill = enablePreemption && canPreempt(task, preemptionQueue.peek());
+              shouldWait = shouldWait && !canKill;
             }
             if (shouldWait) {
-              if (!isShutdown.get()) {
-                lock.wait();
-              }
+              waitOnLock();
               // Another task at a higher priority may have come in during the wait. Lookup the
               // queue again to pick up the task at the highest priority.
               continue;
             }
+            nextSanityCheck = null; // We are going to do something useful now.
             try {
               tryScheduleUnderLock(task);
               // Wait queue could have been re-ordered in the mean time because of concurrent task
@@ -352,9 +407,15 @@ public class TaskExecutorService extends AbstractService
         }
       }
     }
+
+    private void waitOnLock() throws InterruptedException {
+      if (isShutdown.get()) return;
+      nextSanityCheck = System.nanoTime() + SANITY_CHECK_TIMEOUT_MS * 1000000L;
+      lock.wait(SANITY_CHECK_TIMEOUT_MS);
+    }
   }
 
-  private class WaitQueueWorkerCallback implements FutureCallback {
+  private class WaitQueueWorkerCallback implements FutureCallback<Object> {
 
     @Override
     public void onSuccess(Object result) {
@@ -395,6 +456,7 @@ public class TaskExecutorService extends AbstractService
       }
 
       canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+      taskWrapper.updateCanFinishForPriority(canFinish); // Update the property before offering.
       evictedTask = waitQueue.offer(taskWrapper, maxParallelExecutors - runningFragmentCount.get());
       // Finishable state is checked on the task, via an explicit query to the TaskRunnerCallable
 
@@ -486,6 +548,51 @@ public class TaskExecutorService extends AbstractService
   }
 
   @Override
+  public boolean updateFragment(String fragmentId, boolean isGuaranteed) {
+    synchronized (lock) {
+      TaskWrapper taskWrapper = knownTasks.get(fragmentId);
+      if (taskWrapper == null) {
+        LOG.debug("Fragment not found {}", fragmentId);
+        return false;
+      }
+      if (taskWrapper.isGuaranteed() == isGuaranteed) return true;
+
+      LOG.debug("Fragment {} guaranteed state changed to {}; finishable {}, in wait queue {}, "
+          + "in preemption queue {}", taskWrapper.getRequestId(), isGuaranteed,
+          taskWrapper.canFinishForPriority(), taskWrapper.isInWaitQueue(),
+          taskWrapper.isInPreemptionQueue());
+      // Do the removal before we change the element, to avoid invalid queue ordering.
+      if (isGuaranteed && taskWrapper.isInPreemptionQueue() && taskWrapper.canFinishForPriority()) {
+        removeFromPreemptionQueue(taskWrapper);
+      }
+      if (taskWrapper.isInWaitQueue()) {
+        // Re-order the wait queue. Note: we assume that noone will take our capacity based
+        // on the fact that we are doing this under the epic lock. If the epic lock is removed,
+        // we'd need to do the steps under the queue lock; we could pass in a f() to update state.
+        boolean isRemoved = waitQueue.remove(taskWrapper);
+        taskWrapper.updateIsGuaranteed(isGuaranteed);
+        forceReinsertIntoQueue(taskWrapper, isRemoved);
+      } else {
+        taskWrapper.updateIsGuaranteed(isGuaranteed);
+        if (!isGuaranteed && !taskWrapper.isInPreemptionQueue()) {
+          // No need to check finishable here; if it was set it would already be in the queue.
+          addToPreemptionQueue(taskWrapper);
+        }
+      }
+      lock.notifyAll();
+      return true;
+    }
+  }
+
+  private void forceReinsertIntoQueue(TaskWrapper taskWrapper, boolean isRemoved) {
+    if (!isRemoved) {
+      LOG.warn("Failed to remove {} from waitQueue", taskWrapper.getTaskRunnerCallable());
+    } else {
+      waitQueue.forceOffer(taskWrapper);
+    }
+  }
+
+  @Override
   public QueryIdentifier findQueryByFragment(String fragmentId) {
     synchronized (lock) {
       TaskWrapper taskWrapper = knownTasks.get(fragmentId);
@@ -517,6 +624,7 @@ public class TaskExecutorService extends AbstractService
           }
           removeFromPreemptionQueue(taskWrapper);
         }
+        // TODO: this will probably send a message to AM. Is that needed here?
         taskWrapper.getTaskRunnerCallable().killTask();
       } else {
         LOG.info("Ignoring killFragment request for {} since it isn't known", fragmentId);
@@ -537,20 +645,27 @@ public class TaskExecutorService extends AbstractService
     long completingTime;
   }
 
+  /** A map where fragments live between when the TezTaskRunner2 calls taskSucceeded/Failed, or
+   *  an external caller calls killTask, and when the TaskRunnerCallable comes out of the
+   *  threadpool.
+   */
   @VisibleForTesting
   final ConcurrentMap<String, FragmentCompletion>
       completingFragmentMap = new ConcurrentHashMap<>();
 
   @Override
   public void fragmentCompleting(String fragmentId, State state) {
-    int count = runningFragmentCount.decrementAndGet();
-    if (count < 0) {
-      LOG.warn(
-          "RunningFragmentCount went negative. Multiple calls for the same completion. Resetting to 0");
-      runningFragmentCount.set(0);
-    }
-    completingFragmentMap
-        .put(fragmentId, new FragmentCompletion(state, clock.getTime()));
+    int val = 0;
+    do {
+      // Tez internals may register the same task as completing multiple times.
+      val = runningFragmentCount.get();
+      if (val == 0) {
+        LOG.warn("RunningFragmentCount is already 0. Multiple calls for the same completion.");
+        return;
+      }
+    } while (!runningFragmentCount.compareAndSet(val, val - 1));
+
+    completingFragmentMap.put(fragmentId, new FragmentCompletion(state, clock.getTime()));
   }
 
   @VisibleForTesting
@@ -569,18 +684,19 @@ public class TaskExecutorService extends AbstractService
     // is actually available for execution and will not potentially result in a RejectedExecution
     Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
 
-    boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+    boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish(),
+        isGuaranteed = taskWrapper.isGuaranteed();
     if (LOG.isDebugEnabled()) {
-      LOG.debug("{} scheduled for execution. canFinish={}", taskWrapper.getRequestId(), canFinish);
+      LOG.debug("{} scheduled for execution. canFinish={}, isGuaranteed={}",
+          taskWrapper.getRequestId(), canFinish, isGuaranteed);
     }
 
     // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
     // to the tasks are not ready yet, the task is eligible for pre-emptable.
     if (enablePreemption) {
-      if (!canFinish) {
+      if (!canFinish || !isGuaranteed) {
         if (LOG.isInfoEnabled()) {
-          LOG.info("{} is not finishable. Adding it to pre-emption queue",
-              taskWrapper.getRequestId());
+          LOG.info("Adding {} to pre-emption queue", taskWrapper.getRequestId());
         }
         addToPreemptionQueue(taskWrapper);
       }
@@ -591,77 +707,128 @@ public class TaskExecutorService extends AbstractService
     }
   }
 
-  private boolean handleScheduleAttemptedRejection(TaskWrapper taskWrapper) {
-    if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish()
-        && !preemptionQueue.isEmpty()) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Preemption Queue: " + preemptionQueue);
-      }
+  private boolean handleScheduleAttemptedRejection(TaskWrapper rejected) {
+    // TODO: is this check even needed given what the caller checks?
+    if (!enablePreemption || preemptionQueue.isEmpty()) {
+      return false;
+    }
+    LOG.debug("Preemption Queue: {}", preemptionQueue);
 
-      while (true) { // Try to preempt until we have something.
-        TaskWrapper pRequest = removeAndGetNextFromPreemptionQueue();
-        if (pRequest == null) {
-          return false; // Woe us.
-        }
-        if (pRequest.getTaskRunnerCallable().canFinish()) {
-          LOG.info("Removed {} from preemption queue, but not preempting since it's now finishable",
-              pRequest.getRequestId());
-          continue; // Try something else.
-        }
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Invoking kill task for {} due to pre-emption to run {}",
-              pRequest.getRequestId(), taskWrapper.getRequestId());
-        }
-        // The task will either be killed or is already in the process of completing, which will
-        // trigger the next scheduling run, or result in available slots being higher than 0,
-        // which will cause the scheduler loop to continue.
-        pRequest.getTaskRunnerCallable().killTask();
-        // We've killed something and may want to wait for it to die.
+    // This call checks under lock if we can actually preempt the task.
+    // It is possible to have a race where the update (that's also under lock) makes the
+    // task finishable or guaranteed between the remove and kill, but it's the same timing
+    // issue as would happen is there was a tiny delay on the network, so we don't care.
+    TaskWrapper victim = getSuitableVictimFromPreemptionQueue(rejected);
+    if (victim == null) {
+      return false; // Woe us.
+    }
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Invoking kill task for {} due to pre-emption to run {}",
+          victim.getRequestId(), rejected.getRequestId());
+    }
+    // The task will either be killed or is already in the process of completing, which will
+    // trigger the next scheduling run, or result in available slots being higher than 0,
+    // which will cause the scheduler loop to continue.
+    victim.getTaskRunnerCallable().killTask();
+    // We've killed something and may want to wait for it to die.
+    return true;
+  }
+
+  private static class SanityChecker implements Function<TaskWrapper, Boolean> {
+    private TaskWrapper firstCannotFinish = null;
+    private TaskWrapper firstProblematic = null;
+    private final EvictingPriorityBlockingQueue<TaskWrapper> queue;
+
+    public SanityChecker(EvictingPriorityBlockingQueue<TaskWrapper> queue) {
+      this.queue = queue;
+    }
+
+    @Override
+    public Boolean apply(TaskWrapper input) {
+      if (input == null) return true;
+      boolean canFinish = input.getTaskRunnerCallable().canFinishForPriority();
+      if (firstCannotFinish == null && !canFinish) {
+        firstCannotFinish = input;
         return true;
       }
+      if (firstCannotFinish != null && canFinish) {
+        firstProblematic = input;
+        return false;
+      }
+      return true;
     }
-    return false;
+
+    void run() {
+      queue.apply(this);
+      if (firstProblematic != null) {
+        final StringBuilder sb = new StringBuilder(
+            "Found finishable task behind non-finishable in the queue: ");
+        sb.append(firstProblematic).append(" was after ").append(firstCannotFinish).append("; ");
+        queue.apply(new Function<TaskExecutorService.TaskWrapper, Boolean>() {
+          @Override
+          public Boolean apply(TaskWrapper input) {
+            sb.append(input).append(", ");
+            return true;
+          }
+        });
+        LOG.error(sb.toString());
+      }
+      firstCannotFinish = firstProblematic = null;
+    }
+  }
+
+  private SanityChecker sanityCheckQueue(SanityChecker sc) {
+    if (sc == null) {
+      sc = new SanityChecker(waitQueue);
+    }
+    sc.run();
+    return sc;
   }
 
   private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
     synchronized (lock) {
+      LOG.debug("Fragment {} guaranteed state changed to {}; finishable {}, in wait queue {}, "
+          + "in preemption queue {}", taskWrapper.getRequestId(), taskWrapper.isGuaranteed(),
+          newFinishableState, taskWrapper.isInWaitQueue(), taskWrapper.isInPreemptionQueue());
+      // Do the removal before we change the element, to avoid invalid queue ordering.
+      if (newFinishableState && taskWrapper.isInPreemptionQueue() && taskWrapper.isGuaranteed()) {
+        removeFromPreemptionQueue(taskWrapper);
+      }
       if (taskWrapper.isInWaitQueue()) {
-        // Re-order the wait queue
-        LOG.debug("Re-ordering the wait queue since {} finishable state moved to {}",
-            taskWrapper.getRequestId(), newFinishableState);
-        boolean reInserted = waitQueue.reinsertIfExists(taskWrapper);
-        if (!reInserted) {
-          LOG.warn("Failed to remove {} from waitQueue",
-              taskWrapper.getTaskRunnerCallable().getRequestId());
+        // Re-order the wait queue. Note: we assume that noone will take our capacity based
+        // on the fact that we are doing this under the epic lock. If the epic lock is removed,
+        // we'd need to do the steps under the queue lock; we could pass in a f() to update state.
+        boolean isRemoved = waitQueue.remove(taskWrapper);
+        taskWrapper.updateCanFinishForPriority(newFinishableState);
+        forceReinsertIntoQueue(taskWrapper, isRemoved);
+      } else {
+        taskWrapper.updateCanFinishForPriority(newFinishableState);
+        if (!newFinishableState && !taskWrapper.isInPreemptionQueue()) {
+          // No need to check guaranteed here; if it was false we would already be in the queue.
+          addToPreemptionQueue(taskWrapper);
         }
       }
 
-      if (newFinishableState == true && taskWrapper.isInPreemptionQueue()) {
-        LOG.debug("Removing {} from preemption queue because it's state changed to {}",
-            taskWrapper.getRequestId(), newFinishableState);
-        removeFromPreemptionQueue(taskWrapper);
-      } else if (newFinishableState == false && !taskWrapper.isInPreemptionQueue() &&
-          !taskWrapper.isInWaitQueue()) {
-        LOG.debug("Adding {} to preemption queue since finishable state changed to {}",
-            taskWrapper.getRequestId(), newFinishableState);
-        addToPreemptionQueue(taskWrapper);
-      }
       lock.notifyAll();
     }
   }
 
   private void addToPreemptionQueue(TaskWrapper taskWrapper) {
     synchronized (lock) {
-      boolean added = preemptionQueue.offer(taskWrapper);
-      if (!added) {
-        LOG.warn("Failed to add element {} to preemption queue. Terminating", taskWrapper);
-        Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(),
-            new IllegalStateException("Preemption queue full. Cannot proceed"));
-      }
+      insertIntoPreemptionQueueOrFailUnlocked(taskWrapper);
       taskWrapper.setIsInPreemptableQueue(true);
       if (metrics != null) {
         metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
       }
+    }
+  }
+
+  private void insertIntoPreemptionQueueOrFailUnlocked(TaskWrapper taskWrapper) {
+    boolean added = preemptionQueue.offer(taskWrapper);
+    if (!added) {
+      LOG.warn("Failed to add element {} to preemption queue. Terminating", taskWrapper);
+      Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(),
+          new IllegalStateException("Preemption queue full. Cannot proceed"));
     }
   }
 
@@ -676,7 +843,8 @@ public class TaskExecutorService extends AbstractService
     }
   }
 
-  private boolean removeFromPreemptionQueueUnlocked(TaskWrapper taskWrapper) {
+  private boolean removeFromPreemptionQueueUnlocked(
+      TaskWrapper taskWrapper) {
     boolean removed = preemptionQueue.remove(taskWrapper);
     taskWrapper.setIsInPreemptableQueue(false);
     if (metrics != null) {
@@ -685,18 +853,32 @@ public class TaskExecutorService extends AbstractService
     return removed;
   }
 
-  private TaskWrapper removeAndGetNextFromPreemptionQueue() {
+  private TaskWrapper getSuitableVictimFromPreemptionQueue(TaskWrapper candidate) {
     TaskWrapper taskWrapper;
     synchronized (lock) {
-       taskWrapper = preemptionQueue.poll();
-      if (taskWrapper != null) {
-        taskWrapper.setIsInPreemptableQueue(false);
-        if (metrics != null) {
-          metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
-        }
+      taskWrapper = preemptionQueue.poll();
+      // Note that the code updating the state of the task does it when it's out of the queue.
+      // So, the priorities in the queue should be correct; if the top task is not killable then
+      // no task in the queue would be killable.
+      if (taskWrapper == null) return null;
+      if (!canPreempt(candidate, taskWrapper)) {
+        // The "most preemptable" task is still too important for us to kill. Put it back.
+        insertIntoPreemptionQueueOrFailUnlocked(taskWrapper);
+        return null;
       }
+      taskWrapper.setIsInPreemptableQueue(false);
+      if (metrics != null) {
+        metrics.setExecutorNumPreemptableRequests(preemptionQueue.size());
+      }
+      return taskWrapper;
     }
-    return taskWrapper;
+  }
+
+  private static boolean canPreempt(TaskWrapper candidate, TaskWrapper victim) {
+    if (victim == null) return false;
+    if (candidate.isGuaranteed() && !victim.isGuaranteed()) return true;
+    return ((candidate.isGuaranteed() == victim.isGuaranteed())
+        && candidate.canFinishForPriority() && !victim.canFinishForPriority());
   }
 
   @VisibleForTesting
@@ -871,6 +1053,16 @@ public class TaskExecutorService extends AbstractService
       FragmentRuntimeInfo fri1 = o1.getFragmentRuntimeInfo();
       FragmentRuntimeInfo fri2 = o2.getFragmentRuntimeInfo();
 
+      // Regardless of other criteria, ducks are always more important than non-ducks.
+      boolean v1 = o1.isGuaranteed(), v2 = o2.isGuaranteed();
+      if (v1 != v2) return v1 ? 1 : -1;
+
+      // Then, non-finishable must always precede finishable.
+      v1 = o1.canFinishForPriority();
+      v2 = o2.canFinishForPriority();
+      if (v1 != v2) return v1 ? 1 : -1;
+
+      // Otherwise, heuristics.
       if (fri1.getNumSelfAndUpstreamTasks() > fri2.getNumSelfAndUpstreamTasks()) {
         return 1;
       } else if (fri1.getNumSelfAndUpstreamTasks() < fri2.getNumSelfAndUpstreamTasks()) {
@@ -893,7 +1085,24 @@ public class TaskExecutorService extends AbstractService
       this.taskExecutorService = taskExecutorService;
     }
 
+    public void updateIsGuaranteed(boolean isGuaranteed) {
+      taskRunnerCallable.setIsGuaranteed(isGuaranteed);
+    }
+
+    public boolean canFinishForPriority() {
+      return taskRunnerCallable.canFinishForPriority();
+    }
+
+    public boolean isGuaranteed() {
+      return taskRunnerCallable.isGuaranteed();
+    }
+
+    public void updateCanFinishForPriority(boolean newFinishableState) {
+      taskRunnerCallable.updateCanFinishForPriority(newFinishableState);
+    }
+
     // Don't invoke from within a scheduler lock
+
 
     /**
      *
@@ -950,6 +1159,8 @@ public class TaskExecutorService extends AbstractService
           ", inPreemptionQueue=" + inPreemptionQueue.get() +
           ", registeredForNotifications=" + registeredForNotifications.get() +
           ", canFinish=" + taskRunnerCallable.canFinish() +
+          ", canFinish(in queue)=" + canFinishForPriority() +
+          ", isGuaranteed=" + isGuaranteed() +
           ", firstAttemptStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getFirstAttemptStartTime() +
           ", dagStartTime=" + taskRunnerCallable.getFragmentRuntimeInfo().getDagStartTime() +
           ", withinDagPriority=" + taskRunnerCallable.getFragmentRuntimeInfo().getWithinDagPriority() +

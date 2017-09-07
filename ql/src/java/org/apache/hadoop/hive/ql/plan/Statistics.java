@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -215,6 +214,10 @@ public class Statistics implements Serializable {
     }
   }
 
+  public void updateColumnStatsState(State newState) {
+    this.columnStatsState = inferColumnStatsState(columnStatsState, newState);
+  }
+
   //                  newState
   //                  -----------------------------------------
   // columnStatsState | COMPLETE          PARTIAL      NONE    |
@@ -223,26 +226,28 @@ public class Statistics implements Serializable {
   //          PARTIAL | PARTIAL           PARTIAL      PARTIAL |
   //             NONE | COMPLETE          PARTIAL      NONE    |
   //                  -----------------------------------------
-  public void updateColumnStatsState(State newState) {
+  public static State inferColumnStatsState(State prevState, State newState) {
     if (newState.equals(State.PARTIAL)) {
-      columnStatsState = State.PARTIAL;
+      return State.PARTIAL;
     }
 
     if (newState.equals(State.NONE)) {
-      if (columnStatsState.equals(State.NONE)) {
-        columnStatsState = State.NONE;
+      if (prevState.equals(State.NONE)) {
+        return State.NONE;
       } else {
-        columnStatsState = State.PARTIAL;
+        return State.PARTIAL;
       }
     }
 
     if (newState.equals(State.COMPLETE)) {
-      if (columnStatsState.equals(State.PARTIAL)) {
-        columnStatsState = State.PARTIAL;
+      if (prevState.equals(State.PARTIAL)) {
+        return State.PARTIAL;
       } else {
-        columnStatsState = State.COMPLETE;
+        return State.COMPLETE;
       }
     }
+
+    return prevState;
   }
 
   public long getAvgRowSize() {

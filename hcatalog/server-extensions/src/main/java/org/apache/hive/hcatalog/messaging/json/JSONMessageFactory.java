@@ -95,37 +95,40 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public CreateTableMessage buildCreateTableMessage(Table table) {
     return new JSONCreateTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), now());
+        table.getTableName(), table.getTableType(), now());
   }
 
   @Override
   public AlterTableMessage buildAlterTableMessage(Table before, Table after) {
     return new JSONAlterTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, before.getDbName(),
-        before.getTableName(), now());
+        before.getTableName(), before.getTableType(), now());
   }
 
   @Override
   public DropTableMessage buildDropTableMessage(Table table) {
-    return new JSONDropTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(), table.getTableName(),
-        now());
+    return new JSONDropTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), table.getTableType(), now());
   }
 
   @Override
   public AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitionsIterator) {
     return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitionsIterator), now());
+        table.getTableName(), table.getTableType(),
+        getPartitionKeyValues(table, partitionsIterator), now());
   }
 
   @Override
   public AlterPartitionMessage buildAlterPartitionMessage(Table table, Partition before, Partition after) {
     return new JSONAlterPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL,
-        before.getDbName(), before.getTableName(), getPartitionKeyValues(table,before),now());
+        before.getDbName(), before.getTableName(), table.getTableType(),
+        getPartitionKeyValues(table,before),now());
   }
 
   @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table, Iterator<Partition> partitions) {
     return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitions), now());
+        table.getTableName(), table.getTableType(),
+        getPartitionKeyValues(table, partitions), now());
   }
 
   @Override
@@ -161,8 +164,15 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public InsertMessage buildInsertMessage(String db, String table, Map<String,String> partKeyVals,
                                           List<String> files) {
-    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, partKeyVals,
-        files, now());
+    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db, table, null,
+        partKeyVals, files, now());
+  }
+
+  @Override
+  public InsertMessage buildInsertMessage(String db, Table table, Map<String,String> partKeyVals,
+      List<String> files) {
+    return new JSONInsertMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), table.getTableType(), partKeyVals, files, now());
   }
 
   private long now() {

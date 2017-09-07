@@ -91,7 +91,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 84795 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: first_value_window_0 (type: tinyint)
@@ -208,7 +208,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: last_value
                         window function: GenericUDAFLastValueEvaluator
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 127193 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: last_value_window_0 (type: int)
@@ -330,13 +330,13 @@ STAGE PLANS:
                         arguments: _col2
                         name: last_value
                         window function: GenericUDAFLastValueEvaluator
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
                       window function definition
                         alias: first_value_window_1
                         arguments: _col0
                         name: first_value
                         window function: GenericUDAFFirstValueEvaluator
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 84795 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
@@ -540,7 +540,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 21198 Data size: 169584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -680,7 +680,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 127193 Data size: 1017544 Basic stats: COMPLETE Column stats: NONE
             Select Operator

@@ -291,7 +291,7 @@ STAGE PLANS:
             alias: hbase_table_1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((100 < key) and (key < 120)) (type: boolean)
+              predicate: (key < 120) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: key (type: int)

@@ -18,9 +18,14 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * A type of hook which triggers before query compilation and after query execution.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface QueryLifeTimeHook extends Hook {
 
   /**

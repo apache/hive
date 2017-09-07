@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,7 +56,7 @@ class WarehouseInstance implements Closeable {
   final String functionsRoot;
   private Logger logger;
   private Driver driver;
-  private HiveConf hiveConf;
+  HiveConf hiveConf;
   MiniDFSCluster miniDFSCluster;
   private HiveMetaStoreClient client;
 
@@ -63,19 +64,25 @@ class WarehouseInstance implements Closeable {
 
   private final static String LISTENER_CLASS = DbNotificationListener.class.getCanonicalName();
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster, boolean hiveInTests) throws Exception {
     this.logger = logger;
     this.miniDFSCluster = cluster;
     assert miniDFSCluster.isClusterUp();
     assert miniDFSCluster.isDataNodeUp();
     DistributedFileSystem fs = miniDFSCluster.getFileSystem();
 
+    Path warehouseRoot = mkDir(fs, "/warehouse" + uniqueIdentifier);
     Path cmRootPath = mkDir(fs, "/cmroot" + uniqueIdentifier);
     this.functionsRoot = mkDir(fs, "/functions" + uniqueIdentifier).toString();
-    initialize(cmRootPath.toString());
+    initialize(cmRootPath.toString(), warehouseRoot.toString(), hiveInTests);
   }
 
-  private void initialize(String cmRoot) throws Exception {
+  WarehouseInstance(Logger logger, MiniDFSCluster cluster) throws Exception {
+    this(logger, cluster, true);
+  }
+
+  private void initialize(String cmRoot, String warehouseRoot, boolean hiveInTest)
+      throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
     String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTOREURIS.varname);
     String hiveWarehouseLocation = System.getProperty("test.warehouse.dir", "/tmp")
@@ -88,27 +95,28 @@ class WarehouseInstance implements Closeable {
       return;
     }
 
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, hiveInTest);
     // turn on db notification listener on meta store
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseRoot);
     hiveConf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
     hiveConf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPLCMDIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
-    String schemaName = "APP" + uniqueIdentifier;
-    System.setProperty("datanucleus.mapping.Schema", schemaName);
+    System.setProperty("datanucleus.mapping.Schema", "APP");
     hiveConf.setVar(HiveConf.ConfVars.METASTORECONNECTURLKEY,
-        "jdbc:derby:memory:${test.tmp.dir}/" + schemaName + ";create=true");
-
-    int metaStorePort = MetaStoreUtils.startMetaStore(hiveConf);
+        "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPLDIR,
-        hiveWarehouseLocation + "/hrepl" + uniqueIdentifier + "/");
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
+            hiveWarehouseLocation + "/hrepl" + uniqueIdentifier + "/");
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+
+    int metaStorePort = MetaStoreUtils.startMetaStore(hiveConf);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + metaStorePort);
 
     Path testPath = new Path(hiveWarehouseLocation);
     FileSystem testPathFileSystem = FileSystem.get(testPath.toUri(), hiveConf);
@@ -132,7 +140,7 @@ class WarehouseInstance implements Closeable {
 
   private void advanceDumpDir() {
     next++;
-    ReplicationSemanticAnalyzer.injectNextDumpDirForTest(String.valueOf(next));
+    ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next));
   }
 
   private ArrayList<String> lastResults;
@@ -176,38 +184,39 @@ class WarehouseInstance implements Closeable {
     return this;
   }
 
-  WarehouseInstance verify(String data) throws IOException {
-    verifyResults(data == null ? new String[] {} : new String[] { data });
-    return this;
-  }
-
-  /**
-   * All the results that are read from the hive output will not preserve
-   * case sensitivity and will all be in lower case, hence we will check against
-   * only lower case data values.
-   * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
-   * before assert.
-   */
-  private void verifyResults(String[] data) throws IOException {
-    List<String> results = getOutput();
-    logger.info("Expecting {}", StringUtils.join(data, ","));
-    logger.info("Got {}", results);
-    assertEquals(data.length, results.size());
-    for (int i = 0; i < data.length; i++) {
-      assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
+    WarehouseInstance verifyResult (String data) throws IOException {
+      verifyResults(data == null ? new String[] {} : new String[] { data });
+      return this;
     }
-  }
 
-  List<String> getOutput() throws IOException {
-    List<String> results = new ArrayList<>();
-    try {
-      driver.getResults(results);
-    } catch (CommandNeedRetryException e) {
-      logger.warn(e.getMessage(), e);
-      throw new RuntimeException(e);
+    /**
+     * All the results that are read from the hive output will not preserve
+     * case sensitivity and will all be in lower case, hence we will check against
+     * only lower case data values.
+     * Unless for Null Values it actually returns in UpperCase and hence explicitly lowering case
+     * before assert.
+     */
+    WarehouseInstance verifyResults(String[] data) throws IOException {
+      List<String> results = getOutput();
+      logger.info("Expecting {}", StringUtils.join(data, ","));
+      logger.info("Got {}", results);
+      assertEquals(data.length, results.size());
+      for (int i = 0; i < data.length; i++) {
+        assertEquals(data[i].toLowerCase(), results.get(i).toLowerCase());
+      }
+      return this;
     }
-    return results;
-  }
+
+    List<String> getOutput() throws IOException {
+      List<String> results = new ArrayList<>();
+      try {
+        driver.getResults(results);
+      } catch (CommandNeedRetryException e) {
+        logger.warn(e.getMessage(), e);
+        throw new RuntimeException(e);
+      }
+      return results;
+    }
 
   private void printOutput() throws IOException {
     for (String s : getOutput()) {

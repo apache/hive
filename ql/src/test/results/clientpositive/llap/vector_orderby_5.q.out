@@ -145,9 +145,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFMaxLong(col 3) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 7
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: bo (type: boolean)
                       mode: hash
@@ -188,9 +190,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMaxLong(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial

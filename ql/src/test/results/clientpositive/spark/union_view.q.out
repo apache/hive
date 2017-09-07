@@ -519,7 +519,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -541,7 +541,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -563,7 +563,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -617,7 +617,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -636,7 +636,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -658,7 +658,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -712,7 +712,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -734,7 +734,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -753,7 +753,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 1002 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -899,7 +899,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -921,7 +921,7 @@ STAGE PLANS:
                       Select Operator
                         Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
-                          aggregations: count(1)
+                          aggregations: count()
                           mode: hash
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -940,7 +940,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 502 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

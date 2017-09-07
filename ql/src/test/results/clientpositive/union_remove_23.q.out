@@ -92,7 +92,7 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 33 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
-            aggregations: count(1)
+            aggregations: count()
             keys: _col0 (type: string)
             mode: hash
             outputColumnNames: _col0, _col1
@@ -148,11 +148,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
-              outputColumnNames: _col0
+              outputColumnNames: key
               Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
+                aggregations: count()
+                keys: key (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
@@ -201,7 +201,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 POSTHOOK: Output: default@outputtbl1
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(inputtbl1)a.FieldSchema(name:key, type:string, comment:null), (inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)a.null, (inputtbl1)inputtbl1.null, ]
+POSTHOOK: Lineage: outputtbl1.values EXPRESSION [(inputtbl1)a.null, (inputtbl1)b.null, (inputtbl1)inputtbl1.null, ]
 PREHOOK: query: desc formatted outputTbl1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@outputtbl1

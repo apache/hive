@@ -18,11 +18,13 @@ limitations under the License.
 </%doc>
 <%args>
 QueryInfo queryInfo;
+HiveConf hiveConf;
 </%args>
 <%import>
 java.util.*;
 org.apache.hadoop.hive.ql.QueryDisplay;
 org.apache.hadoop.hive.ql.QueryInfo;
+org.apache.hadoop.hive.conf.HiveConf;
 </%import>
 <!--[if IE]>
 <!DOCTYPE html>
@@ -204,9 +206,15 @@ org.apache.hadoop.hive.ql.QueryInfo;
     <div class="panel panel-default">
       <div class="panel-heading">Explain plan</div>
       <div class="panel-body">
-        <pre>
-        <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getExplainPlan() %>
-        </pre>
+        <%if hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) %>
+          <pre>
+          <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getExplainPlan() %>
+          </pre>
+        <%else>
+          <pre>
+          Set configuration hive.log.explain.output to true to view future query plans
+          </pre>
+        </%if>
       </div>
     </div>
 </%def>

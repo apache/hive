@@ -66,10 +66,11 @@ public class DumpMetaData {
   }
 
   private void loadDumpFromFile() throws SemanticException {
+    BufferedReader br = null;
     try {
       // read from dumpfile and instantiate self
       FileSystem fs = dumpFile.getFileSystem(hiveConf);
-      BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
+      br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
       String line = null;
       if ((line = br.readLine()) != null) {
         String[] lineContents = line.split("\t", 5);
@@ -84,6 +85,14 @@ public class DumpMetaData {
       }
     } catch (IOException ioe) {
       throw new SemanticException(ioe);
+    } finally {
+      if (br != null) {
+        try {
+          br.close();
+        } catch (IOException e) {
+          throw new SemanticException(e);
+        }
+      }
     }
   }
 

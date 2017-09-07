@@ -57,3 +57,5 @@ select * from (
   join
   (select a, c from cmv_basetable where d = 3) table2
   on table1.a = table2.a);
+
+drop materialized view cmv_mat_view;

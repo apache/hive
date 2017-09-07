@@ -69,7 +69,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Select expression for SELECT operator: Data type void of Const void null not supported
+                notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
                 vectorized: false
 
   Stage: Stage-0
@@ -136,7 +136,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Const void null not supported
+                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
                 vectorized: false
         Map 4 
             Map Operator Tree:
@@ -163,14 +163,14 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Const void null not supported
+                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
                 vectorized: false
         Reducer 3 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Column[KEY._col0] not supported
+                notVectorizedReason: Key expression for GROUPBY operator: Vectorizing data type void not supported when mode = PROJECTION
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator

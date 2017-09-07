@@ -37,6 +37,8 @@ public abstract class InsertMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   /**
    * Getter for the replace flag being insert into/overwrite
    * @return Replace flag to represent INSERT INTO or INSERT OVERWRITE (Boolean).

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.udf;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Map;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -37,8 +38,10 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
@@ -61,7 +64,8 @@ public class VectorUDFAdaptor extends VectorExpression {
 
   private transient GenericUDF genericUDF;
   private transient GenericUDF.DeferredObject[] deferredChildren;
-  private transient ObjectInspector outputOI;
+  private transient TypeInfo outputTypeInfo;
+  private transient VectorAssignRow outputVectorAssignRow;
   private transient ObjectInspector[] childrenOIs;
   private transient VectorExpressionWriter[] writers;
 
@@ -95,8 +99,9 @@ public class VectorUDFAdaptor extends VectorExpression {
     if (context != null) {
       context.setup(genericUDF);
     }
-    outputOI = VectorExpressionWriterFactory.genVectorExpressionWritable(expr)
-        .getObjectInspector();
+    outputTypeInfo = expr.getTypeInfo();
+    outputVectorAssignRow = new VectorAssignRow();
+    outputVectorAssignRow.init(outputTypeInfo, outputColumn);
 
     genericUDF.initialize(childrenOIs);
 
@@ -207,163 +212,9 @@ public class VectorUDFAdaptor extends VectorExpression {
       result = null;
     }
 
-    // set output column vector entry
-    if (result == null) {
-      b.cols[outputColumn].noNulls = false;
-      b.cols[outputColumn].isNull[i] = true;
-    } else {
-      b.cols[outputColumn].isNull[i] = false;
-      setOutputCol(b.cols[outputColumn], i, result);
-    }
-  }
-
-  private void setOutputCol(ColumnVector colVec, int i, Object value) {
-
-    /* Depending on the output type, get the value, cast the result to the
-     * correct type if needed, and assign the result into the output vector.
-     */
-    if (outputOI instanceof WritableStringObjectInspector) {
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-      Text t;
-      if (value instanceof String) {
-        t = new Text((String) value);
-      } else {
-        t = ((WritableStringObjectInspector) outputOI).getPrimitiveWritableObject(value);
-      }
-      bv.setVal(i, t.getBytes(), 0, t.getLength());
-    } else if (outputOI instanceof WritableHiveCharObjectInspector) {
-      WritableHiveCharObjectInspector writableHiveCharObjectOI = (WritableHiveCharObjectInspector) outputOI;
-      int maxLength = ((CharTypeInfo) writableHiveCharObjectOI.getTypeInfo()).getLength();
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-
-      HiveCharWritable hiveCharWritable;
-      if (value instanceof HiveCharWritable) {
-        hiveCharWritable = ((HiveCharWritable) value);
-      } else {
-        hiveCharWritable = writableHiveCharObjectOI.getPrimitiveWritableObject(value);
-      }
-      Text t = hiveCharWritable.getTextValue();
-
-      // In vector mode, we stored CHAR as unpadded.
-      StringExpr.rightTrimAndTruncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
-    } else if (outputOI instanceof WritableHiveVarcharObjectInspector) {
-      WritableHiveVarcharObjectInspector writableHiveVarcharObjectOI = (WritableHiveVarcharObjectInspector) outputOI;
-      int maxLength = ((VarcharTypeInfo) writableHiveVarcharObjectOI.getTypeInfo()).getLength();
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-
-      HiveVarcharWritable hiveVarcharWritable;
-      if (value instanceof HiveVarcharWritable) {
-        hiveVarcharWritable = ((HiveVarcharWritable) value);
-      } else {
-        hiveVarcharWritable = writableHiveVarcharObjectOI.getPrimitiveWritableObject(value);
-      }
-      Text t = hiveVarcharWritable.getTextValue();
-
-      StringExpr.truncate(bv, i, t.getBytes(), 0, t.getLength(), maxLength);
-    } else if (outputOI instanceof WritableIntObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Integer) {
-        lv.vector[i] = (Integer) value;
-      } else {
-        lv.vector[i] = ((WritableIntObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableLongObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Long) {
-        lv.vector[i] = (Long) value;
-      } else {
-        lv.vector[i] = ((WritableLongObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableDoubleObjectInspector) {
-      DoubleColumnVector dv = (DoubleColumnVector) colVec;
-      if (value instanceof Double) {
-        dv.vector[i] = (Double) value;
-      } else {
-        dv.vector[i] = ((WritableDoubleObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableFloatObjectInspector) {
-      DoubleColumnVector dv = (DoubleColumnVector) colVec;
-      if (value instanceof Float) {
-        dv.vector[i] = (Float) value;
-      } else {
-        dv.vector[i] = ((WritableFloatObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableShortObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Short) {
-        lv.vector[i] = (Short) value;
-      } else {
-        lv.vector[i] = ((WritableShortObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableByteObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Byte) {
-        lv.vector[i] = (Byte) value;
-      } else {
-        lv.vector[i] = ((WritableByteObjectInspector) outputOI).get(value);
-      }
-    } else if (outputOI instanceof WritableTimestampObjectInspector) {
-      TimestampColumnVector tv = (TimestampColumnVector) colVec;
-      Timestamp ts;
-      if (value instanceof Timestamp) {
-        ts = (Timestamp) value;
-      } else {
-        ts = ((WritableTimestampObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      tv.set(i, ts);
-    } else if (outputOI instanceof WritableDateObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      Date ts;
-      if (value instanceof Date) {
-        ts = (Date) value;
-      } else {
-        ts = ((WritableDateObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      long l = DateWritable.dateToDays(ts);
-      lv.vector[i] = l;
-    } else if (outputOI instanceof WritableBooleanObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      if (value instanceof Boolean) {
-        lv.vector[i] = (Boolean) value ? 1 : 0;
-      } else {
-        lv.vector[i] = ((WritableBooleanObjectInspector) outputOI).get(value) ? 1 : 0;
-      }
-    } else if (outputOI instanceof WritableHiveDecimalObjectInspector) {
-      DecimalColumnVector dcv = (DecimalColumnVector) colVec;
-      if (value instanceof HiveDecimal) {
-        dcv.set(i, (HiveDecimal) value);
-      } else {
-        HiveDecimal hd = ((WritableHiveDecimalObjectInspector) outputOI).getPrimitiveJavaObject(value);
-        dcv.set(i, hd);
-      }
-    } else if (outputOI instanceof WritableBinaryObjectInspector) {
-      BytesWritable bw = (BytesWritable) value;
-      BytesColumnVector bv = (BytesColumnVector) colVec;
-      bv.setVal(i, bw.getBytes(), 0, bw.getLength());
-    } else if (outputOI instanceof WritableHiveIntervalYearMonthObjectInspector) {
-      LongColumnVector lv = (LongColumnVector) colVec;
-      HiveIntervalYearMonth iym;
-      if (value instanceof HiveIntervalYearMonth) {
-        iym = (HiveIntervalYearMonth) value;
-      } else {
-        iym = ((WritableHiveIntervalYearMonthObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      long l = iym.getTotalMonths();
-      lv.vector[i] = l;
-    } else if (outputOI instanceof WritableHiveIntervalDayTimeObjectInspector) {
-      IntervalDayTimeColumnVector idtv = (IntervalDayTimeColumnVector) colVec;
-      HiveIntervalDayTime idt;
-      if (value instanceof HiveIntervalDayTime) {
-        idt = (HiveIntervalDayTime) value;
-      } else {
-        idt = ((WritableHiveIntervalDayTimeObjectInspector) outputOI).getPrimitiveJavaObject(value);
-      }
-      idtv.set(i, idt);
-    } else {
-      throw new RuntimeException("Unhandled object type " + outputOI.getTypeName() +
-          " inspector class " + outputOI.getClass().getName() +
-          " value class " + value.getClass().getName());
-    }
+    // Set output column vector entry.  Since we have one output column, the logical index = 0.
+    outputVectorAssignRow.assignRowColumn(
+        b, /* batchIndex */ i, /* logicalColumnIndex */ 0, result);
   }
 
   @Override

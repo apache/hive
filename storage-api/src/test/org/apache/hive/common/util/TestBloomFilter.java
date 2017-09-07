@@ -19,6 +19,7 @@
 package org.apache.hive.common.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -547,11 +548,8 @@ public class TestBloomFilter {
     BloomFilter bf1 = new BloomFilter(1000);
     BloomFilter bf2 = new BloomFilter(200);
     // Create bloom filter with same number of bits, but different # hash functions
-    ArrayList<Long> bits = new ArrayList<Long>();
-    for (int idx = 0; idx < bf1.getBitSet().length; ++idx) {
-      bits.add(0L);
-    }
-    BloomFilter bf3 = new BloomFilter(bits, bf1.getBitSize(), bf1.getNumHashFunctions() + 1);
+    long[] bits = new long[bf1.getBitSet().length];
+    BloomFilter bf3 = new BloomFilter(bits, bf1.getNumHashFunctions() + 1);
 
     // Serialize to bytes
     ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
@@ -584,6 +582,134 @@ public class TestBloomFilter {
       Assert.fail("Expected exception not encountered");
     } catch (IllegalArgumentException err) {
       // expected
+    }
+  }
+
+  @Test
+  public void testFpp1K() {
+    int size = 1000;
+    BloomFilter bf = new BloomFilter(size);
+    int fp = 0;
+    for (int i = 0; i < size; i++) {
+      bf.addLong(i);
+    }
+
+    for (int i = 0; i < size; i++) {
+      assertTrue(bf.testLong(i));
+    }
+
+    for (int i = 0; i < size; i++) {
+      int probe = rand.nextInt();
+      // out of range probes
+      if ((probe > size) || (probe < 0)) {
+        if (bf.testLong(probe)) {
+          fp++;
+        }
+      }
+    }
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = bf.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, 0.005);
+    }
+  }
+
+  @Test
+  public void testFpp10K() {
+    int size = 10_000;
+    BloomFilter bf = new BloomFilter(size);
+    int fp = 0;
+    for (int i = 0; i < size; i++) {
+      bf.addLong(i);
+    }
+
+    for (int i = 0; i < size; i++) {
+      assertTrue(bf.testLong(i));
+    }
+
+    for (int i = 0; i < size; i++) {
+      int probe = rand.nextInt();
+      // out of range probes
+      if ((probe > size) || (probe < 0)) {
+        if (bf.testLong(probe)) {
+          fp++;
+        }
+      }
+    }
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = bf.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, 0.005);
+    }
+  }
+
+  @Test
+  public void testFpp1M() {
+    int size = 1_000_000;
+    BloomFilter bf = new BloomFilter(size);
+    int fp = 0;
+    for (int i = 0; i < size; i++) {
+      bf.addLong(i);
+    }
+
+    for (int i = 0; i < size; i++) {
+      assertTrue(bf.testLong(i));
+    }
+
+    for (int i = 0; i < size; i++) {
+      int probe = rand.nextInt();
+      // out of range probes
+      if ((probe > size) || (probe < 0)) {
+        if (bf.testLong(probe)) {
+          fp++;
+        }
+      }
+    }
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = bf.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, 0.005);
+    }
+  }
+
+  @Test
+  public void testFpp10M() {
+    int size = 10_000_000;
+    BloomFilter bf = new BloomFilter(size);
+    int fp = 0;
+    for (int i = 0; i < size; i++) {
+      bf.addLong(i);
+    }
+
+    for (int i = 0; i < size; i++) {
+      assertTrue(bf.testLong(i));
+    }
+
+    for (int i = 0; i < size; i++) {
+      int probe = rand.nextInt();
+      // out of range probes
+      if ((probe > size) || (probe < 0)) {
+        if (bf.testLong(probe)) {
+          fp++;
+        }
+      }
+    }
+
+    double actualFpp = (double) fp / (double) size;
+    double expectedFpp = bf.DEFAULT_FPP;
+    if (actualFpp < expectedFpp) {
+      assertTrue(actualFpp != 0.0);
+    } else {
+      assertEquals(expectedFpp, actualFpp, 0.005);
     }
   }
 }

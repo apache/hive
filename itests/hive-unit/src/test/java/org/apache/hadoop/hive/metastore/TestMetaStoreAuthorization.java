@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 
 
 public class TestMetaStoreAuthorization extends TestCase {
@@ -75,7 +75,7 @@ public class TestMetaStoreAuthorization extends TestCase {
 
   public void testMetaStoreAuthorization() throws Exception {
     setup();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
 
     FileSystem fs = null;

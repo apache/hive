@@ -25,9 +25,10 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
+
 /**
  * TestMetaStoreEventListener. Test case for
  * {@link org.apache.hadoop.hive.metastore.MetaStoreEndFunctionListener}
@@ -48,7 +49,7 @@ public class TestMetaStoreEndFunctionListener extends TestCase {
     System.setProperty("hive.metastore.end.function.listeners",
         DummyEndFunctionListener.class.getName());
     int port = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
     hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);

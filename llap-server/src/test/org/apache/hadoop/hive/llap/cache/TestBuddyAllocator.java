@@ -56,7 +56,7 @@ public class TestBuddyAllocator {
     isMapped = mmap;
   }
 
-  private static class DummyMemoryManager implements MemoryManager {
+  static class DummyMemoryManager implements MemoryManager {
     @Override
     public void reserveMemory(long memoryToReserve) {
     }
@@ -72,11 +72,6 @@ public class TestBuddyAllocator {
 
     @Override
     public void updateMaxSize(long maxSize) {
-    }
-
-    @Override
-    public long forceReservedMemory(int allocationSize, int count) {
-      return allocationSize * count;
     }
 
     @Override
@@ -98,8 +93,9 @@ public class TestBuddyAllocator {
   @Test
   public void testSameSizes() throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max;
-    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc, maxAlloc,
-        tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc,
+        maxAlloc, 0, tmpDir, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null);
     for (int i = max; i >= min; --i) {
       allocSameSize(a, 1 << (max - i), i);
     }
@@ -108,16 +104,18 @@ public class TestBuddyAllocator {
   @Test
   public void testMultipleArenas() throws Exception {
     int max = 8, maxAlloc = 1 << max, allocLog2 = max - 1, arenaCount = 5;
-    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc, maxAlloc * arenaCount,
-        tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << 3, maxAlloc, maxAlloc,
+        maxAlloc * arenaCount, 0, tmpDir, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null);
     allocSameSize(a, arenaCount * 2, allocLog2);
   }
 
   @Test
   public void testMTT() {
     final int min = 3, max = 8, maxAlloc = 1 << max, allocsPerSize = 3;
-    final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc * 8,
-        maxAlloc * 24, tmpDir, new DummyMemoryManager(), LlapDaemonCacheMetrics.create("test", "1"));
+    final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc,
+        maxAlloc * 8, maxAlloc * 24, 0, tmpDir, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null);
     ExecutorService executor = Executors.newFixedThreadPool(3);
     final CountDownLatch cdlIn = new CountDownLatch(3), cdlOut = new CountDownLatch(1);
     FutureTask<Void> upTask = new FutureTask<Void>(new Callable<Void>() {
@@ -161,8 +159,8 @@ public class TestBuddyAllocator {
   public void testMTTArenas() {
     final int min = 3, max = 4, maxAlloc = 1 << max, minAllocCount = 2048, threadCount = 4;
     final BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, maxAlloc,
-        (1 << min) * minAllocCount, tmpDir, new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"));
+        (1 << min) * minAllocCount, 0, tmpDir, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null);
     ExecutorService executor = Executors.newFixedThreadPool(threadCount);
     final CountDownLatch cdlIn = new CountDownLatch(threadCount), cdlOut = new CountDownLatch(1);
     Callable<Void> testCallable = new Callable<Void>() {
@@ -188,7 +186,8 @@ public class TestBuddyAllocator {
       throw new RuntimeException(t);
     }
   }
-  private void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
+
+  static void syncThreadStart(final CountDownLatch cdlIn, final CountDownLatch cdlOut) {
     cdlIn.countDown();
     try {
       cdlOut.await();
@@ -201,8 +200,8 @@ public class TestBuddyAllocator {
       int allocCount, int arenaSizeMult, int arenaCount) throws Exception {
     int min = 3, max = 8, maxAlloc = 1 << max, arenaSize = maxAlloc * arenaSizeMult;
     BuddyAllocator a = new BuddyAllocator(isDirect, isMapped, 1 << min, maxAlloc, arenaSize,
-        arenaSize * arenaCount, tmpDir , new DummyMemoryManager(),
-        LlapDaemonCacheMetrics.create("test", "1"));
+        arenaSize * arenaCount, 0, tmpDir, new DummyMemoryManager(),
+        LlapDaemonCacheMetrics.create("test", "1"), null);
     allocateUp(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, true);
     allocateDown(a, min, max, allocCount, false);
@@ -252,19 +251,34 @@ public class TestBuddyAllocator {
     try {
       a.allocateMultiple(allocs[index], size);
     } catch (AllocatorOutOfMemoryException ex) {
-      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDumpForOomInternal());
+      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.testDump());
       throw ex;
     }
     // LOG.info("Allocated " + allocCount + " of " + size + "; " + a.debugDump());
     for (int j = 0; j < allocCount; ++j) {
       MemoryBuffer mem = allocs[index][j];
       long testValue = testValues[index][j] = rdm.nextLong();
-      int pos = mem.getByteBufferRaw().position();
-      mem.getByteBufferRaw().putLong(pos, testValue);
-      int halfLength = mem.getByteBufferRaw().remaining() >> 1;
-      if (halfLength + 8 <= mem.getByteBufferRaw().remaining()) {
-        mem.getByteBufferRaw().putLong(pos + halfLength, testValue);
-      }
+      putTestValue(mem, testValue);
+    }
+  }
+
+  public static void putTestValue(MemoryBuffer mem, long testValue) {
+    int pos = mem.getByteBufferRaw().position();
+    mem.getByteBufferRaw().putLong(pos, testValue);
+    int halfLength = mem.getByteBufferRaw().remaining() >> 1;
+    if (halfLength + 8 <= mem.getByteBufferRaw().remaining()) {
+      mem.getByteBufferRaw().putLong(pos + halfLength, testValue);
+    }
+  }
+
+  public static void checkTestValue(MemoryBuffer mem, long testValue, String str) {
+    int pos = mem.getByteBufferRaw().position();
+    assertEquals("Failed to match (" + pos + ") on " + str,
+        testValue, mem.getByteBufferRaw().getLong(pos));
+    int halfLength = mem.getByteBufferRaw().remaining() >> 1;
+    if (halfLength + 8 <= mem.getByteBufferRaw().remaining()) {
+      assertEquals("Failed to match half (" + (pos + halfLength) + ") on " + str,
+          testValue, mem.getByteBufferRaw().getLong(pos + halfLength));
     }
   }
 
@@ -285,14 +299,9 @@ public class TestBuddyAllocator {
       BuddyAllocator a, MemoryBuffer[] allocs, long[] testValues) {
     for (int j = 0; j < allocs.length; ++j) {
       LlapDataBuffer mem = (LlapDataBuffer)allocs[j];
-      int pos = mem.getByteBufferRaw().position();
-      assertEquals("Failed to match (" + pos + ") on " + j + "/" + allocs.length,
-          testValues[j], mem.getByteBufferRaw().getLong(pos));
-      int halfLength = mem.getByteBufferRaw().remaining() >> 1;
-      if (halfLength + 8 <= mem.getByteBufferRaw().remaining()) {
-        assertEquals("Failed to match half (" + (pos + halfLength) + ") on " + j + "/"
-            + allocs.length, testValues[j], mem.getByteBufferRaw().getLong(pos + halfLength));
-      }
+      long testValue = testValues[j];
+      String str = j + "/" + allocs.length;
+      checkTestValue(mem, testValue, str);
       a.deallocate(mem);
     }
   }

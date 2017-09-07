@@ -110,12 +110,20 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
         outputFieldNames, objectInspectors);
   }
 
+  // Must send on to VectorPTFOperator...
+  @Override
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    for (Operator<? extends OperatorDesc> op : childOperators) {
+      op.setNextVectorBatchGroupStatus(isLastGroupBatch);
+    }
+  }
+
   @Override
   public void process(Object row, int tag) throws HiveException {
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      forward(row, inputObjInspectors[tag]);
+      forward(row, inputObjInspectors[tag], true);
       return;
     }
 
@@ -134,7 +142,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     int originalProjectionSize = vrg.projectionSize;
     vrg.projectionSize = projectedOutputColumns.length;
     vrg.projectedColumns = this.projectedOutputColumns;
-    forward(vrg, outputObjInspector);
+    forward(vrg, outputObjInspector, true);
 
     // Revert the projected columns back, because vrg will be re-used.
     vrg.projectionSize = originalProjectionSize;

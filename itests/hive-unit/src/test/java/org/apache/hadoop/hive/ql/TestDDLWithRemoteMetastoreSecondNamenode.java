@@ -31,11 +31,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * Tests DDL with remote metastore service and second namenode (HIVE-6374)
@@ -81,7 +81,7 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
 
       // Test with remote metastore service
       int port = MetaStoreUtils.findFreePort();
-      MetaStoreUtils.startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      MetaStoreUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge());
       conf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
       conf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");

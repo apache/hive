@@ -31,7 +31,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,6 +43,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
+import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
+import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -293,6 +295,10 @@ public class DagUtils {
       mergeInputClass = ConcatenatedMergedKeyValueInput.class;
       break;
 
+    case ONE_TO_ONE_EDGE:
+      mergeInputClass = ConcatenatedMergedKeyValueInput.class;
+      break;
+
     case SIMPLE_EDGE:
       setupAutoReducerParallelism(edgeProp, w);
       // fall through
@@ -398,18 +404,26 @@ public class DagUtils {
           .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
           .build();
       return et3Conf.createDefaultEdgeProperty();
+    case ONE_TO_ONE_EDGE:
+      UnorderedKVEdgeConfig et4Conf = UnorderedKVEdgeConfig
+          .newBuilder(keyClass, valClass)
+          .setFromConfiguration(conf)
+          .setKeySerializationClass(TezBytesWritableSerialization.class.getName(), null)
+          .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
+          .build();
+      return et4Conf.createDefaultOneToOneEdgeProperty();
     case SIMPLE_EDGE:
     default:
       assert partitionerClassName != null;
       partitionerConf = createPartitionerConf(partitionerClassName, conf);
-      OrderedPartitionedKVEdgeConfig et4Conf = OrderedPartitionedKVEdgeConfig
+      OrderedPartitionedKVEdgeConfig et5Conf = OrderedPartitionedKVEdgeConfig
           .newBuilder(keyClass, valClass, MRPartitioner.class.getName(), partitionerConf)
           .setFromConfiguration(conf)
           .setKeySerializationClass(TezBytesWritableSerialization.class.getName(),
               TezBytesComparator.class.getName(), null)
           .setValueSerializationClass(TezBytesWritableSerialization.class.getName(), null)
           .build();
-      return et4Conf.createDefaultEdgeProperty();
+      return et5Conf.createDefaultEdgeProperty();
     }
   }
 
@@ -638,9 +652,17 @@ public class DagUtils {
       conf.setBoolean(Utilities.VECTOR_MODE, mapWork.getVectorMode());
       conf.setBoolean(Utilities.USE_VECTORIZED_INPUT_FILE_FORMAT, mapWork.getUseVectorizedInputFileFormat());
 
-      dataSource = MRInputHelpers.configureMRInputWithLegacySplitGeneration(conf, new Path(tezDir,
-          "split_" + mapWork.getName().replaceAll(" ", "_")), true);
-      numTasks = dataSource.getNumberOfShards();
+      InputSplitInfo inputSplitInfo = MRInputHelpers.generateInputSplitsToMem(conf, false, 0);
+      InputInitializerDescriptor descriptor = InputInitializerDescriptor.create(MRInputSplitDistributor.class.getName());
+      InputDescriptor inputDescriptor = InputDescriptor.create(MRInputLegacy.class.getName())
+              .setUserPayload(UserPayload
+                      .create(MRRuntimeProtos.MRInputUserPayloadProto.newBuilder()
+                              .setConfigurationBytes(TezUtils.createByteStringFromConf(conf))
+                              .setSplits(inputSplitInfo.getSplitsProto()).build().toByteString()
+                              .asReadOnlyByteBuffer()));
+
+      dataSource = DataSourceDescriptor.create(inputDescriptor, descriptor, null);
+      numTasks = inputSplitInfo.getNumTasks();
 
       // set up the operator plan. (after generating splits - that changes configs)
       Utilities.setMapWork(conf, mapWork, mrScratchDir, false);
@@ -1219,7 +1241,7 @@ public class DagUtils {
    * Set up credentials for the base work on secure clusters
    */
   public void addCredentials(BaseWork work, DAG dag) throws IOException {
-    dag.setCredentials(UserGroupInformation.getCurrentUser().getCredentials());
+    dag.getCredentials().mergeAll(UserGroupInformation.getCurrentUser().getCredentials());
     if (work instanceof MapWork) {
       addCredentials((MapWork) work, dag);
     } else if (work instanceof ReduceWork) {

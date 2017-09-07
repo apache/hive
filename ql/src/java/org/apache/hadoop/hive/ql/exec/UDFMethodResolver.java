@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * simply have to extend UDFBaseNumericOp class. For the default resolution the
  * UDF implementation simply needs to extend the UDF class.
  */
+@Deprecated
 public interface UDFMethodResolver {
 
   /**

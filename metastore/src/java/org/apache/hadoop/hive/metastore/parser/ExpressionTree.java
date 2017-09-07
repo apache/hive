@@ -230,8 +230,7 @@ public class ExpressionTree {
      *        tables that match the filter.
      * @param params
      *        A map of parameter key to values for the filter statement.
-     * @param filterBuilder The filter builder that is used to build filter.
-     * @return a JDO filter statement
+     * @param filterBuffer The filter builder that is used to build filter.
      * @throws MetaException
      */
     public void generateJDOFilter(Configuration conf, Table table,
@@ -385,7 +384,6 @@ public class ExpressionTree {
     }
 
     /**
-     * @param operator operator
      * @return true iff filter pushdown for this operator can be done for integral types.
      */
     public boolean canJdoUseStringsWithIntegral() {

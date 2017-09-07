@@ -61,7 +61,7 @@ public class CorePerfCliDriver extends CliAdapter{
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, hiveConfDir,
           hadoopVer, initScript,
-          cleanupScript, false, false);
+          cleanupScript, false);
 
       // do a one time initialization
       qt.cleanUp();

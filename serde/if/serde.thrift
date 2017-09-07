@@ -35,7 +35,7 @@ const string SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object"
 const string SERIALIZATION_ENCODING = "serialization.encoding"
 
 const string FIELD_DELIM = "field.delim"
-const string COLLECTION_DELIM = "colelction.delim"
+const string COLLECTION_DELIM = "collection.delim"
 const string LINE_DELIM = "line.delim"
 const string MAPKEY_DELIM = "mapkey.delim"
 const string QUOTE_CHAR = "quote.delim"
@@ -64,7 +64,7 @@ const string DECIMAL_TYPE_NAME   = "decimal";
 const string BINARY_TYPE_NAME    = "binary";
 const string INTERVAL_YEAR_MONTH_TYPE_NAME = "interval_year_month";
 const string INTERVAL_DAY_TIME_TYPE_NAME   = "interval_day_time";
-const string TIMESTAMPTZ_TYPE_NAME = "timestamp with time zone";
+const string TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
 
 const string LIST_TYPE_NAME = "array";
 const string MAP_TYPE_NAME  = "map";
@@ -96,7 +96,7 @@ const set<string> PrimitiveTypes  = [
   INTERVAL_DAY_TIME_TYPE_NAME
   DECIMAL_TYPE_NAME
   BINARY_TYPE_NAME
-  TIMESTAMPTZ_TYPE_NAME
+  TIMESTAMPLOCALTZ_TYPE_NAME
 ],
 
 const set<string> CollectionTypes = [ LIST_TYPE_NAME MAP_TYPE_NAME ],

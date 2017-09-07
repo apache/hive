@@ -119,13 +119,6 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     return result;
   }
 
-
-  @Override
-  public long forceReservedMemory(int allocationSize, int count) {
-    if (evictor == null) return 0;
-    return evictor.tryEvictContiguousData(allocationSize, count);
-  }
-
   @Override
   public void releaseMemory(final long memoryToRelease) {
     long oldV;

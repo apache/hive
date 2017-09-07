@@ -57,7 +57,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)
@@ -142,7 +142,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: count
                         window function: GenericUDAFCountEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), count_window_0 (type: bigint)

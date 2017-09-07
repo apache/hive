@@ -27,7 +27,7 @@ public enum DatabaseProduct {
 
   /**
    * Determine the database product type
-   * @param conn database connection
+   * @param productName string to defer database connection
    * @return database product type
    */
   public static DatabaseProduct determineDatabaseProduct(String productName) throws SQLException {

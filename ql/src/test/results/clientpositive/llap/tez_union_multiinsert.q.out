@@ -68,7 +68,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -186,14 +186,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19680 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 29664 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), UDFToString(_col1) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -283,10 +283,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -1008,7 +1008,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1059,14 +1059,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19680 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 29664 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), UDFToString(_col1) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1187,11 +1187,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -1911,7 +1911,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1962,14 +1962,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19680 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 309 Data size: 29664 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), UDFToString(_col1) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 309 Data size: 84048 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2089,10 +2089,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -2772,7 +2772,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2857,14 +2857,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 205 Data size: 19680 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 250 Data size: 24000 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: string), UDFToString(_col1) (type: string)
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 205 Data size: 55760 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2944,10 +2944,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -3627,7 +3627,7 @@ STAGE PLANS:
                   Select Operator
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3791,10 +3791,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

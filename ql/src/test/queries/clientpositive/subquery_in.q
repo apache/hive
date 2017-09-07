@@ -74,24 +74,46 @@ from part b where b.p_size in
 ;
 
 -- distinct, corr
-explain 
-select * 
-from src b 
+explain
+select *
+from src b
 where b.key in
-        (select distinct a.key 
-         from src a 
+        (select distinct a.key
+         from src a
          where b.value = a.value and a.key > '9'
         )
 ;
 
-select * 
-from src b 
+select *
+from src b
 where b.key in
-        (select distinct a.key 
-         from src a 
+        (select distinct a.key
+         from src a
          where b.value = a.value and a.key > '9'
         )
 ;
+
+-- corr, non equi predicate, should not have a join with outer to generate
+-- corr values
+explain
+select *
+from src b
+where b.key in
+        (select distinct a.key
+         from src a
+         where b.value <> a.key and a.key > '9'
+        )
+;
+
+select *
+from src b
+where b.key in
+        (select distinct a.key
+         from src a
+         where b.value <> a.key and a.key > '9'
+        )
+;
+
 
 -- non agg, non corr, windowing
 select p_mfgr, p_name, p_size 
@@ -267,3 +289,13 @@ select * from t where i IN (select sum(i) from tt where tt.j = t.j);
 
 drop table t;
 drop table tt;
+
+-- since inner query has aggregate it will be joined with outer to get all possible corrrelated values
+explain select * from part where p_size IN (select max(p_size) from part p where p.p_type <> part.p_name);
+select * from part where p_size IN (select max(p_size) from part p where p.p_type <> part.p_name);
+
+-- inner query has join so should have a join with outer query to fetch all corr values
+explain select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name);
+select * from part where p_size IN (select pp.p_size from part p join part pp on pp.p_type = p.p_type where part.p_type <> p.p_name);
+
+

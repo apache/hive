@@ -43,22 +43,22 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [1,] of 16
-                  Statistics: Num rows: 7972 Data size: 31888 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8143 Data size: 32572 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (a = 1) (type: boolean)
-                    Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4071 Data size: 16284 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4071 Data size: 16284 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 4071 Data size: 16284 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -100,7 +100,7 @@ STAGE PLANS:
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 31888
+                    totalSize 32572
                     transactional true
                     transactional_properties default
 #### A masked pattern was here ####
@@ -123,7 +123,7 @@ STAGE PLANS:
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 31888
+                      totalSize 32572
                       transactional true
                       transactional_properties default
 #### A masked pattern was here ####
@@ -139,3 +139,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select count(*) from acidTblDefault WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbldefault
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acidTblDefault WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbldefault
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from acidTblDefault WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtbldefault
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acidTblDefault WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtbldefault
+#### A masked pattern was here ####
+1

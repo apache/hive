@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -48,6 +49,7 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcUtils;
@@ -63,16 +65,18 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   private final Configuration conf;
   private final LlapDaemonCacheMetrics cacheMetrics;
   private final LlapDaemonIOMetrics ioMetrics;
+  private final FixedSizedObjectPool<IoTrace> tracePool;
 
   public GenericColumnVectorProducer(SerDeLowLevelCacheImpl serdeCache,
       BufferUsageManager bufferManager, Configuration conf, LlapDaemonCacheMetrics cacheMetrics,
-      LlapDaemonIOMetrics ioMetrics) {
+      LlapDaemonIOMetrics ioMetrics, FixedSizedObjectPool<IoTrace> tracePool) {
     LlapIoImpl.LOG.info("Initializing ORC column vector producer");
     this.cache = serdeCache;
     this.bufferManager = bufferManager;
     this.conf = conf;
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
+    this.tracePool = tracePool;
   }
 
   @Override
@@ -92,10 +96,11 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     }
     edc.setFileMetadata(fm);
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
+    // TODO: add tracing to serde reader
     SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache,
         bufferManager, conf, split, columnIds, edc, job, reporter, sourceInputFormat,
         sourceSerDe, counters, fm.getSchema(), parts);
-    edc.init(reader, reader);
+    edc.init(reader, reader, new IoTrace(0, false));
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       LlapIoImpl.LOG.debug("Ignoring schema: " + schema);
     }

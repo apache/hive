@@ -412,7 +412,7 @@ public class TestCompactor {
     Assert.assertEquals("maxColLen b", 3, colBStats.getMaxColLen());
     Assert.assertEquals("avgColLen b", 3.0, colBStats.getAvgColLen(), 0.01);
     Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 2, colBStats.getNumDVs());
+    Assert.assertEquals("nunDVs", 3, colBStats.getNumDVs());
 
     //now save stats for partition we won't modify
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname,
@@ -484,7 +484,7 @@ public class TestCompactor {
     //cast it to long to get rid of periodic decimal
     Assert.assertEquals("avgColLen b", (long)6.1111111111, (long)colBStats.getAvgColLen());
     Assert.assertEquals("numNulls b", 0, colBStats.getNumNulls());
-    Assert.assertEquals("nunDVs", 10, colBStats.getNumDVs());
+    Assert.assertEquals("nunDVs", 8, colBStats.getNumDVs());
 
     //now check that stats for partition we didn't modify did not change
     stats = msClient.getPartitionColumnStatistics(ciPart2.dbname, ciPart2.tableName,

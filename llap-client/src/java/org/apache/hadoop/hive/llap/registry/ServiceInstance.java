@@ -20,7 +20,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 public interface ServiceInstance {
 
   /**
-   * Worker identity is a UUID (unique across restarts), to identify a node which died & was brought
+   * Worker identity is a UUID (unique across restarts), to identify a node which died &amp; was brought
    * back on the same host/port
    */
   public String getWorkerIdentity();

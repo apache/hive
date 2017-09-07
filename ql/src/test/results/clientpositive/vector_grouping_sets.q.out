@@ -162,9 +162,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: s_store_id (type: string), 0 (type: int)
                 mode: hash
@@ -196,8 +198,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string), KEY._col1 (type: int)
           mode: mergepartial
@@ -276,9 +280,11 @@ STAGE PLANS:
               Group By Operator
                 Group By Vectorization:
                     className: VectorGroupByOperator
+                    groupByMode: HASH
                     vectorOutput: true
                     keyExpressions: col 1, ConstantVectorExpression(val 0) -> 29:long
                     native: false
+                    vectorProcessingMode: HASH
                     projectedOutputColumns: []
                 keys: _col0 (type: string), 0 (type: int)
                 mode: hash
@@ -310,8 +316,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string), KEY._col1 (type: int)
           mode: mergepartial

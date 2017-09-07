@@ -1,8 +1,9 @@
+
 set hive.strict.checks.cartesian.product= false;
 CREATE EXTERNAL TABLE tables
 (
-id int,
-db_id int,
+id bigint,
+db_id bigint,
 name STRING,
 type STRING,
 owner STRING
@@ -16,7 +17,7 @@ TBLPROPERTIES (
 
 CREATE EXTERNAL TABLE dbs
 (
-DB_ID int,
+DB_ID bigint,
 NAME STRING
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'

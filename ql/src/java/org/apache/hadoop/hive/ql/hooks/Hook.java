@@ -17,11 +17,17 @@
  */
 
 package org.apache.hadoop.hive.ql.hooks;
+
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  *
  * The new interface for all the pre execute hooks and post execute hooks
  *
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface Hook {
 
 }

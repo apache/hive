@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
-
-
 public class ColStatistics {
 
   private String colName;

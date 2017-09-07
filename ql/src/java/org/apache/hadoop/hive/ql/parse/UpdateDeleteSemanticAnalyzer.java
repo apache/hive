@@ -696,15 +696,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       if(numWhenMatchedUpdateClauses > 1) {
         throw new SemanticException(ErrorMsg.MERGE_TOO_MANY_UPDATE, ctx.getCmd());
       }
-      assert numInsertClauses < 2;
-      if(numInsertClauses == 1 && numWhenMatchedUpdateClauses == 1) {
-        if(AcidUtils.getAcidOperationalProperties(targetTable).isSplitUpdate()) {
-          throw new IllegalStateException("Tables with " +
-            hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "=" +
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY + " currently do not " +
-            "support MERGE with both Insert and Update clauses.");
-        }
-      }
+      assert numInsertClauses < 2: "too many Insert clauses";
     }
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());

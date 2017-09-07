@@ -19,7 +19,11 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -27,6 +31,7 @@ import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
@@ -188,6 +193,51 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONInsertMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct InsertMessage", e);
+    }
+  }
+
+  @Override
+  public AddPrimaryKeyMessage getAddPrimaryKeyMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddPrimaryKeyMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddPrimaryKeyMessage", e);
+    }
+  }
+
+  @Override
+  public AddForeignKeyMessage getAddForeignKeyMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddForeignKeyMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddForeignKeyMessage", e);
+    }
+  }
+
+  @Override
+  public AddUniqueConstraintMessage getAddUniqueConstraintMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddUniqueConstraintMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddUniqueConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public AddNotNullConstraintMessage getAddNotNullConstraintMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAddNotNullConstraintMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AddNotNullConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public DropConstraintMessage getDropConstraintMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONDropConstraintMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct DropConstraintMessage", e);
     }
   }
 }

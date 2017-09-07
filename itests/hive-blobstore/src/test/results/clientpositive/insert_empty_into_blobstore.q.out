@@ -108,6 +108,9 @@ POSTHOOK: query: INSERT INTO TABLE blobstore_list_bucketing PARTITION (pt='a', d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty
 POSTHOOK: Output: default@blobstore_list_bucketing@pt=a/dt=a/hr=a
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).dept SIMPLE [(empty)empty.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).id SIMPLE [(empty)empty.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: blobstore_list_bucketing PARTITION(pt=a,dt=a,hr=a).name SIMPLE [(empty)empty.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: SELECT COUNT(*) FROM blobstore_list_bucketing
 PREHOOK: type: QUERY
 PREHOOK: Input: default@blobstore_list_bucketing

@@ -117,7 +117,10 @@ public final class SearchArgumentImpl implements SearchArgument {
       if (literalList != null && literalList.size() > 0 && literalList.get(0) instanceof LiteralDelegate) {
         List<Object> newLiteraList = new ArrayList<Object>();
         for (Object litertalObj : literalList) {
-          newLiteraList.add(((LiteralDelegate) litertalObj).getLiteral());
+          Object literal = ((LiteralDelegate) litertalObj).getLiteral();
+          if (literal != null) {
+            newLiteraList.add(literal);
+          }
         }
         return newLiteraList;
       }

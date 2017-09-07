@@ -23,14 +23,14 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc
                   filterExpr: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint)
                       outputColumnNames: cbigint
-                      Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: avg(cbigint)
                         mode: hash
@@ -44,17 +44,20 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: false
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
+            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function UDF avg parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,input:bigint> of Column[VALUE._col0] not supported
-                vectorized: false
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: avg(VALUE._col0)

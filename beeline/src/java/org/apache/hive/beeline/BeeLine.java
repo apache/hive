@@ -1168,7 +1168,6 @@ public class BeeLine implements Closeable {
       return ERRNO_OTHER;
     } finally {
       IOUtils.closeStream(fileStream);
-      output("");   // dummy new line
     }
   }
 
@@ -2182,8 +2181,7 @@ public class BeeLine implements Closeable {
       output(getColorBuffer().pad(loc("scanning", f.getAbsolutePath()), 60),
           false);
 
-      try {
-        ZipFile zf = new ZipFile(f);
+      try (ZipFile zf = new ZipFile(f)) {
         int total = zf.size();
         int index = 0;
 

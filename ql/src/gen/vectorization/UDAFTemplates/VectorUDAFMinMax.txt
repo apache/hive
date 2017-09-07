@@ -22,26 +22,27 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;    
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
-* <ClassName>. Vectorized implementation for MIN/MAX aggregates. 
+* <ClassName>. Vectorized implementation for MIN/MAX aggregates.
 */
-@Description(name = "<DescriptionName>", 
+@Description(name = "<DescriptionName>",
     value = "<DescriptionValue>")
 public class <ClassName> extends VectorAggregateExpression {
-   
+
     private static final long serialVersionUID = 1L;
-    
-    /** 
+
+    /**
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
@@ -55,11 +56,18 @@ public class <ClassName> extends VectorAggregateExpression {
       */
       transient private boolean isNull = true;
 
-      public void checkValue(<ValueType> value) {
+      public void minmaxValue(<ValueType> value) {
         if (isNull) {
           isNull = false;
           this.value = value;
         } else if (value <OperatorSymbol> this.value) {
+          this.value = value;
+        }
+      }
+
+      // The isNull check and work has already been performed.
+      public void minmaxValueNoCheck(<ValueType> value) {
+        if (value <OperatorSymbol> this.value) {
           this.value = value;
         }
       }
@@ -75,31 +83,24 @@ public class <ClassName> extends VectorAggregateExpression {
         value = 0;
       }
     }
-    
-    private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
 
     private transient VectorExpressionWriter resultWriter;
-    
-    public <ClassName>(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+
+    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    public <ClassName>() {
-      super();
+    private void init() {
     }
-    
+
     @Override
     public void init(AggregationDesc desc) throws HiveException {
+      init();
+
       resultWriter = VectorExpressionWriterFactory.genVectorExpressionWritable(
           desc.getParameters().get(0));
     }
-    
+
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int aggregrateIndex,
@@ -108,21 +109,21 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregrateIndex);
       return myagg;
     }
-    
+
     @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex, 
+      int aggregrateIndex,
       VectorizedRowBatch batch) throws HiveException {
-      
+
       int batchSize = batch.size;
-      
+
       if (batchSize == 0) {
         return;
       }
-      
+
       inputExpression.evaluate(batch);
-      
+
       <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
         cols[this.inputExpression.getOutputColumn()];
       <ValueType>[] vector = inputVector.vector;
@@ -176,10 +177,10 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(value);
+        myagg.minmaxValue(value);
       }
     } 
 
@@ -189,13 +190,13 @@ public class <ClassName> extends VectorAggregateExpression {
       <ValueType>[] values,
       int[] selection,
       int batchSize) {
-      
+
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(values[selection[i]]);
+        myagg.minmaxValue(values[selection[i]]);
       }
     }
 
@@ -206,10 +207,10 @@ public class <ClassName> extends VectorAggregateExpression {
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets, 
+          aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(values[i]);
+        myagg.minmaxValue(values[i]);
       }
     }
 
@@ -224,15 +225,15 @@ public class <ClassName> extends VectorAggregateExpression {
       if (isNull[0]) {
         return;
       }
-      
+
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(value);
+        myagg.minmaxValue(value);
       }
-      
+
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -251,7 +252,7 @@ public class <ClassName> extends VectorAggregateExpression {
           aggregationBufferSets,
           aggregrateIndex,
           i);
-        myagg.checkValue(value);
+        myagg.minmaxValue(value);
       }
     }
 
@@ -267,10 +268,10 @@ public class <ClassName> extends VectorAggregateExpression {
         int i = selection[j];
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             aggregrateIndex,
             j);
-          myagg.checkValue(values[i]);
+          myagg.minmaxValue(values[i]);
         }
       }
    }
@@ -285,42 +286,40 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets, 
+            aggregationBufferSets,
             aggregrateIndex,
             i);
-          myagg.checkValue(values[i]);
+          myagg.minmaxValue(values[i]);
         }
       }
-   }
-    
+    }
+
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
-      throws HiveException {
-        
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
+        throws HiveException {
+
         inputExpression.evaluate(batch);
-        
+
         <InputColumnVectorType> inputVector = (<InputColumnVectorType>)batch.
             cols[this.inputExpression.getOutputColumn()];
-        
+
         int batchSize = batch.size;
-        
+
         if (batchSize == 0) {
           return;
         }
-        
+
         Aggregation myagg = (Aggregation)agg;
-  
+
         <ValueType>[] vector = inputVector.vector;
-        
+
         if (inputVector.isRepeating) {
-          if (inputVector.noNulls &&
-            (myagg.isNull || (vector[0] <OperatorSymbol> myagg.value))) {
-            myagg.isNull = false;
-            myagg.value = vector[0];
+          if (inputVector.noNulls) {
+            myagg.minmaxValue(vector[0]);
           }
           return;
         }
-        
+
         if (!batch.selectedInUse && inputVector.noNulls) {
           iterateNoSelectionNoNulls(myagg, vector, batchSize);
         }
@@ -334,82 +333,66 @@ public class <ClassName> extends VectorAggregateExpression {
           iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
         }
     }
-  
+
     private void iterateSelectionHasNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        <ValueType>[] vector,
         int batchSize,
-        boolean[] isNull, 
+        boolean[] isNull,
         int[] selected) {
-      
+
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
           <ValueType> value = vector[i];
-          if (myagg.isNull) {
-            myagg.isNull = false;
-            myagg.value = value;
-          }
-          else if (value <OperatorSymbol> myagg.value) {
-            myagg.value = value;
-          }
+          myagg.minmaxValue(value);
         }
       }
     }
 
     private void iterateSelectionNoNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
-        int batchSize, 
+        Aggregation myagg,
+        <ValueType>[] vector,
+        int batchSize,
         int[] selected) {
-      
+
       if (myagg.isNull) {
         myagg.value = vector[selected[0]];
         myagg.isNull = false;
       }
-      
+
       for (int i=0; i< batchSize; ++i) {
         <ValueType> value = vector[selected[i]];
-        if (value <OperatorSymbol> myagg.value) {
-          myagg.value = value;
-        }
+        myagg.minmaxValueNoCheck(value);
       }
     }
 
     private void iterateNoSelectionHasNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        <ValueType>[] vector,
         int batchSize,
         boolean[] isNull) {
-      
+
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
           <ValueType> value = vector[i];
-          if (myagg.isNull) { 
-            myagg.value = value;
-            myagg.isNull = false;
-          }
-          else if (value <OperatorSymbol> myagg.value) {
-            myagg.value = value;
-          }
+          myagg.minmaxValue(value);
         }
       }
     }
 
     private void iterateNoSelectionNoNulls(
-        Aggregation myagg, 
-        <ValueType>[] vector, 
+        Aggregation myagg,
+        <ValueType>[] vector,
         int batchSize) {
       if (myagg.isNull) {
         myagg.value = vector[0];
         myagg.isNull = false;
       }
-      
+
       for (int i=0;i<batchSize;++i) {
         <ValueType> value = vector[i];
-        if (value <OperatorSymbol> myagg.value) {
-          myagg.value = value;
-        }
+        myagg.minmaxValueNoCheck(value);
       }
     }
 
@@ -435,7 +418,7 @@ public class <ClassName> extends VectorAggregateExpression {
         return resultWriter.writeValue(myagg.value);
       }
     }
-    
+
     @Override
     public ObjectInspector getOutputObjectInspector() {
       return resultWriter.getObjectInspector();
@@ -449,13 +432,4 @@ public class <ClassName> extends VectorAggregateExpression {
       model.primitive2(),
       model.memoryAlign());
   }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
-  }
 }
-

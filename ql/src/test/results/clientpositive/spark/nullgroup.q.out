@@ -26,7 +26,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -92,7 +92,7 @@ STAGE PLANS:
                     Select Operator
                       Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
-                        aggregations: count(1)
+                        aggregations: count()
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -165,7 +165,7 @@ STAGE PLANS:
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: partial1
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -236,7 +236,7 @@ STAGE PLANS:
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 mode: complete
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

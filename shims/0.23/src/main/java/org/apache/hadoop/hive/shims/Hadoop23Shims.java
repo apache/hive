@@ -29,7 +29,6 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,10 +37,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.crypto.CipherSuite;
 import org.apache.hadoop.crypto.key.KeyProvider;
 import org.apache.hadoop.crypto.key.KeyProvider.Options;
 import org.apache.hadoop.crypto.key.KeyProviderCryptoExtension;
@@ -96,6 +95,7 @@ import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairSchedulerConfiguration;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 import org.apache.tez.test.MiniTezCluster;
@@ -494,6 +494,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf.setBoolean(YarnConfiguration.YARN_MINICLUSTER_CONTROL_RESOURCE_MONITORING, false);
       conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 2048);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 512);
+      conf.setInt(FairSchedulerConfiguration.RM_SCHEDULER_INCREMENT_ALLOCATION_MB, 512);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 2048);
       configureImpersonation(conf);
       mr.init(conf);
@@ -1086,7 +1087,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-  List<String> constructDistCpParams(Path src, Path dst, Configuration conf) {
+  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
     List<String> params = new ArrayList<String>();
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
       String distCpOption = entry.getKey();
@@ -1100,21 +1101,24 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       // if no entries were added via conf, we initiate our defaults
       params.add("-update");
       params.add("-skipcrccheck");
+      params.add("-pb");
     }
-    params.add(src.toString());
+    for (Path src : srcPaths) {
+      params.add(src.toString());
+    }
     params.add(dst.toString());
     return params;
   }
 
   @Override
-  public boolean runDistCpAs(Path src, Path dst, Configuration conf, String doAsUser) throws IOException {
+  public boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, String doAsUser) throws IOException {
     UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(
         doAsUser, UserGroupInformation.getLoginUser());
     try {
       return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
         @Override
         public Boolean run() throws Exception {
-          return runDistCp(src, dst, conf);
+          return runDistCp(srcPaths, dst, conf);
         }
       });
     } catch (InterruptedException e) {
@@ -1123,14 +1127,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public boolean runDistCp(Path src, Path dst, Configuration conf) throws IOException {
-    DistCpOptions options = new DistCpOptions(Collections.singletonList(src), dst);
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
+    DistCpOptions options = new DistCpOptions(srcPaths, dst);
     options.setSyncFolder(true);
     options.setSkipCRC(true);
     options.preserve(FileAttribute.BLOCKSIZE);
 
     // Creates the command-line parameters for distcp
-    List<String> params = constructDistCpParams(src, dst, conf);
+    List<String> params = constructDistCpParams(srcPaths, dst, conf);
 
     try {
       conf.setBoolean("mapred.mapper.new-api", true);
@@ -1240,6 +1244,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           ((HdfsEncryptionShim)encryptionShim2).hdfsAdmin.getEncryptionZoneForPath(path2));
     }
 
+    /**
+     * Compares two encryption key strengths.
+     *
+     * @param path1 First  path to compare
+     * @param path2 Second path to compare
+     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @throws IOException If an error occurred attempting to get key metadata
+     */
     @Override
     public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
       EncryptionZone zone1, zone2;
@@ -1255,7 +1267,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return 1;
       }
 
-      return compareKeyStrength(zone1.getKeyName(), zone2.getKeyName());
+      return compareKeyStrength(zone1, zone2);
     }
 
     @Override
@@ -1307,28 +1319,28 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /**
      * Compares two encryption key strengths.
      *
-     * @param keyname1 Keyname to compare
-     * @param keyname2 Keyname to compare
-     * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
+     * @param zone1 First  EncryptionZone to compare
+     * @param zone2 Second EncryptionZone to compare
+     * @return 1 if zone1 is stronger; 0 if zones are equal; -1 if zone1 is weaker.
      * @throws IOException If an error occurred attempting to get key metadata
      */
-    private int compareKeyStrength(String keyname1, String keyname2) throws IOException {
-      KeyProvider.Metadata meta1, meta2;
+    private int compareKeyStrength(EncryptionZone zone1, EncryptionZone zone2) throws IOException {
 
-      if (keyProvider == null) {
-        throw new IOException("HDFS security key provider is not configured on your server.");
-      }
+      // zone1, zone2 should already have been checked for nulls.
+      assert zone1 != null && zone2 != null : "Neither EncryptionZone under comparison can be null.";
 
-      meta1 = keyProvider.getMetadata(keyname1);
-      meta2 = keyProvider.getMetadata(keyname2);
+      CipherSuite suite1 = zone1.getSuite();
+      CipherSuite suite2 = zone2.getSuite();
 
-      if (meta1.getBitLength() < meta2.getBitLength()) {
-        return -1;
-      } else if (meta1.getBitLength() == meta2.getBitLength()) {
+      if (suite1 == null && suite2 == null) {
         return 0;
-      } else {
+      } else if (suite1 == null) {
+        return -1;
+      } else if (suite2 == null) {
         return 1;
       }
+
+      return Integer.compare(suite1.getAlgorithmBlockSize(), suite2.getAlgorithmBlockSize());
     }
   }
 

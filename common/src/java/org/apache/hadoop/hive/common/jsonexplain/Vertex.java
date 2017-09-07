@@ -74,7 +74,7 @@ public final class Vertex implements Comparable<Vertex>{
   public VertexType vertexType;
 
   public static enum EdgeType {
-    BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, UNKNOWN
+    BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, FORWARD, UNKNOWN
   };
   public String edgeType;
 

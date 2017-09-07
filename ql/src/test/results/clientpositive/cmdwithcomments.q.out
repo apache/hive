@@ -63,12 +63,23 @@ POSTHOOK: Input: default@numt
 this is
 another --string value
 PREHOOK: query: --comment8
-drop table numt
+select 1, --comment
+2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: --comment8
+select 1, --comment
+2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	2
+PREHOOK: query: drop table numt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@numt
 PREHOOK: Output: default@numt
-POSTHOOK: query: --comment8
-drop table numt
+POSTHOOK: query: drop table numt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@numt
 POSTHOOK: Output: default@numt

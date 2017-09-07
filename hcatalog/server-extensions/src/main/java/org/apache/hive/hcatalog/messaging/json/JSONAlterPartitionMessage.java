@@ -34,7 +34,7 @@ import java.util.Map;
 public class JSONAlterPartitionMessage extends AlterPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table;
+  String server, servicePrincipal, db, table, tableType;
 
   @JsonProperty
   Long timestamp;
@@ -53,15 +53,25 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
                                    String table,
                                    Map<String,String> keyValues,
                                    Long timestamp) {
+    this(server, servicePrincipal, db, table, null, keyValues, timestamp);
+  }
+
+  public JSONAlterPartitionMessage(String server,
+                                   String servicePrincipal,
+                                   String db,
+                                   String table,
+                                   String tableType,
+                                   Map<String,String> keyValues,
+                                   Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
     this.keyValues = keyValues;
     checkValid();
   }
-
 
   @Override
   public String getServer() {
@@ -86,6 +96,11 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override

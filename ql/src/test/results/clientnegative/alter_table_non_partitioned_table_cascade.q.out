@@ -1,0 +1,21 @@
+PREHOOK: query: drop table if exists alter_table_non_partition_cascade
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists alter_table_non_partition_cascade
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table alter_table_non_partitioned_cascade(c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_non_partitioned_cascade
+POSTHOOK: query: create table alter_table_non_partitioned_cascade(c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_non_partitioned_cascade
+PREHOOK: query: describe alter_table_non_partitioned_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_non_partitioned_cascade
+POSTHOOK: query: describe alter_table_non_partitioned_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_non_partitioned_cascade
+c1                  	string              	                    
+c2                  	string              	                    
+FAILED: SemanticException [Error 10410]: Alter table with non-partitioned table does not support cascade

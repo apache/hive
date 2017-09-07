@@ -4,6 +4,7 @@ SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
+set hive.join.inner.residual=false;
 
 -- SORT_QUERY_RESULTS
 --

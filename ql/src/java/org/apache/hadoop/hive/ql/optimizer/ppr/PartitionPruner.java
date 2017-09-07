@@ -206,24 +206,26 @@ public class PartitionPruner extends Transform {
     String oldFilter = prunerExpr.getExprString();
     if (compactExpr == null || isBooleanExpr(compactExpr)) {
       if (isFalseExpr(compactExpr)) {
-        return new PrunedPartitionList(
-            tab, new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
+        return new PrunedPartitionList(tab, key + compactExpr.getExprString(),
+            new LinkedHashSet<Partition>(0), new ArrayList<String>(0), false);
       }
       // For null and true values, return every partition
       return getAllPartsFromCacheOrServer(tab, key, true, prunedPartitionsMap);
     }
+
+    String compactExprString = compactExpr.getExprString();
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
+      LOG.debug("Filter w/ compacting: " + compactExprString
           + "; filter w/o compacting: " + oldFilter);
     }
-
-    key = key + compactExpr.getExprString();
+    key = key + compactExprString;
     PrunedPartitionList ppList = prunedPartitionsMap.get(key);
     if (ppList != null) {
       return ppList;
     }
 
-    ppList = getPartitionsFromServer(tab, (ExprNodeGenericFuncDesc)compactExpr, conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
+    ppList = getPartitionsFromServer(tab, key, (ExprNodeGenericFuncDesc)compactExpr,
+        conf, alias, partColsUsedInFilter, oldFilter.equals(compactExpr.getExprString()));
     prunedPartitionsMap.put(key, ppList);
     return ppList;
   }
@@ -240,7 +242,7 @@ public class PartitionPruner extends Transform {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
-    ppList = new PrunedPartitionList(tab, parts, null, unknownPartitions);
+    ppList = new PrunedPartitionList(tab, key, parts, null, unknownPartitions);
     if (partsCache != null) {
       partsCache.put(key, ppList);
     }
@@ -430,8 +432,8 @@ public class PartitionPruner extends Transform {
     return false;
   }
 
-  private static PrunedPartitionList getPartitionsFromServer(Table tab,
-      final ExprNodeGenericFuncDesc compactExpr, HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
+  private static PrunedPartitionList getPartitionsFromServer(Table tab, final String key, final ExprNodeGenericFuncDesc compactExpr,
+      HiveConf conf, String alias, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) throws SemanticException {
     try {
 
       // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
@@ -462,7 +464,8 @@ public class PartitionPruner extends Transform {
       // The partitions are "unknown" if the call says so due to the expression
       // evaluator returning null for a partition, or if we sent a partial expression to
       // metastore and so some partitions may have no data based on other filters.
-      return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
+      return new PrunedPartitionList(tab, key,
+          new LinkedHashSet<Partition>(partitions),
           new ArrayList<String>(partColsUsedInFilter),
           hasUnknownPartitions || !isPruningByExactFilter);
     } catch (SemanticException e) {

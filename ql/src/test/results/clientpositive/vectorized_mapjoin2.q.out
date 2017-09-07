@@ -47,11 +47,11 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$hdt$_0:x 
+        $hdt$_0:x 
           TableScan
             alias: x
             Statistics: Num rows: 45 Data size: 181 Basic stats: COMPLETE Column stats: NONE
@@ -104,12 +104,14 @@ STAGE PLANS:
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   Statistics: Num rows: 49 Data size: 199 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
-                    aggregations: count(1)
+                    aggregations: count()
                     Group By Vectorization:
-                        aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 0:long) -> bigint
+                        aggregators: VectorUDAFCountStar(*) -> bigint
                         className: VectorGroupByOperator
+                        groupByMode: HASH
                         vectorOutput: true
                         native: false
+                        vectorProcessingMode: HASH
                         projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
@@ -142,8 +144,10 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0

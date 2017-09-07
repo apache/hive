@@ -30,11 +30,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class Parallelized extends Parameterized {
   private static class ThreadPoolScheduler implements RunnerScheduler {
+    private static final String DEFAULT_TIMEOUT = "10";
     private ExecutorService executor;
 
     public ThreadPoolScheduler() {
       String threads = System.getProperty("junit.parallel.threads");
-      int numThreads = Runtime.getRuntime().availableProcessors();
+      //HIVE-17322: remove parallelism to check if the BeeLine test flakyness gets fixed
+      //int numThreads = Runtime.getRuntime().availableProcessors();
+      int numThreads = 1;
       if (threads != null) {
         numThreads = Integer.parseInt(threads);
       }
@@ -45,7 +48,9 @@ public class Parallelized extends Parameterized {
     public void finished() {
       executor.shutdown();
       try {
-        executor.awaitTermination(10, TimeUnit.MINUTES);
+        String timeoutProp = System.getProperty("junit.parallel.timeout", DEFAULT_TIMEOUT);
+        long timeout = Long.parseLong(timeoutProp);
+        executor.awaitTermination(timeout, TimeUnit.MINUTES);
       } catch (InterruptedException exc) {
         throw new RuntimeException(exc);
       }

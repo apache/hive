@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -32,6 +34,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 /**
  * exception class, thrown when udf argument have something wrong.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class UDFArgumentException extends SemanticException {
 
   public UDFArgumentException() {

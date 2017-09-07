@@ -160,26 +160,26 @@ POSTHOOK: query: insert into ct2 values (8),(6),(4),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@ct2
 POSTHOOK: Lineage: ct2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2 order by c
+PREHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@ct1
 PREHOOK: Input: default@ct2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ct_v1
-POSTHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2 order by c
+POSTHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@ct1
 POSTHOOK: Input: default@ct2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_v1
 POSTHOOK: Lineage: ct_v1.c EXPRESSION [(ct1)ct1.FieldSchema(name:c, type:int, comment:null), (ct2)ct2.FieldSchema(name:c, type:int, comment:null), ]
-PREHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1
+PREHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1 order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct1
 PREHOOK: Input: default@ct2
 PREHOOK: Input: default@ct_v1
 #### A masked pattern was here ####
-POSTHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1
+POSTHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1 order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ct1
 POSTHOOK: Input: default@ct2
@@ -215,24 +215,24 @@ POSTHOOK: Input: default@ct_v1
 7	x3	a56b
 2	x2	a6b
 8	x0	a72b
-PREHOOK: query: select 'x' || (c&3),collect_list(c) from ct_v1
-		group by 'x' || (c&3)
+PREHOOK: query: select 'x' || (c&3) from ct_v1
+		group by 'x' || (c&3) order by 'x' || (c&3)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct1
 PREHOOK: Input: default@ct2
 PREHOOK: Input: default@ct_v1
 #### A masked pattern was here ####
-POSTHOOK: query: select 'x' || (c&3),collect_list(c) from ct_v1
-		group by 'x' || (c&3)
+POSTHOOK: query: select 'x' || (c&3) from ct_v1
+		group by 'x' || (c&3) order by 'x' || (c&3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ct1
 POSTHOOK: Input: default@ct2
 POSTHOOK: Input: default@ct_v1
 #### A masked pattern was here ####
-x0	[4,8]
-x1	[1,5]
-x2	[2,6]
-x3	[3,7]
+x0
+x1
+x2
+x3
 PREHOOK: query: explain select concat('a','b','c')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select concat('a','b','c')

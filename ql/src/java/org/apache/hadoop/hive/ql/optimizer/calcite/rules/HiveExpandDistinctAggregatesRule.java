@@ -162,9 +162,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
 
     // If all of the agg expressions are distinct and have the same
     // arguments then we can use a more efficient form.
+    final RelMetadataQuery mq = call.getMetadataQuery();
     if ((nonDistinctCount == 0) && (argListSets.size() == 1)) {
       for (Integer arg : argListSets.iterator().next()) {
-        Set<RelColumnOrigin> colOrigs = RelMetadataQuery.instance().getColumnOrigins(aggregate, arg);
+        Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate, arg);
         if (null != colOrigs) {
           for (RelColumnOrigin colOrig : colOrigs) {
             RelOptHiveTable hiveTbl = (RelOptHiveTable)colOrig.getOriginTable();

@@ -36,10 +36,12 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -200,8 +202,8 @@ public class TypeConverter {
     case TIMESTAMP:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
-    case TIMESTAMPTZ:
-      convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
+    case TIMESTAMPLOCALTZ:
+      convertedType = new HiveType(TimestampTZ.class);
       break;
     case INTERVAL_YEAR_MONTH:
       convertedType = dtFactory.createSqlIntervalType(
@@ -359,8 +361,13 @@ public class TypeConverter {
         return TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
       else
         return TypeInfoFactory.getCharTypeInfo(charLength);
+    case NULL:
     case OTHER:
     default:
+      if (rType instanceof HiveType && ((HiveType) rType).getTypeClass() == TimestampTZ.class) {
+        // TODO: This block should be removed when we upgrade Calcite to use local time-zone
+        return TypeInfoFactory.timestampLocalTZTypeInfo;
+      }
       return TypeInfoFactory.voidTypeInfo;
     }
 
@@ -389,6 +396,12 @@ public class TypeConverter {
           .getPrecision()), String.valueOf(calciteType.getScale()));
     }
       break;
+    case NULL:
+      if (calciteType instanceof HiveType && ((HiveType) calciteType).getTypeClass() == TimestampTZ.class) {
+        ht = new HiveToken(HiveParser.TOK_TIMESTAMPLOCALTZ, "TOK_TIMESTAMPLOCALTZ");
+        break;
+      }
+      // fall-through
     default:
       ht = calciteToHiveTypeNameMap.get(calciteType.getSqlTypeName().getName());
     }

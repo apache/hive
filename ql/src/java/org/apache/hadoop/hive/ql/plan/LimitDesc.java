@@ -90,4 +90,13 @@ public class LimitDesc extends AbstractOperatorDesc {
     }
     return new LimitOperatorExplainVectorization(this, vectorDesc);
   }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      LimitDesc otherDesc = (LimitDesc) other;
+      return getLimit() == otherDesc.getLimit();
+    }
+    return false;
+  }
 }

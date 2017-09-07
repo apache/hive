@@ -1868,7 +1868,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(2)~FOLLOWING(2)
+                              window frame: ROWS PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), sum_window_0 (type: bigint)

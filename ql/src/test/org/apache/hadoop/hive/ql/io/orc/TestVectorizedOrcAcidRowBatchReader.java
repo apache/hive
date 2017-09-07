@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
@@ -72,6 +73,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     DummyRow(long val, long rowId, long origTxn, int bucket) {
       field = new LongWritable(val);
+      bucket = BucketCodec.V1.encode(new AcidOutputFormat.Options(null).bucket(bucket));
       ROW__ID = new RecordIdentifier(origTxn, bucket, rowId);
     }
 
@@ -182,7 +184,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(context, fs, root, false, null);
     OrcInputFormat.AcidDirInfo adi = gen.call();
     List<OrcInputFormat.SplitStrategy<?>> splitStrategies = OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.acidInfo, adi.baseFiles, adi.parsedDeltas,
+        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.parsedDeltas,
         null, null, true);
     assertEquals(1, splitStrategies.size());
     List<OrcSplit> splits = ((OrcInputFormat.ACIDSplitStrategy)splitStrategies.get(0)).getSplits();
@@ -244,10 +246,6 @@ public class TestVectorizedOrcAcidRowBatchReader {
   @Test
   public void testCanCreateVectorizedAcidRowBatchReaderOnSplit() throws Exception {
     OrcSplit mockSplit = Mockito.mock(OrcSplit.class);
-    conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
-        AcidUtils.AcidOperationalProperties.getLegacy().toInt());
-    // Test false when trying to create a vectorized ACID row batch reader for a legacy table.
-    assertFalse(VectorizedOrcAcidRowBatchReader.canCreateVectorizedAcidRowBatchReaderOnSplit(conf, mockSplit));
 
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());

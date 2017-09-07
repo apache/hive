@@ -115,6 +115,10 @@ public class DynamicValue implements LiteralDelegate, Serializable {
       String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
       ObjectCache cache = ObjectCacheFactory.getCache(conf, queryId, false);
 
+      if (cache == null) {
+        return null;
+      }
+
       // Get the registry
       DynamicValueRegistry valueRegistry = cache.retrieve(DYNAMIC_VALUE_REGISTRY_CACHE_KEY);
       if (valueRegistry == null) {

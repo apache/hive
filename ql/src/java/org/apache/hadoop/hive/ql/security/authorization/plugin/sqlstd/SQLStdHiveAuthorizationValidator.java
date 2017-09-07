@@ -95,6 +95,15 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
       return;
     }
 
+    // Special-casing for ADMIN-level operations that do not require object checking.
+    if (Operation2Privilege.isAdminPrivOperation(hiveOpType)) {
+      // Require ADMIN privilege
+      if (!privController.isUserAdmin()) {
+        deniedMessages.add(SQLPrivTypeGrant.ADMIN_PRIV.toString() + " on " + ioType);
+      }
+      return; // Ignore object, fail if not admin, succeed if admin.
+    }
+
     // Compare required privileges and available privileges for each hive object
     for (HivePrivilegeObject hiveObj : hiveObjects) {
 

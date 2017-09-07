@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonJV
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMappedBufferCount;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMappedBufferMemoryUsed;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMappedBufferTotalCapacity;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonLimitFileDescriptorCount;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonMaxFileDescriptorCount;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonOpenFileDescriptorCount;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonJvmInfo.LlapDaemonResidentSetSize;
@@ -38,7 +39,6 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
 import org.apache.hadoop.metrics2.MetricsSource;
@@ -60,6 +60,7 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
   private final MetricsRegistry registry;
   private final ResourceCalculatorProcessTree processTree;
   private final String daemonPid = LlapDaemonInfo.INSTANCE.getPID();
+  private long maxOpenFdCountSoFar = 0;
 
   private LlapDaemonJvmMetrics(String displayName, String sessionId, final Configuration conf) {
     this.name = displayName;
@@ -116,6 +117,7 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
     if(os instanceof UnixOperatingSystemMXBean){
       openFileHandles = ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
       maxFileHandles = ((UnixOperatingSystemMXBean) os).getMaxFileDescriptorCount();
+      maxOpenFdCountSoFar = openFileHandles > maxOpenFdCountSoFar ? openFileHandles : maxOpenFdCountSoFar;
     }
     long rss = 0;
     long vmem = 0;
@@ -130,7 +132,8 @@ public class LlapDaemonJvmMetrics implements MetricsSource {
       .addGauge(LlapDaemonMappedBufferTotalCapacity, mappedBufferTotalCapacity)
       .addGauge(LlapDaemonMappedBufferMemoryUsed, mappedBufferMemoryUsed)
       .addGauge(LlapDaemonOpenFileDescriptorCount, openFileHandles)
-      .addGauge(LlapDaemonMaxFileDescriptorCount, maxFileHandles)
+      .addGauge(LlapDaemonMaxFileDescriptorCount, maxOpenFdCountSoFar)
+      .addGauge(LlapDaemonLimitFileDescriptorCount, maxFileHandles)
       .addGauge(LlapDaemonResidentSetSize, rss)
       .addGauge(LlapDaemonVirtualMemorySize, vmem);
   }

@@ -147,8 +147,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LlapTaskUmbilicalExternalClient llapClient =
       new LlapTaskUmbilicalExternalClient(job, submitWorkInfo.getTokenIdentifier(),
           submitWorkInfo.getToken(), umbilicalResponder, llapToken);
-    llapClient.init(job);
-    llapClient.start();
 
     int attemptNum = 0;
     // Use task attempt number from conf if provided

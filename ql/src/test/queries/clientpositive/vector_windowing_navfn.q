@@ -1,6 +1,8 @@
 set hive.explain.user=false;
 set hive.cli.print.header=true;
 SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.execution.reduce.enabled=true;
+set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 
 drop table over10k;

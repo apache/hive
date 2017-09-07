@@ -1,8 +1,9 @@
 set hive.fetch.task.conversion=more;
+set time zone UTC;
 
 drop table tstz2;
 
-create table tstz2(t timestamp with time zone);
+create table tstz2(t timestamp with local time zone);
 
 insert into table tstz2 values
   ('2005-04-03 03:01:00.04067 GMT-07:00'),('2005-01-03 02:01:00 GMT'),('2005-01-03 06:01:00 GMT+04:00'),

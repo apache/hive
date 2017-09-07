@@ -136,7 +136,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     10000000000000L,
     100000000000000L,
     1000000000000000L,
-    10000000000000000L    // 16
+    10000000000000000L,   // 16
+    100000000000000000L,
+    1000000000000000000L, // 18
   };
 
   public static final int MAX_DECIMAL_DIGITS = 38;
@@ -153,6 +155,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   private static final int LONGWORD_DECIMAL_DIGITS = 16;
   private static final long MAX_LONGWORD_DECIMAL = powerOfTenTable[LONGWORD_DECIMAL_DIGITS] - 1;
   private static final long MULTIPLER_LONGWORD_DECIMAL = powerOfTenTable[LONGWORD_DECIMAL_DIGITS];
+
+  public static final int DECIMAL64_DECIMAL_DIGITS = 18;
+  public static final long MAX_ABS_DECIMAL64 = 999999999999999999L;  // 18 9's -- quite reliable!
 
   private static final int TWO_X_LONGWORD_DECIMAL_DIGITS = 2 * LONGWORD_DECIMAL_DIGITS;
   private static final int THREE_X_LONGWORD_DECIMAL_DIGITS = 3 * LONGWORD_DECIMAL_DIGITS;
@@ -2136,6 +2141,70 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
 
     // Should not get here.
     throw new RuntimeException("Unexpected");
+  }
+
+  public static long getDecimal64AbsMax(int precision) {
+    return powerOfTenTable[precision] - 1;
+  }
+
+  /*
+   * Deserializes 64-bit decimals up to the maximum 64-bit precision (18 decimal digits).
+   *
+   * NOTE: Major assumption: the input decimal64 has already been bounds checked and a least
+   * has a precision <= DECIMAL64_DECIMAL_DIGITS.  We do not bounds check here for better
+   * performance.
+   */
+  public static void fastDeserialize64(
+      final long inputDecimal64Long, final int inputScale,
+      FastHiveDecimal fastResult) {
+
+    long decimal64Long;
+    if (inputDecimal64Long == 0) {
+      fastResult.fastReset();
+      return;
+    } else if (inputDecimal64Long > 0) {
+      fastResult.fastSignum = 1;
+      decimal64Long = inputDecimal64Long;
+    } else {
+      fastResult.fastSignum = -1;
+      decimal64Long = -inputDecimal64Long;
+    }
+
+    // Trim trailing zeroes -- but only below the decimal point.
+    int trimScale = inputScale;
+    while (trimScale > 0 && decimal64Long % 10 == 0) {
+      decimal64Long /= 10;
+      trimScale--;
+    }
+
+    fastResult.fast2 = 0;
+    fastResult.fast1 = decimal64Long / MULTIPLER_LONGWORD_DECIMAL;
+    fastResult.fast0 = decimal64Long % MULTIPLER_LONGWORD_DECIMAL;
+
+    fastResult.fastScale = trimScale;
+
+    fastResult.fastIntegerDigitCount =
+        Math.max(0, fastRawPrecision(fastResult) - fastResult.fastScale);
+  }
+
+  /*
+   * Serializes decimal64 up to the maximum 64-bit precision (18 decimal digits).
+   *
+   * NOTE: Major assumption: the fast decimal has already been bounds checked and a least
+   * has a precision <= DECIMAL64_DECIMAL_DIGITS.  We do not bounds check here for better
+   * performance.
+   */
+  public static long fastSerialize64(
+      int scale,
+      int fastSignum, long fast1, long fast0, int fastScale) {
+
+    if (fastSignum == 0) {
+      return 0;
+    } else if (fastSignum == 1) {
+      return (fast1 * MULTIPLER_LONGWORD_DECIMAL + fast0) * powerOfTenTable[scale - fastScale];
+    } else {
+      return -(fast1 * MULTIPLER_LONGWORD_DECIMAL + fast0) * powerOfTenTable[scale - fastScale];
+    }
   }
 
   //************************************************************************************************

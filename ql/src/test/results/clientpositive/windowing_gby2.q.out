@@ -86,7 +86,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -211,7 +211,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: avg_window_0 (type: double)
@@ -338,7 +338,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -385,7 +385,7 @@ STAGE PLANS:
                         arguments: _col4
                         name: dense_rank
                         window function: GenericUDAFDenseRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -432,7 +432,7 @@ STAGE PLANS:
                         arguments: _col7
                         name: percent_rank
                         window function: GenericUDAFPercentRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -611,7 +611,7 @@ STAGE PLANS:
                         arguments: (UDFToDouble(_col1) / UDFToDouble(_col2))
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
             Select Operator

@@ -74,8 +74,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   private static final long serialVersionUID = 1L;
 
   private static final String MR_JAR_PROPERTY = "tmpjars";
+  private static final String MR_CREDENTIALS_LOCATION_PROPERTY = "mapreduce.job.credentials.binary";
   private static final transient Logger LOG = LoggerFactory.getLogger(RemoteHiveSparkClient.class);
-  private static final long MAX_PREWARM_TIME = 5000; // 5s
   private static final transient Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
   private transient Map<String, String> conf;
@@ -101,7 +101,8 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     remoteClient = SparkClientFactory.createClient(conf, hiveConf);
 
     if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
-        SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master"))) {
+            (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) ||
+             SparkClientUtilities.isLocalMaster(hiveConf.get("spark.master")))) {
       int minExecutors = getExecutorsToWarm();
       if (minExecutors <= 0) {
         return;
@@ -109,12 +110,14 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
 
       LOG.info("Prewarm Spark executors. The minimum number of executors to warm is " + minExecutors);
 
-      // Spend at most MAX_PREWARM_TIME to wait for executors to come up.
+      // Spend at most HIVE_PREWARM_SPARK_TIMEOUT to wait for executors to come up.
       int curExecutors = 0;
+      long maxPrewarmTime = HiveConf.getTimeVar(hiveConf, ConfVars.HIVE_PREWARM_SPARK_TIMEOUT,
+          TimeUnit.MILLISECONDS);
       long ts = System.currentTimeMillis();
       do {
         try {
-          curExecutors = getExecutorCount(MAX_PREWARM_TIME, TimeUnit.MILLISECONDS);
+          curExecutors = getExecutorCount(maxPrewarmTime, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
           // let's don't fail on future timeout since we have a timeout for pre-warm
           LOG.warn("Timed out getting executor count.", e);
@@ -124,9 +127,9 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
           return;
         }
         Thread.sleep(500); // sleep half a second
-      } while (System.currentTimeMillis() - ts < MAX_PREWARM_TIME);
+      } while (System.currentTimeMillis() - ts < maxPrewarmTime);
 
-      LOG.info("Timeout (" + MAX_PREWARM_TIME / 1000 + "s) occurred while prewarming executors. " +
+      LOG.info("Timeout (" + maxPrewarmTime / 1000 + "s) occurred while prewarming executors. " +
           "The current number of executors is " + curExecutors);
     }
   }
@@ -237,8 +240,10 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
     for (BaseWork work : sparkWork.getAllWork()) {
       work.configureJobConf(jobConf);
     }
-    addJars(conf.get(MR_JAR_PROPERTY));
+    addJars(jobConf.get(MR_JAR_PROPERTY));
 
+    // remove the location of container tokens
+    conf.unset(MR_CREDENTIALS_LOCATION_PROPERTY);
     // add added files
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVEADDEDFILES, addedFiles);

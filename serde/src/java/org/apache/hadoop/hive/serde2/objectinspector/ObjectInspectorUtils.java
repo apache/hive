@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampTZObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -416,7 +416,7 @@ public final class ObjectInspectorUtils {
         if (loi.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMP) {
           result = PrimitiveObjectInspectorFactory.javaTimestampObjectInspector.copyObject(result);
         } else if (loi.getPrimitiveCategory() ==
-            PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMPTZ) {
+            PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMPLOCALTZ) {
           result = PrimitiveObjectInspectorFactory.javaTimestampTZObjectInspector.
               copyObject(result);
         }
@@ -701,8 +701,8 @@ public final class ObjectInspectorUtils {
         TimestampWritable t = ((TimestampObjectInspector) poi)
             .getPrimitiveWritableObject(o);
         return t.hashCode();
-      case TIMESTAMPTZ:
-        TimestampTZWritable tstz = ((TimestampTZObjectInspector) poi).getPrimitiveWritableObject(o);
+      case TIMESTAMPLOCALTZ:
+        TimestampLocalTZWritable tstz = ((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o);
         return tstz.hashCode();
       case INTERVAL_YEAR_MONTH:
         HiveIntervalYearMonthWritable intervalYearMonth = ((HiveIntervalYearMonthObjectInspector) poi)
@@ -965,10 +965,10 @@ public final class ObjectInspectorUtils {
             .getPrimitiveWritableObject(o2);
         return t1.compareTo(t2);
       }
-      case TIMESTAMPTZ: {
-        TimestampTZWritable tstz1 = ((TimestampTZObjectInspector) poi1).
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZWritable tstz1 = ((TimestampLocalTZObjectInspector) poi1).
             getPrimitiveWritableObject(o1);
-        TimestampTZWritable tstz2 = ((TimestampTZObjectInspector) poi2).
+        TimestampLocalTZWritable tstz2 = ((TimestampLocalTZObjectInspector) poi2).
             getPrimitiveWritableObject(o2);
         return tstz1.compareTo(tstz2);
       }
@@ -1339,8 +1339,8 @@ public final class ObjectInspectorUtils {
       return oi instanceof SettableDateObjectInspector;
     case TIMESTAMP:
       return oi instanceof SettableTimestampObjectInspector;
-    case TIMESTAMPTZ:
-      return oi instanceof SettableTimestampTZObjectInspector;
+    case TIMESTAMPLOCALTZ:
+      return oi instanceof SettableTimestampLocalTZObjectInspector;
     case INTERVAL_YEAR_MONTH:
       return oi instanceof SettableHiveIntervalYearMonthObjectInspector;
     case INTERVAL_DAY_TIME:

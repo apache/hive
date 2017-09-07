@@ -72,10 +72,10 @@ PREHOOK: Input: default@testdeci2
 POSTHOOK: query: describe formatted testdeci2 amount
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testdeci2
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-amount              	decimal(10,3)       	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+amount              	decimal(10,3)       	                    	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table testdeci2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testdeci2

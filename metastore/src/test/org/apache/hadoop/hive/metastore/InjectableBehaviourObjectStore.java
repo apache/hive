@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import static org.junit.Assert.assertEquals;
@@ -53,7 +55,10 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       com.google.common.base.Functions.identity();
   private static com.google.common.base.Function<List<String>, List<String>> listPartitionNamesModifier =
           com.google.common.base.Functions.identity();
+  private static com.google.common.base.Function<NotificationEventResponse, NotificationEventResponse>
+          getNextNotificationModifier = com.google.common.base.Functions.identity();
 
+  // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table,Table> modifier){
     getTableModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
   }
@@ -62,10 +67,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     setGetTableBehaviour(null);
   }
 
-  public static com.google.common.base.Function<Table,Table> getGetTableBehaviour() {
-    return getTableModifier;
-  }
-
+  // Methods to set/reset listPartitionNames modifier
   public static void setListPartitionNamesBehaviour(com.google.common.base.Function<List<String>, List<String>> modifier){
     listPartitionNamesModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
   }
@@ -74,10 +76,17 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     setListPartitionNamesBehaviour(null);
   }
 
-  public static com.google.common.base.Function<List<String>, List<String>> getListPartitionNamesBehaviour() {
-    return listPartitionNamesModifier;
+  // Methods to set/reset getNextNotification modifier
+  public static void setGetNextNotificationBehaviour(
+          com.google.common.base.Function<NotificationEventResponse,NotificationEventResponse> modifier){
+    getNextNotificationModifier = (modifier == null)? com.google.common.base.Functions.identity() : modifier;
   }
 
+  public static void resetGetNextNotificationBehaviour(){
+    setGetNextNotificationBehaviour(null);
+  }
+
+  // ObjectStore methods to be overridden with injected behavior
   @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     return getTableModifier.apply(super.getTable(dbName, tableName));
@@ -86,5 +95,10 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   @Override
   public List<String> listPartitionNames(String dbName, String tableName, short max) throws MetaException {
     return listPartitionNamesModifier.apply(super.listPartitionNames(dbName, tableName, max));
+  }
+
+  @Override
+  public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
+    return getNextNotificationModifier.apply(super.getNextNotification(rqst));
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -28,12 +29,11 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -293,16 +293,19 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
-  public static class TimestampTZConverter implements Converter {
+  public static class TimestampLocalTZConverter implements Converter {
     final PrimitiveObjectInspector inputOI;
-    final SettableTimestampTZObjectInspector outputOI;
+    final SettableTimestampLocalTZObjectInspector outputOI;
     final Object r;
+    final ZoneId timeZone;
 
-    public TimestampTZConverter(PrimitiveObjectInspector inputOI,
-        SettableTimestampTZObjectInspector outputOI) {
+    public TimestampLocalTZConverter(
+        PrimitiveObjectInspector inputOI,
+        SettableTimestampLocalTZObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      r = outputOI.create(new TimestampTZ());
+      this.r = outputOI.create(new TimestampTZ());
+      this.timeZone = ((TimestampLocalTZTypeInfo) outputOI.getTypeInfo()).timeZone();
     }
 
     @Override
@@ -311,7 +314,7 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
 
-      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampTZ(input, inputOI));
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestampLocalTZ(input, inputOI, timeZone));
     }
   }
 
@@ -489,8 +492,8 @@ public class PrimitiveObjectInspectorConverter {
         t.set(((TimestampObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
         return t;
-      case TIMESTAMPTZ:
-        t.set(((TimestampTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
+      case TIMESTAMPLOCALTZ:
+        t.set(((TimestampLocalTZObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       case INTERVAL_YEAR_MONTH:
         t.set(((HiveIntervalYearMonthObjectInspector) inputOI)

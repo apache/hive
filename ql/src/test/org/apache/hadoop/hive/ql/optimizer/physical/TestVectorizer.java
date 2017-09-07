@@ -156,8 +156,8 @@ public class TestVectorizer {
 
     Vectorizer v = new Vectorizer();
     v.testSetCurrentBaseWork(new MapWork());
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.FILTER));
-    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.PROJECTION));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.FILTER, false));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, "test", VectorExpressionDescriptor.Mode.PROJECTION, false));
   }
 
   /**
@@ -230,8 +230,8 @@ public class TestVectorizer {
   public void testExprNodeDynamicValue() {
     ExprNodeDesc exprNode = new ExprNodeDynamicValueDesc(new DynamicValue("id1", TypeInfoFactory.stringTypeInfo));
     Vectorizer v = new Vectorizer();
-    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.FILTER));
-    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.PROJECTION));
+    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.FILTER, false));
+    Assert.assertTrue(v.validateExprNodeDesc(exprNode, "Test", Mode.PROJECTION, false));
   }
 
   @Test
@@ -254,7 +254,7 @@ public class TestVectorizer {
 
     Vectorizer v = new Vectorizer();
     v.testSetCurrentBaseWork(new MapWork());
-    boolean valid = v.validateExprNodeDesc(betweenExpr, "Test", Mode.FILTER);
+    boolean valid = v.validateExprNodeDesc(betweenExpr, "Test", Mode.FILTER, false);
     Assert.assertTrue(valid);
   }
 }

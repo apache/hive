@@ -95,10 +95,10 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
     boolean isOuterJoin = !desc.isNoOuterJoin();
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-    HashTableImplementationType hashTableImplementationType = vectorDesc.hashTableImplementationType();
-    HashTableKind hashTableKind = vectorDesc.hashTableKind();
-    HashTableKeyType hashTableKeyType = vectorDesc.hashTableKeyType();
-    boolean minMaxEnabled = vectorDesc.minMaxEnabled();
+    HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
+    HashTableKind hashTableKind = vectorDesc.getHashTableKind();
+    HashTableKeyType hashTableKeyType = vectorDesc.getHashTableKeyType();
+    boolean minMaxEnabled = vectorDesc.getMinMaxEnabled();
 
     int writeBufferSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
 

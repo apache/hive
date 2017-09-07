@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
@@ -30,6 +32,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class InsertEvent extends ListenerEvent {
 
   private final Table tableObj;
@@ -43,7 +47,7 @@ public class InsertEvent extends ListenerEvent {
    * @param db name of the database the table is in
    * @param table name of the table being inserted into
    * @param partVals list of partition values, can be null
-   * @param insertData the inserted files & their checksums
+   * @param insertData the inserted files and their checksums
    * @param status status of insert, true = success, false = failure
    * @param handler handler that is firing the event
    */

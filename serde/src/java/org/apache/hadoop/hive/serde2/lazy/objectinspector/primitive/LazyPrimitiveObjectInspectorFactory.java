@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
@@ -71,8 +72,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyDateObjectInspector();
   public static final LazyTimestampObjectInspector LAZY_TIMESTAMP_OBJECT_INSPECTOR =
       new LazyTimestampObjectInspector();
-  public static final LazyTimestampTZObjectInspector LAZY_TIMESTAMPTZ_OBJECT_INSPECTOR =
-      new LazyTimestampTZObjectInspector();
   public static final LazyHiveIntervalYearMonthObjectInspector LAZY_INTERVAL_YEAR_MONTH_OBJECT_INSPECTOR =
       new LazyHiveIntervalYearMonthObjectInspector();
   public static final LazyHiveIntervalDayTimeObjectInspector LAZY_INTERVAL_DAY_TIME_OBJECT_INSPECTOR =
@@ -113,8 +112,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
         LAZY_DATE_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         LAZY_TIMESTAMP_OBJECT_INSPECTOR);
-    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(
-        serdeConstants.TIMESTAMPTZ_TYPE_NAME), LAZY_TIMESTAMPTZ_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME),
         LAZY_INTERVAL_YEAR_MONTH_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME),
@@ -174,6 +171,9 @@ public final class LazyPrimitiveObjectInspectorFactory {
       break;
     case DECIMAL:
       poi = new LazyHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
+      break;
+    case TIMESTAMPLOCALTZ:
+      poi = new LazyTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo);
       break;
     default:
       throw new RuntimeException(

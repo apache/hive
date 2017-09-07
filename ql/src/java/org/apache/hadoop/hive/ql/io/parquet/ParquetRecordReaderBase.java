@@ -14,13 +14,10 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import com.google.common.base.Strings;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
-import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -29,7 +26,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.filter2.compat.RowGroupFilter;
 import org.apache.parquet.filter2.predicate.FilterPredicate;
-import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetInputSplit;
@@ -46,13 +42,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 
 public class ParquetRecordReaderBase {
   public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordReaderBase.class);
 
   protected Path file;
   protected ProjectionPusher projectionPusher;
+  protected boolean skipTimestampConversion = false;
   protected SerDeStats serDeStats;
   protected JobConf jobConf;
 
@@ -74,11 +70,6 @@ public class ParquetRecordReaderBase {
     final JobConf conf
   ) throws IOException {
     ParquetInputSplit split;
-
-    if (oldSplit == null) {
-      return null;
-    }
-
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
       jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
@@ -131,6 +122,9 @@ public class ParquetRecordReaderBase {
         filtedBlocks = splitGroup;
       }
 
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+        skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
+      }
       split = new ParquetInputSplit(finalPath,
         splitStart,
         splitLength,
@@ -144,46 +138,6 @@ public class ParquetRecordReaderBase {
     } else {
       throw new IllegalArgumentException("Unknown split type: " + oldSplit);
     }
-  }
-
-  /**
-   * Sets the TimeZone conversion for Parquet timestamp columns.
-   *
-   * @param configuration Configuration object where to get and set the TimeZone conversion
-   * @param finalPath     path to the parquet file
-   */
-  protected void setTimeZoneConversion(Configuration configuration, Path finalPath) {
-    ParquetMetadata parquetMetadata;
-    String timeZoneID;
-
-    try {
-      parquetMetadata = ParquetFileReader.readFooter(configuration, finalPath,
-          ParquetMetadataConverter.NO_FILTER);
-    } catch (IOException e) {
-      // If an error occurred while reading the file, then we just skip the TimeZone setting.
-      // This error will probably occur on any other part of the code.
-      LOG.debug("Could not read parquet file footer at " + finalPath + ". Cannot determine " +
-          "parquet file timezone", e);
-      return;
-    }
-
-    boolean skipConversion = HiveConf.getBoolVar(configuration,
-        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION);
-    FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
-    if (!Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr") &&
-        skipConversion) {
-      // Impala writes timestamp values using GMT only. We should not try to convert Impala
-      // files to other type of timezones.
-      timeZoneID = ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE;
-    } else {
-      // TABLE_PARQUET_INT96_TIMEZONE is a table property used to detect what timezone conversion
-      // to use when reading Parquet timestamps.
-      timeZoneID = configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
-      NanoTimeUtils.validateTimeZone(timeZoneID);
-    }
-
-    // 'timeZoneID' should be valid, since we did not throw exception above
-    configuration.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,timeZoneID);
   }
 
   public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {

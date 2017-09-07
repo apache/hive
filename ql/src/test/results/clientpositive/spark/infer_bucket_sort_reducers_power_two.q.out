@@ -296,7 +296,7 @@ Table:              	test_table
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	3                   
+	numFiles            	4                   
 	numRows             	5                   
 	rawDataSize         	19                  
 	totalSize           	24                  

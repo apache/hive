@@ -144,9 +144,11 @@ STAGE PLANS:
                       Group By Vectorization:
                           aggregators: VectorUDAFMaxLong(col 3) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 7
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: bo (type: boolean)
                       mode: hash
@@ -157,7 +159,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: boolean)
                         Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
+                            className: VectorReduceSinkLongOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
@@ -186,9 +188,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFMaxLong(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: boolean)
                 mode: mergepartial

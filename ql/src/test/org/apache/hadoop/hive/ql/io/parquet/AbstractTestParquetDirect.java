@@ -27,13 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TimeZone;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -144,12 +141,10 @@ public abstract class AbstractTestParquetDirect {
   public static List<ArrayWritable> read(Path parquetFile) throws IOException {
     List<ArrayWritable> records = new ArrayList<ArrayWritable>();
 
-    JobConf job = new JobConf();
-    job.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY, TimeZone.getDefault().getID());
     RecordReader<NullWritable, ArrayWritable> reader = new MapredParquetInputFormat().
         getRecordReader(new FileSplit(
                 parquetFile, 0, fileLength(parquetFile), (String[]) null),
-            job, null);
+            new JobConf(), null);
 
     NullWritable alwaysNull = reader.createKey();
     ArrayWritable record = reader.createValue();

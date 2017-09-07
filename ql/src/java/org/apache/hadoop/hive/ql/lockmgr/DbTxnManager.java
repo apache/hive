@@ -420,11 +420,19 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
          Seems much cleaner if each stmt is identified as a particular HiveOperation (which I'd think
          makes sense everywhere).  This however would be problematic for merge...*/
         case DDL_EXCLUSIVE:
-        case INSERT_OVERWRITE:
           compBuilder.setExclusive();
           compBuilder.setOperationType(DataOperationType.NO_TXN);
           break;
-
+        case INSERT_OVERWRITE:
+          t = getTable(output);
+          if (AcidUtils.isAcidTable(t)) {
+            compBuilder.setSemiShared();
+            compBuilder.setOperationType(DataOperationType.UPDATE);
+          } else {
+            compBuilder.setExclusive();
+            compBuilder.setOperationType(DataOperationType.NO_TXN);
+          }
+          break;
         case INSERT:
           assert t != null;
           if(AcidUtils.isFullAcidTable(t)) {
@@ -631,8 +639,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER)) {
       initialDelay = 0;
     } else if (initialDelay == 0) {
-      initialDelay = heartbeatInterval;
+      /*make initialDelay a random number in [0, 0.75*heartbeatInterval] so that if a lot
+      of queries land on the server at the same time and all get blocked on lack of
+      resources, that they all don't start heartbeating at the same time*/
+      initialDelay = (long)Math.floor(heartbeatInterval * 0.75 * Math.random());
     }
+
     heartbeatTask = heartbeatExecutorService.scheduleAtFixedRate(
         heartbeater, initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS);
     LOG.info("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -110,6 +111,11 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private boolean useBucketizedHiveInputFormat;
 
+  // Data structures specific for vectorized operators.
+  private int size;
+  private boolean selectedInUse;
+  private int[] selected;
+
   // dummy operator (for not increasing seqId)
   protected Operator(String name, CompilationOpContext cContext) {
     this();
@@ -122,6 +128,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
     abortOp = new AtomicBoolean(false);
+    // Initializing data structures for vectorization
+    selected = new int[VectorizedRowBatch.DEFAULT_SIZE];
   }
 
   public Operator(CompilationOpContext cContext) {
@@ -629,6 +637,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     defaultEndGroup();
   }
 
+  // Tell the operator the status of the next key-grouped VectorizedRowBatch that will be delivered
+  // to the process method.  E.g. by reduce-shuffle.  These semantics are needed by PTF so it can
+  // efficiently add computed values to the last batch of a group key.
+  public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
+    // Do nothing.
+  }
+
   // an blocking operator (e.g. GroupByOperator and JoinOperator) can
   // override this method to forward its outputs
   public void flush() throws HiveException {
@@ -879,6 +894,56 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   protected void forward(Object row, ObjectInspector rowInspector)
+      throws HiveException {
+    forward(row, rowInspector, false);
+  }
+
+  protected void forward(Object row, ObjectInspector rowInspector, boolean isVectorized)
+      throws HiveException {
+    if (isVectorized && getNumChild() > 1) {
+      vectorForward((VectorizedRowBatch) row, rowInspector);
+      return;
+    }
+    baseForward(row, rowInspector);
+  }
+
+  private void vectorForward(VectorizedRowBatch vrg, ObjectInspector rowInspector)
+      throws HiveException {
+    runTimeNumRows++;
+    if (getDone()) {
+      return;
+    }
+
+    // Data structures to store original values
+    size = vrg.size;
+    selectedInUse = vrg.selectedInUse;
+    if (vrg.selectedInUse) {
+      System.arraycopy(vrg.selected, 0, selected, 0, size);
+    }
+
+    int childrenDone = 0;
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      Operator<? extends OperatorDesc> o = childOperatorsArray[i];
+      if (o.getDone()) {
+        childrenDone++;
+      } else {
+        o.process(vrg, childOperatorsTag[i]);
+        // Restore original values
+        vrg.size = size;
+        vrg.selectedInUse = selectedInUse;
+        if (vrg.selectedInUse) {
+          System.arraycopy(selected, 0, vrg.selected, 0, size);
+        }
+      }
+    }
+
+    // if all children are done, this operator is also done
+    if (childrenDone != 0 && childrenDone == childOperatorsArray.length) {
+      setDone(true);
+    }
+  }
+
+  private void baseForward(Object row, ObjectInspector rowInspector)
       throws HiveException {
     runTimeNumRows++;
     if (getDone()) {
@@ -1477,5 +1542,15 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setIndexForTezUnion(int indexForTezUnion) {
     this.indexForTezUnion = indexForTezUnion;
+  }
+
+  /**
+   * Decides whether two operators are logically the same.
+   * This can be used to merge same operators and avoid repeated computation.
+   */
+  public boolean logicalEquals(Operator other) {
+    return getClass().getName().equals(other.getClass().getName()) &&
+        (conf == other.getConf() || (conf != null && other.getConf() != null &&
+            conf.isSame(other.getConf())));
   }
 }

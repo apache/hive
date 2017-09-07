@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -102,6 +103,8 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   private boolean isAcidTable;
 
+  private boolean vectorized;
+
   private AcidUtils.AcidOperationalProperties acidOperationalProperties = null;
 
   private transient TableSample tableSample;
@@ -176,6 +179,9 @@ public class TableScanDesc extends AbstractOperatorDesc {
 
   @Explain(displayName = "filterExpr")
   public String getFilterExprString() {
+    if (filterExpr == null) {
+      return null;
+    }
     return PlanUtils.getExprListString(Arrays.asList(filterExpr));
   }
 
@@ -440,5 +446,25 @@ public class TableScanDesc extends AbstractOperatorDesc {
       return null;
     }
     return new TableScanOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  public void setVectorized(boolean vectorized) {
+    this.vectorized = vectorized;
+  }
+
+  public boolean isVectorized() {
+    return vectorized;
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      TableScanDesc otherDesc = (TableScanDesc) other;
+      return Objects.equals(getAlias(), otherDesc.getAlias()) &&
+          ExprNodeDescUtils.isSame(getFilterExpr(), otherDesc.getFilterExpr()) &&
+          getRowLimit() == otherDesc.getRowLimit() &&
+          isGatherStats() == otherDesc.isGatherStats();
+    }
+    return false;
   }
 }

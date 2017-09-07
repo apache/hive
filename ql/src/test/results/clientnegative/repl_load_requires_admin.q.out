@@ -1,0 +1,80 @@
+#### A masked pattern was here ####
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop database if exists test_replload_adminpriv_src cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists test_replload_adminpriv_src cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: drop database if exists test_replload_adminpriv_tgt1 cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists test_replload_adminpriv_tgt1 cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: drop database if exists test_replload_adminpriv_tgt2 cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists test_replload_adminpriv_tgt2 cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: show role grant user ruser1
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user ruser1
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+PREHOOK: query: create database test_replload_adminpriv_src
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_replload_adminpriv_src
+POSTHOOK: query: create database test_replload_adminpriv_src
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_replload_adminpriv_src
+PREHOOK: query: create table test_replload_adminpriv_src.dummy_tbl(a int) partitioned by (b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_replload_adminpriv_src
+PREHOOK: Output: test_replload_adminpriv_src@dummy_tbl
+POSTHOOK: query: create table test_replload_adminpriv_src.dummy_tbl(a int) partitioned by (b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_replload_adminpriv_src
+POSTHOOK: Output: test_replload_adminpriv_src@dummy_tbl
+PREHOOK: query: show tables test_replload_adminpriv_src
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_replload_adminpriv_src
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show role grant user ruser1
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user ruser1
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+PREHOOK: query: show role grant user hive_admin_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user hive_admin_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+admin	true	-1	admin
+public	false	-1	
+PREHOOK: query: show tables test_replload_adminpriv_src
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_replload_adminpriv_src
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: repl dump test_replload_adminpriv_src
+PREHOOK: type: REPLDUMP
+PREHOOK: Input: database:test_replload_adminpriv_src
+POSTHOOK: query: repl dump test_replload_adminpriv_src
+POSTHOOK: type: REPLDUMP
+POSTHOOK: Input: database:test_replload_adminpriv_src
+#### A masked pattern was here ####
+PREHOOK: type: REPLLOAD
+#### A masked pattern was here ####
+POSTHOOK: type: REPLLOAD
+PREHOOK: query: show tables test_replload_adminpriv_tgt1
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_replload_adminpriv_tgt1
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+FAILED: HiveAccessControlException Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation REPLLOAD [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]

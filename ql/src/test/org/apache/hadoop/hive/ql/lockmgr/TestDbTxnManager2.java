@@ -376,12 +376,6 @@ public class TestDbTxnManager2 {
     Assert.assertTrue(cpr.getErrorMessage().contains("This command is not allowed on an ACID table"));
 
     useDummyTxnManagerTemporarily(conf);
-    cpr = driver.compileAndRespond("insert overwrite table T10 select a, b from T11");
-    Assert.assertEquals(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getErrorCode(), cpr.getResponseCode());
-    Assert.assertTrue(cpr.getErrorMessage().contains("INSERT OVERWRITE not allowed on table default.t10 with OutputFormat" +
-        " that implements AcidOutputFormat while transaction manager that supports ACID is in use"));
-
-    useDummyTxnManagerTemporarily(conf);
     cpr = driver.compileAndRespond("update T10 set a=0 where b=1");
     Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), cpr.getResponseCode());
     Assert.assertTrue(cpr.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
+
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,10 +30,11 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  String tableName;
-  String location;
-  LinkedHashMap<String, String> oldPartSpec;
-  LinkedHashMap<String, String> newPartSpec;
+  private String tableName;
+  private String location;
+  private LinkedHashMap<String, String> oldPartSpec;
+  private LinkedHashMap<String, String> newPartSpec;
+  private ReplicationSpec replicationSpec;
 
   /**
    * For serialization only.
@@ -40,8 +43,6 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param dbName
-   *          database to add to.
    * @param tableName
    *          table to add to.
    * @param oldPartSpec
@@ -50,10 +51,11 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
    *          new partition specification.
    */
   public RenamePartitionDesc(String tableName,
-      Map<String, String> oldPartSpec, Map<String, String> newPartSpec) {
+      Map<String, String> oldPartSpec, Map<String, String> newPartSpec, ReplicationSpec replicationSpec) {
     this.tableName = tableName;
     this.oldPartSpec = new LinkedHashMap<String,String>(oldPartSpec);
     this.newPartSpec = new LinkedHashMap<String,String>(newPartSpec);
+    this.replicationSpec = replicationSpec;
   }
 
   /**
@@ -115,4 +117,10 @@ public class RenamePartitionDesc extends DDLDesc implements Serializable {
   public void setNewPartSpec(LinkedHashMap<String, String> partSpec) {
     this.newPartSpec = partSpec;
   }
+
+  /**
+   * @return what kind of replication scope this rename is running under.
+   * This can result in a "RENAME IF NEWER THAN" kind of semantic
+   */
+  public ReplicationSpec getReplicationSpec() { return this.replicationSpec; }
 }

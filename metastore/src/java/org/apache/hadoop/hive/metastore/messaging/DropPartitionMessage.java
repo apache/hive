@@ -32,6 +32,8 @@ public abstract class DropPartitionMessage extends EventMessage {
 
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Table getTableObj() throws Exception;
 
   public abstract List<Map<String, String>> getPartitions ();

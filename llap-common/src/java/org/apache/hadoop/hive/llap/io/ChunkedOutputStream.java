@@ -35,13 +35,16 @@ public class ChunkedOutputStream extends OutputStream {
   private byte[] singleByte = new byte[1];
   private byte[] buffer;
   private int bufPos = 0;
+  private String id;
 
-  public ChunkedOutputStream(OutputStream out, int bufSize) {
+  public ChunkedOutputStream(OutputStream out, int bufSize, String id) {
+    LOG.debug("Creating chunked input stream: {}", id);
     if (bufSize <= 0) {
       throw new IllegalArgumentException("Positive bufSize required, was " + bufSize);
     }
     buffer = new byte[bufSize];
     dout = new DataOutputStream(out);
+    this.id = id;
   }
 
   @Override
@@ -74,7 +77,7 @@ public class ChunkedOutputStream extends OutputStream {
     // Write final 0-length chunk
     writeChunk();
 
-    LOG.debug("ChunkedOutputStream: Closing underlying output stream.");
+    LOG.debug("{}: Closing underlying output stream.", id);
     dout.close();
   }
 
@@ -89,7 +92,7 @@ public class ChunkedOutputStream extends OutputStream {
 
   private void writeChunk() throws IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Writing chunk of size " + bufPos);
+      LOG.debug("{}: Writing chunk of size {}", id, bufPos);
     }
 
     // First write chunk length

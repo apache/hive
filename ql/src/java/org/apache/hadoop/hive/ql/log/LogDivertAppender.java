@@ -17,21 +17,25 @@
  */
 package org.apache.hadoop.hive.ql.log;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.RandomAccessFileAppender;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
+import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Node;
@@ -54,6 +58,10 @@ public class LogDivertAppender {
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(LogDivertAppender.class.getName());
   public static final String verboseLayout = "%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n";
   public static final String nonVerboseLayout = "%-5p : %m%n";
+  /**
+   * Name of the query routine appender.
+   */
+  public static final String QUERY_ROUTING_APPENDER = "query-routing";
 
   /**
    * A log filter that filters messages coming from the logger with the given names.
@@ -146,7 +154,7 @@ public class LogDivertAppender {
   /**
    * Programmatically register a routing appender to Log4J configuration, which
    * automatically writes the log of each query to an individual file.
-   * The equivilent property configuration is as follows:
+   * The equivalent property configuration is as follows:
    * # queryId based routing file appender
       appender.query-routing.type = Routing
       appender.query-routing.name = query-routing
@@ -233,7 +241,7 @@ public class LogDivertAppender {
     LoggerContext context = (LoggerContext) LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
 
-    RoutingAppender routingAppender = RoutingAppender.createAppender("query-routing",
+    RoutingAppender routingAppender = RoutingAppender.createAppender(QUERY_ROUTING_APPENDER,
         "true",
         routes,
         configuration,
@@ -246,4 +254,5 @@ public class LogDivertAppender {
     context.updateLoggers();
     routingAppender.start();
   }
+
 }

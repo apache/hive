@@ -299,6 +299,19 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     return super.getSchema(dbName, tableName);
   }
 
+  @Deprecated
+  @Override
+  public void alter_table(String dbname, String tbl_name, org.apache.hadoop.hive.metastore.api.Table new_tbl,
+      boolean cascade) throws InvalidOperationException, MetaException, TException {
+    org.apache.hadoop.hive.metastore.api.Table old_tbl = getTempTable(dbname, tbl_name);
+    if (old_tbl != null) {
+      //actually temp table does not support partitions, cascade is not applicable here
+      alterTempTable(dbname, tbl_name, old_tbl, new_tbl, null);
+      return;
+    }
+    super.alter_table(dbname, tbl_name, new_tbl, cascade);
+  }
+
   @Override
   public void alter_table(String dbname, String tbl_name,
       org.apache.hadoop.hive.metastore.api.Table new_tbl) throws InvalidOperationException,

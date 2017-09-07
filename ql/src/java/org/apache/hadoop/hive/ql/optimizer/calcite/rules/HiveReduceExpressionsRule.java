@@ -109,7 +109,7 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
           Lists.newArrayList(filter.getCondition());
       RexNode newConditionExp;
       boolean reduced;
-      final RelMetadataQuery mq = RelMetadataQuery.instance();
+      final RelMetadataQuery mq = call.getMetadataQuery();
       final RelOptPredicateList predicates =
           mq.getPulledUpPredicates(filter.getInput());
       if (reduceExpressions(filter, expList, predicates, true)) {

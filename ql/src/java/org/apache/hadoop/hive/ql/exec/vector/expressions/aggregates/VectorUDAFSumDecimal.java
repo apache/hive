@@ -27,10 +27,15 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
 * VectorUDAFSumDecimal. Vectorized implementation for SUM aggregates.
@@ -73,20 +78,22 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
       }
     }
 
-    private VectorExpression inputExpression;
+    private DecimalTypeInfo outputDecimalTypeInfo;
 
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
+    public VectorUDAFSumDecimal(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    public VectorUDAFSumDecimal(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
-    }
+    private void init() {
 
-    public VectorUDAFSumDecimal() {
-      super();
+      String outputType = inputExpression.getOutputType();
+      DecimalTypeInfo inputDecimalTypeInfo =
+          (DecimalTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(outputType);
+
+      outputDecimalTypeInfo =
+          GenericUDAFSum.GenericUDAFSumHiveDecimal.getOutputDecimalTypeInfoForSum(
+              inputDecimalTypeInfo.getPrecision(), inputDecimalTypeInfo.getScale(),
+              this.mode);
     }
 
     private Aggregation getCurrentAggregationBuffer(
@@ -421,6 +428,8 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
         return null;
       }
       else {
+        myagg.sum.mutateEnforcePrecisionScale(
+            outputDecimalTypeInfo.getPrecision(), outputDecimalTypeInfo.getScale());
         return myagg.sum.getHiveDecimal();
       }
     }
@@ -440,15 +449,7 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
-    // No-op
-  }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
+    init();
   }
 }
 

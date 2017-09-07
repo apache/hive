@@ -29,6 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,6 +70,9 @@ public class SetProcessor implements CommandProcessor {
   }
 
   private static final String[] PASSWORD_STRINGS = new String[] {"password", "paswd", "pswd"};
+
+  private static final Pattern TIME_ZONE_PATTERN =
+      Pattern.compile("^time(\\s)+zone\\s", Pattern.CASE_INSENSITIVE);
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -381,6 +386,12 @@ public class SetProcessor implements CommandProcessor {
       }
       dumpOptions(properties);
       return createProcessorSuccessResponse();
+    }
+
+    // Special handling for time-zone
+    Matcher matcher = TIME_ZONE_PATTERN.matcher(nwcmd);
+    if (matcher.find()) {
+      nwcmd = HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname + "=" + nwcmd.substring(matcher.end());
     }
 
     String[] part = new String[2];

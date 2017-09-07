@@ -22,7 +22,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -30,23 +33,26 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
-import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class resides in itests to facilitate running query using Tez engine, since the jars are
  * fully loaded here, which is not the case if it stays in ql.
  */
 public class TestAcidOnTez {
+  static final private Logger LOG = LoggerFactory.getLogger(TestAcidOnTez.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestAcidOnTez.class.getCanonicalName()
       + "-" + System.currentTimeMillis()
@@ -61,8 +67,10 @@ public class TestAcidOnTez {
   private static enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
+    ACIDNOBUCKET("acidNoBucket"),
     NONACIDORCTBL("nonAcidOrcTbl"),
-    NONACIDPART("nonAcidPart");
+    NONACIDPART("nonAcidPart"),
+    NONACIDNONBUCKET("nonAcidNonBucket");
 
     private final String name;
     @Override
@@ -159,6 +167,359 @@ public class TestAcidOnTez {
     testJoin("tez", "MapJoin");
   }
 
+  /**
+   * Tests non acid to acid conversion where starting table has non-standard layout, i.e.
+   * where "original" files are not immediate children of the partition dir
+   */
+  @Test
+  public void testNonStandardConversion01() throws Exception {
+    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    setupTez(confForTez);
+    //CTAS with non-ACID target table
+    runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + " stored as ORC TBLPROPERTIES('transactional'='false') as " +
+      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+
+    List<String> rs = runStatementOnDriver("select a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by a, b, INPUT__FILE__NAME");
+    String expected0[][] = {
+      {"1\t2", "/1/000000_0"},
+      {"3\t4", "/1/000000_0"},
+      {"5\t6", "/1/000000_0"},
+      {"5\t6", "/2/000000_0"},
+      {"7\t8", "/2/000000_0"},
+      {"9\t10", "/2/000000_0"},
+    };
+    Assert.assertEquals("Unexpected row count after ctas", expected0.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected0.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected0[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected0[i][1]));
+    }
+    //make the table ACID
+    runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " SET TBLPROPERTIES ('transactional'='true')");
+
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID");
+    LOG.warn("after ctas:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
+    /*
+    * Expected result 0th entry i the RecordIdentifier + data.  1st entry file before compact*/
+    String expected[][] = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t9\t10", "/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t7\t8", "/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t5\t6", "/2/000000_0"},
+    };
+    Assert.assertEquals("Unexpected row count after ctas", expected.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+    }
+    //perform some Update/Delete
+    runStatementOnDriver("update " + Table.NONACIDNONBUCKET + " set a = 70, b  = 80 where a = 7");
+    runStatementOnDriver("delete from " + Table.NONACIDNONBUCKET + " where a = 5");
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID");
+    LOG.warn("after update/delete:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    String[][] expected2 = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t9\t10", "/2/000000_0"},
+      {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "delta_0000021_0000021_0000/bucket_00000"}
+    };
+    Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected2[i][1]));
+    }
+    //now make sure delete deltas are present
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    String[] expectedDelDelta = {"delete_delta_0000021_0000021_0000", "delete_delta_0000022_0000022_0000"};
+    for(FileStatus stat : status) {
+      for(int i = 0; i < expectedDelDelta.length; i++) {
+        if(expectedDelDelta[i] != null && stat.getPath().toString().endsWith(expectedDelDelta[i])) {
+          expectedDelDelta[i] = null;
+        }
+      }
+    }
+    for(int i = 0; i < expectedDelDelta.length; i++) {
+      Assert.assertNull("at " + i + " " + expectedDelDelta[i] + " not found on disk", expectedDelDelta[i]);
+    }
+    //run Minor compaction
+    runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'minor'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID");
+    LOG.warn("after compact minor:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
+    //verify the data is the same
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      //todo: since HIVE-16669 is not done, Minor compact compacts insert delta as well - it should not
+      //Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected2[i][1]));
+    }
+    //check we have right delete delta files after minor compaction
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    String[] expectedDelDelta2 = {"delete_delta_0000021_0000021_0000", "delete_delta_0000022_0000022_0000", "delete_delta_0000021_0000022"};
+    for(FileStatus stat : status) {
+      for(int i = 0; i < expectedDelDelta2.length; i++) {
+        if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
+          expectedDelDelta2[i] = null;
+          break;
+        }
+      }
+    }
+    for(int i = 0; i < expectedDelDelta2.length; i++) {
+      Assert.assertNull("at " + i + " " + expectedDelDelta2[i] + " not found on disk", expectedDelDelta2[i]);
+    }
+    //run Major compaction
+    runStatementOnDriver("alter table " + Table.NONACIDNONBUCKET + " compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDNONBUCKET + " order by ROW__ID");
+    LOG.warn("after compact major:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      //everything is now in base/
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000022/bucket_00000"));
+    }
+  }
+  /**
+   * Tests non acid to acid conversion where starting table has non-standard layout, i.e.
+   * where "original" files are not immediate children of the partition dir - partitioned table
+   *
+   * How to do this?  CTAS is the only way to create data files which are not immediate children
+   * of the partition dir.  CTAS/Union/Tez doesn't support partition tables.  The only way is to copy
+   * data files in directly.
+   */
+  @Ignore("HIVE-17214")
+  @Test
+  public void testNonStandardConversion02() throws Exception {
+    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    confForTez.setBoolean("mapred.input.dir.recursive", true);
+    setupTez(confForTez);
+    runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + " stored as ORC " +
+      "TBLPROPERTIES('transactional'='false') as " +
+      "select a, b from " + Table.ACIDTBL + " where a <= 3 union all " +
+      "select a, b from " + Table.NONACIDORCTBL + " where a >= 7 " +
+      "union all select a, b from " + Table.ACIDTBL + " where a = 5", confForTez);
+
+    List<String> rs = runStatementOnDriver("select a, b, INPUT__FILE__NAME from " +
+      Table.NONACIDNONBUCKET + " order by a, b");
+    String expected0[][] = {
+      {"1\t2", "/1/000000_0"},
+      {"3\t4", "/1/000000_0"},
+      {"5\t6", "/3/000000_0"},
+      {"7\t8", "/2/000000_0"},
+      {"9\t10", "/2/000000_0"},
+    };
+    Assert.assertEquals("Unexpected row count after ctas", expected0.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected0.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected0[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected0[i][1]));
+    }
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+      (Table.NONACIDNONBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    //ensure there is partition dir
+    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition (p=1) values (100,110)");
+    //creates more files in that partition
+    for(FileStatus stat : status) {
+      int limit = 5;
+      Path p = stat.getPath();//dirs 1/, 2/, 3/
+      Path to = new Path(TEST_WAREHOUSE_DIR + "/" +  Table.NONACIDPART+ "/p=1/" + p.getName());
+      while(limit-- > 0 && !fs.rename(p, to)) {
+        Thread.sleep(200);
+      }
+      if(limit <= 0) {
+        throw new IllegalStateException("Could not rename " + p + " to " + to);
+      }
+    }
+    /*
+    This is what we expect on disk
+    ekoifman:warehouse ekoifman$ tree nonacidpart/
+    nonacidpart/
+    └── p=1
+    ├── 000000_0
+    ├── 1
+    │   └── 000000_0
+    ├── 2
+    │   └── 000000_0
+    └── 3
+        └── 000000_0
+
+4 directories, 4 files
+    **/
+    //make the table ACID
+    runStatementOnDriver("alter table " + Table.NONACIDPART + " SET TBLPROPERTIES ('transactional'='true')");
+    rs = runStatementOnDriver("select ROW__ID, a, b, p, INPUT__FILE__NAME from " + Table.NONACIDPART + " order by ROW__ID");
+    LOG.warn("after acid conversion:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    String[][] expected = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t100\t110\t1", "nonacidpart/p=1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t1\t2\t1", "nonacidpart/p=1/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t3\t4\t1", "nonacidpart/p=1/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t9\t10\t1", "nonacidpart/p=1/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t7\t8\t1", "nonacidpart/p=1/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t5\t6\t1", "nonacidpart/p=1/3/000000_0"}
+    };
+    Assert.assertEquals("Wrong row count", expected.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+    }
+
+    //run Major compaction
+    runStatementOnDriver("alter table " + Table.NONACIDPART + " partition (p=1) compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, p, INPUT__FILE__NAME from " + Table.NONACIDPART + " order by ROW__ID");
+    LOG.warn("after major compaction:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    //verify data and layout
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " ac: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " ac: " +
+        rs.get(i), rs.get(i).endsWith("nonacidpart/p=1/base_-9223372036854775808/bucket_00000"));
+    }
+
+  }
+  /**
+   * CTAS + Tez + Union creates a non-standard layout in table dir
+   * Each leg of the union places data into a subdir of the table/partition.  Subdirs are named 1/, 2/, etc
+   * The way this currently works is that CTAS creates an Acid table but the insert statement writes
+   * the data in non-acid layout.  Then on read, it's treated like an non-acid to acid conversion.
+   * Longer term CTAS should create acid layout from the get-go.
+   */
+  @Test
+  public void testCtasTezUnion() throws Exception {
+    HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
+    setupTez(confForTez);
+    //CTAS with ACID target table
+    runStatementOnDriver("create table " + Table.ACIDNOBUCKET + " stored as ORC TBLPROPERTIES('transactional'='true') as " +
+      "select a, b from " + Table.ACIDTBL + " where a <= 5 union all select a, b from " + Table.NONACIDORCTBL + " where a >= 5", confForTez);
+    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID");
+    LOG.warn("after ctas:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
+    /*
+    * Expected result 0th entry i the RecordIdentifier + data.  1st entry file before compact*/
+    String expected[][] = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t5\t6", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t9\t10", "/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t7\t8", "/2/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t5\t6", "/2/000000_0"},
+    };
+    Assert.assertEquals("Unexpected row count after ctas", expected.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
+    }
+    //perform some Update/Delete
+    runStatementOnDriver("update " + Table.ACIDNOBUCKET + " set a = 70, b  = 80 where a = 7");
+    runStatementOnDriver("delete from " + Table.ACIDNOBUCKET + " where a = 5");
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID");
+    LOG.warn("after update/delete:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    String[][] expected2 = {
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/1/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t9\t10", "/2/000000_0"},
+      {"{\"transactionid\":19,\"bucketid\":536870912,\"rowid\":0}\t70\t80", "delta_0000019_0000019_0000/bucket_00000"}
+    };
+    Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
+    //verify data and layout
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected2[i][1]));
+    }
+    //now make sure delete deltas are present
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+      (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    String[] expectedDelDelta = {"delete_delta_0000019_0000019_0000", "delete_delta_0000020_0000020_0000"};
+    for(FileStatus stat : status) {
+      for(int i = 0; i < expectedDelDelta.length; i++) {
+        if(expectedDelDelta[i] != null && stat.getPath().toString().endsWith(expectedDelDelta[i])) {
+          expectedDelDelta[i] = null;
+        }
+      }
+    }
+    for(int i = 0; i < expectedDelDelta.length; i++) {
+      Assert.assertNull("at " + i + " " + expectedDelDelta[i] + " not found on disk", expectedDelDelta[i]);
+    }
+    //run Minor compaction
+    runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'minor'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID");
+    LOG.warn("after compact minor:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after update", expected2.length, rs.size());
+    //verify the data is the same
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      //todo: since HIVE-16669 is not done, Minor compact compacts insert delta as well - it should not
+      //Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith(expected2[i][1]));
+    }
+    //check we have right delete delta files after minor compaction
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
+      (Table.ACIDNOBUCKET).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
+    String[] expectedDelDelta2 = { "delete_delta_0000019_0000019_0000", "delete_delta_0000020_0000020_0000", "delete_delta_0000019_0000020"};
+    for(FileStatus stat : status) {
+      for(int i = 0; i < expectedDelDelta2.length; i++) {
+        if(expectedDelDelta2[i] != null && stat.getPath().toString().endsWith(expectedDelDelta2[i])) {
+          expectedDelDelta2[i] = null;
+          break;
+        }
+      }
+    }
+    for(int i = 0; i < expectedDelDelta2.length; i++) {
+      Assert.assertNull("at " + i + " " + expectedDelDelta2[i] + " not found on disk", expectedDelDelta2[i]);
+    }
+    //run Major compaction
+    runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+    rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.ACIDNOBUCKET + " order by ROW__ID");
+    LOG.warn("after compact major:");
+    for (String s : rs) {
+      LOG.warn(s);
+    }
+    Assert.assertEquals("Unexpected row count after major compact", expected2.length, rs.size());
+    for(int i = 0; i < expected2.length; i++) {
+      Assert.assertTrue("Actual line " + i + " bc: " + rs.get(i), rs.get(i).startsWith(expected2[i][0]));
+      //everything is now in base/
+      Assert.assertTrue("Actual line(file) " + i + " bc: " + rs.get(i), rs.get(i).endsWith("base_0000020/bucket_00000"));
+    }
+  }
   // Ideally test like this should be a qfile test. However, the explain output from qfile is always
   // slightly different depending on where the test is run, specifically due to file size estimation
   private void testJoin(String engine, String joinType) throws Exception {

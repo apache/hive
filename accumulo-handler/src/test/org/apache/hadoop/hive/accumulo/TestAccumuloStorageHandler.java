@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.serde.AccumuloSerDeParameters;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -43,14 +44,17 @@ import org.mockito.Mockito;
  */
 public class TestAccumuloStorageHandler {
 
-  protected AccumuloStorageHandler storageHandler;
+  private AccumuloStorageHandler storageHandler;
+  private Configuration conf;
 
   @Rule
   public TestName test = new TestName();
 
   @Before
   public void setup() {
+    conf = new Configuration();
     storageHandler = new AccumuloStorageHandler();
+    storageHandler.setConf(conf);
   }
 
   @Test

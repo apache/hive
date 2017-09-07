@@ -45,7 +45,7 @@ public class CoreNegativeCliDriver extends CliAdapter{
     try {
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil((cliConfig.getResultsDir()), (cliConfig.getLogDir()), miniMR,
-       hiveConfDir, hadoopVer, initScript, cleanupScript, false, false);
+       hiveConfDir, hadoopVer, initScript, cleanupScript, false);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();

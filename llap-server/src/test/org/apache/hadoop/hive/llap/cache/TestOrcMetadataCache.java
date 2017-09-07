@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.llap.cache;
 
 import static org.junit.Assert.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
@@ -63,11 +61,6 @@ public class TestOrcMetadataCache {
     }
 
     @Override
-    public long tryEvictContiguousData(int allocationSize, int count) {
-      return 0;
-    }
-
-    @Override
     public void debugDumpShort(StringBuilder sb) {
     }
   }
@@ -92,11 +85,6 @@ public class TestOrcMetadataCache {
 
     @Override
     public void updateMaxSize(long maxSize) {
-    }
-
-    @Override
-    public long forceReservedMemory(int allocationSize, int count) {
-      return allocationSize * count;
     }
 
     @Override

@@ -89,7 +89,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col2 (type: int)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey1 (type: int)
@@ -113,7 +113,7 @@ STAGE PLANS:
                               arguments: _col3
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

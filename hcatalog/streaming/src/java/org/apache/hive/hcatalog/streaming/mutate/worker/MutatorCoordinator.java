@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -183,7 +184,7 @@ public class MutatorCoordinator implements Closeable, Flushable {
   private void reconfigureState(OperationType operationType, List<String> newPartitionValues, Object record)
     throws WorkerException {
     RecordIdentifier newRecordIdentifier = extractRecordIdentifier(operationType, newPartitionValues, record);
-    int newBucketId = newRecordIdentifier.getBucketId();
+    int newBucketId = newRecordIdentifier.getBucketProperty();
 
     if (newPartitionValues == null) {
       newPartitionValues = Collections.emptyList();
@@ -209,8 +210,10 @@ public class MutatorCoordinator implements Closeable, Flushable {
   private RecordIdentifier extractRecordIdentifier(OperationType operationType, List<String> newPartitionValues,
       Object record) throws BucketIdException {
     RecordIdentifier recordIdentifier = recordInspector.extractRecordIdentifier(record);
+    int bucketIdFromRecord = BucketCodec.determineVersion(
+      recordIdentifier.getBucketProperty()).decodeWriterId(recordIdentifier.getBucketProperty());
     int computedBucketId = bucketIdResolver.computeBucketId(record);
-    if (operationType != OperationType.DELETE && recordIdentifier.getBucketId() != computedBucketId) {
+    if (operationType != OperationType.DELETE && bucketIdFromRecord != computedBucketId) {
       throw new BucketIdException("RecordIdentifier.bucketId != computed bucketId (" + computedBucketId
           + ") for record " + recordIdentifier + " in partition " + newPartitionValues + ".");
     }

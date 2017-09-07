@@ -289,7 +289,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: accumulo_table_1
-            filterExpr: ((100 < key) and (key < 120)) (type: boolean)
+            filterExpr: (key < 120) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: key (type: int)

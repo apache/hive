@@ -117,6 +117,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
     commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
     commandType.put(HiveParser.TOK_ALTERDATABASE_OWNER, HiveOperation.ALTERDATABASE_OWNER);
+    commandType.put(HiveParser.TOK_ALTERDATABASE_LOCATION, HiveOperation.ALTERDATABASE_LOCATION);
     commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
     commandType.put(HiveParser.TOK_ALTERTABLE_SKEWED, HiveOperation.ALTERTABLE_SKEWED);
     commandType.put(HiveParser.TOK_ANALYZE, HiveOperation.ANALYZE_TABLE);
@@ -129,9 +130,9 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_COMMIT, HiveOperation.COMMIT);
     commandType.put(HiveParser.TOK_ROLLBACK, HiveOperation.ROLLBACK);
     commandType.put(HiveParser.TOK_SET_AUTOCOMMIT, HiveOperation.SET_AUTOCOMMIT);
-    commandType.put(HiveParser.TOK_REPL_DUMP, HiveOperation.EXPORT); // piggyback on EXPORT security handling for now
-    commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.IMPORT); // piggyback on IMPORT security handling for now
-    commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.SHOW_TBLPROPERTIES); // TODO : also actually DESCDATABASE
+    commandType.put(HiveParser.TOK_REPL_DUMP, HiveOperation.REPLDUMP);
+    commandType.put(HiveParser.TOK_REPL_LOAD, HiveOperation.REPLLOAD);
+    commandType.put(HiveParser.TOK_REPL_STATUS, HiveOperation.REPLSTATUS);
   }
 
   static {
@@ -302,6 +303,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_ROLES:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
       case HiveParser.TOK_ALTERDATABASE_OWNER:
+      case HiveParser.TOK_ALTERDATABASE_LOCATION:
       case HiveParser.TOK_TRUNCATETABLE:
       case HiveParser.TOK_SHOW_SET_ROLE:
       case HiveParser.TOK_CACHE_METADATA:

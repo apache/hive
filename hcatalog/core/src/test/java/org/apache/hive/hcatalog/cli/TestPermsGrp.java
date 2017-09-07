@@ -44,12 +44,12 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.hcatalog.ExitException;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
@@ -81,7 +81,7 @@ public class TestPermsGrp extends TestCase {
 
 
     msPort = MetaStoreUtils.findFreePort();
-    MetaStoreUtils.startMetaStore(msPort, ShimLoader.getHadoopThriftAuthBridge());
+    MetaStoreUtils.startMetaStore(msPort, HadoopThriftAuthBridge.getBridge());
 
     isServerRunning = true;
 

@@ -29,3 +29,9 @@ create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a
 select * from cmv_mat_view5;
 
 show tblproperties cmv_mat_view5;
+
+drop materialized view cmv_mat_view;
+drop materialized view cmv_mat_view2;
+drop materialized view cmv_mat_view3;
+drop materialized view cmv_mat_view4;
+drop materialized view cmv_mat_view5;

@@ -44,6 +44,11 @@
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 	<dependency>
 		<groupId>javolution</groupId>
 		<artifactId>javolution</artifactId>
@@ -102,21 +107,6 @@
       <version>${derby.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-api-jdo</artifactId>
-      <version>${datanucleus-api-jdo.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-core</artifactId>
-      <version>${datanucleus-core.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>datanucleus-rdbms</artifactId>
-      <version>${datanucleus-rdbms.version}</version>
-    </dependency>
-    <dependency>
       <groupId>commons-pool</groupId>
       <artifactId>commons-pool</artifactId>
       <version>${commons-pool.version}</version>
@@ -130,11 +120,6 @@
       <groupId>javax.jdo</groupId>
       <artifactId>jdo-api</artifactId>
       <version>${jdo-api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.datanucleus</groupId>
-      <artifactId>javax.jdo</artifactId>
-      <version>${datanucleus-jdo.version}</version>
     </dependency>
     <dependency>
       <groupId>org.antlr</groupId>
@@ -281,39 +266,6 @@
 
   <profiles>
     <profile>
-      <id>thriftif</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.google.code.maven-replacer-plugin</groupId>
-            <artifactId>replacer</artifactId>
-            <version>1.5.3</version>
-            <executions>
-              <execution>
-                <id>process-thrift-sources</id>
-                <phase>process-sources</phase>
-                <goals>
-                  <goal>replace</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hadoop/hive/metastore/api/</basedir>
-              <includes>
-                <include>FieldSchema.java</include>
-                <include>Partition.java</include>
-                <include>SerDeInfo.java</include>
-                <include>StorageDescriptor.java</include>
-              </includes>
-              <tokenValueMap>${basedir}/src/main/resources/thrift-replacements.txt</tokenValueMap>
-              <regex>true</regex>
-              <quiet>false</quiet>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>protobuf</id>
       <build>
         <plugins>
@@ -330,11 +282,6 @@
                     <property name="protobuf.build.dir"  location="${basedir}/src/gen/protobuf/gen-java"/>
                     <echo>Building HBase Metastore Protobuf</echo>
                     <mkdir dir="${protobuf.build.dir}"/>
-                    <exec executable="protoc" failonerror="true">
-                      <arg value="--java_out=${protobuf.build.dir}"/>
-                      <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase"/>
-                      <arg value="${protobuf.src.dir}/org/apache/hadoop/hive/metastore/hbase/hbase_metastore_proto.proto"/>
-                    </exec>
                     <exec executable="protoc" failonerror="true">
                       <arg value="--java_out=${protobuf.build.dir}"/>
                       <arg value="-I=${protobuf.src.dir}/org/apache/hadoop/hive/metastore"/>
@@ -356,14 +303,6 @@
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/model</directory>
-        <includes>
-          <include>package.jdo</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
@@ -404,28 +343,9 @@
             <configuration>
               <sources>
                 <source>src/model</source>
-                <source>src/gen/thrift/gen-javabean</source>
                 <source>src/gen/protobuf/gen-java</source>
               </sources>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.datanucleus</groupId>
-        <artifactId>datanucleus-maven-plugin</artifactId>
-        <configuration>
-          <api>JDO</api>
-          <verbose>true</verbose>
-          <metadataIncludes>**/*.jdo</metadataIncludes>
-          <fork>false</fork>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>enhance</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

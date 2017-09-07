@@ -76,7 +76,7 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     }
 
     final RexBuilder rexBuilder = union.getCluster().getRexBuilder();
-    final RelMetadataQuery mq = RelMetadataQuery.instance();
+    final RelMetadataQuery mq = call.getMetadataQuery();
     final RelOptPredicateList predicates = mq.getPulledUpPredicates(union);
     if (predicates == null) {
       return;

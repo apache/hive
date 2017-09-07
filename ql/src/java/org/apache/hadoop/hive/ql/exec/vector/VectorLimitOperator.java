@@ -75,7 +75,7 @@ public class VectorLimitOperator extends LimitOperator  {
           batch.selected[i] = batch.selected[skipSize + i];
         }
       }
-      forward(row, inputObjInspectors[tag]);
+      forward(row, inputObjInspectors[tag], true);
       currCount += batch.size;
     }
   }

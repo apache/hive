@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -33,39 +32,26 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hive.common.util.BloomFilter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.common.util.BloomKFilter;
 
 public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VectorUDAFBloomFilter.class);
-
   private static final long serialVersionUID = 1L;
-
-  private VectorExpression inputExpression;
-
-  @Override
-  public VectorExpression inputExpression() {
-    return inputExpression;
-  }
 
   private long expectedEntries = -1;
   private ValueProcessor valueProcessor;
-  transient private int bitSetSize = -1;
-  transient private BytesWritable bw = new BytesWritable();
-  transient private ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+  transient private int bitSetSize;
+  transient private BytesWritable bw;
+  transient private ByteArrayOutputStream byteStream;
 
   /**
    * class for storing the current aggregate value.
@@ -73,10 +59,10 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
   private static final class Aggregation implements AggregationBuffer {
     private static final long serialVersionUID = 1L;
 
-    BloomFilter bf;
+    BloomKFilter bf;
 
     public Aggregation(long expectedEntries) {
-      bf = new BloomFilter(expectedEntries);
+      bf = new BloomKFilter(expectedEntries);
     }
 
     @Override
@@ -90,9 +76,15 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     }
   }
 
-  public VectorUDAFBloomFilter(VectorExpression inputExpression) {
-    this();
-    this.inputExpression = inputExpression;
+  public VectorUDAFBloomFilter(VectorExpression inputExpression,
+      GenericUDAFEvaluator.Mode mode) {
+    super(inputExpression, mode);
+  }
+
+  private void init() {
+    bitSetSize = -1;
+    bw = new BytesWritable();
+    byteStream = new ByteArrayOutputStream();
 
     // Instantiate the ValueProcessor based on the input type
     VectorExpressionDescriptor.ArgumentType inputType =
@@ -121,10 +113,6 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     default:
       throw new IllegalStateException("Unsupported type " + inputType);
     }
-  }
-
-  public VectorUDAFBloomFilter() {
-    super();
   }
 
   @Override
@@ -368,12 +356,14 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     try {
       Aggregation bfAgg = (Aggregation) agg;
       byteStream.reset();
-      BloomFilter.serialize(byteStream, bfAgg.bf);
+      BloomKFilter.serialize(byteStream, bfAgg.bf);
       byte[] bytes = byteStream.toByteArray();
       bw.set(bytes, 0, bytes.length);
       return bw;
     } catch (IOException err) {
       throw new HiveException("Error encountered while serializing bloomfilter", err);
+    } finally {
+      IOUtils.closeStream(byteStream);
     }
   }
 
@@ -405,17 +395,11 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   @Override
   public void init(AggregationDesc desc) throws HiveException {
+    init();
+
     GenericUDAFBloomFilterEvaluator udafBloomFilter =
         (GenericUDAFBloomFilterEvaluator) desc.getGenericUDAFEvaluator();
     expectedEntries = udafBloomFilter.getExpectedEntries();
-  }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
   }
 
   public long getExpectedEntries() {

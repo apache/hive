@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -95,7 +96,7 @@ public class CompactorMR {
   static final private String IS_MAJOR = "hive.compactor.is.major";
   static final private String IS_COMPRESSED = "hive.compactor.is.compressed";
   static final private String TABLE_PROPS = "hive.compactor.table.props";
-  static final private String NUM_BUCKETS = "hive.compactor.num.buckets";
+  static final private String NUM_BUCKETS = hive_metastoreConstants.BUCKET_COUNT;
   static final private String BASE_DIR = "hive.compactor.base.dir";
   static final private String DELTA_DIRS = "hive.compactor.delta.dirs";
   static final private String DIRS_TO_SEARCH = "hive.compactor.dirs.to.search";
@@ -263,6 +264,7 @@ public class CompactorMR {
           // There are original format files
           for (HdfsFileStatusWithId stat : originalFiles) {
             Path path = stat.getFileStatus().getPath();
+            //note that originalFiles are all original files recursively not dirs
             dirsToSearch.add(path);
             LOG.debug("Adding original file " + path + " to dirs to search");
           }
@@ -276,7 +278,7 @@ public class CompactorMR {
       }
     }
 
-    if (parsedDeltas.size() == 0 && dir.getOriginalFiles() == null) {
+    if (parsedDeltas.size() == 0 && dir.getOriginalFiles().size() == 0) {
       // Skip compaction if there's no delta files AND there's no original files
       LOG.error("No delta files or original files found to compact in " + sd.getLocation() + " for compactionId=" + ci.id);
       return;
@@ -287,6 +289,12 @@ public class CompactorMR {
 
     su.gatherStats();
   }
+
+  /**
+   * @param baseDir if not null, it's either table/partition root folder or base_xxxx.  
+   *                If it's base_xxxx, it's in dirsToSearch, else the actual original files
+   *                (all leaves recursively) are in the dirsToSearch list
+   */
   private void launchCompactionJob(JobConf job, Path baseDir, CompactionType compactionType,
                                    StringableList dirsToSearch,
                                    List<AcidUtils.ParsedDelta> parsedDeltas,
@@ -399,7 +407,7 @@ public class CompactorMR {
      * @param hadoopConf
      * @param bucket bucket to be processed by this split
      * @param files actual files this split should process.  It is assumed the caller has already
-     *              parsed out the files in base and deltas to populate this list.
+     *              parsed out the files in base and deltas to populate this list.  Includes copy_N
      * @param base directory of the base, or the partition/table location if the files are in old
      *             style.  Can be null.
      * @param deltas directories of the delta files.

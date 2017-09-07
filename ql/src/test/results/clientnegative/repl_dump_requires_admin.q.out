@@ -1,0 +1,69 @@
+#### A masked pattern was here ####
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop database if exists test_repldump_adminpriv cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists test_repldump_adminpriv cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: show role grant user ruser1
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user ruser1
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+PREHOOK: query: create database test_repldump_adminpriv
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_repldump_adminpriv
+POSTHOOK: query: create database test_repldump_adminpriv
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_repldump_adminpriv
+PREHOOK: query: create table test_repldump_adminpriv.dummy_tbl(a int) partitioned by (b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_repldump_adminpriv
+PREHOOK: Output: test_repldump_adminpriv@dummy_tbl
+POSTHOOK: query: create table test_repldump_adminpriv.dummy_tbl(a int) partitioned by (b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_repldump_adminpriv
+POSTHOOK: Output: test_repldump_adminpriv@dummy_tbl
+PREHOOK: query: show tables test_repldump_adminpriv
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_repldump_adminpriv
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show role grant user ruser1
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user ruser1
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+PREHOOK: query: show role grant user hive_admin_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user hive_admin_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+admin	true	-1	admin
+public	false	-1	
+PREHOOK: query: show tables test_repldump_adminpriv
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_repldump_adminpriv
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: repl dump test_repldump_adminpriv
+PREHOOK: type: REPLDUMP
+PREHOOK: Input: database:test_repldump_adminpriv
+POSTHOOK: query: repl dump test_repldump_adminpriv
+POSTHOOK: type: REPLDUMP
+POSTHOOK: Input: database:test_repldump_adminpriv
+#### A masked pattern was here ####
+PREHOOK: query: show tables test_repldump_adminpriv
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables test_repldump_adminpriv
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+FAILED: HiveAccessControlException Permission denied: Principal [name=ruser1, type=USER] does not have following privileges for operation REPLDUMP [ADMIN PRIVILEGE on INPUT, ADMIN PRIVILEGE on OUTPUT]

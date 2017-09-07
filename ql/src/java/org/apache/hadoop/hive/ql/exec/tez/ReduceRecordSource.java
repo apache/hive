@@ -108,9 +108,6 @@ public class ReduceRecordSource implements RecordSource {
   private StructObjectInspector keyStructInspector;
   private StructObjectInspector valueStructInspectors;
 
-  /* this is only used in the error code path */
-  private List<VectorExpressionWriter> valueStringWriters;
-
   private KeyValuesAdapter reader;
 
   private boolean handleGroupKey;
@@ -171,13 +168,6 @@ public class ReduceRecordSource implements RecordSource {
 
         final int totalColumns = firstValueColumnOffset +
             valueStructInspectors.getAllStructFieldRefs().size();
-        valueStringWriters = new ArrayList<VectorExpressionWriter>(totalColumns);
-        valueStringWriters.addAll(Arrays
-            .asList(VectorExpressionWriterFactory
-                .genVectorStructExpressionWritables(keyStructInspector)));
-        valueStringWriters.addAll(Arrays
-            .asList(VectorExpressionWriterFactory
-                .genVectorStructExpressionWritables(valueStructInspectors)));
 
         rowObjectInspector = Utilities.constructVectorizedReduceRowOI(keyStructInspector,
             valueStructInspectors);
@@ -379,20 +369,6 @@ public class ReduceRecordSource implements RecordSource {
       BytesWritable keyWritable = (BytesWritable) reader.getCurrentKey();
       valueWritables = reader.getCurrentValues();
 
-      // Check if this is a new group or same group
-      if (handleGroupKey && !keyWritable.equals(this.groupKey)) {
-        // If a operator wants to do some work at the beginning of a group
-        if (groupKey == null) { // the first group
-          this.groupKey = new BytesWritable();
-        } else {
-          // If a operator wants to do some work at the end of a group
-          reducer.endGroup();
-        }
-
-        groupKey.set(keyWritable.getBytes(), 0, keyWritable.getLength());
-        reducer.startGroup();
-      }
-
       processVectorGroup(keyWritable, valueWritables, tag);
       return true;
     } catch (Throwable e) {
@@ -408,15 +384,20 @@ public class ReduceRecordSource implements RecordSource {
   }
 
   /**
+   *
+   * @param keyWritable
    * @param values
-   * @return true if it is not done and can take more inputs
+   * @param tag
+   * @throws HiveException
+   * @throws IOException
    */
   private void processVectorGroup(BytesWritable keyWritable,
           Iterable<Object> values, byte tag) throws HiveException, IOException {
 
+    Preconditions.checkState(batch.size == 0);
+
     // Deserialize key into vector row columns.
-    // Since we referencing byte column vector byte arrays by reference, we don't need
-    // a data buffer.
+    //
     byte[] keyBytes = keyWritable.getBytes();
     int keyLength = keyWritable.getLength();
 
@@ -442,24 +423,14 @@ public class ReduceRecordSource implements RecordSource {
     int batchBytes = keyBytes.length;
     try {
       for (Object value : values) {
-        if (valueLazyBinaryDeserializeToRow != null) {
-          // Deserialize value into vector row columns.
-          BytesWritable valueWritable = (BytesWritable) value;
-          byte[] valueBytes = valueWritable.getBytes();
-          int valueLength = valueWritable.getLength();
-          batchBytes += valueLength;
+        if (rowIdx >= maxSize ||
+            (rowIdx > 0 && batchBytes >= BATCH_BYTES)) {
 
-          // l4j.info("ReduceRecordSource processVectorGroup valueBytes " + valueLength + " " +
-          //     VectorizedBatchUtil.displayBytes(valueBytes, 0, valueLength));
-
-          valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
-          valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);
-        }
-        rowIdx++;
-        if (rowIdx >= maxSize || batchBytes >= BATCH_BYTES) {
-
-          // Batch is full.
+          // Batch is full AND we have at least 1 more row...
           batch.size = rowIdx;
+          if (handleGroupKey) {
+            reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ false);
+          }
           reducer.process(batch, tag);
 
           // Reset just the value columns and value buffer.
@@ -468,12 +439,26 @@ public class ReduceRecordSource implements RecordSource {
             batch.cols[i].reset();
           }
           rowIdx = 0;
-          batchBytes = 0;
+          batchBytes = keyBytes.length;
         }
+        if (valueLazyBinaryDeserializeToRow != null) {
+          // Deserialize value into vector row columns.
+          BytesWritable valueWritable = (BytesWritable) value;
+          byte[] valueBytes = valueWritable.getBytes();
+          int valueLength = valueWritable.getLength();
+          batchBytes += valueLength;
+
+          valueLazyBinaryDeserializeToRow.setBytes(valueBytes, 0, valueLength);
+          valueLazyBinaryDeserializeToRow.deserialize(batch, rowIdx);
+        }
+        rowIdx++;
       }
       if (rowIdx > 0) {
         // Flush final partial batch.
-        VectorizedBatchUtil.setBatchSize(batch, rowIdx);
+        batch.size = rowIdx;
+        if (handleGroupKey) {
+          reducer.setNextVectorBatchGroupStatus(/* isLastGroupBatch */ true);
+        }
         reducer.process(batch, tag);
       }
       batch.reset();
@@ -485,9 +470,10 @@ public class ReduceRecordSource implements RecordSource {
         rowString = "[Error getting row data with exception "
             + StringUtils.stringifyException(e2) + " ]";
       }
+      l4j.error("Hive Runtime Error while processing vector batch (tag=" + tag
+              + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " + rowString, e);
       throw new HiveException("Hive Runtime Error while processing vector batch (tag="
-          + tag + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " +
-          rowString, e);
+          + tag + ") (vectorizedVertexNum " + vectorizedVertexNum + ")", e);
     }
   }
 

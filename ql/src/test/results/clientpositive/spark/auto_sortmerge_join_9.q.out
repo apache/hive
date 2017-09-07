@@ -699,19 +699,19 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -826,19 +826,19 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -1448,19 +1448,19 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Sorted Merge Bucket Map Join Operator
                         condition map:
                              Inner Join 0 to 1
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -2350,12 +2350,12 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -2375,12 +2375,12 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -2389,7 +2389,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -2505,12 +2505,12 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -2530,12 +2530,12 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -2544,7 +2544,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash
@@ -3167,12 +3167,12 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: int)
@@ -3192,12 +3192,12 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < 8) and (key < 6)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (key < 6) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -3206,7 +3206,7 @@ STAGE PLANS:
                           1 _col0 (type: int)
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3 Data size: 23 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count()
                           mode: hash

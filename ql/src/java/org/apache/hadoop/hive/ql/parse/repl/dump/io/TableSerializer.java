@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.thrift.TException;
@@ -44,7 +45,7 @@ public class TableSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    if (cannotReplicateTable(additionalPropertiesProvider)) {
+    if (!EximUtil.shouldExportTable(additionalPropertiesProvider, tableHandle)) {
       return;
     }
 
@@ -61,24 +62,25 @@ public class TableSerializer implements JsonWriter.Serializer {
     }
   }
 
-  private boolean cannotReplicateTable(ReplicationSpec additionalPropertiesProvider) {
-    return tableHandle == null || additionalPropertiesProvider.isNoop();
-  }
-
   private Table addPropertiesToTable(Table table, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
     if (additionalPropertiesProvider.isInReplicationScope()) {
-      table.putToParameters(
-            ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-            additionalPropertiesProvider.getCurrentReplicationState());
+      // Current replication state must be set on the Table object only for bootstrap dump.
+      // Event replication State will be null in case of bootstrap dump.
+      if (additionalPropertiesProvider.getReplSpecType()
+              != ReplicationSpec.Type.INCREMENTAL_DUMP) {
+        table.putToParameters(
+                ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                additionalPropertiesProvider.getCurrentReplicationState());
+      }
       if (isExternalTable(table)) {
           // Replication destination will not be external - override if set
         table.putToParameters("EXTERNAL", "FALSE");
-        }
+      }
       if (isExternalTableType(table)) {
           // Replication dest will not be external - override if set
         table.setTableType(TableType.MANAGED_TABLE.toString());
-        }
+      }
     } else {
       // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
       // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");

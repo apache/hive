@@ -48,7 +48,7 @@ public class HiveSchemaHelper {
    * @param printInfo print connection parameters
    * @param hiveConf hive config object
    * @return metastore connection object
-   * @throws org.apache.hadoop.hive.metastore.api.MetaException
+   * @throws org.apache.hadoop.hive.metastore.HiveMetaException
    */
   public static Connection getConnectionToMetastore(String userName,
       String password, String url, String driver, boolean printInfo,

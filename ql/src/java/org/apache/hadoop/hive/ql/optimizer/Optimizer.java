@@ -79,7 +79,7 @@ public class Optimizer {
     if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
         || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
         || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
-      transformations.add(new Generator());
+      transformations.add(new Generator(postExecHooks));
     }
 
     // Try to transform OR predicates in Filter into simpler IN clauses first
@@ -143,11 +143,11 @@ public class Optimizer {
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
       transformations.add(new GroupByOptimizer());
     }
+    transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVECOUNTDISTINCTOPTIMIZER)
         && (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) || isTezExecEngine)) {
       transformations.add(new CountDistinctRewriteProc());
     }
-    transformations.add(new ColumnPruner());
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       if (!isTezExecEngine) {
         transformations.add(new SkewJoinOptimizer());

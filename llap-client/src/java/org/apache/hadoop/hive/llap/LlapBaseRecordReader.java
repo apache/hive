@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.llap;
 
+import com.google.common.base.Preconditions;
+
 import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -55,20 +57,19 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   protected Thread readerThread = null;
   protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
-  protected final long timeout;
   protected final Closeable client;
   private final Closeable socket;
+  private boolean closed = false;
 
   public LlapBaseRecordReader(InputStream in, Schema schema,
       Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
-    this.cin = new ChunkedInputStream(in);  // Save so we can verify end of stream
+    String clientId = (client == null ? "" : client.toString());
+    this.cin = new ChunkedInputStream(in, clientId);  // Save so we can verify end of stream
     // We need mark support - wrap with BufferedInputStream.
     din = new DataInputStream(new BufferedInputStream(cin));
     this.schema = schema;
     this.clazz = clazz;
     this.readerThread = Thread.currentThread();
-    this.timeout = 3 * HiveConf.getTimeVar(job,
-        HiveConf.ConfVars.LLAP_DAEMON_AM_LIVENESS_CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     this.client = client;
     this.socket = socket;
   }
@@ -78,27 +79,31 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   }
 
   @Override
-  public void close() throws IOException {
-    Exception caughtException = null;
-    try {
-      din.close();
-    } catch (Exception err) {
-      LOG.error("Error closing input stream:" + err.getMessage(), err);
-      caughtException = err;
-    }
-    // Don't close the socket - the stream already does that if needed.
+  public synchronized void close() throws IOException {
+    if (!closed) {
+      closed = true;
 
-    if (client != null) {
+      Exception caughtException = null;
       try {
-        client.close();
+        din.close();
       } catch (Exception err) {
-        LOG.error("Error closing client:" + err.getMessage(), err);
-        caughtException = (caughtException == null ? err : caughtException);
+        LOG.error("Error closing input stream:" + err.getMessage(), err);
+        caughtException = err;
       }
-    }
+      // Don't close the socket - the stream already does that if needed.
 
-    if (caughtException != null) {
-      throw new IOException("Exception during close: " + caughtException.getMessage(), caughtException);
+      if (client != null) {
+        try {
+          client.close();
+        } catch (Exception err) {
+          LOG.error("Error closing client:" + err.getMessage(), err);
+          caughtException = (caughtException == null ? err : caughtException);
+        }
+      }
+
+      if (caughtException != null) {
+        throw new IOException("Exception during close: " + caughtException.getMessage(), caughtException);
+      }
     }
   }
 
@@ -156,28 +161,40 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         return false;
       }
     } catch (IOException io) {
-      if (Thread.interrupted()) {
-        // Either we were interrupted by one of:
-        // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
-        // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
-        // Either way we should not try to block trying to read the reader events queue.
-        if (readerEvents.isEmpty()) {
-          // Case 2.
-          throw io;
-        } else {
-          // Case 1. Fail the reader, sending back the error we received from the reader event.
-          ReaderEvent event = getReaderEvent();
-          switch (event.getEventType()) {
-            case ERROR:
-              throw new IOException("Received reader event error: " + event.getMessage(), io);
-            default:
-              throw new IOException("Got reader event type " + event.getEventType()
-                  + ", expected error event", io);
+      try {
+        if (Thread.interrupted()) {
+          // Either we were interrupted by one of:
+          // 1. handleEvent(), in which case there is a reader (error) event waiting for us in the queue
+          // 2. Some other unrelated cause which interrupted us, in which case there may not be a reader event coming.
+          // Either way we should not try to block trying to read the reader events queue.
+          if (readerEvents.isEmpty()) {
+            // Case 2.
+            throw io;
+          } else {
+            // Case 1. Fail the reader, sending back the error we received from the reader event.
+            ReaderEvent event = getReaderEvent();
+            switch (event.getEventType()) {
+              case ERROR:
+                throw new IOException("Received reader event error: " + event.getMessage(), io);
+              default:
+                throw new IOException("Got reader event type " + event.getEventType()
+                    + ", expected error event", io);
+            }
           }
+        } else {
+          // If we weren't interrupted, just propagate the error
+          throw io;
         }
-      } else {
-        // If we weren't interrupted, just propagate the error
-        throw io;
+      } finally {
+        // The external client handling umbilical responses and the connection to read the incoming
+        // data are not coupled. Calling close() here to make sure an error in one will cause the
+        // other to be closed as well.
+        try {
+          close();
+        } catch (Exception err) {
+          // Don't propagate errors from close() since this will lose the original error above.
+          LOG.error("Closing RecordReader due to error and hit another error during close()", err);
+        }
       }
     }
   }
@@ -256,10 +273,8 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
 
   protected ReaderEvent getReaderEvent() throws IOException {
     try {
-      ReaderEvent event = readerEvents.poll(timeout, TimeUnit.MILLISECONDS);
-      if (event == null) {
-        throw new IOException("Timed out getting readerEvents");
-      }
+      ReaderEvent event = readerEvents.take();
+      Preconditions.checkNotNull(event);
       return event;
     } catch (InterruptedException ie) {
       throw new RuntimeException("Interrupted while getting readerEvents, not expected: " + ie.getMessage(), ie);

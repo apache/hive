@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.PartitionWrapper;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.StorageDescriptorWrapper;
 import org.apache.hadoop.hive.metastore.cache.CachedStore.TableWrapper;
-import org.apache.hadoop.hive.metastore.hbase.HBaseUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +117,7 @@ public class SharedCache {
     }
     TableWrapper wrapper;
     if (tbl.getSd() != null) {
-      byte[] sdHash = HBaseUtils.hashStorageDescriptor(tbl.getSd(), md);
+      byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(tbl.getSd(), md);
       StorageDescriptor sd = tbl.getSd();
       increSd(sd, sdHash);
       tblCopy.setSd(null);
@@ -137,7 +137,7 @@ public class SharedCache {
   }
 
   public static synchronized ColumnStatisticsObj getCachedTableColStats(String colStatsCacheKey) {
-    return tableColStatsCache.get(colStatsCacheKey);
+    return tableColStatsCache.get(colStatsCacheKey)!=null?tableColStatsCache.get(colStatsCacheKey).deepCopy():null;
   }
 
   public static synchronized void removeTableColStatsFromCache(String dbName, String tblName) {
@@ -285,7 +285,7 @@ public class SharedCache {
     Partition partCopy = part.deepCopy();
     PartitionWrapper wrapper;
     if (part.getSd()!=null) {
-      byte[] sdHash = HBaseUtils.hashStorageDescriptor(part.getSd(), md);
+      byte[] sdHash = MetaStoreUtils.hashStorageDescriptor(part.getSd(), md);
       StorageDescriptor sd = part.getSd();
       increSd(sd, sdHash);
       partCopy.setSd(null);
@@ -426,7 +426,7 @@ public class SharedCache {
   }
 
   public static synchronized ColumnStatisticsObj getCachedPartitionColStats(String key) {
-    return partitionColStatsCache.get(key);
+    return partitionColStatsCache.get(key)!=null?partitionColStatsCache.get(key).deepCopy():null;
   }
 
   public static synchronized void addPartitionColStatsToCache(String dbName, String tableName,

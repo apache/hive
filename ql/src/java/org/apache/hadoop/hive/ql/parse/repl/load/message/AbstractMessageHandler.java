@@ -21,19 +21,15 @@ import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 abstract class AbstractMessageHandler implements MessageHandler {
   final HashSet<ReadEntity> readEntitySet = new HashSet<>();
   final HashSet<WriteEntity> writeEntitySet = new HashSet<>();
-  final Map<String, Long> tablesUpdated = new HashMap<>(),
-      databasesUpdated = new HashMap<>();
+  final UpdatedMetaDataTracker updatedMetadata = new UpdatedMetaDataTracker();
   final MessageDeserializer deserializer = MessageFactory.getInstance().getDeserializer();
 
   @Override
@@ -47,21 +43,6 @@ abstract class AbstractMessageHandler implements MessageHandler {
   }
 
   @Override
-  public Map<String, Long> tablesUpdated() {
-    return tablesUpdated;
-  }
+  public UpdatedMetaDataTracker getUpdatedMetadata() { return updatedMetadata; }
 
-  @Override
-  public Map<String, Long> databasesUpdated() {
-    return databasesUpdated;
-  }
-
-  ReplicationSpec eventOnlyReplicationSpec(Context forContext) throws SemanticException {
-    String eventId = forContext.dmd.getEventTo().toString();
-    return replicationSpec(eventId, eventId);
-  }
-
-  private ReplicationSpec replicationSpec(String fromId, String toId) throws SemanticException {
-    return new ReplicationSpec(true, false, fromId, toId, false, true, false);
-  }
 }

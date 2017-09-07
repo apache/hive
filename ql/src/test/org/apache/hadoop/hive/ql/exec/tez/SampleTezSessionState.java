@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager.TezSessionPoolSession;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -45,7 +44,7 @@ public class SampleTezSessionState extends TezSessionPoolSession {
   private boolean doAsEnabled;
 
   public SampleTezSessionState(String sessionId, TezSessionPoolManager parent) {
-    super(sessionId, parent);
+    super(sessionId, parent, parent.getExpirationTracker());
     this.sessionId = sessionId;
   }
 

@@ -2,4 +2,4 @@ PREHOOK: query: EXPLAIN FORMATTED SELECT count(1) FROM src
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FORMATTED SELECT count(1) FROM src
 POSTHOOK: type: QUERY
-{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_8"}}}}}}
+{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_7"}}}}}}

@@ -18,9 +18,9 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -42,11 +42,16 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeUtil;
+import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimeString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -74,8 +79,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -264,8 +267,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case INTERVAL_MINUTE_SECOND:
       case INTERVAL_SECOND:
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo, null);
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, null);
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, null);
       }
     } else {
@@ -292,18 +299,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       case DOUBLE:
         return new ExprNodeConstantDesc(TypeInfoFactory.doubleTypeInfo,
             Double.valueOf(((Number) literal.getValue3()).doubleValue()));
-      case DATE: {
-        final Calendar c = (Calendar) literal.getValue();
+      case DATE:
         return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo,
-            new java.sql.Date(c.getTimeInMillis()));
-      }
+            Date.valueOf(literal.getValueAs(DateString.class).toString()));
       case TIME:
-      case TIMESTAMP: {
-        final Calendar c = (Calendar) literal.getValue();
-        final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
         return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
-            new Timestamp(dt.getMillis()));
-      }
+            Timestamp.valueOf(literal.getValueAs(TimeString.class).toString()));
+      case TIMESTAMP:
+        return new ExprNodeConstantDesc(TypeInfoFactory.timestampTypeInfo,
+            Timestamp.valueOf(literal.getValueAs(TimestampString.class).toString()));
       case BINARY:
         return new ExprNodeConstantDesc(TypeInfoFactory.binaryTypeInfo, literal.getValue3());
       case DECIMAL:
@@ -336,8 +340,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
         return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
                 new HiveIntervalDayTime(secsBd));
       }
+      case NULL:
       case OTHER:
       default:
+        if (lType instanceof HiveType && ((HiveType) lType).getTypeClass() == TimestampTZ.class) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.timestampLocalTZTypeInfo, literal.getValue3());
+        }
         return new ExprNodeConstantDesc(TypeInfoFactory.voidTypeInfo, literal.getValue3());
       }
     }

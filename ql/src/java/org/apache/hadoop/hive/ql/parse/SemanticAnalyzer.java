@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -401,10 +402,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  protected void reset(boolean clearPartsCache) {
+  protected void reset(boolean clearCache) {
     super.reset(true);
-    if(clearPartsCache) {
+    if(clearCache) {
       prunedPartitions.clear();
+      if (ctx != null) {
+        ctx.getOpContext().getColStatsCache().clear();
+      }
 
       //When init(true) combine with genResolvedParseTree, it will generate Resolved Parse tree from syntax tree
       //ReadEntity created under these conditions should be all relevant to the syntax tree even the ones without parents
@@ -1498,7 +1502,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 && ast.getChild(0).getType() == HiveParser.TOK_TAB) {
               String fullTableName = getUnescapedName((ASTNode) ast.getChild(0).getChild(0),
                   SessionState.get().getCurrentDatabase());
-              qbp.getInsertOverwriteTables().put(fullTableName, ast);
+              qbp.getInsertOverwriteTables().put(fullTableName.toLowerCase(), ast);
             }
           }
         }
@@ -2152,7 +2156,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(ts.tableHandle.getDbName(),
             ts.tableHandle.getTableName());
           isTableWrittenTo |= (qb.getParseInfo().getInsertOverwriteTables().
-            get(getUnescapedName((ASTNode) ast.getChild(0), ts.tableHandle.getDbName())) != null);
+            get(getUnescapedName((ASTNode) ast.getChild(0), ts.tableHandle.getDbName()).toLowerCase()) != null);
           assert isTableWrittenTo :
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
               name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
@@ -6851,7 +6855,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
         if (destTableIsAcid) {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
-          checkAcidConstraints(qb, table_desc, dest_tab, acidOp);
+          checkAcidConstraints(qb, table_desc, dest_tab);
         }
         if (MetaStoreUtils.isInsertOnlyTable(table_desc.getProperties())) {
           acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
@@ -6862,6 +6866,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             dest_tab.getDbName(), dest_tab.getTableName());
         ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, txnId);
+        // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
+        // deltas and base and leave them up to the cleaner to clean up
+        ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
+            dest_tab.getTableName()) && !destTableIsAcid);
         ltd.setLbCtx(lbCtx);
         loadTableWork.add(ltd);
       } else {
@@ -6915,7 +6923,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
       if (destTableIsAcid) {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
-        checkAcidConstraints(qb, table_desc, dest_tab, acidOp);
+        checkAcidConstraints(qb, table_desc, dest_tab);
       }
       if (MetaStoreUtils.isInsertOnlyTable(dest_part.getTable().getParameters())) {
         acidOp = getAcidType(table_desc.getOutputFileFormatClass(), dest);
@@ -6924,8 +6932,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
       }
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, txnId);
+      // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
+      // deltas and base and leave them up to the cleaner to clean up
       ltd.setReplace(!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-          dest_tab.getTableName()));
+          dest_tab.getTableName()) && !destTableIsAcid);
       ltd.setLbCtx(lbCtx);
 
       loadTableWork.add(ltd);
@@ -7094,7 +7104,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
         dest_path, currentTableId, destTableIsAcid, destTableIsTemporary,
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, txnId, isMmCtas);
+        canBeMerged, dest_tab, txnId, isMmCtas);
     if (isMmCtas) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       tableDesc.setWriter(fileSinkDesc);
@@ -7202,7 +7212,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean destTableIsAcid, boolean destTableIsTemporary,
       boolean destTableIsMaterialization, Path queryTmpdir,
       SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
-      RowSchema fsRS, boolean canBeMerged, Long mmWriteId, boolean isMmCtas) throws SemanticException {
+      RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas) throws SemanticException {
     FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc,
         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
@@ -7225,6 +7235,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       AcidUtils.Operation wt = updating(dest) ? AcidUtils.Operation.UPDATE :
           (deleting(dest) ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
       fileSinkDesc.setWriteType(wt);
+
+      String destTableFullName = dest_tab.getCompleteName().replace('@', '.');
+      Map<String, ASTNode> iowMap = qb.getParseInfo().getInsertOverwriteTables();
+      if (iowMap.containsKey(destTableFullName)) {
+        fileSinkDesc.setInsertOverwrite(true);
+      }
       acidFileSinks.add(fileSinkDesc);
     }
 
@@ -7423,20 +7439,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   // Check constraints on acid tables.  This includes
-  // * no insert overwrites
-  // * no use of vectorization
-  // * turns off reduce deduplication optimization, as that sometimes breaks acid
   // * Check that the table is bucketed
   // * Check that the table is not sorted
   // This method assumes you have already decided that this is an Acid write.  Don't call it if
   // that isn't true.
   private void checkAcidConstraints(QB qb, TableDesc tableDesc,
-                                    Table table, AcidUtils.Operation acidOp) throws SemanticException {
-    String tableName = tableDesc.getTableName();
-    if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
-      LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
-      throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID, tableName);
-    }
+                                    Table table) throws SemanticException {
     /*
     LOG.info("Modifying config values for ACID write");
     conf.setBoolVar(ConfVars.HIVEOPTREDUCEDEDUPLICATION, true);
@@ -7448,13 +7456,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     */
     conf.set(AcidUtils.CONF_ACID_KEY, "true");
 
-    if (!Operation.NOT_ACID.equals(acidOp)) {
-      if (table.getNumBuckets() < 1) {
-        throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, table.getTableName());
-      }
-      if (table.getSortCols() != null && table.getSortCols().size() > 0) {
-        throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
-      }
+    if (table.getSortCols() != null && table.getSortCols().size() > 0) {
+      throw new SemanticException(ErrorMsg.ACID_NO_SORTED_BUCKETS, table.getTableName());
     }
   }
 
@@ -8201,11 +8204,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         join.getNoOuterJoin(), joinCondns, filterMap, joinKeys, null);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
-    // For outer joins, add filters that apply to more than one input
-    if (!join.getNoOuterJoin() && join.getPostJoinFilters().size() != 0) {
+    // Add filters that apply to more than one input
+    if (join.getPostJoinFilters().size() != 0 &&
+            (!join.getNoOuterJoin() ||
+                    HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER))) {
+      LOG.debug("Generate JOIN with post-filtering conditions");
       List<ExprNodeDesc> residualFilterExprs = new ArrayList<ExprNodeDesc>();
       for (ASTNode cond : join.getPostJoinFilters()) {
-        residualFilterExprs.add(genExprNodeDesc(cond, outputRR));
+        residualFilterExprs.add(genExprNodeDesc(cond, outputRR, false, isCBOExecuted()));
       }
       desc.setResidualFilterExprs(residualFilterExprs);
       // Clean post-conditions
@@ -8414,14 +8420,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinContext.put(joinOp, joinTree);
 
     if (joinTree.getPostJoinFilters().size() != 0) {
-      // Safety check for postconditions
       assert joinTree.getNoOuterJoin();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PUSH_RESIDUAL_INNER)) {
+        // Safety check for postconditions
+        throw new SemanticException("Post-filtering conditions should have been added to the JOIN operator");
+      }
       Operator op = joinOp;
       for(ASTNode condn : joinTree.getPostJoinFilters()) {
         op = genFilterPlan(qb, condn, op, false);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated " + op + " with post-filtering conditions after JOIN operator");
-        }
       }
       return op;
     }
@@ -9092,8 +9098,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /** Parses semjoin hints in the query and returns the table names mapped to filter size, or -1 if not specified.
    *  Hints can be in 2 formats
-   *  1. TableName, ColumnName, bloom filter entries
-   *  2. TableName, ColumnName
+   *  1. TableName, ColumnName, Target-TableName, bloom filter entries
+   *  2. TableName, ColumnName, Target-TableName
    *  */
   private Map<String, List<SemiJoinHint>> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
     if (hints == null || hints.size() == 0) return null;
@@ -9129,33 +9135,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     throws SemanticException {
     // Check if there are enough entries in the tree to constitute a hint.
     int numEntriesLeft = args.getChildCount() - curIdx;
-    if (numEntriesLeft < 2) {
+    if (numEntriesLeft < 3) {
       throw new SemanticException("User provided only 1 entry for the hint with alias "
               + args.getChild(curIdx).getText());
     }
 
-    String alias = args.getChild(curIdx++).getText();
+    String source = args.getChild(curIdx++).getText();
     // validate
-    if (StringUtils.isNumeric(alias)) {
-      throw new SemanticException("User provided bloom filter entries when alias is expected");
+    if (StringUtils.isNumeric(source)) {
+      throw new SemanticException("User provided bloom filter entries when source alias is "
+          + "expected. source:" + source);
     }
 
     String colName = args.getChild(curIdx++).getText();
     // validate
     if (StringUtils.isNumeric(colName)) {
-      throw new SemanticException("User provided bloom filter entries when column name is expected");
+      throw new SemanticException("User provided bloom filter entries when column name is "
+          + "expected. colName:" + colName);
+    }
+
+    String target = args.getChild(curIdx++).getText();
+    // validate
+    if (StringUtils.isNumeric(target)) {
+      throw new SemanticException("User provided bloom filter entries when target alias is "
+          + "expected. target: " + target);
     }
 
     Integer number = null;
-    if (numEntriesLeft > 2) {
+    if (numEntriesLeft > 3) {
       // Check if there exists bloom filter size entry
       try {
         number = Integer.parseInt(args.getChild(curIdx).getText());
         curIdx++;
       } catch (NumberFormatException e) { // Ignore
+        LOG.warn("Number format exception when parsing " + number, e);
       }
     }
-    result.computeIfAbsent(alias, value -> new ArrayList<>()).add(new SemiJoinHint(colName, number));
+    result.computeIfAbsent(source, value -> new ArrayList<>()).add(new SemiJoinHint(colName, target, number));
     return curIdx;
   }
 
@@ -10590,10 +10606,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Recurse over the subqueries to fill the subquery part of the plan
     for (String alias : qb.getSubqAliases()) {
       QBExpr qbexpr = qb.getSubqForAlias(alias);
-      Operator operator = genPlan(qb, qbexpr);
+      Operator<?> operator = genPlan(qb, qbexpr);
       aliasToOpInfo.put(alias, operator);
       if (qb.getViewToTabSchema().containsKey(alias)) {
         // we set viewProjectToTableSchema so that we can leverage ColumnPruner.
+        if (operator instanceof LimitOperator) {
+          // If create view has LIMIT operator, this can happen
+          // Fetch parent operator
+          operator = operator.getParentOperators().get(0);
+        }
         if (operator instanceof SelectOperator) {
           if (this.viewProjectToTableSchema == null) {
             this.viewProjectToTableSchema = new LinkedHashMap<>();
@@ -11305,6 +11326,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return genPlan(qb);
   }
 
+  private void removeOBInSubQuery(QBExpr qbExpr) {
+    if (qbExpr == null) {
+      return;
+    }
+
+    if (qbExpr.getOpcode() == QBExpr.Opcode.NULLOP) {
+      QB subQB = qbExpr.getQB();
+      QBParseInfo parseInfo = subQB.getParseInfo();
+      String alias = qbExpr.getAlias();
+      Map<String, ASTNode> destToOrderBy = parseInfo.getDestToOrderBy();
+      Map<String, ASTNode> destToSortBy = parseInfo.getDestToSortBy();
+      final String warning = "WARNING: Order/Sort by without limit in sub query or view [" +
+          alias + "] is removed, as it's pointless and bad for performance.";
+      if (destToOrderBy != null) {
+        for (String dest : destToOrderBy.keySet()) {
+          if (parseInfo.getDestLimit(dest) == null) {
+            removeASTChild(destToOrderBy.get(dest));
+            destToOrderBy.remove(dest);
+            console.printInfo(warning);
+          }
+        }
+      }
+      if (destToSortBy != null) {
+        for (String dest : destToSortBy.keySet()) {
+          if (parseInfo.getDestLimit(dest) == null) {
+            removeASTChild(destToSortBy.get(dest));
+            destToSortBy.remove(dest);
+            console.printInfo(warning);
+          }
+        }
+      }
+    } else {
+      removeOBInSubQuery(qbExpr.getQBExpr1());
+      removeOBInSubQuery(qbExpr.getQBExpr2());
+    }
+  }
+
+  private static void removeASTChild(ASTNode node) {
+    Tree parent = node.getParent();
+    if (parent != null) {
+      parent.deleteChild(node.getChildIndex());
+      node.setParent(null);
+    }
+  }
+
   void analyzeInternal(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     // 1. Generate Resolved Parse tree from syntax tree
     LOG.info("Starting Semantic Analysis");
@@ -11312,6 +11378,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     processPositionAlias(ast);
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
+    }
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
+      for (String alias : qb.getSubqAliases()) {
+        removeOBInSubQuery(qb.getSubqForAlias(alias));
+      }
     }
 
     // 2. Gen OP Tree from resolved Parse Tree
@@ -11401,7 +11473,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
           ArrayList<Transform> transformations = new ArrayList<Transform>();
           transformations.add(new HiveOpConverterPostProc());
-          transformations.add(new Generator());
+          transformations.add(new Generator(postExecHooks));
           for (Transform t : transformations) {
             pCtx = t.transform(pCtx);
           }

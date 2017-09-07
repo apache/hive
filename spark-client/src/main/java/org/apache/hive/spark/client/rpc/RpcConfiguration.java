@@ -19,6 +19,7 @@ package org.apache.hive.spark.client.rpc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,12 +67,13 @@ public final class RpcConfiguration {
   private static final HiveConf DEFAULT_CONF = new HiveConf();
 
   public RpcConfiguration(Map<String, String> config) {
-    this.config = config;
+    // make sure we don't modify the config in RpcConfiguration
+    this.config = Collections.unmodifiableMap(config);
   }
 
   long getConnectTimeoutMs() {
     String value = config.get(HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT.varname);
-    return value != null ? Integer.parseInt(value) : DEFAULT_CONF.getTimeVar(
+    return value != null ? Long.parseLong(value) : DEFAULT_CONF.getTimeVar(
       HiveConf.ConfVars.SPARK_RPC_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS);
   }
 

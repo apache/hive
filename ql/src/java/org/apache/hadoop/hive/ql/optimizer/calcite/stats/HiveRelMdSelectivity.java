@@ -37,6 +37,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
@@ -121,23 +122,30 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     // NDV of the join can not exceed the cardinality of cross join.
     List<JoinLeafPredicateInfo> peLst = jpi.getEquiJoinPredicateElements();
     int noOfPE = peLst.size();
-    double ndvCrossProduct = 1;
+    double ndvEstimate = 1;
     if (noOfPE > 0) {
-      ndvCrossProduct = exponentialBackoff(peLst, colStatMap);
+      boolean isCorrelatedColumns = j.getCluster().getPlanner().getContext().
+          unwrap(HiveConfPlannerContext.class).getIsCorrelatedColumns();
+      if (noOfPE > 1 && isCorrelatedColumns ){
+        ndvEstimate = maxNdvForCorrelatedColumns(peLst, colStatMap);
+      }
+      else {
+        ndvEstimate = exponentialBackoff(peLst, colStatMap);
+      }
 
       if (j instanceof SemiJoin) {
-        ndvCrossProduct = Math.min(mq.getRowCount(j.getLeft()),
-            ndvCrossProduct);
+        ndvEstimate = Math.min(mq.getRowCount(j.getLeft()),
+            ndvEstimate);
       }else if (j instanceof HiveJoin){
-        ndvCrossProduct = Math.min(mq.getRowCount(j.getLeft())
-            * mq.getRowCount(j.getRight()), ndvCrossProduct);
+        ndvEstimate = Math.min(mq.getRowCount(j.getLeft())
+            * mq.getRowCount(j.getRight()), ndvEstimate);
       } else {
         throw new RuntimeException("Unexpected Join type: " + j.getClass().getName());
       }
     }
 
     // 4. Join Selectivity = 1/NDV
-    return (1 / ndvCrossProduct);
+    return (1 / ndvEstimate);
   }
 
   // 3.2 if conjunctive predicate elements are more than one, then walk
@@ -183,6 +191,17 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
       }
     }
     return ndvCrossProduct;
+  }
+
+  // max ndv across all column references from both sides of table
+  protected double maxNdvForCorrelatedColumns(List<JoinLeafPredicateInfo> peLst,
+  ImmutableMap<Integer, Double> colStatMap) {
+    int noOfPE = peLst.size();
+    List<Double> ndvs = new ArrayList<Double>(noOfPE);
+    for (int i = 0; i < noOfPE; i++) {
+      ndvs.add(getMaxNDVForJoinSelectivity(peLst.get(i), colStatMap));
+    }
+    return Collections.max(ndvs);
   }
 
   /*

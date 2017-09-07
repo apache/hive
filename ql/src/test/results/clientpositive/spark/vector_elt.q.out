@@ -23,7 +23,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -33,7 +33,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
                     predicate: (ctinyint > 0) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ((UDFToInteger(ctinyint) % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((UDFToInteger(ctinyint) % 2) + 1), cstring1, cint) (type: string)
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -42,19 +42,19 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumns: [13, 6, 2, 16]
                           selectExpressions: LongColAddLongScalar(col 12, val 1)(children: LongColModuloLongScalar(col 0, val 2)(children: col 0) -> 12:long) -> 13:long, VectorElt(columns [14, 6, 15])(children: LongColAddLongScalar(col 12, val 1)(children: LongColModuloLongScalar(col 0, val 2)(children: col 0) -> 12:long) -> 14:long, col 6, CastLongToString(col 2) -> 15:String) -> 16:string
-                      Statistics: Num rows: 4096 Data size: 125745 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                       Limit
                         Number of rows: 10
                         Limit Vectorization:
                             className: VectorLimitOperator
                             native: true
-                        Statistics: Num rows: 10 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
-                          Statistics: Num rows: 10 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
                           table:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -140,7 +140,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 377237 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]

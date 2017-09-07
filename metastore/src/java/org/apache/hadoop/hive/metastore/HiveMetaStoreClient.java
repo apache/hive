@@ -50,6 +50,7 @@ import java.security.PrivilegedExceptionAction;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.common.ObjectPair;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -60,11 +61,11 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
@@ -91,7 +92,7 @@ import com.google.common.collect.Lists;
  */
 @Public
 @Unstable
-public class HiveMetaStoreClient implements IMetaStoreClient {
+public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
    * implying the usage of some expanded features that require client-side support that this client
@@ -125,10 +126,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private long retryDelaySeconds = 0;
   private final ClientCapabilities version;
 
-  static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
+  static final protected Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClient.class);
 
   public HiveMetaStoreClient(HiveConf conf) throws MetaException {
     this(conf, null, true);
+  }
+
+  public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader) throws MetaException {
+    this(conf, hookLoader, true);
   }
 
   public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
@@ -189,7 +194,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
             throw new IllegalArgumentException("URI: " + s
                 + " does not have a scheme");
           }
-          metastoreUris[i++] = tmpUri;
+          metastoreUris[i++] = new URI(
+              tmpUri.getScheme(),
+              tmpUri.getUserInfo(),
+              HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
+              tmpUri.getPort(),
+              tmpUri.getPath(),
+              tmpUri.getQuery(),
+              tmpUri.getFragment()
+          );
 
         }
         // make metastore URIS random
@@ -358,6 +371,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public void alter_table(String defaultDatabaseName, String tblName, Table table,
+      boolean cascade) throws InvalidOperationException, MetaException, TException {
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    if (cascade) {
+      environmentContext.putToProperties(StatsSetupConst.CASCADE, StatsSetupConst.TRUE);
+    }
+    alter_table_with_environmentContext(defaultDatabaseName, tblName, table, environmentContext);
+  }
+
+  @Override
   public void alter_table_with_environmentContext(String dbname, String tbl_name, Table new_tbl,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
     client.alter_table_with_environment_context(dbname, tbl_name, new_tbl, envContext);
@@ -402,8 +425,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
                 throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH.varname
                     + " Not configured for SSL connection");
               }
-              String trustStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
-                  HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD.varname);
+              String trustStorePassword =
+                  MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
 
               // Create an SSL socket and connect
               transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, trustStorePath, trustStorePassword );
@@ -422,7 +445,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
             // Wrap thrift connection with SASL for secure connection.
             try {
               HadoopThriftAuthBridge.Client authBridge =
-                ShimLoader.getHadoopThriftAuthBridge().createClient();
+                HadoopThriftAuthBridge.getBridge().createClient();
 
               // check if we should use delegation tokens to authenticate
               // the call below gets hold of the tokens if they are set up by hadoop
@@ -666,7 +689,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param partitionSpecs partitions specs of the parent partition to be exchanged
    * @param destDb the db of the destination table
    * @param destinationTableName the destination table name
-   @ @return new partition after exchanging
+   * @return new partition after exchanging
    */
   @Override
   public Partition exchange_partition(Map<String, String> partitionSpecs,
@@ -682,7 +705,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param partitionSpecs partitions specs of the parent partition to be exchanged
    * @param destDb the db of the destination table
    * @param destinationTableName the destination table name
-   @ @return new partitions after exchanging
+   * @return new partitions after exchanging
    */
   @Override
   public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
@@ -1128,6 +1151,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * Recycles the files recursively from the input path to the cmroot directory either by copying or moving it.
+   *
+   * @param request Inputs for path of the data files to be recycled to cmroot and
+   *                isPurge flag when set to true files which needs to be recycled are not moved to Trash
+   * @return Response which is currently void
+   */
+  @Override
+  public CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException {
+    return client.cm_recycle(request);
+  }
+
+  /**
    * @param type
    * @return true if the type is dropped
    * @throws MetaException
@@ -1235,7 +1270,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param db_name the database name
    * @param tbl_name the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @param max_parts the maximum number of partitions to return,
    *    all partitions are returned if -1 is passed
@@ -1508,7 +1543,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param db_name the database name
    * @param tbl_name the table name
    * @param filter the filter string,
-   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    for example "part1 = \"p1_abc\" and part2 &lt;= "\p2_test\"". Filtering can
    *    be done only on string partition keys.
    * @return number of partitions
    * @throws MetaException
@@ -1523,9 +1558,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public void alter_partition(String dbName, String tblName, Partition newPart)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_partition_with_environment_context(dbName, tblName, newPart, null);
+  }
+
+  @Override
   public void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
     client.alter_partition_with_environment_context(dbName, tblName, newPart, environmentContext);
+  }
+
+  @Override
+  public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_partitions_with_environment_context(dbName, tblName, newParts, null);
   }
 
   @Override
@@ -2310,6 +2357,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public CurrentNotificationEventId getCurrentNotificationEventId() throws TException {
     return client.get_current_notificationEventId();
+  }
+
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  @Override
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst)
+          throws TException {
+    return client.get_notification_events_count(rqst);
   }
 
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})

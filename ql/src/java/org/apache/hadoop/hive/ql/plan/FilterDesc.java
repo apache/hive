@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -212,5 +213,16 @@ public class FilterDesc extends AbstractOperatorDesc {
       return null;
     }
     return new FilterOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      FilterDesc otherDesc = (FilterDesc) other;
+      return Objects.equals(getPredicateString(), otherDesc.getPredicateString()) &&
+          Objects.equals(getSampleDescExpr(), otherDesc.getSampleDescExpr()) &&
+          getIsSamplingPred() == otherDesc.getIsSamplingPred();
+    }
+    return false;
   }
 }

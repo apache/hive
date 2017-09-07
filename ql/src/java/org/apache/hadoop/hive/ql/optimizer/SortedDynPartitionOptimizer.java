@@ -206,6 +206,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         if(!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
           throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
         }
+        //HIVE-17328: not sure this is correct... I don't think is gets wrapped in UDFToInteger....
         bucketColumns.add(new ExprNodeColumnDesc(ci));
       } else {
         if (!destTable.getSortCols().isEmpty()) {

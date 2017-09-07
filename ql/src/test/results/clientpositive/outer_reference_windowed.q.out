@@ -189,7 +189,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(35,2))
@@ -303,7 +303,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(35,2))
@@ -473,7 +473,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(35,2))
@@ -647,7 +647,7 @@ STAGE PLANS:
                         arguments: _col2
                         name: sum
                         window function: GenericUDAFSumHiveDecimal
-                        window frame: PRECEDING(MAX)~CURRENT
+                        window frame: RANGE PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sum_window_0 (type: decimal(35,2))
@@ -803,7 +803,7 @@ STAGE PLANS:
                           arguments: _col2
                           name: sum
                           window function: GenericUDAFSumDouble
-                          window frame: PRECEDING(MAX)~CURRENT
+                          window frame: RANGE PRECEDING(MAX)~CURRENT
               Statistics: Num rows: 2 Data size: 19 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: sum_window_0 (type: double)

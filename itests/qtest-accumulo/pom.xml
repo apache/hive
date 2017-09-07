@@ -38,7 +38,8 @@
     <!-- Profile activation clause for accumulo-tests will flip skip.accumulo.tests to false
          as long as -DskipAccumuloTests is not specified -->
     <skip.accumulo.tests>true</skip.accumulo.tests>
-    <accumulo-thrift.version>0.9.0</accumulo-thrift.version>
+    <!-- Must correspond with the Accumulo version specified in the pom -->
+    <accumulo-thrift.version>0.9.1</accumulo-thrift.version>
     <test.dfs.mkdir>-mkdir -p</test.dfs.mkdir>
   </properties>
 

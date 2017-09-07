@@ -1060,6 +1060,13 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           return doReadField(fields[structHelper.nextFieldIndex++]);
         } else {
 
+          // Parse until field separator (currentLevel).
+          fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel);
+          currentFieldLength = fieldEnd - fieldPosition;
+
+          structHelper.nextFieldIndex = 0;
+          boolean result = doReadField(fields[fields.length - 1]);
+
           if (!isEscaped) {
 
             // No parsing necessary -- the end is the parent's end.
@@ -1067,13 +1074,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
             currentEscapeCount = 0;
           } else {
             // We must parse to get the escape count.
-            fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel - 1);
+            parseComplexField(fieldPosition, complexFieldEnd, currentLevel - 1);
           }
 
-          currentFieldLength = complexFieldEnd - fieldPosition;
-
-          structHelper.nextFieldIndex = 0;
-          return doReadField(fields[fields.length - 1]);
+          return result;
         }
       }
     case UNION:

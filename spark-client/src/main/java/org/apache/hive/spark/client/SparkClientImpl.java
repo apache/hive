@@ -55,6 +55,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -86,7 +87,6 @@ class SparkClientImpl implements SparkClient {
 
   private final Map<String, String> conf;
   private final HiveConf hiveConf;
-  private final AtomicInteger childIdGenerator;
   private final Thread driverThread;
   private final Map<String, JobHandleImpl<?>> jobs;
   private final Rpc driverRpc;
@@ -96,7 +96,6 @@ class SparkClientImpl implements SparkClient {
   SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf) throws IOException, SparkException {
     this.conf = conf;
     this.hiveConf = hiveConf;
-    this.childIdGenerator = new AtomicInteger();
     this.jobs = Maps.newConcurrentMap();
 
     String clientId = UUID.randomUUID().toString();
@@ -108,19 +107,25 @@ class SparkClientImpl implements SparkClient {
       // The RPC server will take care of timeouts here.
       this.driverRpc = rpcServer.registerClient(clientId, secret, protocol).get();
     } catch (Throwable e) {
+      String errorMsg = null;
       if (e.getCause() instanceof TimeoutException) {
-        LOG.error("Timed out waiting for client to connect.\nPossible reasons include network " +
+        errorMsg = "Timed out waiting for client to connect.\nPossible reasons include network " +
             "issues, errors in remote driver or the cluster has no available resources, etc." +
-            "\nPlease check YARN or Spark driver's logs for further information.", e);
+            "\nPlease check YARN or Spark driver's logs for further information.";
+      } else if (e.getCause() instanceof InterruptedException) {
+        errorMsg = "Interruption occurred while waiting for client to connect.\nPossibly the Spark session is closed " +
+            "such as in case of query cancellation." +
+            "\nPlease refer to HiveServer2 logs for further information.";
       } else {
-        LOG.error("Error while waiting for client to connect.", e);
+        errorMsg = "Error while waiting for client to connect.";
       }
+      LOG.error(errorMsg, e);
       driverThread.interrupt();
       try {
         driverThread.join();
       } catch (InterruptedException ie) {
         // Give up.
-        LOG.debug("Interrupted before driver thread was finished.");
+        LOG.warn("Interrupted before driver thread was finished.", ie);
       }
       throw Throwables.propagate(e);
     }
@@ -406,22 +411,24 @@ class SparkClientImpl implements SparkClient {
         String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
             "0.0.0.0");
         String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
-          List<String> kinitArgv = Lists.newLinkedList();
-          kinitArgv.add("kinit");
-          kinitArgv.add(principal);
-          kinitArgv.add("-k");
-          kinitArgv.add("-t");
-          kinitArgv.add(keyTabFile + ";");
-          kinitArgv.addAll(argv);
-          argv = kinitArgv;
-        } else {
-          // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
-          // support the possible delegation token renewal in Spark
-          argv.add("--principal");
-          argv.add(principal);
-          argv.add("--keytab");
-          argv.add(keyTabFile);
+        if (StringUtils.isNotBlank(principal) && StringUtils.isNotBlank(keyTabFile)) {
+          if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+            List<String> kinitArgv = Lists.newLinkedList();
+            kinitArgv.add("kinit");
+            kinitArgv.add(principal);
+            kinitArgv.add("-k");
+            kinitArgv.add("-t");
+            kinitArgv.add(keyTabFile + ";");
+            kinitArgv.addAll(argv);
+            argv = kinitArgv;
+          } else {
+            // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
+            // support the possible delegation token renewal in Spark
+            argv.add("--principal");
+            argv.add(principal);
+            argv.add("--keytab");
+            argv.add(keyTabFile);
+          }
         }
       }
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
@@ -481,10 +488,10 @@ class SparkClientImpl implements SparkClient {
       }
 
       final Process child = pb.start();
-      int childId = childIdGenerator.incrementAndGet();
+      String threadName = Thread.currentThread().getName();
       final List<String> childErrorLog = Collections.synchronizedList(new ArrayList<String>());
-      redirect("stdout-redir-" + childId, new Redirector(child.getInputStream()));
-      redirect("stderr-redir-" + childId, new Redirector(child.getErrorStream(), childErrorLog));
+      redirect("RemoteDriver-stdout-redir-" + threadName, new Redirector(child.getInputStream()));
+      redirect("RemoteDriver-stderr-redir-" + threadName, new Redirector(child.getErrorStream(), childErrorLog));
 
       runnable = new Runnable() {
         @Override
@@ -501,16 +508,19 @@ class SparkClientImpl implements SparkClient {
                 }
               }
 
-              rpcServer.cancelClient(clientId,
-                  "Child process exited before connecting back with error log " + errStr.toString());
               LOG.warn("Child process exited with code {}", exitCode);
+              rpcServer.cancelClient(clientId,
+                  "Child process (spark-submit) exited before connecting back with error log " + errStr.toString());
             }
           } catch (InterruptedException ie) {
-            LOG.warn("Waiting thread interrupted, killing child process.");
+            LOG.warn("Thread waiting on the child process (spark-submit) is interrupted, killing the child process.");
+            rpcServer.cancelClient(clientId, "Thread waiting on the child porcess (spark-submit) is interrupted");
             Thread.interrupted();
             child.destroy();
           } catch (Exception e) {
-            LOG.warn("Exception while waiting for child process.", e);
+            String errMsg = "Exception while waiting for child process (spark-submit)";
+            LOG.warn(errMsg, e);
+            rpcServer.cancelClient(clientId, errMsg);
           }
         }
       };

@@ -28,7 +28,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONDropTableMessage extends DropTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table;
+  String server, servicePrincipal, db, table, tableType;
 
   @JsonProperty
   Long timestamp;
@@ -41,10 +41,16 @@ public class JSONDropTableMessage extends DropTableMessage {
 
   public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
       Long timestamp) {
+    this(server, servicePrincipal, db, table, null, timestamp);
+  }
+
+  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table,
+      String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
     this.table = table;
+    this.tableType = tableType;
     this.timestamp = timestamp;
     checkValid();
   }
@@ -52,6 +58,11 @@ public class JSONDropTableMessage extends DropTableMessage {
   @Override
   public String getTable() {
     return table;
+  }
+
+  @Override
+  public String getTableType() {
+    if (tableType != null) return tableType; else return "";
   }
 
   @Override

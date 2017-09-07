@@ -99,6 +99,9 @@ public class KeyWrapperFactory {
 
     @Override
     public boolean equals(Object obj) {
+      if (!(obj instanceof ListKeyWrapper)) {
+        return false;
+      }
       Object[] copied_in_hashmap = ((ListKeyWrapper) obj).keys;
       return equalComparer.areEqual(copied_in_hashmap, keys);
     }
@@ -182,6 +185,9 @@ public class KeyWrapperFactory {
 
     @Override
     public boolean equals(Object other) {
+      if (!(other instanceof TextKeyWrapper)) {
+        return false;
+      }
       Object obj = ((TextKeyWrapper) other).key;
       Text t1;
       Text t2;

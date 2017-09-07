@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.slf4j.Logger;
@@ -520,7 +521,10 @@ public class RowContainer<ROW extends List<Object>>
 
       String suffix = ".tmp";
       if (this.keyObject != null) {
-        suffix = "." + this.keyObject.toString() + suffix;
+        String keyObjectStr = this.keyObject.toString();
+        String md5Str = DigestUtils.md5Hex(keyObjectStr.toString());
+        LOG.info("Using md5Str: " + md5Str + " for keyObject: " + keyObjectStr);
+        suffix = "." + md5Str + suffix;
       }
 
       parentDir = FileUtils.createLocalDirsTempFile(spillFileDirs, "hive-rowcontainer", "", true);
@@ -609,5 +613,9 @@ public class RowContainer<ROW extends List<Object>>
 
   protected int getLastActualSplit() {
     return actualSplitNum - 1;
+  }
+
+  public int getNumFlushedBlocks() {
+    return numFlushedBlocks;
   }
 }

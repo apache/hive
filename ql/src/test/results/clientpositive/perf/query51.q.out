@@ -175,11 +175,7 @@ Stage-0
                                       <-Map 7 [SIMPLE_EDGE]
                                         SHUFFLE [RS_27]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_25] (rows=8116 width=1119)
-                                            Output:["_col0","_col1"]
-                                            Filter Operator [FIL_62] (rows=8116 width=1119)
-                                              predicate:(d_month_seq BETWEEN 1212 AND 1223 and d_date_sk is not null)
-                                               Please refer to the previous TableScan [TS_3]
+                                           Please refer to the previous Select Operator [SEL_5]
                                       <-Map 10 [SIMPLE_EDGE]
                                         SHUFFLE [RS_26]
                                           PartitionCols:_col0

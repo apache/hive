@@ -413,7 +413,7 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -428,7 +428,7 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -587,7 +587,7 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1
@@ -602,7 +602,7 @@ STAGE PLANS:
             Union
               Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: count(1)
+                aggregations: count()
                 keys: _col0 (type: string)
                 mode: hash
                 outputColumnNames: _col0, _col1

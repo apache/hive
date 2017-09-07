@@ -52,20 +52,25 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Argument
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFAvgTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountMerge;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFStdPopTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFStdSampTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumDecimal;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFVarPopTimestamp;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFVarSampTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFSumTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalFinal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDecimalPartial2;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgDoubleComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgLongComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgPartial2;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFAvgTimestampComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMaxLong;
@@ -77,24 +82,49 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinString;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFMinTimestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDecimalComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopDoubleComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopLongComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdPopTimestampComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDecimalComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampDoubleComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampLongComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFStdSampTimestampComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPartial2;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDecimalComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopDoubleComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLongComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopTimestampComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDecimal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDecimalComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDoubleComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLongComplete;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampTimestamp;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampTimestampComplete;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -102,7 +132,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
@@ -126,8 +155,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.common.util.DateUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -195,6 +222,7 @@ public class VectorizationContext {
       projectedColumns.add(i);
       projectionColumnMap.put(projectionColumnNames.get(i), i);
     }
+
     int firstOutputColumnIndex = projectedColumns.size();
     this.ocm = new OutputColumnManager(firstOutputColumnIndex);
     this.firstOutputColumnIndex = firstOutputColumnIndex;
@@ -406,7 +434,7 @@ public class VectorizationContext {
     return udfsNeedingImplicitDecimalCast.contains(udfClass);
   }
 
-  protected int getInputColumnIndex(String name) throws HiveException {
+  public int getInputColumnIndex(String name) throws HiveException {
     if (name == null) {
       throw new HiveException("Null column name");
     }
@@ -438,7 +466,7 @@ public class VectorizationContext {
 
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
 
-    int allocateOutputColumn(TypeInfo typeInfo) throws HiveException {
+    int allocateOutputColumn(TypeInfo typeInfo) {
         if (initialOutputCol < 0) {
           // This is a test calling.
           return 0;
@@ -499,7 +527,7 @@ public class VectorizationContext {
     }
   }
 
-  public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
+  public int allocateScratchColumn(TypeInfo typeInfo) {
     return ocm.allocateOutputColumn(typeInfo);
   }
 
@@ -2322,13 +2350,10 @@ public class VectorizationContext {
     return createVectorExpression(cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
   }
 
-  private boolean isColumnOrNonNullConst(ExprNodeDesc exprNodeDesc) {
-    if (exprNodeDesc instanceof ExprNodeColumnDesc) {
-      return true;
-    }
+  private boolean isNullConst(ExprNodeDesc exprNodeDesc) {
     if (exprNodeDesc instanceof ExprNodeConstantDesc) {
       String typeString = exprNodeDesc.getTypeString();
-      if (!typeString.equalsIgnoreCase("void")) {
+      if (typeString.equalsIgnoreCase("void")) {
         return true;
       }
     }
@@ -2341,33 +2366,47 @@ public class VectorizationContext {
     if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
       return null;
     }
-    if (childExpr.size() != 3) {
-      // For now, we only optimize the 2 value case.
-      return null;
+    final int size = childExpr.size();
+
+    final ExprNodeDesc whenDesc = childExpr.get(0);
+    final ExprNodeDesc thenDesc = childExpr.get(1);
+    final ExprNodeDesc elseDesc;
+
+    if (size == 2) {
+      elseDesc = new ExprNodeConstantDesc(returnType, null);
+    } else if (size == 3) {
+      elseDesc = childExpr.get(2);
+    } else {
+      final GenericUDFWhen udfWhen = new GenericUDFWhen();
+      elseDesc = new ExprNodeGenericFuncDesc(returnType, udfWhen, udfWhen.getUdfName(),
+          childExpr.subList(2, childExpr.size()));
     }
 
-    /*
-     * When we have 2 simple values:
-     *                          CASE WHEN boolExpr THEN column | const ELSE column | const END
-     * then we can convert to:        IF (boolExpr THEN column | const ELSE column | const)
-     */
-    // CONSIDER: Adding a version of IfExpr* than can handle a non-column/const expression in the
-    //           THEN or ELSE.
-    ExprNodeDesc exprNodeDesc1 = childExpr.get(1);
-    ExprNodeDesc exprNodeDesc2 = childExpr.get(2);
-    if (isColumnOrNonNullConst(exprNodeDesc1) &&
-        isColumnOrNonNullConst(exprNodeDesc2)) {
-      // Yes.
-      GenericUDFIf genericUDFIf = new GenericUDFIf();
-      return
-          getVectorExpressionForUdf(
-            genericUDFIf,
-            GenericUDFIf.class,
-            childExpr,
-            mode,
-            returnType);
+    if (isNullConst(thenDesc)) {
+      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
+      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+      final VectorExpression resultExpr = new IfExprNullColumn(
+          whenExpr.getOutputColumn(), elseExpr.getOutputColumn(),
+          ocm.allocateOutputColumn(returnType));
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, elseExpr});
+      resultExpr.setOutputType(returnType.getTypeName());
+      return resultExpr;
     }
-    return null;   // Not handled by vector classes yet.
+    if (isNullConst(elseDesc)) {
+      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
+      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
+      final VectorExpression resultExpr = new IfExprColumnNull(
+          whenExpr.getOutputColumn(), thenExpr.getOutputColumn(),
+          ocm.allocateOutputColumn(returnType));
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, thenExpr});
+      resultExpr.setOutputType(returnType.getTypeName());
+      return resultExpr;
+    }
+    final GenericUDFIf genericUDFIf = new GenericUDFIf();
+    final List<ExprNodeDesc> ifChildExpr = Arrays.<ExprNodeDesc>asList(whenDesc, thenDesc, elseDesc);
+    final ExprNodeGenericFuncDesc exprNodeDesc =
+        new ExprNodeGenericFuncDesc(returnType, genericUDFIf, "if", ifChildExpr);
+    return getVectorExpression(exprNodeDesc, mode);
   }
 
   /*
@@ -2635,13 +2674,19 @@ public class VectorizationContext {
     }
   }
 
-  static String getScratchName(TypeInfo typeInfo) throws HiveException {
+  static String getScratchName(TypeInfo typeInfo) {
     // For now, leave DECIMAL precision/scale in the name so DecimalColumnVector scratch columns
     // don't need their precision/scale adjusted...
     if (typeInfo.getCategory() == Category.PRIMITIVE &&
         ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
       return typeInfo.getTypeName();
     }
+
+    // And, for Complex Types, also leave the children types in place...
+    if (typeInfo.getCategory() != Category.PRIMITIVE) {
+      return typeInfo.getTypeName();
+    }
+
     Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
     return columnVectorType.name().toLowerCase();
   }
@@ -2812,6 +2857,13 @@ public class VectorizationContext {
     add(new AggregateDefinition("count",       ArgumentType.INT_FAMILY,                      Mode.PARTIAL2,     VectorUDAFCountMerge.class));
     add(new AggregateDefinition("count",       ArgumentType.INT_FAMILY,                      Mode.FINAL,        VectorUDAFCountMerge.class));
 
+    // TIMESTAMP SUM takes a TimestampColumnVector as input for PARTIAL1 and COMPLETE.
+    // But the output is a double.
+    add(new AggregateDefinition("sum",         ArgumentType.TIMESTAMP,                       Mode.PARTIAL1,     VectorUDAFSumTimestamp.class));
+    add(new AggregateDefinition("sum",         ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFSumTimestamp.class));
+    add(new AggregateDefinition("sum",         ArgumentType.TIMESTAMP,                       Mode.PARTIAL2,     VectorUDAFSumDouble.class));
+    add(new AggregateDefinition("sum",         ArgumentType.TIMESTAMP,                       Mode.FINAL,        VectorUDAFSumDouble.class));
+
     // Since the partial aggregation produced by AVG is a STRUCT with count and sum and the
     // STRUCT data type isn't vectorized yet, we currently only support PARTIAL1.  When we do
     // support STRUCTs for average partial aggregation, we'll need 4 variations:
@@ -2821,12 +2873,29 @@ public class VectorizationContext {
     //   FINAL         STRUCT Average Partial Aggregation   --> Full Aggregation
     //   COMPLETE      Original data                        --> Full Aggregation
     //
+    // NOTE: Since we do average of timestamps internally as double, we do not need a VectorUDAFAvgTimestampPartial2.
+    //
     add(new AggregateDefinition("avg",         ArgumentType.INT_FAMILY,                      Mode.PARTIAL1,     VectorUDAFAvgLong.class));
     add(new AggregateDefinition("avg",         ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL1,     VectorUDAFAvgDouble.class));
     add(new AggregateDefinition("avg",         ArgumentType.DECIMAL,                         Mode.PARTIAL1,     VectorUDAFAvgDecimal.class));
     add(new AggregateDefinition("avg",         ArgumentType.TIMESTAMP,                       Mode.PARTIAL1,     VectorUDAFAvgTimestamp.class));
 
-    // We haven't had a chance to examine the VAR* and STD* area and expand it beyond PARTIAL1.
+    // (PARTIAL2 FLOAT_FAMILY covers INT_FAMILY and TIMESTAMP because it is:
+    //    STRUCT Average Partial Aggregation   --> STRUCT Average Partial Aggregation
+    add(new AggregateDefinition("avg",         ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFAvgPartial2.class));
+    add(new AggregateDefinition("avg",         ArgumentType.DECIMAL,                         Mode.PARTIAL2,     VectorUDAFAvgDecimalPartial2.class));
+
+    // (FINAL FLOAT_FAMILY covers INT_FAMILY and TIMESTAMP)
+    add(new AggregateDefinition("avg",         ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFAvgFinal.class));
+    add(new AggregateDefinition("avg",         ArgumentType.DECIMAL,                         Mode.FINAL,        VectorUDAFAvgDecimalFinal.class));
+    add(new AggregateDefinition("avg",         ArgumentType.TIMESTAMP,                       Mode.FINAL,        VectorUDAFAvgFinal.class));
+
+    add(new AggregateDefinition("avg",         ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFAvgLongComplete.class));
+    add(new AggregateDefinition("avg",         ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFAvgDoubleComplete.class));
+    add(new AggregateDefinition("avg",         ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFAvgDecimalComplete.class));
+    add(new AggregateDefinition("avg",         ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFAvgTimestampComplete.class));
+
+    // We haven't had a chance to examine the VAR* and STD* area and expand it beyond PARTIAL1 and COMPLETE.
     add(new AggregateDefinition("variance",    ArgumentType.INT_FAMILY,                      Mode.PARTIAL1,     VectorUDAFVarPopLong.class));
     add(new AggregateDefinition("var_pop",     ArgumentType.INT_FAMILY,                      Mode.PARTIAL1,     VectorUDAFVarPopLong.class));
     add(new AggregateDefinition("variance",    ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL1,     VectorUDAFVarPopDouble.class));
@@ -2856,6 +2925,52 @@ public class VectorizationContext {
     add(new AggregateDefinition("stddev_samp", ArgumentType.DECIMAL,                         Mode.PARTIAL1,     VectorUDAFStdSampDecimal.class));
     add(new AggregateDefinition("stddev_samp", ArgumentType.TIMESTAMP,                       Mode.PARTIAL1,     VectorUDAFStdSampTimestamp.class));
 
+    add(new AggregateDefinition("variance",    ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFVarPopLongComplete.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFVarPopLongComplete.class));
+    add(new AggregateDefinition("variance",    ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFVarPopDoubleComplete.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFVarPopDoubleComplete.class));
+    add(new AggregateDefinition("variance",    ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFVarPopDecimalComplete.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFVarPopDecimalComplete.class));
+    add(new AggregateDefinition("variance",    ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFVarPopTimestampComplete.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFVarPopTimestampComplete.class));
+    add(new AggregateDefinition("var_samp",    ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFVarSampLongComplete.class));
+    add(new AggregateDefinition("var_samp" ,   ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFVarSampDoubleComplete.class));
+    add(new AggregateDefinition("var_samp" ,   ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFVarSampDecimalComplete.class));
+    add(new AggregateDefinition("var_samp" ,   ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFVarSampTimestampComplete.class));
+    add(new AggregateDefinition("std",         ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFStdPopLongComplete.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFStdPopLongComplete.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFStdPopLongComplete.class));
+    add(new AggregateDefinition("std",         ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFStdPopDoubleComplete.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFStdPopDoubleComplete.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFStdPopDoubleComplete.class));
+    add(new AggregateDefinition("std",         ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFStdPopDecimalComplete.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFStdPopDecimalComplete.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFStdPopDecimalComplete.class));
+    add(new AggregateDefinition("std",         ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFStdPopTimestampComplete.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFStdPopTimestampComplete.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFStdPopTimestampComplete.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.INT_FAMILY,                      Mode.COMPLETE,     VectorUDAFStdSampLongComplete.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.FLOAT_FAMILY,                    Mode.COMPLETE,     VectorUDAFStdSampDoubleComplete.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.DECIMAL,                         Mode.COMPLETE,     VectorUDAFStdSampDecimalComplete.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.TIMESTAMP,                       Mode.COMPLETE,     VectorUDAFStdSampTimestampComplete.class));
+
+    // (PARTIAL2L FLOAT_FAMILY covers INT_FAMILY, DECIMAL, and TIMESTAMP)
+    add(new AggregateDefinition("variance",    ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("var_samp",    ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("std",         ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.FLOAT_FAMILY,                    Mode.PARTIAL2,     VectorUDAFVarPartial2.class));
+
+    add(new AggregateDefinition("variance",    ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFVarPopFinal.class));
+    add(new AggregateDefinition("var_pop",     ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFVarPopFinal.class));
+    add(new AggregateDefinition("var_samp",    ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFVarSampFinal.class));
+    add(new AggregateDefinition("std",         ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFStdPopFinal.class));
+    add(new AggregateDefinition("stddev",      ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFStdPopFinal.class));
+    add(new AggregateDefinition("stddev_pop",  ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFStdPopFinal.class));
+    add(new AggregateDefinition("stddev_samp", ArgumentType.FLOAT_FAMILY,                    Mode.FINAL,        VectorUDAFStdSampFinal.class));
+
     // UDAFBloomFilter. Original data is one type, partial/final is another,
     // so this requires 2 aggregation classes (partial1/complete), (partial2/final)
     add(new AggregateDefinition("bloom_filter", ArgumentType.ALL_FAMILY,                     Mode.PARTIAL1,     VectorUDAFBloomFilter.class));
@@ -2878,16 +2993,42 @@ public class VectorizationContext {
 
     String aggregateName = desc.getGenericUDAFName();
     VectorExpressionDescriptor.ArgumentType inputType = VectorExpressionDescriptor.ArgumentType.NONE;
+    GenericUDAFEvaluator.Mode udafEvaluatorMode = desc.getMode();
 
     if (paramDescList.size() > 0) {
       ExprNodeDesc inputExpr = paramDescList.get(0);
-      inputType = VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(inputExpr.getTypeString());
-      if (inputType == VectorExpressionDescriptor.ArgumentType.NONE) {
-        throw new HiveException("No vector argument type for Hive type name " + inputExpr.getTypeString());
+      TypeInfo inputTypeInfo = inputExpr.getTypeInfo();
+      if (inputTypeInfo.getCategory() == Category.STRUCT) {
+
+        // Must be AVG or one of the variance aggregations doing PARTIAL2 or FINAL.
+        // E.g. AVG PARTIAL2 and FINAL accept struct<count:bigint,sum:double,input:double>
+        if (udafEvaluatorMode != GenericUDAFEvaluator.Mode.PARTIAL2 &&
+            udafEvaluatorMode != GenericUDAFEvaluator.Mode.FINAL) {
+          throw new HiveException("Input expression Hive type name " + inputExpr.getTypeString() + " and group by mode is " + udafEvaluatorMode.name() +
+              " -- expected PARTIAL2 or FINAL");
+        }
+        GenericUDAFEvaluator evaluator = desc.getGenericUDAFEvaluator();
+
+        // UNDONE: What about AVG FINAL TIMESTAMP?
+        if (evaluator instanceof GenericUDAFAverage.GenericUDAFAverageEvaluatorDouble ||
+            evaluator instanceof GenericUDAFVariance.GenericUDAFVarianceEvaluator) {
+          inputType = VectorExpressionDescriptor.ArgumentType.FLOAT_FAMILY;
+        } else if (evaluator instanceof GenericUDAFAverage.GenericUDAFAverageEvaluatorDecimal) {
+          inputType = VectorExpressionDescriptor.ArgumentType.DECIMAL;
+        } else {
+          // Nothing else supported yet...
+          throw new HiveException("Evaluator " + evaluator.getClass().getName() + " not supported");
+        }
+      } else {
+        String inputExprTypeString = inputTypeInfo.getTypeName();
+
+        inputType = VectorExpressionDescriptor.ArgumentType.fromHiveTypeName(inputExpr.getTypeString());
+        if (inputType == VectorExpressionDescriptor.ArgumentType.NONE) {
+          throw new HiveException("No vector argument type for Hive type name " + inputExpr.getTypeString());
+        }
       }
     }
 
-    GenericUDAFEvaluator.Mode udafEvaluatorMode = desc.getMode();
     for (AggregateDefinition aggDef : aggregatesDefinition) {
       if (aggregateName.equalsIgnoreCase(aggDef.getName()) &&
           ((aggDef.getType() == VectorExpressionDescriptor.ArgumentType.NONE &&
@@ -2904,14 +3045,14 @@ public class VectorizationContext {
         try
         {
           Constructor<? extends VectorAggregateExpression> ctor =
-              aggClass.getConstructor(VectorExpression.class);
+              aggClass.getConstructor(VectorExpression.class, GenericUDAFEvaluator.Mode.class);
           VectorAggregateExpression aggExpr = ctor.newInstance(
-              vectorParams.length > 0 ? vectorParams[0] : null);
+              vectorParams.length > 0 ? vectorParams[0] : null, udafEvaluatorMode);
           aggExpr.init(desc);
           return aggExpr;
         } catch (Exception e) {
           throw new HiveException("Internal exception for vector aggregate : \"" +
-               aggregateName + "\" for type: \"" + inputType + "", e);
+               aggregateName + "\" for type: \"" + inputType + "\": " + getStackTraceAsSingleLine(e));
         }
       }
     }

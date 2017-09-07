@@ -38,7 +38,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -279,7 +288,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   private ZooKeeperHiveLock lock (HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, boolean parentCreated) throws LockException {
-    LOG.debug("Acquiring lock for {} with mode {}", key.getName(),
+    LOG.debug("Acquiring lock for {} with mode {} {}", key.getName(), mode,
         key.getData().getLockMode());
 
     int tryNum = 0;

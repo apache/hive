@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -26,7 +27,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.convert.DataWritableRecordConverter;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.ql.optimizer.NestedColumnFieldPruningUtils;
@@ -59,9 +59,9 @@ import org.apache.parquet.schema.Types;
  *
  */
 public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
+
   public static final String HIVE_TABLE_AS_PARQUET_SCHEMA = "HIVE_TABLE_SCHEMA";
   public static final String PARQUET_COLUMN_INDEX_ACCESS = "parquet.column.index.access";
-
   private TypeInfo hiveTypeInfo;
   /**
    * From a string which columns names (including hive column), return a list
@@ -349,11 +349,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     Map<String, String> contextMetadata = new HashMap<String, String>();
     boolean indexAccess = configuration.getBoolean(PARQUET_COLUMN_INDEX_ACCESS, false);
 
-    // Adds the PARQUET_INT96_WRITE_ZONE_PROPERTY value to the metadata object so that it passes the timezone
-    // to the Parquet readers. PARQUET_INT96_WRITE_ZONE_PROPERTY is set on ParquetRecordReaderWrapper.
-    contextMetadata.put(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
-        configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY));
-
     if (columnNames != null) {
       List<String> columnNamesList = getColumnNames(columnNames);
       String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
@@ -407,6 +402,16 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   public RecordMaterializer<ArrayWritable> prepareForRead(final Configuration configuration,
       final Map<String, String> keyValueMetaData, final MessageType fileSchema,
           final org.apache.parquet.hadoop.api.ReadSupport.ReadContext readContext) {
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), readContext.getReadSupportMetadata(), hiveTypeInfo);
+    final Map<String, String> metadata = readContext.getReadSupportMetadata();
+    if (metadata == null) {
+      throw new IllegalStateException("ReadContext not initialized properly. " +
+        "Don't know the Hive Schema.");
+    }
+    String key = HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname;
+    if (!metadata.containsKey(key)) {
+      metadata.put(key, String.valueOf(HiveConf.getBoolVar(
+        configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)));
+    }
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
   }
 }

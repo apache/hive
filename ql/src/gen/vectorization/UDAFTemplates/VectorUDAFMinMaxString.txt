@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -92,22 +93,13 @@ public class <ClassName> extends VectorAggregateExpression {
 
     }
 
-    private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
     transient private Text result;
 
-    public <ClassName>(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    public <ClassName>() {
-      super();
+    private void init() {
       result = new Text();
     }
 
@@ -120,7 +112,7 @@ public class <ClassName> extends VectorAggregateExpression {
       return myagg;
     }
 
-@Override
+    @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex,
@@ -404,15 +396,6 @@ public class <ClassName> extends VectorAggregateExpression {
 
     @Override
     public void init(AggregationDesc desc) throws HiveException {
-      // No-op
-    }
-
-    public VectorExpression getInputExpression() {
-      return inputExpression;
-    }
-
-    public void setInputExpression(VectorExpression inputExpression) {
-      this.inputExpression = inputExpression;
+      init();
     }
 }
-

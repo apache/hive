@@ -91,21 +91,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -293,7 +293,7 @@ STAGE PLANS:
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -563,21 +563,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -738,21 +738,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: lag_window_2
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -925,21 +925,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: lag_window_2
                               arguments: _col2, 1, _col2
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1409,7 +1409,7 @@ STAGE PLANS:
                               arguments: _col1, _col5
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -1580,21 +1580,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -1751,21 +1751,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -1982,21 +1982,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -2163,13 +2163,13 @@ STAGE PLANS:
                               arguments: _col5
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: sum_window_1
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(2)~FOLLOWING(2)
+                              window frame: ROWS PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), count_window_0 (type: bigint), round(sum_window_1, 2) (type: double)
@@ -2373,33 +2373,33 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: count_window_2
                               arguments: _col1
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: sum_window_3
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                             window function definition
                               alias: lag_window_4
                               arguments: _col5, 1, _col5
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 28 Data size: 3461 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -2729,7 +2729,7 @@ STAGE PLANS:
                               arguments: _col2
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(2)~CURRENT
+                              window frame: ROWS PRECEDING(2)~CURRENT
                   Statistics: Num rows: 13 Data size: 1573 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), round(sum_window_0, 2) (type: double)
@@ -2914,21 +2914,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col7
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
@@ -2966,7 +2966,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(5)~CURRENT
+                              window frame: RANGE PRECEDING(5)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: sum_window_0 (type: bigint), _col1 (type: string), _col2 (type: string), _col5 (type: int)
@@ -3002,28 +3002,28 @@ STAGE PLANS:
                               arguments: _col3, _col2
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_2
                               arguments: _col3, _col2
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: cume_dist_window_3
                               arguments: _col3, _col2
                               name: cume_dist
                               window function: GenericUDAFCumeDistEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: first_value_window_4
                               arguments: _col6, true
                               name: first_value
                               window function: GenericUDAFFirstValueEvaluator
-                              window frame: PRECEDING(2)~FOLLOWING(2)
+                              window frame: ROWS PRECEDING(2)~FOLLOWING(2)
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col3 (type: string), _col2 (type: string), _col6 (type: int), UDFToInteger(round(_col0, 1)) (type: int), rank_window_1 (type: int), dense_rank_window_2 (type: int), cume_dist_window_3 (type: double), first_value_window_4 (type: int)
@@ -3402,21 +3402,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -3666,21 +3666,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -3906,21 +3906,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -4183,21 +4183,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint)
@@ -4442,21 +4442,21 @@ STAGE PLANS:
                               arguments: _col2, _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col2, _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: ROWS PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)
@@ -4688,21 +4688,21 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: dense_rank_window_1
                               arguments: _col1
                               name: dense_rank
                               window function: GenericUDAFDenseRankEvaluator
-                              window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: PRECEDING(MAX)~CURRENT
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), rank_window_0 (type: int), dense_rank_window_1 (type: int), _col5 (type: int), sum_window_2 (type: bigint), sum_window_2 (type: bigint)

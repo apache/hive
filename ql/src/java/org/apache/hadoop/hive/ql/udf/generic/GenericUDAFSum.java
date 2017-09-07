@@ -211,20 +211,35 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new HiveDecimalWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      // The output precision is 10 greater than the input which should cover at least
-      // 10b rows. The scale is the same as the input.
-      DecimalTypeInfo outputTypeInfo = null;
+
+      final DecimalTypeInfo outputTypeInfo;
       if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
-        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputOI.precision() + 10);
-        outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(precision, inputOI.scale());
+        outputTypeInfo = getOutputDecimalTypeInfoForSum(inputOI.precision(), inputOI.scale(), mode);
       } else {
+        // No change.
         outputTypeInfo = (DecimalTypeInfo) inputOI.getTypeInfo();
       }
+
       ObjectInspector oi = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(outputTypeInfo);
       outputOI = (PrimitiveObjectInspector) ObjectInspectorUtils.getStandardObjectInspector(
           oi, ObjectInspectorCopyOption.JAVA);
 
       return oi;
+    }
+
+    public static DecimalTypeInfo getOutputDecimalTypeInfoForSum(final int inputPrecision,
+        int inputScale, Mode mode) {
+
+      // The output precision is 10 greater than the input which should cover at least
+      // 10b rows. The scale is the same as the input.
+      DecimalTypeInfo outputTypeInfo = null;
+      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputPrecision + 10);
+        outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(precision, inputScale);
+      } else {
+        outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(inputPrecision, inputScale);
+      }
+      return outputTypeInfo;
     }
 
     /** class for storing decimal sum value. */

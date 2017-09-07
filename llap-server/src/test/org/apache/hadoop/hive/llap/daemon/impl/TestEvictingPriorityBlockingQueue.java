@@ -69,10 +69,10 @@ public class TestEvictingPriorityBlockingQueue {
     assertEquals(elements[0], e); // Rejected
     //1,2,3,4
 
-    assertTrue(queue.reinsertIfExists(elements[2]));
+    assertTrue(reinsertIfExists(queue, elements[2]));
     assertEquals(4, queue.size());
 
-    assertFalse(queue.reinsertIfExists(elements[5]));
+    assertFalse(reinsertIfExists(queue, elements[5]));
     assertEquals(4, queue.size());
 
     //1,2,3,4
@@ -115,6 +115,14 @@ public class TestEvictingPriorityBlockingQueue {
     public int hashCode() {
       return x;
     }
+  }
+
+  public static <T> boolean reinsertIfExists(EvictingPriorityBlockingQueue<T> queue, T e) {
+    if (queue.remove(e)) {
+      queue.forceOffer(e);
+      return true;
+    }
+    return false;
   }
 
   private static class ElementComparator implements Comparator<Element> {

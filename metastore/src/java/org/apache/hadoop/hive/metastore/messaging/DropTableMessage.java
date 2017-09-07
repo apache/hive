@@ -31,6 +31,8 @@ public abstract class DropTableMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   @Override
   public EventMessage checkValid() {
     if (getTable() == null)

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * <tt>GenericUDAFParameterInfo</tt> interface.
  *
  */
+@Deprecated
 public abstract class AbstractGenericUDAFResolver
     implements GenericUDAFResolver2
 {

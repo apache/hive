@@ -51,15 +51,14 @@ public class DropPartitionHandler extends AbstractMessageHandler {
               msg.getPartitions());
       if (partSpecs.size() > 0) {
         DropTableDesc dropPtnDesc = new DropTableDesc(actualDbName + "." + actualTblName,
-            partSpecs, null, true, eventOnlyReplicationSpec(context));
+            partSpecs, null, true, context.eventOnlyReplicationSpec());
         Task<DDLWork> dropPtnTask = TaskFactory.get(
             new DDLWork(readEntitySet, writeEntitySet, dropPtnDesc),
             context.hiveConf
         );
         context.log.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
             dropPtnDesc.getTableName(), msg.getPartitions());
-        databasesUpdated.put(actualDbName, context.dmd.getEventTo());
-        tablesUpdated.put(actualDbName + "." + actualTblName, context.dmd.getEventTo());
+        updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
         return Collections.singletonList(dropPtnTask);
       } else {
         throw new SemanticException(

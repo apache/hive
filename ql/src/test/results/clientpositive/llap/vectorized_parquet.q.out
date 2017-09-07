@@ -159,22 +159,24 @@ STAGE PLANS:
                         Statistics: Num rows: 12288 Data size: 73728 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:float>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs (cache only)
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
-                groupByVectorOutput: false
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function UDF avg parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,input:float> of Column[VALUE._col3] not supported
-                vectorized: false
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
@@ -346,3 +348,19 @@ NULL	1073418988	-16379	3115	NULL	305051.4870777435
 55	626923679	-15887	21	55.0	9826.38569192808
 61	626923679	-15894	29	61.0	8785.714950987198
 62	626923679	-14307	17	62.0	9491.752726667326
+PREHOOK: query: CREATE TABLE empty_parquet(x int) PARTITIONED BY (y int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_parquet
+POSTHOOK: query: CREATE TABLE empty_parquet(x int) PARTITIONED BY (y int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_parquet
+PREHOOK: query: select * from empty_parquet t1 join empty_parquet t2 where t1.x=t2.x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select * from empty_parquet t1 join empty_parquet t2 where t1.x=t2.x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_parquet
+#### A masked pattern was here ####

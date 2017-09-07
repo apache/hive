@@ -99,7 +99,7 @@ public interface IMetaStoreSchemaInfo {
    * 'rolling downgrade' is happening. This is a state where hive is functional and returning non
    * zero status for it is misleading.
    *
-   * @param hiveVersion version of hive software
+   * @param productVersion version of hive software
    * @param dbVersion version of metastore rdbms schema
    * @return true if versions are compatible
    */

@@ -33,15 +33,17 @@ public class LlapRecordWriter<K extends Writable, V extends WritableComparable>
   implements RecordWriter<K,V> {
   public static final Logger LOG = LoggerFactory.getLogger(LlapRecordWriter.class);
 
+  String id;
   DataOutputStream dos;
 
-  public LlapRecordWriter(OutputStream out) {
+  public LlapRecordWriter(String id, OutputStream out) {
+    this.id = id;
     dos = new DataOutputStream(out);
   }
 
   @Override
   public void close(Reporter reporter) throws IOException {
-    LOG.info("CLOSING the record writer output stream");
+    LOG.info("CLOSING the record writer output stream for " + id);
     dos.close();
   }
 

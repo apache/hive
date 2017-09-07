@@ -104,8 +104,8 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
-  protected boolean invalidate() {
-    return true;
+  protected int invalidate() {
+    return INVALIDATE_OK;
   }
 
   @Override

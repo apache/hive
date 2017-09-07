@@ -82,7 +82,7 @@ public class Deadline {
 
   /**
    * reset the timeout value of this timer.
-   * @param timeout
+   * @param timeoutMs
    */
   public static void resetTimeout(long timeoutMs) throws MetaException {
     if (timeoutMs <= 0) {
@@ -139,7 +139,7 @@ public class Deadline {
 
   /**
    * Check whether the long running method timeout.
-   * @throws DeadlineException when the method timeout
+   * @throws MetaException when the method timeout
    */
   public static void checkTimeout() throws MetaException {
     Deadline deadline = getCurrentDeadline();

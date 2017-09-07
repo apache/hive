@@ -195,9 +195,17 @@ public class TestJdbcWithMiniHS2 {
   }
 
   private static void startMiniHS2(HiveConf conf) throws Exception {
+    startMiniHS2(conf, false);
+  }
+
+  private static void startMiniHS2(HiveConf conf, boolean httpMode) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
-    miniHS2 = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false).build();
+    MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
+    if (httpMode) {
+      builder = builder.withHTTPTransport();
+    }
+    miniHS2 = builder.build();
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
   }
@@ -923,10 +931,9 @@ public class TestJdbcWithMiniHS2 {
     // Stop HiveServer2
     stopMiniHS2();
     HiveConf conf = new HiveConf();
-    conf.set("hive.server2.transport.mode", "http");
-    conf.setInt("hive.server2.thrift.http.request.header.size", 1024);
-    conf.setInt("hive.server2.thrift.http.response.header.size", 1024);
-    startMiniHS2(conf);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE, 1024);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE, 1024);
+    startMiniHS2(conf, true);
 
     // Username is added to the request header
     String userName = StringUtils.leftPad("*", 100);
@@ -945,25 +952,31 @@ public class TestJdbcWithMiniHS2 {
     // This should fail with given HTTP response code 413 in error message, since header is more
     // than the configured the header size
     userName = StringUtils.leftPad("*", 2000);
+    Exception headerException = null;
     try {
+      conn = null;
       conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
     } catch (Exception e) {
-      assertTrue("Header exception thrown", e != null);
-      assertTrue(e.getMessage().contains("HTTP Response code: 413"));
+      headerException = e;
     } finally {
       if (conn != null) {
         conn.close();
       }
+
+      assertTrue("Header exception should be thrown", headerException != null);
+      assertTrue("Incorrect HTTP Response:" + headerException.getMessage(),
+          headerException.getMessage().contains("HTTP Response code: 413"));
     }
 
     // Stop HiveServer2 to increase header size
     stopMiniHS2();
-    conf.setInt("hive.server2.thrift.http.request.header.size", 3000);
-    conf.setInt("hive.server2.thrift.http.response.header.size", 3000);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE, 3000);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE, 3000);
     startMiniHS2(conf);
 
     // This should now go fine, since we increased the configured header size
     try {
+      conn = null;
       conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
     } catch (Exception e) {
       fail("Not expecting exception: " + e);
@@ -986,10 +999,9 @@ public class TestJdbcWithMiniHS2 {
     // Stop HiveServer2
     stopMiniHS2();
     HiveConf conf = new HiveConf();
-    conf.set("hive.server2.transport.mode", "http");
     // Set server's idle timeout to a very low value
-    conf.set("hive.server2.thrift.http.max.idle.time", "5");
-    startMiniHS2(conf);
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
+    startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
     Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
     Statement stmt = conn.createStatement();

@@ -30,3 +30,11 @@ set jar=${system:maven.local.repository}/org/apache/derby/derby/${system:derby.v
 add file ${hiveconf:jar};
 delete file ${hiveconf:jar};
 list file;
+
+
+-- comment (will be removed by test driver)
+set x=1;
+set x;
+    -- an indented comment to test comment removal
+set x=2;
+set x;

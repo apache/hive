@@ -1,7 +1,7 @@
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select 'key1', 'value1' from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
 Explain
@@ -52,6 +52,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: []
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: string, string
 
   Stage: Stage-0
     Fetch Operator
@@ -77,11 +83,11 @@ POSTHOOK: query: create table decimal_2 (t decimal(18,9)) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 insert overwrite table decimal_2
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -140,6 +146,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: []
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: decimal(18,9)
 
   Stage: Stage-7
     Conditional Operator
@@ -213,10 +225,10 @@ POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_2
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 POSTHOOK: type: QUERY
 Explain
@@ -226,8 +238,7 @@ PLAN VECTORIZATION:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -239,10 +250,21 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
-              Reduce Output Operator
-                key expressions: 1 (type: int)
-                sort order: +
-                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                Group By Vectorization:
+                    groupByMode: HASH
+                    vectorOutput: false
+                    native: false
+                    vectorProcessingMode: NONE
+                    projectedOutputColumns: null
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
       Map Vectorization:
           enabled: false
 #### A masked pattern was here ####
@@ -251,59 +273,13 @@ STAGE PLANS:
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
-        Select Operator
-          Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
-          Group By Operator
-            aggregations: count(1)
-            Group By Vectorization:
-                vectorOutput: false
-                native: false
-                projectedOutputColumns: null
-            mode: hash
-            outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            TableScan Vectorization:
-                native: true
-                projectedOutputColumns: [0]
-            Reduce Output Operator
-              sort order: 
-              Reduce Sink Vectorization:
-                  className: VectorReduceSinkOperator
-                  native: false
-                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-              value expressions: _col0 (type: bigint)
-      Execution mode: vectorized
-      Map Vectorization:
-          enabled: true
-          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-          groupByVectorOutput: true
-          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
-          allNative: false
-          usesVectorUDFAdaptor: false
-          vectorized: true
-      Reduce Vectorization:
-          enabled: false
-          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
-          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-      Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           Group By Vectorization:
+              groupByMode: MERGEPARTIAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
@@ -332,10 +308,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 1
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 create temporary table dual as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Explain

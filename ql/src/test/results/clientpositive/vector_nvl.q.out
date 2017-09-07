@@ -317,7 +317,7 @@ STAGE PLANS:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Data type void of Const void null not supported
+          notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
           vectorized: false
 
   Stage: Stage-0

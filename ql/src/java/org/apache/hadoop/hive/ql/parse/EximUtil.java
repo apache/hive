@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
@@ -140,15 +141,16 @@ public class EximUtil {
    * Initialize the URI where the exported data collection is
    * to created for export, or is present for import
    */
-  static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
+  public static URI getValidatedURI(HiveConf conf, String dcPath) throws SemanticException {
     try {
       boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE)
           || conf.getBoolVar(HiveConf.ConfVars.HIVEEXIMTESTMODE);
       URI uri = new Path(dcPath).toUri();
-      String scheme = uri.getScheme();
+      FileSystem fs = FileSystem.get(uri, conf);
+      // Get scheme from FileSystem
+      String scheme = fs.getScheme();
       String authority = uri.getAuthority();
       String path = uri.getPath();
-      FileSystem fs = FileSystem.get(uri, conf);
 
       LOG.info("Path before norm :" + path);
       // generate absolute path relative to home directory
@@ -162,8 +164,6 @@ public class EximUtil {
         }
       }
 
-      // Get scheme from FileSystem
-      scheme = fs.getScheme();
 
       // if scheme is specified but not authority then use the default authority
       if (StringUtils.isEmpty(authority)) {
@@ -391,4 +391,33 @@ public class EximUtil {
     };
   }
 
+  /**
+   * Verify if a table should be exported or not
+   */
+  public static Boolean shouldExportTable(ReplicationSpec replicationSpec, Table tableHandle) throws SemanticException {
+    if (replicationSpec == null)
+    {
+      replicationSpec = new ReplicationSpec();
+    }
+
+    if (replicationSpec.isNoop())
+    {
+      return false;
+    }
+
+    if (tableHandle == null)
+    {
+      return false;
+    }
+
+    if (replicationSpec.isInReplicationScope()) {
+      return !(tableHandle == null || tableHandle.isTemporary() || tableHandle.isNonNative());
+    }
+
+    if (tableHandle.isNonNative()) {
+      throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
+    }
+
+    return true;
+  }
 }

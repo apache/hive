@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -77,12 +77,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampTZObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -422,14 +423,16 @@ public class BinarySortableSerDe extends AbstractSerDe {
         }
         t.setBinarySortable(bytes, 0);
         return t;
-      case TIMESTAMPTZ:
-        TimestampTZWritable tstz = (reuse == null ? new TimestampTZWritable() :
-            (TimestampTZWritable) reuse);
-        byte[] data = new byte[TimestampTZWritable.BINARY_SORTABLE_LENGTH];
+      case TIMESTAMPLOCALTZ:
+        TimestampLocalTZWritable tstz = (reuse == null ? new TimestampLocalTZWritable() :
+            (TimestampLocalTZWritable) reuse);
+        byte[] data = new byte[TimestampLocalTZWritable.BINARY_SORTABLE_LENGTH];
         for (int i = 0; i < data.length; i++) {
           data[i] = buffer.read(invert);
         }
-        tstz.fromBinarySortable(data, 0);
+        // Across MR process boundary tz is normalized and stored in type
+        // and is not carried in data for each row.
+        tstz.fromBinarySortable(data, 0, ((TimestampLocalTZTypeInfo) type).timeZone());
         return tstz;
       case INTERVAL_YEAR_MONTH: {
         HiveIntervalYearMonthWritable i = reuse == null ? new HiveIntervalYearMonthWritable()
@@ -798,9 +801,9 @@ public class BinarySortableSerDe extends AbstractSerDe {
         serializeTimestampWritable(buffer, t, invert);
         return;
       }
-      case TIMESTAMPTZ: {
-        TimestampTZObjectInspector toi = (TimestampTZObjectInspector) poi;
-        TimestampTZWritable t = toi.getPrimitiveWritableObject(o);
+      case TIMESTAMPLOCALTZ: {
+        TimestampLocalTZObjectInspector toi = (TimestampLocalTZObjectInspector) poi;
+        TimestampLocalTZWritable t = toi.getPrimitiveWritableObject(o);
         serializeTimestampTZWritable(buffer, t, invert);
         return;
       }
@@ -975,7 +978,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   public static void serializeTimestampTZWritable(
-      ByteStream.Output buffer, TimestampTZWritable t, boolean invert) {
+      ByteStream.Output buffer, TimestampLocalTZWritable t, boolean invert) {
     byte[] data = t.toBinarySortable();
     for (byte b : data) {
       writeByte(buffer, b, invert);

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -98,6 +99,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   //flag used to control how TopN handled for PTF/Windowing partitions.
   private boolean isPTFReduceSink = false; 
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
+  private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
 
   public static enum ReducerTraits {
     UNSET(0), // unset
@@ -432,6 +434,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return skipTag;
   }
 
+  public void setForwarding(boolean forwarding) {
+    this.forwarding = forwarding;
+  }
+
+  public boolean isForwarding() {
+    return forwarding;
+  }
+
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
@@ -638,5 +648,20 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       return null;
     }
     return new ReduceSinkOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      ReduceSinkDesc otherDesc = (ReduceSinkDesc) other;
+      return ExprNodeDescUtils.isSame(getKeyCols(), otherDesc.getKeyCols()) &&
+          ExprNodeDescUtils.isSame(getValueCols(), otherDesc.getValueCols()) &&
+          ExprNodeDescUtils.isSame(getPartitionCols(), otherDesc.getPartitionCols()) &&
+          getTag() == otherDesc.getTag() &&
+          Objects.equals(getOrder(), otherDesc.getOrder()) &&
+          getTopN() == otherDesc.getTopN() &&
+          isAutoParallel() == otherDesc.isAutoParallel();
+    }
+    return false;
   }
 }

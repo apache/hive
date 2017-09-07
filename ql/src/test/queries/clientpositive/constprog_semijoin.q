@@ -1,6 +1,8 @@
 set hive.optimize.constant.propagation=true;
 set hive.explain.user=true;
 
+-- SORT_QUERY_RESULTS
+
 create table table1 (id int, val string, val1 string, dimid int);
 insert into table1 (id, val, val1, dimid) values (1, 't1val01', 'val101', 100), (2, 't1val02', 'val102', 200), (3, 't1val03', 'val103', 103), (3, 't1val01', 'val104', 100), (2, 't1val05', 'val105', 200), (3, 't1val01', 'val106', 103), (1, 't1val07', 'val107', 200), (2, 't1val01', 'val108', 200), (3, 't1val09', 'val109', 103), (4,'t1val01', 'val110', 200);
 

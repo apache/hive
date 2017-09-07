@@ -285,24 +285,24 @@ STAGE PLANS:
   Stage: Stage-14
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_1:c 
+        $hdt$_1:b 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_1:c 
+        $hdt$_1:b 
           TableScan
-            alias: c
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: value is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 _col1 (type: string)
+                    0 _col0 (type: string)
                     1 _col0 (type: string)
 
   Stage: Stage-9
@@ -322,7 +322,7 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col1 (type: string)
+                    0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
@@ -341,24 +341,24 @@ STAGE PLANS:
   Stage: Stage-12
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_2:b 
+        $hdt$_2:c 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_2:b 
+        $hdt$_2:c 
           TableScan
-            alias: b
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: value (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 _col0 (type: string)
+                    0 _col1 (type: string)
                     1 _col0 (type: string)
 
   Stage: Stage-6
@@ -369,7 +369,7 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
               keys:
-                0 _col0 (type: string)
+                0 _col1 (type: string)
                 1 _col0 (type: string)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
@@ -411,20 +411,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: b
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: value (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col0 (type: string)
+                    0 _col1 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
@@ -449,19 +449,19 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string)
+              key expressions: _col1 (type: string)
               sort order: +
-              Map-reduce partition columns: _col0 (type: string)
+              Map-reduce partition columns: _col1 (type: string)
               Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: string)
+              value expressions: _col0 (type: string)
           TableScan
-            alias: b
+            alias: c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: key is not null (type: boolean)
+              predicate: value is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string)
+                expressions: value (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -474,7 +474,7 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col0 (type: string)
+            0 _col1 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 605 Data size: 6427 Basic stats: COMPLETE Column stats: NONE
@@ -505,27 +505,27 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 HashTable Sink Operator
                   keys:
-                    0 _col1 (type: string)
+                    0 _col0 (type: string)
                     1 _col0 (type: string)
 
   Stage: Stage-10
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: c
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: value is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Map Join Operator
                   condition map:
                        Inner Join 0 to 1
                   keys:
-                    0 _col1 (type: string)
+                    0 _col0 (type: string)
                     1 _col0 (type: string)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
@@ -552,19 +552,19 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col1 (type: string)
+                  key expressions: _col0 (type: string)
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: string)
+                  Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: string)
+                  value expressions: _col1 (type: string)
           TableScan
-            alias: c
+            alias: b
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: value is not null (type: boolean)
+              predicate: key is not null (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: value (type: string)
+                expressions: key (type: string)
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
@@ -577,7 +577,7 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           keys:
-            0 _col1 (type: string)
+            0 _col0 (type: string)
             1 _col0 (type: string)
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE

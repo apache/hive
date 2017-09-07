@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
+import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -33,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 public class OperatorUtils {
@@ -366,7 +368,7 @@ public class OperatorUtils {
    * Remove the branch that contains the specified operator. Do nothing if there's no branching,
    * i.e. all the upstream operators have only one child.
    */
-  public static void removeBranch(Operator<?> op) {
+  public static void removeBranch(SparkPartitionPruningSinkOperator op) {
     Operator<?> child = op;
     Operator<?> curr = op;
 
@@ -381,10 +383,45 @@ public class OperatorUtils {
     curr.removeChild(child);
   }
 
+  /**
+   * Remove operator from the tree, disconnecting it from its
+   * parents and children.
+   */
+  public static void removeOperator(Operator<?> op) {
+    if (op.getNumParent() != 0) {
+      List<Operator<? extends OperatorDesc>> allParent =
+              Lists.newArrayList(op.getParentOperators());
+      for (Operator<?> parentOp : allParent) {
+        parentOp.removeChild(op);
+      }
+    }
+    if (op.getNumChild() != 0) {
+      List<Operator<? extends OperatorDesc>> allChildren =
+              Lists.newArrayList(op.getChildOperators());
+      for (Operator<?> childOp : allChildren) {
+        childOp.removeParent(op);
+      }
+    }
+  }
+
   public static String getOpNamePretty(Operator<?> op) {
     if (op instanceof TableScanOperator) {
       return op.toString() + " (" + ((TableScanOperator) op).getConf().getAlias() + ")";
     }
     return op.toString();
+  }
+
+  /**
+   * Return true if contain branch otherwise return false
+   */
+  public static boolean isInBranch(SparkPartitionPruningSinkOperator op) {
+    Operator<?> curr = op;
+    while (curr.getChildOperators().size() <= 1) {
+      if (curr.getParentOperators() == null || curr.getParentOperators().isEmpty()) {
+        return false;
+      }
+      curr = curr.getParentOperators().get(0);
+    }
+    return true;
   }
 }

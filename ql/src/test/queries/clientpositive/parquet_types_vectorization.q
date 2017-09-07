@@ -7,6 +7,7 @@ set hive.vectorized.execution.reduce.enabled=true;
 set hive.vectorized.use.row.serde.deserialize=true;
 set hive.vectorized.use.vector.serde.deserialize=true;
 set hive.vectorized.execution.reduce.groupby.enabled = true;
+set hive.llap.cache.allow.synthetic.fileid=true;
 
 CREATE TABLE parquet_types_staging (
   cint int,

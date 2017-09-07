@@ -83,7 +83,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
+              predicate: (ca_zip is not null and ca_state is not null) (type: boolean)
               Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ca_state (type: string), ca_zip (type: string)
@@ -98,7 +98,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
+              predicate: (ca_zip is not null and ca_state is not null) (type: boolean)
               Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ca_state (type: string), ca_zip (type: string)
@@ -174,7 +174,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
+              predicate: (ca_zip is not null and ca_state is not null) (type: boolean)
               Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ca_state (type: string), ca_zip (type: string)
@@ -189,7 +189,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (ca_state is not null and ca_zip is not null) (type: boolean)
+              predicate: (ca_zip is not null and ca_state is not null) (type: boolean)
               Statistics: Num rows: 20 Data size: 3500 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: ca_state (type: string), ca_zip (type: string)
@@ -207,7 +207,7 @@ STAGE PLANS:
           keys:
             0 _col0 (type: string), _col1 (type: string)
             1 _col0 (type: string), _col1 (type: string)
-          Statistics: Num rows: 16 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+          Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
           Group By Operator
             aggregations: count()
             mode: hash

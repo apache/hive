@@ -127,9 +127,9 @@ public class SqlFunctionConverter {
     }
     // Make sure we handle unary + and - correctly.
     if (argsLength == 1) {
-      if (name == "+") {
+      if ("+".equals(name)) {
         name = FunctionRegistry.UNARY_PLUS_FUNC_NAME;
-      } else if (name == "-") {
+      } else if ("-".equals(name)) {
         name = FunctionRegistry.UNARY_MINUS_FUNC_NAME;
       }
     }
@@ -181,6 +181,9 @@ public class SqlFunctionConverter {
         castUDF = FunctionRegistry.getFunctionInfo("double");
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+      } else if (castType.equals(TypeInfoFactory.timestampLocalTZTypeInfo)) {
+        castUDF = handleCastForParameterizedType(castType,
+            FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("date");
       } else if (castType instanceof DecimalTypeInfo) {

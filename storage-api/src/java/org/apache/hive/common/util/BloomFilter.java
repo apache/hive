@@ -19,9 +19,7 @@
 package org.apache.hive.common.util;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * BloomFilter is a probabilistic data structure for set membership check. BloomFilters are
@@ -72,17 +70,15 @@ public class BloomFilter {
 
   /**
    * A constructor to support rebuilding the BloomFilter from a serialized representation.
-   * @param bits
-   * @param numBits
-   * @param numFuncs
+   * @param bits - bits are used as such for bitset and are NOT copied, any changes to bits will affect bloom filter
+   * @param numFuncs - number of hash functions
    */
-  public BloomFilter(List<Long> bits, int numBits, int numFuncs) {
+  public BloomFilter(long[] bits, int numFuncs) {
     super();
-    long[] copied = new long[bits.size()];
-    for (int i = 0; i < bits.size(); i++) copied[i] = bits.get(i);
-    bitSet = new BitSet(copied);
-    this.numBits = numBits;
-    numHashFunctions = numFuncs;
+    // input long[] is set as such without copying, so any modification to the source will affect bloom filter
+    this.bitSet = new BitSet(bits);
+    this.numBits = bits.length * Long.SIZE;
+    this.numHashFunctions = numFuncs;
   }
 
   static int optimalNumOfHashFunctions(long n, long m) {
@@ -118,7 +114,7 @@ public class BloomFilter {
     int hash2 = (int) (hash64 >>> 32);
 
     for (int i = 1; i <= numHashFunctions; i++) {
-      int combinedHash = hash1 + (i * hash2);
+      int combinedHash = hash1 + ((i + 1) * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
@@ -162,7 +158,7 @@ public class BloomFilter {
     int hash2 = (int) (hash64 >>> 32);
 
     for (int i = 1; i <= numHashFunctions; i++) {
-      int combinedHash = hash1 + (i * hash2);
+      int combinedHash = hash1 + ((i + 1) * hash2);
       // hashcode should be positive, flip all the bits if it's negative
       if (combinedHash < 0) {
         combinedHash = ~combinedHash;
@@ -253,11 +249,11 @@ public class BloomFilter {
      * Serialized BloomFilter format:
      * 1 byte for the number of hash functions.
      * 1 big endian int(That is how OutputStream works) for the number of longs in the bitset
-     * big endina longs in the BloomFilter bitset
+     * big endian longs in the BloomFilter bitset
      */
     DataOutputStream dataOutputStream = new DataOutputStream(out);
     dataOutputStream.writeByte(bloomFilter.numHashFunctions);
-    dataOutputStream.writeInt(bloomFilter.numBits);
+    dataOutputStream.writeInt(bloomFilter.getBitSet().length);
     for (long value : bloomFilter.getBitSet()) {
       dataOutputStream.writeLong(value);
     }
@@ -278,13 +274,12 @@ public class BloomFilter {
     try {
       DataInputStream dataInputStream = new DataInputStream(in);
       int numHashFunc = dataInputStream.readByte();
-      int numBits = dataInputStream.readInt();
-      int sz = (numBits/Long.SIZE);
-      List<Long> data = new ArrayList<Long>();
-      for (int i = 0; i < sz; i++) {
-        data.add(dataInputStream.readLong());
+      int numLongs = dataInputStream.readInt();
+      long[] data = new long[numLongs];
+      for (int i = 0; i < numLongs; i++) {
+        data[i] = dataInputStream.readLong();
       }
-      return new BloomFilter(data, numBits, numHashFunc);
+      return new BloomFilter(data, numHashFunc);
     } catch (RuntimeException e) {
       IOException io = new IOException( "Unable to deserialize BloomFilter");
       io.initCause(e);

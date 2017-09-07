@@ -31,6 +31,8 @@ public abstract class AlterPartitionMessage extends HCatEventMessage {
 
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   public abstract Map<String,String> getKeyValues();
 
   @Override

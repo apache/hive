@@ -472,7 +472,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       keyPositionsSize.add(new Integer(pos));
       return javaObjectOverHead;
     case TIMESTAMP:
-    case TIMESTAMPTZ:
+    case TIMESTAMPLOCALTZ:
       return javaObjectOverHead + javaSizePrimitiveType;
     default:
       return javaSizeUnknownType;

@@ -23,12 +23,11 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
-import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 class CreateTableHandler extends AbstractEventHandler {
 
@@ -48,6 +47,11 @@ class CreateTableHandler extends AbstractEventHandler {
     }
 
     Table qlMdTable = new Table(tobj);
+
+    if (!EximUtil.shouldExportTable(withinContext.replicationSpec, qlMdTable)) {
+      return;
+    }
+
     if (qlMdTable.isView()) {
       withinContext.replicationSpec.setIsMetadataOnly(true);
     }

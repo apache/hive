@@ -81,8 +81,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: PARTIAL1
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: partial1
@@ -128,8 +130,10 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           Group By Vectorization:
+              groupByMode: FINAL
               vectorOutput: false
               native: false
+              vectorProcessingMode: NONE
               projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: final

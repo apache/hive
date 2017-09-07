@@ -34,6 +34,8 @@ public abstract class CreateTableMessage extends HCatEventMessage {
    */
   public abstract String getTable();
 
+  public abstract String getTableType();
+
   @Override
   public HCatEventMessage checkValid() {
     if (getTable() == null)

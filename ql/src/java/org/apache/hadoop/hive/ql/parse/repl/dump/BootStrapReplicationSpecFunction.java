@@ -32,6 +32,8 @@ class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<Rep
   @Override
   public ReplicationSpec fromMetaStore() throws HiveException {
     try {
+      long currentNotificationId = db.getMSC()
+              .getCurrentNotificationEventId().getEventId();
       ReplicationSpec replicationSpec =
           new ReplicationSpec(
               true,
@@ -42,8 +44,7 @@ class BootStrapReplicationSpecFunction implements HiveWrapper.Tuple.Function<Rep
               true,
               false
           );
-      long currentNotificationId = db.getMSC()
-          .getCurrentNotificationEventId().getEventId();
+
       replicationSpec.setCurrentReplicationState(String.valueOf(currentNotificationId));
       return replicationSpec;
     } catch (Exception e) {

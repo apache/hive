@@ -3389,8 +3389,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -3500,8 +3502,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -3613,8 +3617,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -3721,8 +3727,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -3837,8 +3845,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -3919,8 +3929,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4030,8 +4042,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4138,8 +4152,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4274,8 +4290,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4398,8 +4416,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4531,8 +4551,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4652,8 +4674,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkMultiKeyOperator
                               native: true
@@ -4771,8 +4795,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4799,8 +4825,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -4932,8 +4960,10 @@ STAGE PLANS:
                         native: true
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           native: false
+                          vectorProcessingMode: HASH
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
@@ -5072,8 +5102,10 @@ STAGE PLANS:
                         native: true
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           native: false
+                          vectorProcessingMode: HASH
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
@@ -5198,8 +5230,10 @@ STAGE PLANS:
                         native: true
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           native: false
+                          vectorProcessingMode: HASH
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
@@ -5342,8 +5376,10 @@ STAGE PLANS:
                         native: true
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           native: false
+                          vectorProcessingMode: HASH
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
@@ -5488,8 +5524,10 @@ STAGE PLANS:
                         native: true
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           native: false
+                          vectorProcessingMode: HASH
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
@@ -5661,8 +5699,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkLongOperator
                               native: true
@@ -5822,8 +5862,10 @@ STAGE PLANS:
                           native: true
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             native: false
+                            vectorProcessingMode: HASH
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkStringOperator
                               native: true
@@ -5956,9 +5998,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -6151,9 +6195,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -6348,9 +6394,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -6545,9 +6593,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col1 (type: int), _col1 (type: int)
                         mode: hash
@@ -6745,9 +6795,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -6882,9 +6934,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -7082,9 +7136,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -7279,9 +7335,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -7528,9 +7586,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -7736,9 +7796,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -7986,9 +8048,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -8191,9 +8255,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -8397,9 +8463,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -8457,9 +8525,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -8685,9 +8755,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -8908,9 +8980,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -9117,9 +9191,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -9360,9 +9436,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -9605,9 +9683,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -9904,9 +9984,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -10171,9 +10253,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: string)
                         mode: hash
@@ -10329,9 +10413,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -10527,9 +10613,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -10727,9 +10815,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -10927,9 +11017,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col1 (type: int), _col1 (type: int)
                         mode: hash
@@ -11130,9 +11222,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -11267,9 +11361,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -11470,9 +11566,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -11670,9 +11768,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -11925,9 +12025,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -12136,9 +12238,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -12386,9 +12490,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -12594,9 +12700,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -12800,9 +12908,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -12860,9 +12970,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -13088,9 +13200,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -13311,9 +13425,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -13520,9 +13636,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -13763,9 +13881,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -14008,9 +14128,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -14313,9 +14435,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -14583,9 +14707,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: string)
                         mode: hash
@@ -14741,9 +14867,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -14939,9 +15067,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -15139,9 +15269,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -15339,9 +15471,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col1 (type: int), _col1 (type: int)
                         mode: hash
@@ -15542,9 +15676,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -15679,9 +15815,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -15882,9 +16020,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -16082,9 +16222,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -16337,9 +16479,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -16548,9 +16692,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -16798,9 +16944,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -17006,9 +17154,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0, col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int), _col1 (type: string)
                         mode: hash
@@ -17212,9 +17362,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -17272,9 +17424,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -17500,9 +17654,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -17723,9 +17879,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -17932,9 +18090,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -18175,9 +18335,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -18420,9 +18582,11 @@ STAGE PLANS:
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: []
                       keys: _col0 (type: int)
                       mode: hash
@@ -18725,9 +18889,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 0
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: int)
                         mode: hash
@@ -18995,9 +19161,11 @@ STAGE PLANS:
                       Group By Operator
                         Group By Vectorization:
                             className: VectorGroupByOperator
+                            groupByMode: HASH
                             vectorOutput: true
                             keyExpressions: col 1
                             native: false
+                            vectorProcessingMode: HASH
                             projectedOutputColumns: []
                         keys: _col0 (type: string)
                         mode: hash

@@ -210,10 +210,10 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted srcpart key
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
@@ -302,10 +302,10 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `key`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+key                 	string              	                    	                    	0                   	309                 	2.812               	3                   	                    	                    	HL                  	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
@@ -352,20 +352,20 @@ PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `ds`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-ds                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+ds                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted `srcpart` `hr`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@srcpart
 POSTHOOK: query: describe formatted `srcpart` `hr`
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@srcpart
-# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
-	 	 	 	 	 	 	 	 	 	 
-hr                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    
-COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"hr\":\"true\"}}	 	 	 	 	 	 	 	 	 
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             	bitVector           
+	 	 	 	 	 	 	 	 	 	 	 
+hr                  	string              	                    	                    	0                   	2                   	100.0               	100                 	                    	                    	                    	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"hr\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create table srcpart_serdeprops like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

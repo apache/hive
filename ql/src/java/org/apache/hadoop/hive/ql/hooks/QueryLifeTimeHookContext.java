@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * Hook context for {@link QueryLifeTimeHook}.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface QueryLifeTimeHookContext {
   /**
    * Get the current Hive configuration

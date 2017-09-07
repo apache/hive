@@ -16,13 +16,10 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
@@ -30,6 +27,10 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
@@ -79,14 +80,13 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
     }
 
     // create a TaskInputOutputContext
-    // TODO: This line is left due to incorrect Predicate push down results (parquet_ppd_char,parquet_ppd_varchar).
-    // The problem is that Parquet PPD is set on getSplit() function called above, but the old code used this
-    // line to overwrite such configuration. I'm adding a fix to timestamp issues only, so we should follow up
-    // this issue in another JIRA.
-    JobConf conf = new JobConf(oldJobConf);
-
-    // Set the TimeZone conversion in case the file has timestamp columns.
-    setTimeZoneConversion(conf, ((FileSplit)oldSplit).getPath());
+    Configuration conf = jobConf;
+    if (skipTimestampConversion ^ HiveConf.getBoolVar(
+        conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
+      conf = new JobConf(oldJobConf);
+      HiveConf.setBoolVar(conf,
+        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
+    }
 
     final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
     if (split != null) {

@@ -80,7 +80,7 @@ public class HiveSortUnionReduceRule extends RelOptRule {
     final int offset = sort.offset == null ? 0 : RexLiteral.intValue(sort.offset);
     for (RelNode input : union.getInputs()) {
       // If we do not reduce the input size, we bail out
-      if (RexLiteral.intValue(sort.fetch) + offset < RelMetadataQuery.instance().getRowCount(input)) {
+      if (RexLiteral.intValue(sort.fetch) + offset < call.getMetadataQuery().getRowCount(input)) {
         finishPushSortPastUnion = false;
         // Here we do some query rewrite. We first get the new fetchRN, which is
         // a sum of offset and fetch.

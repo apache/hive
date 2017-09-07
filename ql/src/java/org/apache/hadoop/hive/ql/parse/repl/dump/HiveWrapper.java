@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 public class HiveWrapper {
   private final Hive db;
   private final String dbName;
-  private final BootStrapReplicationSpecFunction functionForSpec;
+  private final Tuple.Function<ReplicationSpec> functionForSpec;
 
   public HiveWrapper(Hive db, String dbName) {
     this.dbName = dbName;

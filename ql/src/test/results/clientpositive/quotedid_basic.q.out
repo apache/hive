@@ -217,7 +217,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
@@ -319,7 +319,7 @@ STAGE PLANS:
                         arguments: _col1
                         name: rank
                         window function: GenericUDAFRankEvaluator
-                        window frame: PRECEDING(MAX)~FOLLOWING(MAX)
+                        window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator

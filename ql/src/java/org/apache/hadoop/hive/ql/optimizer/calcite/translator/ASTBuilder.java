@@ -18,15 +18,15 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.util.DateString;
+import org.apache.calcite.util.TimeString;
+import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.Constants;
@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 public class ASTBuilder {
 
@@ -270,26 +268,17 @@ public class ASTBuilder {
       val = literal.getValue3();
       type = ((Boolean) val).booleanValue() ? HiveParser.KW_TRUE : HiveParser.KW_FALSE;
       break;
-    case DATE: {
-      //Calcite Calendar is always GMT, Hive atm uses JVM local
-      final Calendar c = (Calendar) literal.getValue();
-      final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
+    case DATE:
+      val = "'" + literal.getValueAs(DateString.class).toString() + "'";
       type = HiveParser.TOK_DATELITERAL;
-      DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-      val = df.format(dt.toDateTime(DateTimeZone.getDefault()).toDate());
-      val = "'" + val + "'";
-    }
       break;
     case TIME:
-    case TIMESTAMP: {
-      //Calcite Calendar is always GMT, Hive atm uses JVM local
-      final Calendar c = (Calendar) literal.getValue();
-      final DateTime dt = new DateTime(c.getTimeInMillis(), DateTimeZone.forTimeZone(c.getTimeZone()));
+      val = "'" + literal.getValueAs(TimeString.class).toString() + "'";
       type = HiveParser.TOK_TIMESTAMPLITERAL;
-      DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-      val = df.format(dt.toDateTime(DateTimeZone.getDefault()).toDate());
-      val = "'" + val + "'";
-    }
+      break;
+    case TIMESTAMP:
+      val = "'" + literal.getValueAs(TimestampString.class).toString() + "'";
+      type = HiveParser.TOK_TIMESTAMPLITERAL;
       break;
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:

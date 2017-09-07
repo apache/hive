@@ -50,17 +50,19 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [0, 3]
-                        selectExpressions: VectorUDFAdaptor(CASE WHEN (bool) THEN (1) WHEN ((not bool)) THEN (0) ELSE (null) END)(children: NotCol(col 1) -> 2:boolean) -> 3:int
+                        projectedOutputColumns: [0, 5]
+                        selectExpressions: IfExprLongScalarLongColumn(col 1, val 1, col 4)(children: IfExprColumnNull(col 2, col 3, null)(children: NotCol(col 1) -> 2:boolean, ConstantVectorExpression(val 0) -> 3:long) -> 4:int) -> 5:long
                     Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 3) -> bigint
+                          aggregators: VectorUDAFCount(col 5) -> bigint
                           className: VectorGroupByOperator
+                          groupByMode: HASH
                           vectorOutput: true
                           keyExpressions: col 0
                           native: false
+                          vectorProcessingMode: HASH
                           projectedOutputColumns: [0]
                       keys: _col0 (type: string)
                       mode: hash
@@ -84,7 +86,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -101,9 +103,11 @@ STAGE PLANS:
                 Group By Vectorization:
                     aggregators: VectorUDAFCountMerge(col 1) -> bigint
                     className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
                     vectorOutput: true
                     keyExpressions: col 0
                     native: false
+                    vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumns: [0]
                 keys: KEY._col0 (type: string)
                 mode: mergepartial

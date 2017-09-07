@@ -63,7 +63,7 @@ TYPE_NAMES = {
     19 => %q"CHAR",
     20 => %q"INTERVAL_YEAR_MONTH",
     21 => %q"INTERVAL_DAY_TIME",
-    22 => %q"TIMESTAMP WITH TIME ZONE",
+    22 => %q"TIMESTAMP WITH LOCAL TIME ZONE",
 }
 
 CHARACTER_MAXIMUM_LENGTH = %q"characterMaximumLength"

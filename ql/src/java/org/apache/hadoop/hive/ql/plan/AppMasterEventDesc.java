@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -83,5 +84,16 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
       return null;
     }
     return new AppMasterEventOperatorExplainVectorization(this, vectorDesc);
+  }
+
+  @Override
+  public boolean isSame(OperatorDesc other) {
+    if (getClass().getName().equals(other.getClass().getName())) {
+      AppMasterEventDesc otherDesc = (AppMasterEventDesc) other;
+      return Objects.equals(getInputName(), otherDesc.getInputName()) &&
+          Objects.equals(getVertexName(), otherDesc.getVertexName()) &&
+          Objects.equals(getTable(), otherDesc.getTable());
+    }
+    return false;
   }
 }

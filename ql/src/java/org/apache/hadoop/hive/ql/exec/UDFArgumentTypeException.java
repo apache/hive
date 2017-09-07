@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 /**
  * exception class, thrown when udf arguments have wrong types.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public class UDFArgumentTypeException extends UDFArgumentException {
 
   int argumentId;

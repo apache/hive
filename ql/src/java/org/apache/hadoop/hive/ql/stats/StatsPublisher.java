@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
+
 import java.util.Map;
 
 /**
  * An interface for any possible implementation for publishing statics.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Stable
 public interface StatsPublisher {
 
   /**

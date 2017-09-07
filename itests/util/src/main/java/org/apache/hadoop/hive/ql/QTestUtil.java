@@ -103,7 +103,6 @@ import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.hbase.HBaseStore;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -202,7 +201,6 @@ public class QTestUtil {
 
   private final String initScript;
   private final String cleanupScript;
-  private boolean useHBaseMetastore = false;
 
   public interface SuiteAddTestFunctor {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
@@ -347,14 +345,9 @@ public class QTestUtil {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
-    if (!useHBaseMetastore) {
-      // Plug verifying metastore in for testing DirectSQL.
-      conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-          "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
-    } else {
-      conf.setVar(ConfVars.METASTORE_RAW_STORE_IMPL, HBaseStore.class.getName());
-      conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
-    }
+    // Plug verifying metastore in for testing DirectSQL.
+    conf.setVar(ConfVars.METASTORE_RAW_STORE_IMPL,
+        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
 
     if (mr != null) {
       mr.setupConfiguration(conf);
@@ -514,40 +507,22 @@ public class QTestUtil {
     return "jceks://file" + new Path(keyDir, "test.jks").toUri();
   }
 
-  private void startMiniHBaseCluster() throws Exception {
-    Configuration hbaseConf = HBaseConfiguration.create();
-    hbaseConf.setInt("hbase.master.info.port", -1);
-    utility = new HBaseTestingUtility(hbaseConf);
-    utility.startMiniCluster();
-    conf = new HiveConf(utility.getConfiguration(), Driver.class);
-    HBaseAdmin admin = utility.getHBaseAdmin();
-    // Need to use reflection here to make compilation pass since HBaseIntegrationTests
-    // is not compiled in hadoop-1. All HBaseMetastore tests run under hadoop-2, so this
-    // guarantee HBaseIntegrationTests exist when we hitting this code path
-    java.lang.reflect.Method initHBaseMetastoreMethod = Class.forName(
-        "org.apache.hadoop.hive.metastore.hbase.HBaseStoreTestUtil")
-        .getMethod("initHBaseMetastore", HBaseAdmin.class, HiveConf.class);
-    initHBaseMetastoreMethod.invoke(null, admin, conf);
-    conf.setVar(ConfVars.METASTORE_RAW_STORE_IMPL, HBaseStore.class.getName());
-    conf.setBoolVar(ConfVars.METASTORE_FASTPATH, true);
-  }
-
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
                    String confDir, String hadoopVer, String initScript, String cleanupScript,
-                   boolean useHBaseMetastore, boolean withLlapIo) throws Exception {
+                   boolean withLlapIo) throws Exception {
     this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, null);
+        withLlapIo, null);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
       String confDir, String hadzoopVer, String initScript, String cleanupScript,
-      boolean useHBaseMetastore, boolean withLlapIo, FsType fsType)
+      boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
-        " hadoopVer={}, initScript={}, cleanupScript={}, useHbaseMetaStore={}, withLlapIo={}," +
+        " hadoopVer={}, initScript={}, cleanupScript={}, withLlapIo={}," +
             " fsType={}"
         , outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript,
-        useHBaseMetastore, withLlapIo, fsType);
+        withLlapIo, fsType);
     Preconditions.checkNotNull(clusterType, "ClusterType cannot be null");
     if (fsType != null) {
       this.fsType = fsType;
@@ -556,7 +531,6 @@ public class QTestUtil {
     }
     this.outDir = outDir;
     this.logDir = logDir;
-    this.useHBaseMetastore = useHBaseMetastore;
     this.srcTables=getSrcTables();
     this.srcUDFs = getSrcUDFs();
 
@@ -567,11 +541,7 @@ public class QTestUtil {
     }
 
     queryState = new QueryState.Builder().withHiveConf(new HiveConf(Driver.class)).build();
-    if (useHBaseMetastore) {
-      startMiniHBaseCluster();
-    } else {
-      conf = queryState.getConf();
-    }
+    conf = queryState.getConf();
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
@@ -696,9 +666,6 @@ public class QTestUtil {
       } finally {
         sparkSession = null;
       }
-    }
-    if (useHBaseMetastore) {
-      utility.shutdownMiniCluster();
     }
     if (mr != null) {
       mr.shutdown();
@@ -1149,7 +1116,7 @@ public class QTestUtil {
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,
     "org.apache.hadoop.hive.ql.security.DummyAuthenticator");
     Utilities.clearWorkMap(conf);
-    CliSessionState ss = createSessionState();
+    CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
 
@@ -1209,32 +1176,6 @@ public class QTestUtil {
     return outf.getAbsolutePath();
   }
 
-  private CliSessionState createSessionState() {
-   return new CliSessionState(conf) {
-      @Override
-      public void setSparkSession(SparkSession sparkSession) {
-        super.setSparkSession(sparkSession);
-        if (sparkSession != null) {
-          try {
-            // Wait a little for cluster to init, at most 4 minutes
-            long endTime = System.currentTimeMillis() + 240000;
-            while (sparkSession.getMemoryAndCores().getSecond() <= 1) {
-              if (System.currentTimeMillis() >= endTime) {
-                String msg = "Timed out waiting for Spark cluster to init";
-                throw new IllegalStateException(msg);
-              }
-              Thread.sleep(100);
-            }
-          } catch (Exception e) {
-            String msg = "Error trying to obtain executor info: " + e;
-            LOG.error(msg, e);
-            throw new IllegalStateException(msg, e);
-          }
-        }
-      }
-    };
-  }
-
   private CliSessionState startSessionState(boolean canReuseSession)
       throws IOException {
 
@@ -1243,7 +1184,7 @@ public class QTestUtil {
 
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
-    CliSessionState ss = createSessionState();
+    CliSessionState ss = new CliSessionState(conf);
     assert ss != null;
     ss.in = System.in;
     ss.out = System.out;
@@ -2032,8 +1973,7 @@ public class QTestUtil {
     for (int i = 0; i < qfiles.length; i++) {
       qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20",
         initScript == null ? defaultInitScript : initScript,
-        cleanupScript == null ? defaultCleanupScript : cleanupScript,
-        false, false);
+        cleanupScript == null ? defaultCleanupScript : cleanupScript, false);
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
@@ -2386,7 +2326,8 @@ public class QTestUtil {
         for (int i = 2; i < splits.length; i++) {
           sb.append(splits[i]+"@");
         }
-        return sb.append(tblID).toString();
+        // Add tbl_id and empty bitvector
+        return sb.append(tblID).append("@").toString();
         });
 
       Files.write(tmpFileLoc1, (Iterable<String>)replaced::iterator);

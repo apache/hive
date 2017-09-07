@@ -61,7 +61,10 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
+import javax.sql.DataSource;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -72,9 +75,6 @@ import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
@@ -100,6 +100,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
@@ -124,6 +126,11 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
@@ -160,7 +167,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
@@ -191,6 +197,7 @@ import com.google.common.collect.Maps;
 public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
+  private static boolean forTwoMetastoreTesting = false;
 
   private static Lock pmfPropLock = new ReentrantLock();
   /**
@@ -244,6 +251,7 @@ public class ObjectStore implements RawStore, Configurable {
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private Pattern partitionValidationPattern;
+  private Counter directSqlErrors;
 
   /**
    * A Autocloseable wrapper around Query class to pass the Query object to the caller and let the caller release
@@ -294,6 +302,10 @@ public class ObjectStore implements RawStore, Configurable {
       if (propsChanged) {
         if (pmf != null){
           clearOutPmfClassLoaderCache(pmf);
+          if (!forTwoMetastoreTesting) {
+            // close the underlying connection pool to avoid leaks
+            pmf.close();
+          }
         }
         pmf = null;
         prop = null;
@@ -318,6 +330,13 @@ public class ObjectStore implements RawStore, Configurable {
         partitionValidationPattern = Pattern.compile(partitionValidationRegex);
       } else {
         partitionValidationPattern = null;
+      }
+
+      // Note, if metrics have not been initialized this will return null, which means we aren't
+      // using metrics.  Thus we should always check whether this is non-null before using.
+      MetricRegistry registry = Metrics.getRegistry();
+      if (registry != null) {
+        directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
       }
 
       if (!isInitialized) {
@@ -418,7 +437,11 @@ public class ObjectStore implements RawStore, Configurable {
       dbType = determineDatabaseProduct();
       expressionProxy = createExpressionProxy(hiveConf);
       if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)) {
-        directSql = new MetaStoreDirectSql(pm, hiveConf, dbType);
+        String schema = prop.getProperty("javax.jdo.mapping.Schema");
+        if (schema != null && schema.isEmpty()) {
+          schema = null;
+        }
+        directSql = new MetaStoreDirectSql(pm, hiveConf, schema);
       }
     }
     LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
@@ -510,8 +533,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     // Password may no longer be in the conf, use getPassword()
     try {
-      String passwd =
-          ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
+      String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
       if (passwd != null && !passwd.isEmpty()) {
         prop.setProperty(HiveConf.ConfVars.METASTOREPWD.varname, passwd);
       }
@@ -550,10 +572,29 @@ public class ObjectStore implements RawStore, Configurable {
 
   private static synchronized PersistenceManagerFactory getPMF() {
     if (pmf == null) {
-      pmf = JDOHelper.getPersistenceManagerFactory(prop);
+
+      HiveConf conf = new HiveConf(ObjectStore.class);
+      DataSourceProvider dsp = DataSourceProviderFactory.getDataSourceProvider(conf);
+      if (dsp == null) {
+        pmf = JDOHelper.getPersistenceManagerFactory(prop);
+      } else {
+        try {
+          DataSource ds = dsp.create(conf);
+          Map<Object, Object> dsProperties = new HashMap<>();
+          //Any preexisting datanucleus property should be passed along
+          dsProperties.putAll(prop);
+          dsProperties.put("datanucleus.ConnectionFactory", ds);
+          dsProperties.put("javax.jdo.PersistenceManagerFactoryClass",
+              "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
+          pmf = JDOHelper.getPersistenceManagerFactory(dsProperties);
+        } catch (SQLException e) {
+          LOG.warn("Could not create PersistenceManagerFactory using " +
+              "connection pool properties, will fall back", e);
+          pmf = JDOHelper.getPersistenceManagerFactory(prop);
+        }
+      }
       DataStoreCache dsc = pmf.getDataStoreCache();
       if (dsc != null) {
-        HiveConf conf = new HiveConf(ObjectStore.class);
         String objTypes = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES);
         LOG.info("Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"" + objTypes + "\"");
         if (objTypes != null && objTypes.length() > 0) {
@@ -588,6 +629,7 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("RawStore: " + this + ", with PersistenceManager: " + pm +
           " will be shutdown");
       pm.close();
+      pm = null;
     }
   }
 
@@ -815,6 +857,12 @@ public class ObjectStore implements RawStore, Configurable {
       if (db.getOwnerType() != null) {
         mdb.setOwnerType(db.getOwnerType().name());
       }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getDescription())) {
+        mdb.setDescription(db.getDescription());
+      }
+      if (org.apache.commons.lang.StringUtils.isNotBlank(db.getLocationUri())) {
+        mdb.setLocationUri(db.getLocationUri());
+      }
       openTransaction();
       pm.makePersistent(mdb);
       committed = commitTransaction();
@@ -997,7 +1045,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createTableWithConstraints(Table tbl,
+  public List<String> createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints)
@@ -1009,11 +1057,12 @@ public class ObjectStore implements RawStore, Configurable {
       // Add constraints.
       // We need not do a deep retrieval of the Table Column Descriptor while persisting the
       // constraints since this transaction involving create table is not yet committed.
-      addPrimaryKeys(primaryKeys, false);
-      addForeignKeys(foreignKeys, false);
-      addUniqueConstraints(uniqueConstraints, false);
-      addNotNullConstraints(notNullConstraints, false);
+      List<String> constraintNames = addPrimaryKeys(primaryKeys, false);
+      constraintNames.addAll(addForeignKeys(foreignKeys, false));
+      constraintNames.addAll(addUniqueConstraints(uniqueConstraints, false));
+      constraintNames.addAll(addNotNullConstraints(notNullConstraints, false));
       success = commitTransaction();
+      return constraintNames;
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -1765,6 +1814,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       if (toPersist.size() > 0) {
         pm.makePersistentAll(toPersist);
+        pm.flush();
       }
 
       success = commitTransaction();
@@ -2734,7 +2784,7 @@ public class ObjectStore implements RawStore, Configurable {
           && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
       if (isConfigEnabled && directSql == null) {
         dbType = determineDatabaseProduct();
-        directSql = new MetaStoreDirectSql(pm, getConf(), dbType);
+        directSql = new MetaStoreDirectSql(pm, getConf(), "");
       }
 
       if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
@@ -2831,13 +2881,8 @@ public class ObjectStore implements RawStore, Configurable {
         start = doTrace ? System.nanoTime() : 0;
       }
 
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          metrics.incrementCounter(MetricsConstant.DIRECTSQL_ERRORS);
-        } catch (Exception e) {
-          LOG.warn("Error reporting Direct SQL errors to metrics system", e);
-        }
+      if (directSqlErrors != null) {
+        directSqlErrors.inc();
       }
 
       doUseDirectSql = false;
@@ -3530,7 +3575,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private String generateConstraintName(String... parameters) throws MetaException {
-    int hashcode = ArrayUtils.toString(parameters).hashCode();
+    int hashcode = ArrayUtils.toString(parameters).hashCode() & 0xfffffff;
     int counter = 0;
     final int MAX_RETRIES = 10;
     while (counter < MAX_RETRIES) {
@@ -3544,9 +3589,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addForeignKeys(
+  public List<String> addForeignKeys(
     List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
-   addForeignKeys(fks, true);
+   return addForeignKeys(fks, true);
   }
 
   @Override
@@ -3620,9 +3665,10 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private void addForeignKeys(
+  private List<String> addForeignKeys(
     List<SQLForeignKey> fks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
+    List<String> fkNames = new ArrayList<String>();
     List<MConstraint> mpkfks = new ArrayList<MConstraint>();
     String currentConstraintName = null;
 
@@ -3677,6 +3723,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         currentConstraintName = HiveStringUtils.normalizeIdentifier(fks.get(i).getFk_name());
       }
+      fkNames.add(currentConstraintName);
       Integer updateRule = fks.get(i).getUpdate_rule();
       Integer deleteRule = fks.get(i).getDelete_rule();
       int enableValidateRely = (fks.get(i).isEnable_cstr() ? 4 : 0) +
@@ -3698,16 +3745,18 @@ public class ObjectStore implements RawStore, Configurable {
       mpkfks.add(mpkfk);
     }
     pm.makePersistentAll(mpkfks);
+    return fkNames;
   }
 
   @Override
-  public void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
     MetaException {
-    addPrimaryKeys(pks, true);
+    return addPrimaryKeys(pks, true);
   }
 
-  private void addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
+  private List<String> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
+    List<String> pkNames = new ArrayList<String>();
     List<MConstraint> mpks = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3743,7 +3792,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(pks.get(i).getPk_name());
       }
-
+      pkNames.add(constraintName);
       int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
       (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
@@ -3762,16 +3811,18 @@ public class ObjectStore implements RawStore, Configurable {
       mpks.add(mpk);
     }
     pm.makePersistentAll(mpks);
+    return pkNames;
   }
 
   @Override
-  public void addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
           throws InvalidObjectException, MetaException {
-    addUniqueConstraints(uks, true);
+    return addUniqueConstraints(uks, true);
   }
 
-  private void addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
+  private List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
+    List<String> ukNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3801,6 +3852,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(uks.get(i).getUk_name());
       }
+      ukNames.add(constraintName);
 
       int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
           (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
@@ -3820,16 +3872,18 @@ public class ObjectStore implements RawStore, Configurable {
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
+    return ukNames;
   }
 
   @Override
-  public void addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
           throws InvalidObjectException, MetaException {
-    addNotNullConstraints(nns, true);
+    return addNotNullConstraints(nns, true);
   }
 
-  private void addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
+  private List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
+    List<String> nnNames = new ArrayList<String>();
     List<MConstraint> cstrs = new ArrayList<MConstraint>();
     String constraintName = null;
 
@@ -3857,6 +3911,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         constraintName = HiveStringUtils.normalizeIdentifier(nns.get(i).getNn_name());
       }
+      nnNames.add(constraintName);
 
       int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
           (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
@@ -3876,6 +3931,7 @@ public class ObjectStore implements RawStore, Configurable {
       cstrs.add(muk);
     }
     pm.makePersistentAll(cstrs);
+    return nnNames;
   }
 
   @Override
@@ -7216,11 +7272,13 @@ public class ObjectStore implements RawStore, Configurable {
   protected ColumnStatistics getTableColumnStatisticsInternal(
       String dbName, String tableName, final List<String> colNames, boolean allowSql,
       boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetStatHelper(HiveStringUtils.normalizeIdentifier(dbName),
         HiveStringUtils.normalizeIdentifier(tableName), allowSql, allowJdo) {
       @Override
       protected ColumnStatistics getSqlResult(GetHelper<ColumnStatistics> ctx) throws MetaException {
-        return directSql.getTableStats(dbName, tblName, colNames);
+        return directSql.getTableStats(dbName, tblName, colNames, enableBitVector);
       }
       @Override
       protected ColumnStatistics getJdoResult(
@@ -7238,7 +7296,7 @@ public class ObjectStore implements RawStore, Configurable {
           if (desc.getLastAnalyzed() > mStat.getLastAnalyzed()) {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
-          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat));
+          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector));
           Deadline.checkTimeout();
         }
         return new ColumnStatistics(desc, statObjs);
@@ -7259,11 +7317,13 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<ColumnStatistics> getPartitionColumnStatisticsInternal(
       String dbName, String tableName, final List<String> partNames, final List<String> colNames,
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetListHelper<ColumnStatistics>(dbName, tableName, allowSql, allowJdo) {
       @Override
       protected List<ColumnStatistics> getSqlResult(
           GetHelper<List<ColumnStatistics>> ctx) throws MetaException {
-        return directSql.getPartitionStats(dbName, tblName, partNames, colNames);
+        return directSql.getPartitionStats(dbName, tblName, partNames, colNames, enableBitVector);
       }
       @Override
       protected List<ColumnStatistics> getJdoResult(
@@ -7291,7 +7351,7 @@ public class ObjectStore implements RawStore, Configurable {
               csd = StatObjectConverter.getPartitionColumnStatisticsDesc(mStatsObj);
               curList = new ArrayList<ColumnStatisticsObj>(colNames.size());
             }
-            curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj));
+            curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector));
             lastPartName = partName;
             Deadline.checkTimeout();
           }
@@ -7311,12 +7371,14 @@ public class ObjectStore implements RawStore, Configurable {
         HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
     final double ndvTuner = HiveConf.getFloatVar(getConf(),
         HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetHelper<AggrStats>(dbName, tblName, true, false) {
       @Override
       protected AggrStats getSqlResult(GetHelper<AggrStats> ctx)
           throws MetaException {
         return directSql.aggrColStatsForPartitions(dbName, tblName, partNames,
-            colNames, useDensityFunctionForNDVEstimation, ndvTuner);
+            colNames, useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector);
       }
       @Override
       protected AggrStats getJdoResult(GetHelper<AggrStats> ctx)
@@ -7336,11 +7398,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
       String tableName) throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_STATS_FETCH_BITVECTOR);
     return new GetHelper<Map<String, List<ColumnStatisticsObj>>>(dbName, tableName, true, false) {
       @Override
       protected Map<String, List<ColumnStatisticsObj>> getSqlResult(
           GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException {
-        return directSql.getColStatsForTablePartitions(dbName, tblName);
+        return directSql.getColStatsForTablePartitions(dbName, tblName, enableBitVector);
       }
 
       @Override
@@ -8306,6 +8370,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
+    Long result = 0L;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      long fromEventId = rqst.getFromEventId();
+      String inputDbName = rqst.getDbName();
+      String queryStr = "select count(eventId) from " + MNotificationLog.class.getName()
+                + " where eventId > fromEventId && dbName == inputDbName";
+      query = pm.newQuery(queryStr);
+      query.declareParameters("java.lang.Long fromEventId, java.lang.String inputDbName");
+      result = (Long) query.execute(fromEventId, inputDbName);
+      commited = commitTransaction();
+      return new NotificationEventsCountResponse(result.longValue());
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
   private MNotificationLog translateThriftToDb(NotificationEvent entry) {
     MNotificationLog dbEntry = new MNotificationLog();
     dbEntry.setEventId(entry.getEventId());
@@ -8882,5 +8967,14 @@ public class ObjectStore implements RawStore, Configurable {
         queryWrapper.close();
       }
     }
+  }
+
+  /**
+   * To make possible to run multiple metastore in unit test
+   * @param twoMetastoreTesting if we are using multiple metastore in unit test
+   */
+  @VisibleForTesting
+  public static void setTwoMetastoreTesting(boolean twoMetastoreTesting) {
+    forTwoMetastoreTesting = twoMetastoreTesting;
   }
 }

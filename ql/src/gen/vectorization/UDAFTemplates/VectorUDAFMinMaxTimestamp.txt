@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -82,26 +83,19 @@ public class <ClassName> extends VectorAggregateExpression {
       }
     }
 
-    private VectorExpression inputExpression;
-
-    @Override
-    public VectorExpression inputExpression() {
-      return inputExpression;
-    }
-
     private transient VectorExpressionWriter resultWriter;
 
-    public <ClassName>(VectorExpression inputExpression) {
-      this();
-      this.inputExpression = inputExpression;
+    public <ClassName>(VectorExpression inputExpression, GenericUDAFEvaluator.Mode mode) {
+      super(inputExpression, mode);
     }
 
-    public <ClassName>() {
-      super();
+    private void init() {
     }
 
     @Override
     public void init(AggregationDesc desc) throws HiveException {
+      init();
+
       resultWriter = VectorExpressionWriterFactory.genVectorExpressionWritable(
           desc.getParameters().get(0));
     }
@@ -449,14 +443,6 @@ public class <ClassName> extends VectorAggregateExpression {
       model.object() +
       model.primitive2(),
       model.memoryAlign());
-  }
-
-  public VectorExpression getInputExpression() {
-    return inputExpression;
-  }
-
-  public void setInputExpression(VectorExpression inputExpression) {
-    this.inputExpression = inputExpression;
   }
 }
 

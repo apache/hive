@@ -24,8 +24,12 @@ import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -43,6 +47,7 @@ import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants.HIVE_METASTORE_TRANSACTION_ACTIVE;
 import static org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 
 /**
@@ -50,6 +55,7 @@ import static org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
  */
 @Private
 public class MetaStoreListenerNotifier {
+
   private interface EventNotifier {
     void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException;
   }
@@ -140,6 +146,30 @@ public class MetaStoreListenerNotifier {
               listener.onAlterIndex((AlterIndexEvent)event);
             }
           })
+          .put(EventType.ADD_PRIMARYKEY, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddPrimaryKey((AddPrimaryKeyEvent)event);
+            }
+          })
+          .put(EventType.ADD_FOREIGNKEY, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddForeignKey((AddForeignKeyEvent)event);
+            }
+          })
+          .put(EventType.ADD_UNIQUECONSTRAINT, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddUniqueConstraint((AddUniqueConstraintEvent)event);
+            }
+          })
+          .put(EventType.ADD_NOTNULLCONSTRAINT, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddNotNullConstraint((AddNotNullConstraintEvent)event);
+            }
+          })
           .build()
   );
 
@@ -155,7 +185,7 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event) throws MetaException {
 
@@ -163,7 +193,7 @@ public class MetaStoreListenerNotifier {
     Preconditions.checkNotNull(event, "The event must not be null.");
 
     for (MetaStoreEventListener listener : listeners) {
-      notificationEvents.get(eventType).notify(listener, event);
+        notificationEvents.get(eventType).notify(listener, event);
     }
 
     // Each listener called above might set a different parameter on the event.
@@ -185,7 +215,7 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event,
                                                 EnvironmentContext environmentContext) throws MetaException {
@@ -201,24 +231,36 @@ public class MetaStoreListenerNotifier {
    * the (ListenerEvent) event by setting a parameter key/value pair. These updated parameters will
    * be returned to the caller.
    *
+   * Sometimes these events are run inside a DB transaction and might cause issues with the listeners,
+   * for instance, Sentry blocks the HMS until an event is seen committed on the DB. To notify the listener about this,
+   * a new parameter to verify if a transaction is active is added to the ListenerEvent, and is up to the listener
+   * to skip this notification if so.
+   *
    * @param listeners List of MetaStoreEventListener listeners.
    * @param eventType Type of the notification event.
    * @param event The ListenerEvent with information about the event.
    * @param environmentContext An EnvironmentContext object with parameters sent by the HMS client.
    * @param parameters A list of key/value pairs with the new parameters to add.
+   * @param ms The RawStore object from where to check if a transaction is active.
    * @return A list of key/value pair parameters that the listeners set. The returned object will return an empty
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyEvent(List<MetaStoreEventListener> listeners,
+  public static Map<String, String> notifyEvent(List<? extends MetaStoreEventListener> listeners,
                                                 EventType eventType,
                                                 ListenerEvent event,
                                                 EnvironmentContext environmentContext,
-                                                Map<String, String> parameters) throws MetaException {
+                                                Map<String, String> parameters,
+                                                final RawStore ms) throws MetaException {
 
     Preconditions.checkNotNull(event, "The event must not be null.");
 
     event.putParameters(parameters);
+
+    if (ms != null) {
+      event.putParameter(HIVE_METASTORE_TRANSACTION_ACTIVE, Boolean.toString(ms.isActiveTransaction()));
+    }
+
     return notifyEvent(listeners, eventType, event, environmentContext);
   }
 }

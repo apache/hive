@@ -260,6 +260,16 @@
 </property>
 
 <property>
+  <name>hive.prewarm.enabled</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.prewarm.spark.timeout</name>
+  <value>30s</value>
+</property>
+
+<property>
   <name>spark.testing</name>
   <value>true</value>
 </property>

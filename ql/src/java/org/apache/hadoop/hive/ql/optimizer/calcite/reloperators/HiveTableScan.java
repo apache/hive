@@ -36,7 +36,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -62,7 +62,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final String tblAlias;
   private final String concatQbIDAlias;
   private final boolean useQBIdInDigest;
-  private final ImmutableSet<Integer> viurtualOrPartColIndxsInTS;
+  private final ImmutableSet<Integer> virtualOrPartColIndxsInTS;
+  private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
 
@@ -98,9 +99,11 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.tblAlias = alias;
     this.concatQbIDAlias = concatQbIDAlias;
     this.hiveTableScanRowType = newRowtype;
-    Pair<ImmutableList<Integer>, ImmutableSet<Integer>> colIndxPair = buildColIndxsFrmReloptHT(table, newRowtype);
-    this.neededColIndxsFrmReloptHT = colIndxPair.getKey();
-    this.viurtualOrPartColIndxsInTS = colIndxPair.getValue();
+    Triple<ImmutableList<Integer>, ImmutableSet<Integer>, ImmutableSet<Integer>> colIndxPair =
+        buildColIndxsFrmReloptHT(table, newRowtype);
+    this.neededColIndxsFrmReloptHT = colIndxPair.getLeft();
+    this.virtualOrPartColIndxsInTS = colIndxPair.getMiddle();
+    this.virtualColIndxsInTS = colIndxPair.getRight();
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
   }
@@ -203,36 +206,47 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   public Set<Integer> getPartOrVirtualCols() {
-    return viurtualOrPartColIndxsInTS;
+    return virtualOrPartColIndxsInTS;
   }
 
-  private static Pair<ImmutableList<Integer>, ImmutableSet<Integer>> buildColIndxsFrmReloptHT(
+  public Set<Integer> getVirtualCols() {
+    return virtualColIndxsInTS;
+  }
+
+  private static Triple<ImmutableList<Integer>, ImmutableSet<Integer>, ImmutableSet<Integer>> buildColIndxsFrmReloptHT(
       RelOptHiveTable relOptHTable, RelDataType scanRowType) {
     RelDataType relOptHtRowtype = relOptHTable.getRowType();
-    ImmutableList<Integer> neededColIndxsFrmReloptHT;
     Builder<Integer> neededColIndxsFrmReloptHTBldr = new ImmutableList.Builder<Integer>();
-    ImmutableSet<Integer> viurtualOrPartColIndxsInTS;
-    ImmutableSet.Builder<Integer> viurtualOrPartColIndxsInTSBldr = new ImmutableSet.Builder<Integer>();
+    ImmutableSet.Builder<Integer> virtualOrPartColIndxsInTSBldr =
+        new ImmutableSet.Builder<Integer>();
+    ImmutableSet.Builder<Integer> virtualColIndxsInTSBldr =
+            new ImmutableSet.Builder<Integer>();
 
     Map<String, Integer> colNameToPosInReloptHT = HiveCalciteUtil
         .getRowColNameIndxMap(relOptHtRowtype.getFieldList());
     List<String> colNamesInScanRowType = scanRowType.getFieldNames();
 
-    int partOrVirtualColStartPosInrelOptHtRowtype = relOptHTable.getNonPartColumns().size();
+    int partColStartPosInrelOptHtRowtype = relOptHTable.getNonPartColumns().size();
+    int virtualColStartPosInrelOptHtRowtype =
+        relOptHTable.getNonPartColumns().size() + relOptHTable.getPartColumns().size();
     int tmp;
     for (int i = 0; i < colNamesInScanRowType.size(); i++) {
       tmp = colNameToPosInReloptHT.get(colNamesInScanRowType.get(i));
       neededColIndxsFrmReloptHTBldr.add(tmp);
-      if (tmp >= partOrVirtualColStartPosInrelOptHtRowtype) {
-        viurtualOrPartColIndxsInTSBldr.add(i);
+      if (tmp >= partColStartPosInrelOptHtRowtype) {
+        // Part or virtual
+        virtualOrPartColIndxsInTSBldr.add(i);
+        if (tmp >= virtualColStartPosInrelOptHtRowtype) {
+          // Virtual
+          virtualColIndxsInTSBldr.add(i);
+        }
       }
     }
 
-    neededColIndxsFrmReloptHT = neededColIndxsFrmReloptHTBldr.build();
-    viurtualOrPartColIndxsInTS = viurtualOrPartColIndxsInTSBldr.build();
-
-    return new Pair<ImmutableList<Integer>, ImmutableSet<Integer>>(neededColIndxsFrmReloptHT,
-        viurtualOrPartColIndxsInTS);
+    return Triple.of(
+        neededColIndxsFrmReloptHTBldr.build(),
+        virtualOrPartColIndxsInTSBldr.build(),
+        virtualColIndxsInTSBldr.build());
   }
 
   public boolean isInsideView() {

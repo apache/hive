@@ -49,15 +49,16 @@ public interface SparkClient extends Serializable {
 
   /**
    * Asks the remote context to run a job immediately.
-   * <p/>
+   * <p>
    * Normally, the remote context will queue jobs and execute them based on how many worker
    * threads have been configured. This method will run the submitted job in the same thread
    * processing the RPC message, so that queueing does not apply.
-   * <p/>
+   * </p>
+   * <p>
    * It's recommended that this method only be used to run code that finishes quickly. This
    * avoids interfering with the normal operation of the context.
-   * <p/>
-   * Note: the {@link JobContext#monitor()} functionality is not available when using this method.
+   * </p>
+   * Note: the JobContext#monitor() functionality is not available when using this method.
    *
    * @param job The job to execute.
    * @return A future to monitor the result of the job.

@@ -20,12 +20,10 @@ package org.apache.hadoop.hive.ql.parse;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
 import java.text.Collator;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,6 +43,7 @@ public class ReplicationSpec {
   private boolean isNoop = false;
   private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
   private boolean isReplace = true; // default is that the import mode is insert overwrite
+  private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
 
   // Key definitions related to replication
   public enum KEY {
@@ -67,37 +66,9 @@ public class ReplicationSpec {
     }
   }
 
-  public enum SCOPE { NO_REPL, MD_ONLY, REPL };
+  public enum SCOPE { NO_REPL, MD_ONLY, REPL }
 
-  static private Collator collator = Collator.getInstance();
-
-  /**
-   * Class that extends HashMap with a slightly different put semantic, where
-   * put behaves as follows:
-   *  a) If the key does not already exist, then retains existing HashMap.put behaviour
-   *  b) If the map already contains an entry for the given key, then will replace only
-   *     if the new value is "greater" than the old value.
-   *
-   * The primary goal for this is to track repl updates for dbs and tables, to replace state
-   * only if the state is newer.
-   */
-  public static class ReplStateMap<K,V extends Comparable> extends HashMap<K,V> {
-    @Override
-    public V put(K k, V v){
-      if (!containsKey(k)){
-        return super.put(k,v);
-      }
-      V oldValue = get(k);
-      if (v.compareTo(oldValue) > 0){
-        return super.put(k,v);
-      }
-      // we did no replacement, but return the old value anyway. This
-      // seems most consistent with HashMap behaviour, becuse the "put"
-      // was effectively processed and consumed, although we threw away
-      // the enw value.
-      return oldValue;
-    }
-  }
+  public enum Type { DEFAULT, INCREMENTAL_DUMP, IMPORT }
 
   /**
    * Constructor to construct spec based on either the ASTNode that
@@ -134,6 +105,10 @@ public class ReplicationSpec {
     this((ASTNode)null);
   }
 
+  public ReplicationSpec(String fromId, String toId) {
+    this(true, false, fromId, toId, false, true, false);
+  }
+
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isLazy, boolean isReplace) {
@@ -144,12 +119,14 @@ public class ReplicationSpec {
     this.isNoop = isNoop;
     this.isLazy = isLazy;
     this.isReplace = isReplace;
+    this.specType = Type.DEFAULT;
   }
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
-    this.isMetadataOnly = false;
     this.isInReplicationScope = false;
+    this.isMetadataOnly = false;
+    this.specType = Type.DEFAULT;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
@@ -177,7 +154,7 @@ public class ReplicationSpec {
    * @param replacementReplState Replacement-candidate state
    * @return whether or not a provided replacement candidate is newer(or equal) to the existing object state or not
    */
-  public static boolean allowReplacement(String currReplState, String replacementReplState){
+  public boolean allowReplacement(String currReplState, String replacementReplState){
     if ((currReplState == null) || (currReplState.isEmpty())) {
       // if we have no replication state on record for the obj, allow replacement.
       return true;
@@ -189,58 +166,37 @@ public class ReplicationSpec {
     }
 
     // First try to extract a long value from the strings, and compare them.
-    // If oldReplState is less-than or equal to newReplState, allow.
+    // If oldReplState is less-than newReplState, allow.
     long currReplStateLong = Long.parseLong(currReplState.replaceAll("\\D",""));
     long replacementReplStateLong = Long.parseLong(replacementReplState.replaceAll("\\D",""));
 
-    if ((currReplStateLong != 0) || (replacementReplStateLong != 0)){
-      return ((currReplStateLong - replacementReplStateLong) <= 0);
+    // Failure handling of IMPORT command and REPL LOAD commands are different.
+    // IMPORT will set the last repl ID before copying data files and hence need to allow
+    // replacement if loaded from same dump twice after failing to copy in previous attempt.
+    // But, REPL LOAD will set the last repl ID only after the successful copy of data files and
+    // hence need not allow if same event is applied twice.
+    if (specType == Type.IMPORT) {
+      return (currReplStateLong <= replacementReplStateLong);
+    } else {
+      return (currReplStateLong < replacementReplStateLong);
     }
-
-    // If the long value of both is 0, though, fall back to lexical comparison.
-
-    // Lexical comparison according to locale will suffice for now, future might add more logic
-    return (collator.compare(currReplState.toLowerCase(), replacementReplState.toLowerCase()) <= 0);
   }
 
  /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given partition
+   * Determines if a current replication object (current state of dump) is allowed to
+   * replicate-replace-into a given metastore object (based on state_id stored in their parameters)
    */
-  public boolean allowReplacementInto(Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getCurrentReplicationState());
+  public boolean allowReplacementInto(Map<String, String> params){
+    return allowReplacement(getLastReplicatedStateFromParameters(params),
+                            getCurrentReplicationState());
   }
 
   /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given partition
+   * Determines if a current replication event (based on event id) is allowed to
+   * replicate-replace-into a given metastore object (based on state_id stored in their parameters)
    */
-  public boolean allowReplacementInto(org.apache.hadoop.hive.metastore.api.Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getCurrentReplicationState());
-  }
-
-  /**
-   * Determines if a current replication event specification is allowed to
-   * replicate-replace-into a given partition
-   */
-  public boolean allowEventReplacementInto(Partition ptn){
-    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getReplicationState());
-  }
-
-  /**
-   * Determines if a current replication object(current state of dump) is allowed to
-   * replicate-replace-into a given table
-   */
-  public boolean allowReplacementInto(Table table) {
-    return allowReplacement(getLastReplicatedStateFromParameters(table.getParameters()),this.getCurrentReplicationState());
-  }
-
-  /**
-   * Determines if a current replication event specification is allowed to
-   * replicate-replace-into a given table
-   */
-  public boolean allowEventReplacementInto(Table table) {
-    return allowReplacement(getLastReplicatedStateFromParameters(table.getParameters()),this.getReplicationState());
+  public boolean allowEventReplacementInto(Map<String, String> params){
+    return allowReplacement(getLastReplicatedStateFromParameters(params), getReplicationState());
   }
 
   /**
@@ -254,27 +210,46 @@ public class ReplicationSpec {
         if (partition == null){
           return false;
         }
-        return (allowEventReplacementInto(partition));
+        return (allowEventReplacementInto(partition.getParameters()));
       }
     };
-  }
-
-  private static String getLastReplicatedStateFromParameters(Map<String, String> m) {
-    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
-      return m.get(KEY.CURR_STATE_ID.toString());
-    }
-    return null;
   }
 
   private void init(ASTNode node){
     // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
     isInReplicationScope = true;
     eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
-    if (node.getChildCount() > 1){
-      if (node.getChild(1).getText().toLowerCase().equals("metadata")) {
-        isMetadataOnly= true;
+    if ((node.getChildCount() > 1)
+            && node.getChild(1).getText().toLowerCase().equals("metadata")) {
+      isMetadataOnly= true;
+      try {
+        if (Long.parseLong(eventId) >= 0) {
+          // If metadata-only dump, then the state of the dump shouldn't be the latest event id as
+          // the data is not yet dumped and shall be dumped in future export.
+          currStateId = eventId;
+        }
+      } catch (Exception ex) {
+        // Ignore the exception and fall through the default currentStateId
       }
     }
+  }
+
+  public static String getLastReplicatedStateFromParameters(Map<String, String> m) {
+    if ((m != null) && (m.containsKey(KEY.CURR_STATE_ID.toString()))){
+      return m.get(KEY.CURR_STATE_ID.toString());
+    }
+    return null;
+  }
+
+  /**
+   * @return true if this statement refers to incremental dump operation.
+   */
+  public Type getReplSpecType(){
+    return this.specType;
+  }
+
+  public void setReplSpecType(Type specType){
+    this.specType = specType;
   }
 
   /**
@@ -349,7 +324,6 @@ public class ReplicationSpec {
   public void setLazy(boolean isLazy){
     this.isLazy = isLazy;
   }
-
 
   public String get(KEY key) {
     switch (key){

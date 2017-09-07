@@ -216,8 +216,8 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       versionQuery = "select t.SCHEMA_VERSION from VERSION t";
     }
     try (Connection metastoreDbConnection =
-        HiveSchemaHelper.getConnectionToMetastore(connectionInfo)) {
-      Statement stmt = metastoreDbConnection.createStatement();
+        HiveSchemaHelper.getConnectionToMetastore(connectionInfo); Statement stmt =
+        metastoreDbConnection.createStatement()) {
       ResultSet res = stmt.executeQuery(versionQuery);
       if (!res.next()) {
         throw new HiveMetaException("Could not find version info in metastore VERSION table.");

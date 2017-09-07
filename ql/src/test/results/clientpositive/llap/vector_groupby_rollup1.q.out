@@ -51,11 +51,11 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, val
                     Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string), 0 (type: int)
+                      aggregations: count()
+                      keys: key (type: string), val (type: string), 0 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 18 Data size: 3078 Basic stats: COMPLETE Column stats: NONE
@@ -223,11 +223,11 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, val
                     Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: string), _col1 (type: string), 0 (type: int)
+                      aggregations: count()
+                      keys: key (type: string), val (type: string), 0 (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 18 Data size: 3078 Basic stats: COMPLETE Column stats: NONE

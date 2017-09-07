@@ -58,11 +58,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -81,11 +81,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -104,11 +104,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -127,11 +127,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -150,11 +150,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -330,11 +330,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -353,11 +353,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -376,11 +376,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -399,11 +399,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -559,11 +559,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -582,11 +582,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -605,11 +605,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -628,11 +628,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -651,11 +651,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -832,11 +832,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -855,11 +855,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -878,11 +878,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -901,11 +901,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -924,11 +924,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1105,11 +1105,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1128,11 +1128,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1151,11 +1151,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1174,11 +1174,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1197,11 +1197,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1376,11 +1376,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1399,11 +1399,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1422,11 +1422,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1559,11 +1559,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1582,11 +1582,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1605,11 +1605,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1750,11 +1750,11 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
@@ -1764,16 +1764,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: bigint)
-                  Select Operator
-                    expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
@@ -1789,11 +1779,11 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: int)
-                    outputColumnNames: _col0, _col1
+                    outputColumnNames: key, value
                     Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
-                      keys: _col0 (type: int), _col1 (type: int)
+                      aggregations: count()
+                      keys: key (type: int), value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
@@ -1894,7 +1884,7 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: count(1)
+                      aggregations: count()
                       keys: _col0 (type: int), _col1 (type: int)
                       mode: complete
                       outputColumnNames: _col0, _col1, _col2

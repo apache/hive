@@ -110,7 +110,6 @@ public class RpcServer implements Closeable {
 
           }
       })
-      .option(ChannelOption.SO_BACKLOG, 1)
       .option(ChannelOption.SO_REUSEADDR, true)
       .childOption(ChannelOption.SO_KEEPALIVE, true);
 

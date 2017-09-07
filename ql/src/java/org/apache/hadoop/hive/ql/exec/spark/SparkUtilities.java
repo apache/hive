@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import com.google.common.base.Preconditions;
@@ -30,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManager;
@@ -206,5 +208,23 @@ public class SparkUtilities {
     for (Operator<?> child : root.getChildOperators()) {
       collectOp(result, child, clazz);
     }
+  }
+
+  /**
+   * remove currTask from the children of its parentTask
+   * remove currTask from the parent of its childrenTask
+   * @param currTask
+   */
+  public static void removeEmptySparkTask(SparkTask currTask) {
+    //remove currTask from parentTasks
+    ArrayList<Task> parTasks = new ArrayList<Task>();
+    parTasks.addAll(currTask.getParentTasks());
+
+    Object[] parTaskArr = parTasks.toArray();
+    for (Object parTask : parTaskArr) {
+      ((Task) parTask).removeDependentTask(currTask);
+    }
+    //remove currTask from childTasks
+    currTask.removeFromChildrenTasks();
   }
 }
