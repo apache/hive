@@ -9118,6 +9118,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * disableMapJoinWithHint
+   * @param hints
+   * @return true if hint to disable hint is provided, else false
+   * @throws SemanticException
+   */
+  private boolean disableMapJoinWithHint(List<ASTNode> hints) throws SemanticException {
+    if (hints == null || hints.size() == 0) return false;
+    for (ASTNode hintNode : hints) {
+      for (Node node : hintNode.getChildren()) {
+        ASTNode hint = (ASTNode) node;
+        if (hint.getChild(0).getType() != HintParser.TOK_MAPJOIN) continue;
+        Tree args = hint.getChild(1);
+        if (args.getChildCount() == 1) {
+          String text = args.getChild(0).getText();
+          if (text.equalsIgnoreCase("None")) {
+            // Hint to disable mapjoin.
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Merges node to target
    */
   private void mergeJoins(QB qb, QBJoinTree node, QBJoinTree target, int pos, int[] tgtToNodeExprMap) {
@@ -11377,6 +11402,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Set the semijoin hints in parse context
     pCtx.setSemiJoinHints(parseSemiJoinHint(getQB().getParseInfo().getHintList()));
+    // Set the mapjoin hint if it needs to be disabled.
+    pCtx.setDisableMapJoin(disableMapJoinWithHint(getQB().getParseInfo().getHintList()));
 
     // 5. Take care of view creation
     if (createVwDesc != null) {
