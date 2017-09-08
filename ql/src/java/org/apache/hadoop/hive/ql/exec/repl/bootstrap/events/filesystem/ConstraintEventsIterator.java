@@ -66,10 +66,10 @@ public class ConstraintEventsIterator implements Iterator<FSConstraintEvent> {
         constraintFiles = listConstraintFilesInDBDir(fs, dbDirs[0].getPath());
       }
     }
-    if (currentDbIndex < dbDirs.length && currentConstraintIndex < constraintFiles.length) {
+    if ((currentDbIndex < dbDirs.length) && (currentConstraintIndex < constraintFiles.length)) {
       return true;
     }
-    while (currentDbIndex < dbDirs.length && currentConstraintIndex == constraintFiles.length) {
+    while ((currentDbIndex < dbDirs.length) && (currentConstraintIndex == constraintFiles.length)) {
       currentDbIndex ++;
       if (currentDbIndex < dbDirs.length) {
         currentConstraintIndex = 0;
