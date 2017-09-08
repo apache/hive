@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
-import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadTask;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -50,7 +50,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
@@ -174,16 +178,23 @@ public class LoadPartitions {
   private TaskTracker forNewTable() throws Exception {
     Iterator<AddPartitionDesc> iterator = event.partitionDescriptions(tableDesc).iterator();
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
-      addPartition(iterator.next());
+      AddPartitionDesc currentPartitionDesc = iterator.next();
+      /*
+       the currentPartitionDesc cannot be inlined as we need the hasNext() to be evaluated post the
+       current retrieved lastReplicatedPartition
+      */
+      addPartition(iterator.hasNext(), currentPartitionDesc);
     }
     return tracker;
   }
 
-  private void addPartition(AddPartitionDesc addPartitionDesc) throws Exception {
+  private void addPartition(boolean hasMorePartitions, AddPartitionDesc addPartitionDesc) throws Exception {
     tracker.addTask(tasksForAddPartition(table, addPartitionDesc));
-    ReplicationState currentReplicationState =
-        new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
-    updateReplicationState(currentReplicationState);
+    if (hasMorePartitions && !tracker.canAddMoreTasks()) {
+      ReplicationState currentReplicationState =
+          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
+      updateReplicationState(currentReplicationState);
+    }
   }
 
   /**
@@ -285,7 +296,7 @@ public class LoadPartitions {
       Partition ptn = context.hiveDb.getPartition(table, partSpec, false);
       if (ptn == null) {
         if (!replicationSpec.isMetadataOnly()) {
-          addPartition(addPartitionDesc);
+          addPartition(partitionIterator.hasNext(), addPartitionDesc);
         }
       } else {
         // If replicating, then the partition already existing means we need to replace, maybe, if
@@ -301,7 +312,7 @@ public class LoadPartitions {
               );
             }
           } else {
-            addPartition(addPartitionDesc);
+            addPartition(partitionIterator.hasNext(), addPartitionDesc);
           }
         } else {
           // ignore this ptn, do nothing, not an error.
