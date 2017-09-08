@@ -50,8 +50,6 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -86,9 +84,8 @@ public class TestObjectStore {
     }
 
     @Override
-    public boolean filterPartitionsByExpr(List<String> partColumnNames,
-        List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr,
-        String defaultPartitionName, List<String> partitionNames)
+    public boolean filterPartitionsByExpr(List<FieldSchema> partColumns,
+        byte[] expr, String defaultPartitionName, List<String> partitionNames)
         throws MetaException {
       return false;
     }
@@ -278,8 +275,8 @@ public class TestObjectStore {
     StorageDescriptor sd = new StorageDescriptor(null, "location", null, null, false, 0, new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
     HashMap<String,String> tableParams = new HashMap<String,String>();
     tableParams.put("EXTERNAL", "false");
-    FieldSchema partitionKey1 = new FieldSchema("Country", serdeConstants.STRING_TYPE_NAME, "");
-    FieldSchema partitionKey2 = new FieldSchema("State", serdeConstants.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey1 = new FieldSchema("Country", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema partitionKey2 = new FieldSchema("State", ColumnType.STRING_TYPE_NAME, "");
     Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2), tableParams, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
     HashMap<String, String> partitionParams = new HashMap<String, String>();
