@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.calcite.adapter.druid.DruidDateTimeUtils;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +55,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.Interval;
-import org.joda.time.Period;
 import org.joda.time.chrono.ISOChronology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,10 +63,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.Lists;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
 import com.metamx.http.client.Request;
 
 import io.druid.query.BaseQuery;
@@ -308,7 +302,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // following the Select threshold configuration property
     final List<Interval> intervals = new ArrayList<>();
     if (query.getIntervals().size() == 1 && query.getIntervals().get(0).withChronology(
-            ISOChronology.getInstanceUTC()).equals(DruidTable.DEFAULT_INTERVAL)) {
+            ISOChronology.getInstanceUTC()).equals(DruidStorageHandlerUtils.DEFAULT_INTERVAL)) {
       // Default max and min, we should execute a time boundary query to get a
       // more precise range
       TimeBoundaryQueryBuilder timeBuilder = new Druids.TimeBoundaryQueryBuilder();

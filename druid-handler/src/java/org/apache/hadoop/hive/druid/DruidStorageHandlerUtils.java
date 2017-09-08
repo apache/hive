@@ -41,6 +41,7 @@ import io.druid.timeline.partition.NumberedShardSpec;
 import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.ShardSpec;
 
+import org.apache.calcite.adapter.druid.LocalInterval;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -77,6 +78,7 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.ISODateTimeFormat;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
@@ -122,7 +124,12 @@ public final class DruidStorageHandlerUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
 
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
+  public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
 
+  public static final Interval DEFAULT_INTERVAL = new Interval(
+          new DateTime("1900-01-01", ISOChronology.getInstanceUTC()),
+          new DateTime("3000-01-01", ISOChronology.getInstanceUTC())
+  ).withChronology(ISOChronology.getInstanceUTC());
   /**
    * Mapper to use to serialize/deserialize Druid objects (JSON)
    */

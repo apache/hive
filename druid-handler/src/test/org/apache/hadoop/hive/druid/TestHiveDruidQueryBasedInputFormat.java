@@ -139,7 +139,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
   private static final String TIMESERIES_QUERY =
       "{  \"queryType\": \"timeseries\", "
           + " \"dataSource\": \"sample_datasource\", "
-          + " \"granularity\": \"day\", "
+          + " \"granularity\": \"DAY\", "
           + " \"descending\": \"true\", "
           + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]}";
   private static final String TIMESERIES_QUERY_SPLIT =
@@ -149,7 +149,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"descending\":true,"
           + "\"virtualColumns\":[],"
           + "\"filter\":null,"
-          + "\"granularity\":{\"type\":\"period\",\"period\":\"P1D\",\"timeZone\":\"America/Los_Angeles\",\"origin\":null},"
+          + "\"granularity\":\"DAY\","
           + "\"aggregations\":[],"
           + "\"postAggregations\":[],"
           + "\"context\":null}, [localhost:8082]}]";
@@ -213,7 +213,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\"]},"
           + "\"virtualColumns\":[],"
           + "\"filter\":null,"
-          + "\"granularity\":{\"type\":\"period\",\"period\":\"P1D\",\"timeZone\":\"America/Los_Angeles\",\"origin\":null},"
+          + "\"granularity\":\"DAY\","
           + "\"dimensions\":[{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"country\",\"outputName\":\"country\",\"outputType\":\"STRING\"},"
           + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"device\",\"outputName\":\"device\",\"outputType\":\"STRING\"}],"
           + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"total_usage\",\"fieldName\":\"user_count\",\"expression\":null},"

@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
@@ -80,7 +79,7 @@ public class DruidTopNQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
     if (values.hasNext()) {
       value.getValue().putAll(values.next().getBaseObject());
       return value;
@@ -93,7 +92,7 @@ public class DruidTopNQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
       if (values.hasNext()) {
         value.getValue().putAll(values.next().getBaseObject());
       }

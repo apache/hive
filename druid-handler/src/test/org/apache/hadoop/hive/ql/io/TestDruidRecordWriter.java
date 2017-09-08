@@ -87,21 +87,21 @@ public class TestDruidRecordWriter {
 
   final List<ImmutableMap<String, Object>> expectedRows = ImmutableList.of(
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
                   DateTime.parse("2014-10-22T00:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("a.example.com"),
                   "visited_sum", 190L,
                   "unique_hosts", 1.0d
           ),
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
                   DateTime.parse("2014-10-22T01:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("b.example.com"),
                   "visited_sum", 175L,
                   "unique_hosts", 1.0d
           ),
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
                   DateTime.parse("2014-10-22T02:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("c.example.com"),
                   "visited_sum", 270L,
@@ -109,6 +109,13 @@ public class TestDruidRecordWriter {
           )
   );
 
+
+  @Test
+  public void testTimeStampColumnName() {
+    Assert.assertEquals("Time column name need to match to ensure serdeser compatibility",
+            DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, DruidTable.DEFAULT_TIMESTAMP_COLUMN
+    );
+  }
   // This test fails due to conflict of guava classes with hive-exec jar.
   @Ignore
   @Test
@@ -120,7 +127,7 @@ public class TestDruidRecordWriter {
     Configuration config = new Configuration();
 
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
-            new TimestampSpec(DruidTable.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
+            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(ImmutableList.<DimensionSchema>of(new StringDimensionSchema("host")),
                     null, null
             )
@@ -169,7 +176,7 @@ public class TestDruidRecordWriter {
                         .put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
                                 Granularities.DAY.bucketStart(
                                         new DateTime((long) input
-                                                .get(DruidTable.DEFAULT_TIMESTAMP_COLUMN)))
+                                                .get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)))
                                         .getMillis()
                         ).build());
               }
@@ -217,7 +224,7 @@ public class TestDruidRecordWriter {
 
       Assert.assertEquals(ImmutableList.of("host"), actual.getDimensions());
 
-      Assert.assertEquals(expected.get(DruidTable.DEFAULT_TIMESTAMP_COLUMN),
+      Assert.assertEquals(expected.get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN),
               actual.getTimestamp().getMillis()
       );
       Assert.assertEquals(expected.get("host"), actual.getDimension("host"));

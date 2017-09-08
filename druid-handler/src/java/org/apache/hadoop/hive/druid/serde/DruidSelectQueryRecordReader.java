@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 
@@ -81,7 +80,7 @@ public class DruidSelectQueryRecordReader
     // Create new value
     DruidWritable value = new DruidWritable();
     EventHolder e = values.next();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
     value.getValue().putAll(e.getEvent());
     return value;
   }
@@ -92,7 +91,7 @@ public class DruidSelectQueryRecordReader
       // Update value
       value.getValue().clear();
       EventHolder e = values.next();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
       value.getValue().putAll(e.getEvent());
       return true;
     }
