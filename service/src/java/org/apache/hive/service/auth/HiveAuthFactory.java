@@ -84,7 +84,8 @@ public class HiveAuthFactory {
       saslServer =
           ShimLoader.getHadoopThriftAuthBridge().createServer(
               conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
-              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL));
+              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+              conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL));
 
       // Start delegation token manager
       delegationTokenManager = new HiveDelegationTokenManager();

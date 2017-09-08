@@ -685,6 +685,9 @@ public class HiveConf extends Configuration {
         "hive-metastore/_HOST@EXAMPLE.COM",
         "The service principal for the metastore Thrift server. \n" +
         "The special string _HOST will be replaced automatically with the correct host name."),
+    METASTORE_CLIENT_KERBEROS_PRINCIPAL("hive.metastore.client.kerberos.principal",
+        "", // E.g. "hive-metastore/_HOST@EXAMPLE.COM".
+        "The Kerberos principal associated with the HA cluster of hcat_servers."),
     METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false,
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_USE_THRIFT_FRAMED_TRANSPORT("hive.metastore.thrift.framed.transport.enabled", false,
@@ -2564,6 +2567,8 @@ public class HiveConf extends Configuration {
         "Kerberos keytab file for server principal"),
     HIVE_SERVER2_KERBEROS_PRINCIPAL("hive.server2.authentication.kerberos.principal", "",
         "Kerberos server principal"),
+    HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL("hive.server2.authentication.client.kerberos.principal", "",
+        "Kerberos principal used by the HA hive_server2s."),
     HIVE_SERVER2_SPNEGO_KEYTAB("hive.server2.authentication.spnego.keytab", "",
         "keytab file for SPNego principal, optional,\n" +
         "typical value would look like /etc/security/keytabs/spnego.service.keytab,\n" +

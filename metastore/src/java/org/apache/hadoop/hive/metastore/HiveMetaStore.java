@@ -7735,7 +7735,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         saslServer = bridge.createServer(
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
-            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
+            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL),
+            conf.getVar(HiveConf.ConfVars.METASTORE_CLIENT_KERBEROS_PRINCIPAL));
         // Start delegation token manager
         delegationTokenManager = new MetastoreDelegationTokenManager();
         delegationTokenManager.startDelegationTokenSecretManager(conf, baseHandler,
