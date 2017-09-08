@@ -1637,21 +1637,34 @@ POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
+POSTHOOK: Output: default@multi1_mm@p=455
+POSTHOOK: Output: default@multi1_mm@p=456
+POSTHOOK: Output: default@multi1_mm@p=457
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=457).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=457).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
 PREHOOK: Input: default@multi1_mm@p=1
 PREHOOK: Input: default@multi1_mm@p=2
+PREHOOK: Input: default@multi1_mm@p=455
+PREHOOK: Input: default@multi1_mm@p=456
+PREHOOK: Input: default@multi1_mm@p=457
 #### A masked pattern was here ####
 POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
 POSTHOOK: Input: default@multi1_mm@p=1
 POSTHOOK: Input: default@multi1_mm@p=2
+POSTHOOK: Input: default@multi1_mm@p=455
+POSTHOOK: Input: default@multi1_mm@p=456
+POSTHOOK: Input: default@multi1_mm@p=457
 #### A masked pattern was here ####
 0	456	1
 0	456	1
@@ -1673,16 +1686,22 @@ POSTHOOK: Input: default@multi1_mm@p=2
 103	457	2
 455	97	1
 455	97	2
+455	97	455
 455	98	1
 455	98	2
+455	98	455
 456	0	1
 456	0	2
+456	0	456
 456	10	1
 456	10	2
+456	10	456
 457	100	1
 457	100	2
+457	100	457
 457	103	1
 457	103	2
+457	103	457
 PREHOOK: query: from intermediate
 insert into table multi1_mm partition(p) select p, key, 1
 insert into table multi1_mm partition(p=1) select key, p
@@ -1711,12 +1730,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
 PREHOOK: Input: default@multi1_mm@p=1
 PREHOOK: Input: default@multi1_mm@p=2
+PREHOOK: Input: default@multi1_mm@p=455
+PREHOOK: Input: default@multi1_mm@p=456
+PREHOOK: Input: default@multi1_mm@p=457
 #### A masked pattern was here ####
 POSTHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multi1_mm
 POSTHOOK: Input: default@multi1_mm@p=1
 POSTHOOK: Input: default@multi1_mm@p=2
+POSTHOOK: Input: default@multi1_mm@p=455
+POSTHOOK: Input: default@multi1_mm@p=456
+POSTHOOK: Input: default@multi1_mm@p=457
 #### A masked pattern was here ####
 0	456	1
 0	456	1
@@ -1745,21 +1770,27 @@ POSTHOOK: Input: default@multi1_mm@p=2
 455	97	1
 455	97	1
 455	97	2
+455	97	455
 455	98	1
 455	98	1
 455	98	2
+455	98	455
 456	0	1
 456	0	1
 456	0	2
+456	0	456
 456	10	1
 456	10	1
 456	10	2
+456	10	456
 457	100	1
 457	100	1
 457	100	2
+457	100	457
 457	103	1
 457	103	1
 457	103	2
+457	103	457
 PREHOOK: query: drop table multi1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi1_mm
