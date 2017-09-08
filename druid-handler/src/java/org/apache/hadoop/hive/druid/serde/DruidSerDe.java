@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -127,8 +126,8 @@ public class DruidSerDe extends AbstractSerDe {
               && !org.apache.commons.lang3.StringUtils
               .isEmpty(properties.getProperty(serdeConstants.LIST_COLUMN_TYPES))) {
         columnNames.addAll(Utilities.getColumnNames(properties));
-        if (!columnNames.contains(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
-          throw new SerDeException("Timestamp column (' " + DruidTable.DEFAULT_TIMESTAMP_COLUMN +
+        if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new SerDeException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
                   "') not specified in create table; list of columns is : " +
                   properties.getProperty(serdeConstants.LIST_COLUMNS));
         }
@@ -181,7 +180,7 @@ public class DruidSerDe extends AbstractSerDe {
           throw new SerDeException(e);
         }
         for (Entry<String, ColumnAnalysis> columnInfo : schemaInfo.getColumns().entrySet()) {
-          if (columnInfo.getKey().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
+          if (columnInfo.getKey().equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
             // Special handling for timestamp column
             columnNames.add(columnInfo.getKey()); // field name
             PrimitiveTypeInfo type = TypeInfoFactory.timestampTypeInfo; // field type
@@ -308,7 +307,7 @@ public class DruidSerDe extends AbstractSerDe {
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
-    columnNames.add(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
+    columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
     columnTypes.add(TypeInfoFactory.timestampTypeInfo);
     // Aggregator columns
     for (AggregatorFactory af : query.getAggregatorSpecs()) {
@@ -336,7 +335,7 @@ public class DruidSerDe extends AbstractSerDe {
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
-    columnNames.add(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
+    columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
     columnTypes.add(TypeInfoFactory.timestampTypeInfo);
     // Dimension column
     columnNames.add(query.getDimensionSpec().getOutputName());
@@ -368,7 +367,7 @@ public class DruidSerDe extends AbstractSerDe {
           String address, Map<String, PrimitiveTypeInfo> mapColumnNamesTypes)
                   throws SerDeException {
     // Timestamp column
-    columnNames.add(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
+    columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
     columnTypes.add(TypeInfoFactory.timestampTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
@@ -410,7 +409,7 @@ public class DruidSerDe extends AbstractSerDe {
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
-    columnNames.add(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
+    columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
     columnTypes.add(TypeInfoFactory.timestampTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {

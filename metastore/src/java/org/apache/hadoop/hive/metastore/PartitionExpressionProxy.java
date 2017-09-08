@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * The proxy interface that metastore uses for variety of QL operations (metastore can't depend
@@ -41,16 +41,14 @@ public interface PartitionExpressionProxy {
 
   /**
    * Filters the partition names via serialized Hive expression.
-   * @param partColumnNames Partition column names in the underlying table.
-   * @param partColumnTypeInfos Partition column types in the underlying table
+   * @param partColumns Partition columns in the underlying table.
    * @param expr Serialized expression.
    * @param defaultPartitionName Default partition name from job or server configuration.
    * @param partitionNames Partition names; the list is modified in place.
    * @return Whether there were any unknown partitions preserved in the name list.
    */
-  boolean filterPartitionsByExpr(List<String> partColumnNames,
-      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr,
-      String defaultPartitionName, List<String> partitionNames) throws MetaException;
+  boolean filterPartitionsByExpr(List<FieldSchema> partColumns,
+      byte[] expr, String defaultPartitionName, List<String> partitionNames) throws MetaException;
 
   /**
    * Determines the file metadata type from input format of the source table or partition.

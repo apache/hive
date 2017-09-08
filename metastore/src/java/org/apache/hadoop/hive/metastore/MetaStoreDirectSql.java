@@ -76,7 +76,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -1112,11 +1111,11 @@ class MetaStoreDirectSql {
       Invalid;
 
       static FilterType fromType(String colTypeStr) {
-        if (colTypeStr.equals(serdeConstants.STRING_TYPE_NAME)) {
+        if (colTypeStr.equals(ColumnType.STRING_TYPE_NAME)) {
           return FilterType.String;
-        } else if (colTypeStr.equals(serdeConstants.DATE_TYPE_NAME)) {
+        } else if (colTypeStr.equals(ColumnType.DATE_TYPE_NAME)) {
           return FilterType.Date;
-        } else if (serdeConstants.IntegralTypes.contains(colTypeStr)) {
+        } else if (ColumnType.IntegralTypes.contains(colTypeStr)) {
           return FilterType.Integral;
         }
         return FilterType.Invalid;

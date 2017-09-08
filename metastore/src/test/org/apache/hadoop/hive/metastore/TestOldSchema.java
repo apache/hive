@@ -62,9 +62,9 @@ public class TestOldSchema {
     }
 
     @Override
-    public boolean filterPartitionsByExpr(List<String> partColumnNames,
-        List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
-        List<String> partitionNames) throws MetaException {
+    public boolean filterPartitionsByExpr(List<FieldSchema> partColumns, byte[] expr,
+                                          String defaultPartitionName,
+                                          List<String> partitionNames) throws MetaException {
       return false;
     }
 

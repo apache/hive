@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -35,8 +36,8 @@ public class MockPartitionExpressionForMetastore implements PartitionExpressionP
   }
 
   @Override
-  public boolean filterPartitionsByExpr(List<String> partColumnNames,
-      List<PrimitiveTypeInfo> partColumnTypeInfos, byte[] expr, String defaultPartitionName,
+  public boolean filterPartitionsByExpr(List<FieldSchema> partColumns,
+      byte[] expr, String defaultPartitionName,
       List<String> partitionNames) throws MetaException {
     return false;
   }

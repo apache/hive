@@ -41,7 +41,6 @@ import io.druid.segment.indexing.granularity.GranularitySpec;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
 import io.druid.segment.realtime.plumber.CustomVersioningPolicy;
 
-import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -117,8 +116,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     for (String name : columnNameProperty.split(",")) {
       columnNames.add(name);
     }
-    if (!columnNames.contains(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
-      throw new IllegalStateException("Timestamp column (' " + DruidTable.DEFAULT_TIMESTAMP_COLUMN +
+    if (!columnNames.contains(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+      throw new IllegalStateException("Timestamp column (' " + DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN +
               "') not specified in create table; list of columns is : " +
               tableProperties.getProperty(serdeConstants.LIST_COLUMNS));
     }
@@ -144,7 +143,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           break;
         case TIMESTAMP:
           String tColumnName = columnNames.get(i);
-          if (!tColumnName.equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN) && !tColumnName
+          if (!tColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN) && !tColumnName
                   .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
             throw new IOException("Dimension " + tColumnName + " does not have STRING type: " +
                     f.getPrimitiveCategory());
@@ -165,7 +164,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     }
     List<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
-            new TimestampSpec(DruidTable.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
+            new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
             new DimensionsSpec(dimensions,
                     Lists.newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME), null
             )

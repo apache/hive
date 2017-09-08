@@ -156,8 +156,7 @@ public class HiveAlterHandler implements AlterHandler {
             false)) {
         // Throws InvalidOperationException if the new column types are not
         // compatible with the current column types.
-        MetaStoreUtils.throwExceptionIfIncompatibleColTypeChange(
-            oldt.getSd().getCols(), newt.getSd().getCols());
+        checkColTypeChangeCompatible(oldt.getSd().getCols(), newt.getSd().getCols());
       }
 
       //check that partition keys have not changed, except for virtual views
@@ -852,4 +851,25 @@ public class HiveAlterHandler implements AlterHandler {
 
     return newPartsColStats;
   }
+
+  private void checkColTypeChangeCompatible(List<FieldSchema> oldCols, List<FieldSchema> newCols)
+      throws InvalidOperationException {
+    List<String> incompatibleCols = new ArrayList<>();
+    int maxCols = Math.min(oldCols.size(), newCols.size());
+    for (int i = 0; i < maxCols; i++) {
+      if (!ColumnType.areColTypesCompatible(
+          ColumnType.getTypeName(oldCols.get(i).getType()),
+          ColumnType.getTypeName(newCols.get(i).getType()))) {
+        incompatibleCols.add(newCols.get(i).getName());
+      }
+    }
+    if (!incompatibleCols.isEmpty()) {
+      throw new InvalidOperationException(
+          "The following columns have types incompatible with the existing " +
+              "columns in their respective positions :\n" +
+              org.apache.commons.lang.StringUtils.join(incompatibleCols, ',')
+      );
+    }
+  }
+
 }
