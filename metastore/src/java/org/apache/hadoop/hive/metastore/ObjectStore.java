@@ -163,8 +163,6 @@ import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
@@ -2558,17 +2556,10 @@ public class ObjectStore implements RawStore, Configurable {
       String defaultPartName, short maxParts, List<String> result) throws MetaException {
     result.addAll(getPartitionNamesNoTxn(
         table.getDbName(), table.getTableName(), maxParts));
-    List<String> columnNames = new ArrayList<String>();
-    List<PrimitiveTypeInfo> typeInfos = new ArrayList<PrimitiveTypeInfo>();
-    for (FieldSchema fs : table.getPartitionKeys()) {
-      columnNames.add(fs.getName());
-      typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfo(fs.getType()));
-    }
     if (defaultPartName == null || defaultPartName.isEmpty()) {
       defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
     }
-    return expressionProxy.filterPartitionsByExpr(
-        columnNames, typeInfos, expr, defaultPartName, result);
+    return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
 
   /**

@@ -26,13 +26,13 @@ import java.util.Stack;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.serde.serdeConstants;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
@@ -432,8 +432,8 @@ public class ExpressionTree {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
       String colType = table.getPartitionKeys().get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
-      if (!colType.equals(serdeConstants.STRING_TYPE_NAME)
-          && (!isIntegralSupported || !serdeConstants.IntegralTypes.contains(colType))) {
+      if (!colType.equals(ColumnType.STRING_TYPE_NAME)
+          && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
         return null;
