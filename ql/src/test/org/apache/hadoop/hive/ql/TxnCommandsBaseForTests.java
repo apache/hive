@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class TestTxnCommandsBase {
+public abstract class TxnCommandsBaseForTests {
   //bucket count for test tables; set it to 1 for easier debugging
   final static int BUCKET_COUNT = 2;
   @Rule
@@ -85,7 +85,7 @@ public abstract class TestTxnCommandsBase {
     runStatementOnDriver("create table " + Table.NONACIDNONBUCKET + "(a int, b int) stored as orc");
   }
   private void dropTables() throws Exception {
-    for(TestTxnCommandsBase.Table t : TestTxnCommandsBase.Table.values()) {
+    for(TxnCommandsBaseForTests.Table t : TxnCommandsBaseForTests.Table.values()) {
       runStatementOnDriver("drop table if exists " + t);
     }
   }
